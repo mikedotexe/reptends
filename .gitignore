@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.venv/
+venv/
+
+# Agda
+*.agdai
+MAlonzo/
+
+# Node/Site
+site/node_modules/
+site/dist/
+site/.vite/
+
+# Data (keep sweep_500.csv, ignore temp outputs)
+data/*.tmp
+data/*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+src.zip
