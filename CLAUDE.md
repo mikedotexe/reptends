@@ -4,30 +4,49 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Build and Run Commands
 
+### Python (qr_reptends package)
+
+```bash
+# Install the package in development mode
+pip install -e .
+
+# Run core analysis demo
+python -m qr_reptends.analysis
+
+# Sweep primes up to N with specific bases
+sweep-primes --max 500 --bases 2,7,10,12 --output data/results.csv
+
+# Run pattern analysis
+python -m qr_reptends.patterns
+
+# Educational examples
+python -m qr_reptends.examples.prime_19
+python -m qr_reptends.examples.backwards
+python -m qr_reptends.examples.progression
+```
+
 ### Agda (Formal Proofs)
 
 ```bash
-# Typecheck all modules
-agda src/Examples/Prime97.agda
+# Run from the agda/ directory (where qr-reptends.agda-lib is located)
+cd agda
+
+# Typecheck the main example
+agda Examples/Prime97.agda
 
 # Typecheck a specific module
-agda src/QRTour/RemainderOrbit.agda
+agda QRTour/RemainderOrbit.agda
 
-# Watch for changes (if you have agda-mode or similar)
-# The .agda-lib file configures stdlib dependency automatically
+# The qr-reptends.agda-lib file configures stdlib dependency automatically
 ```
 
-### Python (Empirical Exploration)
+### Web Visualization (site/)
 
 ```bash
-# Run core analysis demo
-python3 reptend_analysis.py
-
-# Sweep primes up to N with specific bases
-python3 prime_sweep.py --max 500 --bases 2,7,10,12 --output results.csv
-
-# Run pattern analysis
-python3 pattern_analysis.py
+cd site
+yarn install
+yarn dev      # Development server
+yarn build    # Production build
 ```
 
 ---
@@ -119,9 +138,9 @@ These modules know **nothing about primes or quadratic residues**. They're pure 
 
 | Module | Purpose |
 |--------|---------|
-| `GeometricStack.Family` | The (base, k) pair defining a[i] = k^i and B[n] = base^n |
-| `GeometricStack.Capacity` | Capacity index T_n where k^T < B^n ≤ k^(T+1) |
-| `GeometricStack.Scale` | Word-size decomposition: direct[i] = a[i] mod B, illegal[i] = a[i] div B |
+| `agda/GeometricStack/Family.agda` | The (base, k) pair defining a[i] = k^i and B[n] = base^n |
+| `agda/GeometricStack/Capacity.agda` | Capacity index T_n where k^T < B^n ≤ k^(T+1) |
+| `agda/GeometricStack/Scale.agda` | Word-size decomposition: direct[i] = a[i] mod B, illegal[i] = a[i] div B |
 
 **Key insight**: Nothing here mentions "10" or "97" or "decimal". The structure is parameterized by (base, k). Base-invariance is **structural**, not asserted.
 
@@ -131,9 +150,9 @@ These modules add the number-theoretic meaning.
 
 | Module | Purpose |
 |--------|---------|
-| `QRTour.PrimeField` | Prime modulus p, congruence ≡ₚ, powMod, multiplicative order |
-| `QRTour.QuadraticResidues` | QR predicate, half = (p-1)/2, QRGenerator |
-| `QRTour.RemainderOrbit` | Long-division remainders, stride lemma, QR tour coverage |
+| `agda/QRTour/PrimeField.agda` | Prime modulus p, congruence ≡ₚ, powMod, multiplicative order |
+| `agda/QRTour/QuadraticResidues.agda` | QR predicate, half = (p-1)/2, QRGenerator |
+| `agda/QRTour/RemainderOrbit.agda` | Long-division remainders, stride lemma, QR tour coverage |
 
 **Why this separation?** It makes base-invariance undeniable. GeometricStack compiles without knowing what a prime is. The group-theoretic interpretation lives in QRTour, cleanly separated from the mechanical computation.
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-REPTEND ANALYSIS - Core functions for exploring quadratic residue structure
+Core analysis functions for exploring quadratic residue structure in reptends.
 
 This module provides the fundamental analysis primitives for understanding
 reptends (repeating decimal expansions) through the lens of group theory.
@@ -183,7 +183,7 @@ def stride_fingerprint(p: int, bases: list[int]) -> dict:
 
 if __name__ == "__main__":
     print("=" * 70)
-    print("REPTEND ANALYSIS - Core Functions Demo")
+    print("QR-REPTENDS ANALYSIS - Core Functions Demo")
     print("=" * 70)
 
     # Test with p = 97 (our canonical example)

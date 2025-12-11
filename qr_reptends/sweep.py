@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-PRIME SWEEP - Systematic exploration of reptend structure across primes
+Systematic exploration of reptend structure across primes.
 
 Sweeps through primes and collects stride fingerprints to discover:
 1. Family patterns in stride distributions
@@ -17,7 +17,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import Iterator
 
-from reptend_analysis import (
+from .analysis import (
     analyze_prime,
     multiplicative_order,
     stride_fingerprint,
@@ -201,10 +201,11 @@ def print_fingerprint_families(results: list[StrideSummary], bases: list[int]):
 
 
 # =============================================================================
-# MAIN
+# MAIN - CLI entry point
 # =============================================================================
 
-if __name__ == "__main__":
+def main():
+    """CLI entry point for sweep-primes command."""
     import argparse
 
     parser = argparse.ArgumentParser(description='Sweep primes for reptend structure')
@@ -230,3 +231,7 @@ if __name__ == "__main__":
     if not args.quiet:
         print_summary_stats(results, bases)
         print_fingerprint_families(results, bases)
+
+
+if __name__ == "__main__":
+    main()

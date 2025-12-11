@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-PATTERN ANALYSIS - Deeper exploration of stride patterns
+Deeper exploration of stride patterns.
 
-This script investigates specific hypotheses about stride structure:
+This module investigates specific hypotheses about stride structure:
 1. Is stride count related to φ((p-1)/2)?
 2. What's the relationship between reptend length and stride existence?
 3. Can we predict stride patterns from p's factorization structure?
@@ -14,7 +14,7 @@ Date: December 2025
 from math import gcd
 from collections import defaultdict
 
-from reptend_analysis import (
+from .analysis import (
     multiplicative_order,
     find_qr_strides,
     analyze_prime,
