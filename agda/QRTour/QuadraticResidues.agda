@@ -9,9 +9,11 @@ open PF.PrimeField pf public
 open import Data.Nat
   using (ℕ; zero; suc; _+_; _*_ ; _^_; _≤_; _<_; _∸_)
 open import Data.Nat.DivMod as DivMod
-  using (_div_)
+  using (_div_; _%_; m≡m%n+[m/n]*n)
+open import Data.Nat.Properties
+  using (+-identityˡ; *-comm)
 open import Relation.Binary.PropositionalEquality
-  using (_≡_; refl)
+  using (_≡_; refl; sym; trans; cong; subst)
 open import Data.Product
   using (Σ; Σ-syntax; _,_; _×_)
 open import Relation.Nullary
@@ -44,12 +46,35 @@ QR a = Σ ℕ λ x → powMod x 2 ≡ₚ a
 half : ℕ
 half = (p ∸ 1) div 2
 
-postulate
-  half-spec : p ∸ 1 ≡ 2 * half
+-- Proof: By division algorithm, n = n%2 + (n/2)*2.
+-- Since p-1-even says (p ∸ 1) % 2 ≡ 0, we get:
+-- p ∸ 1 = 0 + half * 2 = 2 * half
+half-spec : p ∸ 1 ≡ 2 * half
+half-spec = goal
+  where
+    n = p ∸ 1
+    -- Division algorithm: n = n%2 + (n/2)*2
+    div-alg : n ≡ n % 2 + (n div 2) * 2
+    div-alg = m≡m%n+[m/n]*n n 2
+    -- p-1-even gives us n % 2 ≡ 0
+    -- Substitute into division algorithm
+    step1 : n ≡ 0 + half * 2
+    step1 = subst (λ r → n ≡ r + half * 2) p-1-even div-alg
+    -- 0 + x = x
+    step2 : 0 + half * 2 ≡ half * 2
+    step2 = +-identityˡ (half * 2)
+    -- x * 2 = 2 * x
+    step3 : half * 2 ≡ 2 * half
+    step3 = *-comm half 2
+    goal : p ∸ 1 ≡ 2 * half
+    goal = trans step1 (trans step2 step3)
 
-  -- And the standard group-theoretic fact:
-  -- "The number of distinct quadratic residues modulo p is exactly half."
-  qr-subgroup-size : Set
+-- And the standard group-theoretic fact:
+-- "The number of distinct quadratic residues modulo p is exactly half."
+-- This is a placeholder type; the actual cardinality proof would require
+-- formalizing finite sets and bijections.
+qr-subgroup-size : Set
+qr-subgroup-size = Σ ℕ λ count → count ≡ half
 
 ------------------------------------------------------------------------
 -- QRGenerator k means: k lies in the QR subgroup and has order = half.

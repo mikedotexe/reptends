@@ -2,8 +2,8 @@
 """
 CLI wrapper for sweep-primes command.
 
-This is a thin wrapper that calls qr_reptends.sweep.main().
-The actual implementation is in qr_reptends/sweep.py.
+This is a thin wrapper that calls bridge_reptends.sweep.main().
+The actual implementation is in bridge_reptends/sweep.py.
 
 Usage:
     python scripts/sweep_primes.py --max 500 --bases 2,7,10,12
@@ -13,5 +13,5 @@ Or if installed:
 """
 
 if __name__ == "__main__":
-    from qr_reptends.sweep import main
+    from bridge_reptends.sweep import main
     main()

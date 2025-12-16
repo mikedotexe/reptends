@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "qr-reptends"
-version = "0.1.0"
-description = "Quadratic residue reptend analysis - group theory in decimal disguise"
+name = "bridge-reptends"
+version = "0.2.0"
+description = "Bridge reptend analysis - geometric series structure in repeating decimals"
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
@@ -15,10 +15,10 @@ authors = [
 ]
 keywords = [
     "number-theory",
-    "group-theory",
     "modular-arithmetic",
     "reptends",
-    "quadratic-residues",
+    "geometric-series",
+    "bridge-primes",
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -36,10 +36,10 @@ classifiers = [
 dev = ["pytest", "mypy"]
 
 [project.scripts]
-sweep-primes = "qr_reptends.sweep:main"
+sweep-primes = "bridge_reptends.sweep:main"
 
 [project.urls]
 Repository = "https://github.com/mpurvis/quadratic-residue-reptends"
 
 [tool.setuptools.packages.find]
-include = ["qr_reptends*"]
+include = ["bridge_reptends*"]

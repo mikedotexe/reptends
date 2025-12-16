@@ -1,7 +1,7 @@
 module GeometricStack.Family where
 
 open import Data.Nat
-  using (ℕ; zero; suc; _+_; _*_ ; _^_; _≤_)
+  using (ℕ; zero; suc; _+_; _*_ ; _^_; _≤_; _>_)
 open import Relation.Binary.PropositionalEquality
   using (_≡_; refl)
 
@@ -21,6 +21,9 @@ record Family : Set₁ where
     k      : ℕ
     base≥2 : 2 ≤ base
     k≥1    : 1 ≤ k
+    -- For capacity-exists, we need k > 1 so that k^i grows
+    -- (k = 1 is degenerate: all a[i] = 1)
+    k>1    : k > 1
 
   ----------------------------------------------------------------------
   -- The geometric stack: a[i] = k^i

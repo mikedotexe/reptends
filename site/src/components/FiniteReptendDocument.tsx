@@ -1,7 +1,10 @@
 import { M, Block, SectionDivider } from './shared';
+import GoodCoordinatesExplorer from './GoodCoordinatesExplorer';
+import OrbitCoreExplorer from './OrbitCoreExplorer';
 import KFamilyExplorer from './KFamilyExplorer';
 import StackVisualizer from './StackVisualizer';
 import FluxContrast from './FluxContrast';
+import CircleWalkPlayground from './CircleWalkPlayground';
 
 const FiniteReptendDocument = () => {
   const powers = [5, 25, 125, 625, 3125, 15625, 78125, 390625, 1953125];
@@ -39,6 +42,12 @@ const FiniteReptendDocument = () => {
             fixed positional window.
           </p>
         </section>
+
+        {/* Good Coordinates Explorer - the foundational framework */}
+        <GoodCoordinatesExplorer />
+
+        {/* Orbit Core Explorer - deep dive into orbit structure */}
+        <OrbitCoreExplorer />
 
         {/* PART I */}
         <SectionDivider part="Part I" title="The Anatomy of 1/19" />
@@ -230,23 +239,41 @@ const FiniteReptendDocument = () => {
           </h3>
 
           <p className="text-stone-700 leading-relaxed mb-4 text-sm sm:text-base">
-            The geometric pattern "wants" to include one more term—the ghost
-            contribution from 5¹⁰. Using 95 = 19 × 5:
+            The geometric sum S is missing a "ghost term"—the contribution that
+            would complete the pattern. To find it, we divide:
+          </p>
+
+          <Block>5⁹ / 19 = 102,796 + 1/19</Block>
+
+          <p className="text-stone-700 leading-relaxed mb-4 text-sm sm:text-base">
+            Why is the remainder exactly <M>1/19</M>? Because{' '}
+            <strong>ord₁₉(5) = 9</strong>—the multiplicative order of 5 in
+            (ℤ/19ℤ)* is 9. This means 5⁹ ≡ 1 (mod 19), so:
           </p>
 
           <div className="bg-stone-50 border border-stone-200 rounded-lg p-4 font-mono text-xs sm:text-sm mb-4">
-            <div>5¹⁰ / 95 = 5¹⁰ / (19 × 5) = 5⁹ / 19</div>
-            <div className="mt-2">
-              5⁹ / 19 = 1,953,125 / 19 = 102,796 + 1/19
+            <div>5⁹ = 19 × 102,796 + 1</div>
+            <div className="mt-2 text-stone-500">
+              ↳ The orbit completes: 5⁹ lands back at 1
             </div>
           </div>
 
-          <Block>F = ⌊5¹⁰ / 95⌋ = 102,796</Block>
+          <p className="text-stone-700 leading-relaxed mb-4 text-sm sm:text-base">
+            The integer part is our flux:
+          </p>
+
+          <Block>F = ⌊5⁹ / 19⌋ = 102,796</Block>
 
           <p className="text-stone-700 leading-relaxed bg-blue-50 p-4 rounded border-l-4 border-blue-300 text-sm sm:text-base">
-            <strong>Self-reference:</strong> The fractional remainder in Q is
-            exactly <M>1/19</M>, the number whose reptend we are studying. In
-            other words, <M>5¹⁰/95 = F + 1/19</M>.
+            <strong>Self-reference:</strong> The fractional remainder is exactly{' '}
+            <M>1/19</M>—the number whose reptend we're studying. This isn't
+            coincidence: the remainder is 1/19 <em>because</em> the
+            multiplicative orbit of 5 completes after 9 steps.
+          </p>
+
+          <p className="text-stone-600 text-xs sm:text-sm mt-4 italic">
+            Note: We can also write this as 5¹⁰/95 since 95 = 19 × 5, but 5⁹/19
+            is the fundamental form—it shows the orbit structure directly.
           </p>
         </section>
 
@@ -475,6 +502,42 @@ const FiniteReptendDocument = () => {
             What looks like endless recurrence is the shadow of a finite
             geometric construction. Numbers don't want to be decimals. They want
             to be orbits.
+          </p>
+        </section>
+
+        <SectionDivider part="Part III" title="The Geometric View" />
+
+        {/* Section 11: The Point and the Path */}
+        <section className="mb-8 sm:mb-10">
+          <h2 className="text-lg sm:text-xl font-serif font-bold text-stone-900 mb-4">
+            11. The Point and the Path
+          </h2>
+
+          <p className="text-stone-700 leading-relaxed mb-4 text-sm sm:text-base">
+            A fraction like <M>1/19</M> isn't an infinite decimal—it's a{' '}
+            <strong>position on a circle</strong>. The circle has 18 points (one
+            for each non-zero residue mod 19). Your starting point is 1.
+          </p>
+
+          <p className="text-stone-700 leading-relaxed mb-4 text-sm sm:text-base">
+            The <strong>base</strong> is how you walk. When you "compute" the
+            decimal in base 10, you're stepping around the circle with step size
+            10. Each step: multiply your position by the base, wrap around (mod
+            p), and the overflow becomes a digit.
+          </p>
+
+          <p className="text-stone-700 leading-relaxed mb-6 text-sm sm:text-base">
+            Different bases give <strong>different walks</strong>. Same circle,
+            same starting point, different tours. Try switching from base 10 to
+            base 7 below—watch the path change, the digits change, but the
+            structure remains. The "infinite" repetition? It's just the finite
+            orbit, looped forever. The snake eating its tail.
+          </p>
+
+          <CircleWalkPlayground />
+
+          <p className="text-stone-600 text-xs sm:text-sm mt-6 italic text-center">
+            The number is the point. The decimal is the path you trace.
           </p>
         </section>
 

@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 """
-Multiplicative progression proof for the 2×10^m - 1 family.
+Multiplicative progression for the 2·10^m - 1 family.
 
-For primes p = 2×10^m - 1:
-  The decimal 1/p encodes powers of (p+1)/2 = 10^m
+For primes p = 2·10^m - 1 (e.g., 19, 199, 1999):
+  - 10^m ≡ (p+1)/2 (mod p)
+  - Every m-th remainder in 1/p is a power of 10^m
+  - When ord(10^m) = (p-1)/2, this element generates exactly QR
 
-The progression terminates when it exhausts the orbit of 10^m.
-
-This script proves it by:
-  1. Extracting the remainders from long division
-  2. Showing they ARE powers of 10^m at every m-th step
-  3. Working backwards to recover the progression
+The stride-m remainders form a geometric progression that visits each
+quadratic residue exactly once before returning to 1.
 
 Authors: Mike & Claude
 Date: December 2025
@@ -18,6 +16,8 @@ Date: December 2025
 
 from decimal import Decimal, getcontext
 getcontext().prec = 2000
+
+from bridge_reptends import is_qr, coset_of
 
 
 def multiplicative_order(a, n):
@@ -64,6 +64,17 @@ def analyze_progression(p, m):
     print(f"\nReptend length = {ord_10} digits")
     print(f"Number of m-digit 'words' = {ord_10 // m}")
 
+    # Add coset analysis
+    half_is_qr = is_qr(half, p)
+    qr_subgroup_size = (p - 1) // 2
+    print(f"\nCOSET STRUCTURE:")
+    print(f"  {half} is {'QR' if half_is_qr else 'NQR'} mod {p}")
+    print(f"  QR subgroup size = (p-1)/2 = {qr_subgroup_size}")
+    if ord_half == qr_subgroup_size:
+        print(f"  ord_{p}({half}) = {ord_half} = (p-1)/2")
+        print(f"  → {half} generates exactly QR (the index-2 subgroup)")
+        print(f"    The stride-{m} tour visits all {qr_subgroup_size} quadratic residues.")
+
     # Get remainders
     remainders = long_division_remainders(p, ord_10 + 1)
 
@@ -103,10 +114,15 @@ The progression visits these {ord_half} values:
   ...
   {half}^{ord_half-1} = {pow(half, ord_half-1, p)}
 
-Then {half}^{ord_half} ≡ 1 (mod {p}) → CYCLE CLOSES
+Then {half}^{ord_half} ≡ 1 (mod {p}), closing the orbit.
 
-The progression TERMINATES after {ord_half} distinct values.
-The reptend has {ord_10} digits = {m} × {ord_half} (m digits per power).
+By Lagrange, ord({half}) divides {p-1}. Here ord({half}) = {ord_half} = (p-1)/2,
+so the orbit has exactly {ord_half} elements—the entire QR subgroup.
+
+The reptend has {ord_10} digits = {m} × {ord_half} (m digits per orbit element).
+
+Coset view: {half} ∈ {'QR' if is_qr(half, p) else 'NQR'}, so its powers stay in {'QR' if is_qr(half, p) else 'NQR'}.
+The {ord_half} stride-{m} remainders are precisely the quadratic residues mod {p}.
 """)
 
     return progression
@@ -122,11 +138,26 @@ if __name__ == "__main__":
 ║      THE 2×10^m - 1 FAMILY: MULTIPLICATIVE PROGRESSIONS              ║
 ╚══════════════════════════════════════════════════════════════════════╝
 
-For p = 2×10^m - 1, the decimal 1/p encodes powers of (p+1)/2 = 10^m.
+For p = 2·10^m − 1, the decimal 1/p encodes powers of (p+1)/2 = 10^m.
 
-Every m-th long division remainder IS a power of 10^m.
+Every m-th long division remainder is a power of 10^m.
 
 The progression terminates when it exhausts the orbit.
+
+┌────────────────────────────────────────────────────────────────────┐
+│  MATHEMATICAL BACKGROUND                                           │
+├────────────────────────────────────────────────────────────────────┤
+│  The squaring map x ↦ x² on (ℤ/pℤ)× has kernel {±1}, so          │
+│      QR := { a² } has |QR| = (p−1)/2,                             │
+│  making QR the unique index-2 subgroup.                            │
+│                                                                    │
+│  An element g with ord(g) = (p−1)/2 generates exactly QR.          │
+│  For p = 2·10^m − 1, we have 10^m ≡ (p+1)/2 (mod p), and this     │
+│  element often has order (p−1)/2, i.e., generates QR.              │
+│                                                                    │
+│  Thus the stride-m remainders form a geometric progression         │
+│  that visits each QR exactly once before returning to 1.           │
+└────────────────────────────────────────────────────────────────────┘
 """)
 
     # Analyze Mike's primes

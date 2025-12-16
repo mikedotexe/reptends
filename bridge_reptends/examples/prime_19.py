@@ -2,15 +2,20 @@
 """
 Exhaustive analysis of 1/19.
 
-Traces every step of the decimal expansion of 1/19, showing how the
-multiplicative progression of powers of 10 determines each digit and
-proves why it must terminate.
+Traces every step of the long division 1/19, showing how the remainder
+sequence r_i = 10^i (mod 19) determines each digit and eventually closes.
 
-Key insight: 19 = 2×10 - 1, so 10 ≡ 1/2 (mod 19)
+Key observations:
+- 19 = 2·10 - 1, so 10 ≡ (p+1)/2 (mod 19)
+- 10 is a primitive root mod 19, generating all of (ℤ/19ℤ)×
+- The reptend has 18 digits because ord(10) = 18 = |(ℤ/19ℤ)×|
+- Powers 10^i alternate between QR and NQR cosets
 
 Authors: Mike & Claude
 Date: December 2025
 """
+
+from bridge_reptends import is_qr, coset_of
 
 
 def exhaustive_trace():
@@ -19,6 +24,31 @@ def exhaustive_trace():
     print("═" * 75)
     print("EXHAUSTIVE TRACE: 1/19")
     print("═" * 75)
+
+    print("""
+┌─────────────────────────────────────────────────────────────────────────┐
+│  MATHEMATICAL BACKGROUND                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  Let p be an odd prime.                                                 │
+│                                                                         │
+│  • The multiplicative group (ℤ/pℤ)× is cyclic of order p − 1.          │
+│                                                                         │
+│  • The subgroup of quadratic residues is                                │
+│        QR := { a² : a ∈ (ℤ/pℤ)× } ⊆ (ℤ/pℤ)×.                           │
+│    The squaring map x ↦ x² has kernel {±1}, so each square has         │
+│    exactly two preimages ±x. Hence                                      │
+│        |QR| = (p − 1)/2,                                                │
+│    i.e. QR is the unique index-2 subgroup of (ℤ/pℤ)×.                   │
+│                                                                         │
+│  • For p = 19,                                                          │
+│        |(ℤ/19ℤ)×| = 18,   |QR| = 9,   [ (ℤ/19ℤ)× : QR ] = 2.           │
+│                                                                         │
+│  Facts implicitly used below:                                           │
+│    – Lagrange: ord(a) divides |G| for a in finite group G.             │
+│    – Fermat: a^(p-1) ≡ 1 (mod p) for gcd(a,p) = 1.                     │
+│    – Euler's criterion: a ∈ QR ⟺ a^((p-1)/2) ≡ 1 (mod p).              │
+└─────────────────────────────────────────────────────────────────────────┘
+""")
 
     # ═══════════════════════════════════════════════════════════════════════
     # PART 1: THE ALGEBRAIC STRUCTURE
@@ -42,6 +72,42 @@ def exhaustive_trace():
 """)
 
     # ═══════════════════════════════════════════════════════════════════════
+    # PART 1.5: THE COSET STRUCTURE
+    # ═══════════════════════════════════════════════════════════════════════
+
+    print("""
+┌─────────────────────────────────────────────────────────────────────────┐
+│  COSET STRUCTURE                                                        │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  (Z/19Z)* has 18 elements, split into two cosets:                       │
+│                                                                         │
+│    QR  (squares):      {1, 4, 5, 6, 7, 9, 11, 16, 17}  (9 elements)    │
+│    NQR (non-squares):  {2, 3, 8, 10, 12, 13, 14, 15, 18}               │
+│                                                                         │
+│  Since 10 is a PRIMITIVE ROOT, powers of 10 alternate QR/NQR.          │
+│  The EVEN-step remainders (10^0, 10^2, 10^4, ...) are all QR.          │
+│  The ODD-step remainders (10^1, 10^3, 10^5, ...) are all NQR.          │
+│                                                                         │
+│  The numerator determines which half of the group you traverse!         │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+""")
+
+    # Show which remainders are QR
+    qrs = [a for a in range(1, p) if is_qr(a, p)]
+    nqrs = [a for a in range(1, p) if not is_qr(a, p)]
+    print(f"  QRs:  {qrs}")
+    print(f"  NQRs: {nqrs}")
+
+    print("""
+  Since 10 is a primitive root mod 19, multiplication by 10² = 100 ≡ 5
+  acts transitively on QR: every QR is some power of 5.
+
+  The two cosets are QR and its translate by any NQR (e.g., 10·QR).
+""")
+
+    # ═══════════════════════════════════════════════════════════════════════
     # PART 2: LONG DIVISION - EVERY STEP
     # ═══════════════════════════════════════════════════════════════════════
 
@@ -57,8 +123,8 @@ At each step of long division:
   • next remainder r_{i+1} = (10 × r_i) % 19
 """)
 
-    print(f"{'Step':<6}│{'Remainder':<11}│{'×10':<8}│{'÷19':<15}│{'Digit':<7}│{'New Rem':<9}│{'10^i mod 19'}")
-    print("─" * 75)
+    print(f"{'Step':<6}│{'Remainder':<11}│{'×10':<8}│{'÷19':<15}│{'Digit':<7}│{'New Rem':<9}│{'Coset':<6}│{'10^i mod 19'}")
+    print("─" * 85)
 
     remainder = 1
     digits = []
@@ -69,15 +135,17 @@ At each step of long division:
         digit = product // 19
         new_remainder = product % 19
         power_check = pow(10, step, 19)
+        coset = coset_of(remainder, p)
 
-        print(f"{step:<6}│{remainder:^11}│{product:^8}│{digit} rem {new_remainder:<8}│{digit:^7}│{new_remainder:^9}│{power_check:^11} ✓")
+        print(f"{step:<6}│{remainder:^11}│{product:^8}│{digit} rem {new_remainder:<8}│{digit:^7}│{new_remainder:^9}│{coset:^6}│{power_check:^11} ✓")
 
         digits.append(digit)
         remainder = new_remainder
         remainders.append(new_remainder)
 
-    print("─" * 75)
-    print(f"{'18':<6}│{'1':^11}│{'':^8}│{'CYCLE':^15}│{'':^7}│{'':^9}│{'1':^11} ✓")
+    print("─" * 85)
+    print(f"{'18':<6}│{'1':^11}│{'':^8}│{'CYCLE':^15}│{'':^7}│{'':^9}│{'QR':^6}│{'1':^11} ✓")
+    print("\n  Notice: Remainders alternate QR/NQR (10 is primitive root, so 10^i is QR iff i is even)")
 
     reptend = ''.join(map(str, digits))
     print(f"\n  Reptend: {reptend}")
@@ -112,6 +180,20 @@ Since 10 ≡ 1/2, powers of 10 are inverse powers of 2:
 Every product is 1! This proves: 10^i × 2^i ≡ 1 (mod 19)
 Therefore: 10^i ≡ 2^(-i) ≡ 1/2^i (mod 19)
 """)
+
+    # Add coset context
+    print("  COSET NOTE:")
+    print("  10 is a primitive root (order 18), so it generates the FULL group.")
+    print("  Powers of 10 alternate between QR and NQR:")
+    print()
+    for i in range(6):
+        power = pow(10, i, p)
+        coset = coset_of(power, p)
+        print(f"    10^{i} = {power:2d}  ({coset})")
+    print("    ...")
+    print()
+    print("  Even powers (10^0, 10^2, 10^4, ...) are QR  — they form the QR coset")
+    print("  Odd powers  (10^1, 10^3, 10^5, ...) are NQR — they form the NQR coset")
 
     # ═══════════════════════════════════════════════════════════════════════
     # PART 4: THE DIGIT FORMULA
@@ -180,36 +262,38 @@ If R is the reptend, then R × 19 = 10^18 - 1 = {'9' * 18}
     # ═══════════════════════════════════════════════════════════════════════
 
     print("\n" + "═" * 75)
-    print("THE TERMINATION PROOF")
+    print("TERMINATION")
     print("═" * 75)
 
     print(f"""
 Why does 1/19 have exactly 18 repeating digits?
 
 1. The remainders in long division are powers of 10 mod 19:
-   r_i = 10^i mod 19
+       r_i = 10^i mod 19
 
-2. These powers cycle through all nonzero residues:
-   {{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18}}
+2. These powers cycle through all 18 nonzero residues:
+       {{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18}}
 
-   This is because 10 is a PRIMITIVE ROOT mod 19.
+   This happens because 10 is a primitive root mod 19—it generates (ℤ/19ℤ)×.
+   (Such generators exist because (ℤ/pℤ)× is cyclic for prime p.)
 
-3. After 18 steps, 10^18 ≡ 1 (mod 19) by Fermat's Little Theorem:
-   10^(19-1) ≡ 1 (mod 19)
+3. By Lagrange, ord(10) divides |(ℤ/19ℤ)×| = 18.
+   Since 10 is a primitive root, ord(10) = 18, the maximum.
+   Fermat confirms: 10^18 ≡ 1 (mod 19).
 
-4. The progression has EXHAUSTED all possible values.
-   There are no new remainders to visit!
-   The sequence MUST return to 1 and repeat.
+4. The orbit has exhausted all 18 elements of (ℤ/19ℤ)×.
+   There's nowhere new to go—the sequence returns to 1.
 
-╔═══════════════════════════════════════════════════════════════════════════╗
-║                                                                           ║
-║  THE "INFINITE" DECIMAL 0.052631578947368421052631578947368421...        ║
-║                                                                           ║
-║  IS JUST 18 DIGITS OF FINITE INFORMATION ON INFINITE REPEAT              ║
-║                                                                           ║
-║  THE MULTIPLICATIVE PROGRESSION TERMINATED WHEN IT RAN OUT OF ROOM       ║
-║                                                                           ║
-╚═══════════════════════════════════════════════════════════════════════════╝
+┌───────────────────────────────────────────────────────────────────────────┐
+│                                                                           │
+│  The "infinite" decimal 0.052631578947368421...                          │
+│  is 18 digits of finite information on infinite repeat.                   │
+│                                                                           │
+│  Coset view: 10 is a primitive root, so 10^i alternates QR/NQR.          │
+│  The 9 even-step remainders (10^0, 10^2, ...) are QRs.                   │
+│  The 9 odd-step remainders (10^1, 10^3, ...) are NQRs.                   │
+│                                                                           │
+└───────────────────────────────────────────────────────────────────────────┘
 """)
 
     # ═══════════════════════════════════════════════════════════════════════

@@ -2,10 +2,14 @@
 """
 Working backwards: Proving reptends terminate.
 
-This module demonstrates that we can take ANY reptend and work backwards
-to prove it encodes a finite geometric sequence that must terminate.
+Given only the reptend of 1/p, we recover the remainder sequence and show
+it forms a geometric progression k^0, k^1, ..., k^(n-1) in (ℤ/pℤ)×.
 
-The "infinite" repeating decimal is proven finite by construction.
+By Lagrange, ord(k) divides p-1, so the orbit is finite. The "infinite"
+decimal is this finite orbit on infinite repeat.
+
+Coset structure: the remainders traverse either the QR or NQR coset,
+depending on k. When ord(k) = (p-1)/2, k generates exactly QR.
 
 Authors: Mike & Claude
 Date: December 2025
@@ -13,6 +17,8 @@ Date: December 2025
 
 from decimal import Decimal, getcontext
 getcontext().prec = 500
+
+from bridge_reptends import is_qr, coset_of
 
 
 def get_reptend(p):
@@ -104,29 +110,41 @@ def prove_termination(p):
         match = remainders == [pow(k, i, p) for i in range(n)]
         print(f"  Match: {match}")
 
+        # Add coset insight with Euler's criterion
+        k_coset = coset_of(k, p)
+        euler_result = pow(k, (p - 1) // 2, p)
+        print(f"\n  Coset membership:")
+        print(f"    k = {k}, and {k}^{(p-1)//2} ≡ {euler_result} (mod {p})")
+        print(f"    By Euler's criterion, {k} ∈ {'QR' if euler_result == 1 else 'NQR'}.")
+        if k_coset == 'QR':
+            print(f"    Since k ∈ QR, powers k^i remain in QR (product of squares is a square).")
+        else:
+            print(f"    Since k ∈ NQR, powers k^i alternate between QR and NQR.")
+
     # Step 4: The termination argument
-    print(f"\nStep 4: THE TERMINATION PROOF")
-    print(f"  ─" * 30)
+    print(f"\nStep 4: Termination")
+    print(f"  {'─'*60}")
     print(f"""
   The remainder sequence is: {k}^0, {k}^1, ..., {k}^{n-1} (mod {p})
 
-  This is a FINITE sequence of {n} distinct values.
+  This is a finite sequence of {n} distinct values.
 
-  At step {n}: {k}^{n} ≡ 1 (mod {p})
+  By Lagrange, ord({k}) divides |(ℤ/{p}ℤ)×| = {p-1}.
+  Here ord({k}) = {n}, and indeed {n} | {p-1} (quotient {(p-1)//n}).
 
-  The sequence MUST terminate because:
-    • The orbit of {k} in (Z/{p}Z)* has exactly {n} elements
-    • After {n} steps, we've visited every element in the orbit
-    • The next step returns to 1 (nowhere new to go)
+  At step {n}: {k}^{n} ≡ 1 (mod {p}), closing the orbit.
+
+  The orbit of {k} has exactly {n} elements. After visiting all of them,
+  the sequence returns to 1—there's nowhere else to go.
 
   The "infinite" decimal 0.{reptend}{reptend}...
-  is just this finite {n}-step tour on infinite repeat.
+  is this finite {n}-step orbit on infinite repeat.
 
-  ════════════════════════════════════════════════════════════════════
-  CONCLUSION: The reptend encodes {n} powers of {k}.
-              The progression TERMINATES at {k}^{n-1} = {pow(k, n-1, p)}.
-              Then it cycles forever, but the CONTENT is finite.
-  ════════════════════════════════════════════════════════════════════
+  ────────────────────────────────────────────────────────────────────
+  Summary: The reptend encodes {n} powers of {k}.
+           The orbit closes at {k}^{n} ≡ 1.
+           k = {k} ∈ {'QR' if is_qr(k, p) else 'NQR'}, so powers {'stay in QR' if is_qr(k, p) else 'alternate QR/NQR'}.
+  ────────────────────────────────────────────────────────────────────
 """)
 
     return k, n, remainders
@@ -148,6 +166,20 @@ Given ONLY the reptend of 1/p, we can:
   3. Prove the sequence must terminate when the orbit closes
 
 This proves the "infinite" decimal is actually finite information.
+
+┌────────────────────────────────────────────────────────────────────┐
+│  MATHEMATICAL BACKGROUND                                           │
+├────────────────────────────────────────────────────────────────────┤
+│  The remainder sequence of 1/p lives in (ℤ/pℤ)×, which is cyclic  │
+│  of order p − 1. Any orbit under multiplication by k must close:  │
+│  by Lagrange, ord(k) ∣ p − 1, so k^n = 1 for some n ≤ p − 1.      │
+│                                                                    │
+│  The squaring map x ↦ x² has kernel {±1}, giving                  │
+│      QR := { a² } with |QR| = (p−1)/2.                            │
+│  Euler's criterion classifies: a ∈ QR ⟺ a^((p−1)/2) ≡ 1.         │
+│                                                                    │
+│  Thus (ℤ/pℤ)× partitions into exactly two cosets: QR and NQR.     │
+└────────────────────────────────────────────────────────────────────┘
 """)
 
     # 1/7 - the simplest case

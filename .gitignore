@@ -14,6 +14,9 @@ venv/
 *.agdai
 MAlonzo/
 
+# Lean
+lean/.lake/
+
 # Node/Site
 site/node_modules/
 site/dist/

@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """
-Core analysis functions for exploring quadratic residue structure in reptends.
+Core analysis functions for reptend structure.
 
-This module provides the fundamental analysis primitives for understanding
-reptends (repeating decimal expansions) through the lens of group theory.
+This module provides:
+- Universal functions (work for any modulus n coprime to base)
+- Prime-specific functions (QR/coset analysis requiring prime p)
 
-Key insight: Reptends are orbits in multiplicative groups, not decimal curiosities.
+Key insight: Reptends are geometric series with carry correction.
+The skeleton 1/n = Σ k^j / B^(j+1) works for any n.
 
 Authors: Mike & Claude
 Date: December 2025
@@ -16,72 +18,83 @@ from math import gcd
 from typing import Optional
 
 
-def multiplicative_order(a: int, p: int) -> Optional[int]:
+def multiplicative_order(a: int, n: int) -> Optional[int]:
     """
-    Compute ord_p(a) - the multiplicative order of a modulo p.
+    Compute ord_n(a) - the multiplicative order of a modulo n.
 
-    Returns the smallest positive integer m such that a^m ≡ 1 (mod p),
-    or None if gcd(a, p) ≠ 1.
+    Returns the smallest positive integer m such that a^m ≡ 1 (mod n),
+    or None if gcd(a, n) ≠ 1.
 
-    By Lagrange's theorem, ord_p(a) divides φ(p) = p-1 for prime p.
+    Works for any modulus n (not just primes). By Lagrange's theorem,
+    ord_n(a) divides |G| for any finite group G.
     """
-    if gcd(a, p) != 1:
+    if gcd(a, n) != 1:
         return None
 
     order = 1
-    val = a % p
+    val = a % n
     while val != 1:
-        val = (val * a) % p
+        val = (val * a) % n
         order += 1
-        if order > p:
-            return None  # Shouldn't happen for coprime a, p
+        if order > n:
+            return None  # Shouldn't happen for coprime a, n
     return order
 
 
-def long_division_remainders(p: int, base: int = 10, steps: Optional[int] = None) -> list[int]:
+def long_division_remainders(n: int, base: int = 10, steps: Optional[int] = None) -> list[int]:
     """
-    Get the remainder sequence from long division of 1/p in given base.
+    Get the remainder sequence from long division of 1/n in given base.
+
+    Works for any n coprime to base (not just primes).
 
     The remainders satisfy:
         r_0 = 1
-        r_{n+1} = (base * r_n) mod p
+        r_{i+1} = (base * r_i) mod n
 
-    So r_n ≡ base^n (mod p).
+    So r_i ≡ base^i (mod n).
 
-    If steps is None, computes until the sequence repeats (ord_p(base) steps).
+    If steps is None, computes until the sequence repeats (ord_n(base) steps).
     """
     if steps is None:
-        steps = multiplicative_order(base, p) or p
+        steps = multiplicative_order(base, n) or n
 
     remainders = [1]
     r = 1
     for _ in range(steps - 1):
-        r = (r * base) % p
+        r = (r * base) % n
         remainders.append(r)
     return remainders
 
 
-def find_generator(remainders: list[int], p: int) -> Optional[int]:
+def find_generator(remainders: list[int], n: int) -> Optional[int]:
     """
-    Find the constant ratio k such that r_{i+1} = k * r_i (mod p).
+    Find the constant ratio k such that r_{i+1} = k * r_i (mod n).
+
+    Works for any modulus n (not just primes).
 
     For long-division remainders, this should always be the base.
-    But this function works for any geometric sequence mod p.
+    But this function works for any geometric sequence mod n.
 
     Returns None if the sequence isn't geometric (constant ratio).
     """
     if len(remainders) < 2:
         return None
 
-    # k = r_1 * r_0^{-1} mod p
-    # Using Fermat's little theorem: r_0^{-1} = r_0^{p-2}
-    r_0_inv = pow(remainders[0], p - 2, p)
-    k = (remainders[1] * r_0_inv) % p
+    # k = r_1 * r_0^{-1} mod n
+    # Using Python 3.8+ modular inverse: pow(a, -1, n)
+    try:
+        r_0_inv = pow(remainders[0], -1, n)
+    except ValueError:
+        return None  # No inverse exists (not coprime to n)
+    k = (remainders[1] * r_0_inv) % n
 
     # Verify the ratio is constant
     for i in range(len(remainders) - 1):
-        r_i_inv = pow(remainders[i], p - 2, p)
-        ratio = (remainders[i + 1] * r_i_inv) % p
+        try:
+            r_i_inv = pow(remainders[i], -1, n)
+        except ValueError:
+            return None
+        ratio = (remainders[i + 1] * r_i_inv) % n
         if ratio != k:
             return None
 
@@ -183,7 +196,7 @@ def stride_fingerprint(p: int, bases: list[int]) -> dict:
 
 if __name__ == "__main__":
     print("=" * 70)
-    print("QR-REPTENDS ANALYSIS - Core Functions Demo")
+    print("BRIDGE REPTENDS - Prime Analysis Demo")
     print("=" * 70)
 
     # Test with p = 97 (our canonical example)

@@ -203,3 +203,127 @@ export function analyzeKFamily(k: number, maxM: number = 6): KFamilyEntry[] {
 
   return entries;
 }
+
+// =============================================================================
+// Good Coordinates Analysis
+// =============================================================================
+
+/**
+ * Entry for good coordinates analysis
+ * Represents the decomposition B = qM + k for a given block width m
+ */
+export interface GoodCoordinateEntry {
+  m: number;          // Block width (exponent)
+  B: number;          // Block base = 10^m
+  k: number;          // Bridge residue = B mod M
+  q: number;          // Quotient = (B - k) / M
+  quality: number;    // Quality score: 1 - k/M (higher = better, max 1 when k=1)
+  isGood: boolean;    // Whether k <= threshold
+}
+
+/**
+ * Find good coordinates for a modulus M
+ *
+ * For each block width m, computes B = 10^m and the decomposition B = qM + k
+ * A "good" coordinate is one where k is small, making the geometric skeleton visible.
+ *
+ * @param M - The modulus to analyze
+ * @param base - Number base (default 10)
+ * @param maxM - Maximum block width to check (default 12)
+ * @param kThreshold - Maximum k to consider "good" (default 5)
+ * @returns Array of entries for m = 1 to maxM
+ */
+export function findGoodCoordinates(
+  M: number,
+  base: number = 10,
+  maxM: number = 12,
+  kThreshold: number = 5
+): GoodCoordinateEntry[] {
+  const entries: GoodCoordinateEntry[] = [];
+
+  for (let m = 1; m <= maxM; m++) {
+    const B = Math.pow(base, m);
+    const k = B % M;
+    const q = Math.floor((B - k) / M);
+    const quality = 1 - k / M;
+    const isGood = k >= 1 && k <= kThreshold;
+
+    entries.push({ m, B, k, q, quality, isGood });
+  }
+
+  return entries;
+}
+
+/**
+ * Generate skeleton blocks (powers of k)
+ *
+ * The skeleton shows k^0, k^1, k^2, ... as m-digit blocks.
+ * This is the raw geometric series before carry correction.
+ *
+ * @param k - The bridge residue
+ * @param m - Block width (number of digits per block)
+ * @param count - Number of blocks to generate
+ * @returns Array of zero-padded block strings
+ */
+export function skeletonBlocks(k: number, m: number, count: number): string[] {
+  const blocks: string[] = [];
+  let power = 1;
+
+  for (let i = 0; i < count; i++) {
+    // Format as m-digit string, or show overflow indicator
+    if (power < Math.pow(10, m)) {
+      blocks.push(power.toString().padStart(m, '0'));
+    } else {
+      blocks.push(`[${power}]`); // Overflow indicator
+    }
+    power *= k;
+  }
+
+  return blocks;
+}
+
+/**
+ * Apply carry propagation to raw power blocks
+ *
+ * When a block overflows (>= B), the excess carries into the previous block.
+ * Returns the corrected blocks.
+ *
+ * @param rawPowers - Array of raw k^j values
+ * @param B - Block base (10^m)
+ * @param m - Block width
+ * @returns Array of m-digit block strings after carry
+ */
+export function applyCarry(rawPowers: number[], B: number, m: number): string[] {
+  const blocks = [...rawPowers];
+
+  // Propagate carry from right to left (multiple passes until stable)
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (let j = blocks.length - 1; j > 0; j--) {
+      if (blocks[j] >= B) {
+        const carry = Math.floor(blocks[j] / B);
+        blocks[j] = blocks[j] % B;
+        blocks[j - 1] += carry;
+        changed = true;
+      }
+    }
+  }
+
+  return blocks.map(b => b.toString().padStart(m, '0'));
+}
+
+/**
+ * Get raw power values (k^0, k^1, k^2, ...) for carry analysis
+ */
+export function rawPowers(k: number, count: number): number[] {
+  const powers: number[] = [];
+  let power = 1;
+
+  for (let i = 0; i < count; i++) {
+    powers.push(power);
+    power *= k;
+  }
+
+  return powers;
+}

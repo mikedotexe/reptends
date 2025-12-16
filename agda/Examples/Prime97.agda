@@ -9,7 +9,7 @@ module Examples.Prime97 where
 ------------------------------------------------------------------------
 
 open import Data.Nat
-  using (ℕ; zero; suc; _+_; _*_; _^_; _≤_; _<_; _∸_; NonZero; z<s; s≤s)
+  using (ℕ; zero; suc; _+_; _*_; _^_; _≤_; _<_; _>_; _∸_; NonZero; z<s; s≤s)
 -- open import Data.Nat.Properties if needed later
 open import Relation.Binary.PropositionalEquality
   using (_≡_; refl)
@@ -22,10 +22,23 @@ import QRTour.RemainderOrbit as RO
 -- The prime field: p = 97
 ------------------------------------------------------------------------
 
--- Proof of 2 ≤ 97: kept as postulate for now
--- (Could use ≤″⇒≤ with refl, but stdlib details vary by version)
+-- Proof of 2 ≤ 97: by explicit construction
+p≥2-proof : 2 ≤ 97
+p≥2-proof = s≤s (s≤s z≤n)
+  where open import Data.Nat using (z≤n)
+
+-- 97 > 2: by explicit construction
+p>2-proof : 97 > 2
+p>2-proof = s≤s (s≤s (s≤s z≤n))
+  where open import Data.Nat using (z≤n)
+
+-- 97 - 1 = 96 is even: 96 % 2 = 0
+-- 96 = 48 * 2, so 96 % 2 = 0 definitionally
+open import Data.Nat using (_%_)
+p-1-even-proof : (97 ∸ 1) % 2 ≡ 0
+p-1-even-proof = refl
+
 postulate
-  p≥2-proof : 2 ≤ 97
   prime-97  : PF.IsPrime 97
 
 p97-nonzero : NonZero 97
@@ -36,6 +49,8 @@ pf97 = record
   { p         = 97
   ; p≥2       = p≥2-proof
   ; prime-p   = prime-97
+  ; p>2       = p>2-proof
+  ; p-1-even  = p-1-even-proof
   ; p-nonzero = p97-nonzero
   }
 
@@ -56,10 +71,15 @@ open QR pf97 hiding (_≡ₚ_; powMod; order; p; p≥2; prime-p; p-nonzero)
 -- Open RemainderOrbit for BaseStride, remainder, qr-tour-cover
 open RO pf97 hiding (_≡ₚ_; powMod; order; p; p≥2; prime-p; p-nonzero)
 
--- Placeholder assumptions (to be proven or kept abstract)
-postulate
-  10-coprime-97 : Set  -- gcd(10, 97) = 1
-  2-is-even     : Set  -- trivially true
+-- Placeholder types for coprimality and evenness assumptions
+-- These are structural placeholders; the actual properties aren't used in proofs
+10-coprime-97 : Set
+10-coprime-97 = ⊤
+  where open import Data.Unit using (⊤)
+
+2-is-even : Set
+2-is-even = ⊤
+  where open import Data.Unit using (⊤)
 
 bs97 : BaseStride
 bs97 = record
@@ -80,9 +100,10 @@ bs97 = record
 k97 : ℕ
 k97 = BaseStride.k bs97  -- Should compute to 3
 
--- We expect k97 ≡ 3, but let's state it
-postulate
-  k97≡3 : k97 ≡ 3
+-- k97 = powMod 10 2 = toℕ ((10²) mod 97) = toℕ (100 mod 97) = 3
+-- This is definitionally equal by computation
+k97≡3 : k97 ≡ 3
+k97≡3 = refl
 
 -- The key property: k = 3 generates the QR subgroup
 postulate

@@ -10,7 +10,7 @@ Modules:
     progression - The 2×10^m - 1 family and multiplicative progressions
 
 Run any example directly:
-    python -m qr_reptends.examples.prime_19
-    python -m qr_reptends.examples.backwards
-    python -m qr_reptends.examples.progression
+    python -m bridge_reptends.examples.prime_19
+    python -m bridge_reptends.examples.backwards
+    python -m bridge_reptends.examples.progression
 """
