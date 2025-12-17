@@ -57,7 +57,6 @@ interface OrbitModel {
   full1?: OrbitData;
   fullA?: OrbitData;
   R?: bigint;
-  mags?: Array<{ k: number; mag: number }>;
   goodModes?: GoodMode[];
   overlay?: OverlayData | null;
 }
@@ -218,26 +217,6 @@ function formatBigIntGrouped(x: bigint, group: number = 3): string {
 // Analysis utilities
 // =============================================================================
 
-function dftLowFreqMagnitudes(seq: number[], kMax: number): Array<{ k: number; mag: number }> {
-  const N = seq.length;
-  const mags: Array<{ k: number; mag: number }> = [];
-  for (let k = 0; k <= kMax; k++) {
-    let re = 0;
-    let im = 0;
-    for (let t = 0; t < N; t++) {
-      const angle = (-2 * Math.PI * k * t) / N;
-      const c = Math.cos(angle);
-      const s = Math.sin(angle);
-      const v = seq[t];
-      re += v * c;
-      im += v * s;
-    }
-    const mag = Math.sqrt(re * re + im * im) / Math.max(1, N);
-    mags.push({ k, mag });
-  }
-  return mags;
-}
-
 function buildOrbitDigits({ a, M, B, L, maxSteps }: { a: number; M: number; B: number; L: number; maxSteps: number }): OrbitData {
   const mod = BigInt(M);
   const BB = BigInt(B);
@@ -361,30 +340,6 @@ function OrbitCircle({ rows, blockWidth, radius = 160 }: OrbitCircleProps) {
   );
 }
 
-interface SpectrumBarsProps {
-  mags: Array<{ k: number; mag: number }>;
-}
-
-function SpectrumBars({ mags }: SpectrumBarsProps) {
-  const max = Math.max(1e-12, ...mags.map((m) => m.mag));
-  return (
-    <div className="w-full">
-      <div className="text-xs font-mono text-stone-600 mb-2">Low-frequency spectrum |DFT(k)| (normalized)</div>
-      <div className="flex items-end gap-1 h-28 border border-stone-200 rounded-xl p-2">
-        {mags.map(({ k, mag }) => (
-          <div key={k} className="flex-1 flex flex-col items-center gap-1">
-            <div
-              className="w-full rounded-md"
-              style={{ height: `${Math.max(2, (mag / max) * 100)}%`, background: "currentColor", opacity: 0.45 }}
-            />
-            <div className="text-[10px] font-mono text-stone-600">{k}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 interface ScorePillProps {
   label: string;
   value: string | number;
@@ -412,7 +367,6 @@ export default function OrbitCoreExplorer() {
   const [kMax, _setKMax] = useState(5);
   const [mMax, _setMMax] = useState(24);
   void _setKMax; void _setMMax; // Silence unused warnings - could expose as controls later
-  const [specKMax, setSpecKMax] = useState(24);
   const [showOverlay, setShowOverlay] = useState(true); // Start expanded
 
   // TOE moment: animated snap
@@ -490,11 +444,6 @@ export default function OrbitCoreExplorer() {
     let R = 0n;
     for (const d of full1.digits) R = R * BigInt(Bnum) + BigInt(d);
 
-    const mags = dftLowFreqMagnitudes(
-      full1.digits.map((x) => Number(x)),
-      Math.min(Math.max(1, Math.trunc(specKMax)), Math.max(1, L - 1))
-    );
-
     const modes = scanGoodModes({ b, M, mMax: Math.max(1, Math.trunc(mMax)), kMax: Math.max(1, Math.trunc(kMax)) });
 
     // score each mode
@@ -539,11 +488,10 @@ export default function OrbitCoreExplorer() {
       full1,
       fullA,
       R,
-      mags,
       goodModes: scored,
       overlay,
     };
-  }, [base, blockWidth, numerator, denominator, showRows, kMax, mMax, specKMax]);
+  }, [base, blockWidth, numerator, denominator, showRows, kMax, mMax]);
 
   const bestMode = useMemo(() => {
     if (!model.goodModes || model.goodModes.length === 0) return null;
@@ -663,17 +611,6 @@ export default function OrbitCoreExplorer() {
               min={6}
               max={512}
               onChange={(e) => setShowRows(parseInt(e.target.value || "18", 10))}
-            />
-          </label>
-          <label className="text-sm text-stone-700">
-            spectrum k≤
-            <input
-              className="mt-1 w-full rounded-xl border border-stone-300 px-3 py-2 font-mono"
-              type="number"
-              value={specKMax}
-              min={4}
-              max={64}
-              onChange={(e) => setSpecKMax(parseInt(e.target.value || "24", 10))}
             />
           </label>
         </div>
@@ -824,6 +761,10 @@ export default function OrbitCoreExplorer() {
         </div>
         <div className="mt-3 text-xs text-stone-600">
           Tip: set <span className="font-mono">k≤5</span>, then hit Snap.
+        </div>
+        <div className="mt-2 text-xs text-violet-700 bg-violet-50 rounded-lg p-2">
+          <strong>Note:</strong> 1/996 and 1/9996 are composites—the orbit-stack structure is universal.
+          Primality adds QR/NQR coset interpretation but doesn't create the pattern.
         </div>
       </div>
     </div>
@@ -984,7 +925,7 @@ export default function OrbitCoreExplorer() {
   );
 
   const orbitPanels = (
-    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+    <div className="flex flex-col gap-4">
       <div className="rounded-2xl border border-stone-200 bg-white p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -1010,9 +951,8 @@ export default function OrbitCoreExplorer() {
             <div className="mt-4 flex flex-col lg:flex-row gap-4 items-start">
               {model.orbit1 && <OrbitCircle rows={model.orbit1.rows} blockWidth={model.m} />}
               <div className="flex-1 w-full">
-                {model.mags && <SpectrumBars mags={model.mags} />}
-                <div className="mt-3 text-xs text-stone-600">
-                  In discrete-log coordinates on ⟨B⟩, the orbit index t is linear (t→t+1). The spectrum is the DFT of the digit-coding function along that circle.
+                <div className="text-xs text-stone-600">
+                  The orbit visits each remainder exactly once before returning. In discrete-log coordinates, stepping is linear (t → t+1).
                 </div>
               </div>
             </div>

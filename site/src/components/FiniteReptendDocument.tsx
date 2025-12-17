@@ -43,11 +43,47 @@ const FiniteReptendDocument = () => {
           </p>
         </section>
 
-        {/* Good Coordinates Explorer - the foundational framework */}
-        <GoodCoordinatesExplorer />
+        {/* THE GEOMETRIC ANCHOR - moved from Part III */}
+        <section className="mb-8 sm:mb-10">
+          <h2 className="text-lg sm:text-xl font-serif font-bold text-stone-900 mb-4">
+            The Point and the Path
+          </h2>
 
-        {/* Orbit Core Explorer - deep dive into orbit structure */}
-        <OrbitCoreExplorer />
+          <p className="text-stone-700 leading-relaxed mb-4 text-sm sm:text-base">
+            A fraction like <M>1/19</M> isn't an infinite decimal—it's a{' '}
+            <strong>position on a circle</strong>. The multiplicative group
+            (ℤ/19ℤ)* has 18 elements, one for each non-zero residue. Your
+            starting point determines your orbit.
+          </p>
+
+          <p className="text-stone-700 leading-relaxed mb-4 text-sm sm:text-base">
+            The <strong>base</strong> is how you walk. When you "compute" the
+            decimal in base 10, you're stepping around the circle: multiply
+            your position by the base, wrap around (mod p), and the overflow
+            becomes a digit. Different bases give <strong>different walks</strong>{' '}
+            on the same circle.
+          </p>
+
+          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-6">
+            <p className="text-emerald-800 text-sm">
+              <strong>Key insight:</strong> The orbit structure is{' '}
+              <em>base-invariant</em>. Switch from base 10 to base 7 below—watch
+              the path change, the digits change, but the underlying circle
+              remains. The "infinite" repetition is just the finite orbit,
+              looped forever.
+            </p>
+          </div>
+
+          <CircleWalkPlayground />
+
+          <p className="text-stone-600 text-xs sm:text-sm mt-6 italic text-center">
+            The number is the point. The decimal is the shadow of the walk you trace.
+          </p>
+        </section>
+
+        <p className="text-stone-700 leading-relaxed mb-6 text-sm sm:text-base text-center italic">
+          Now let's see this algebraically, using <M>1/19</M> as our worked example...
+        </p>
 
         {/* PART I */}
         <SectionDivider part="Part I" title="The Anatomy of 1/19" />
@@ -69,10 +105,15 @@ const FiniteReptendDocument = () => {
           <div className="bg-stone-200 rounded px-4 py-3 font-mono text-xs sm:text-sm text-center mb-4 tracking-wider text-stone-700">
             05 | 26 | 31 | 57 | 89 | 47 | 36 | 84 | 21
           </div>
-          <p className="text-stone-700 leading-relaxed text-sm sm:text-base">
+          <p className="text-stone-700 leading-relaxed mb-4 text-sm sm:text-base">
             The number 9 is significant: it equals <M>(19−1)/2</M>, the count of
             quadratic residues mod 19, and also <M>ord₁₉(5)</M>, the
             multiplicative order of 5 mod 19. This is not a coincidence.
+          </p>
+          <p className="text-stone-600 text-xs sm:text-sm italic">
+            This structure is base-invariant: in base 7, you'd trace a different
+            walk on the same 18-point circle, but the orbit still has 9 chunks.
+            The algebra changes; the geometry persists.
           </p>
         </section>
 
@@ -346,6 +387,37 @@ const FiniteReptendDocument = () => {
         {/* VISUALIZATION: Flux Contrast */}
         <FluxContrast />
 
+        {/* INTERACTIVE EXPLORATION - moved from opening */}
+        <SectionDivider part="Exploration" title="Try Other Fractions" />
+
+        <section className="mb-8 sm:mb-10">
+          <p className="text-stone-700 leading-relaxed mb-4 text-sm sm:text-base">
+            Now that you've seen the structure for <M>1/19</M>, let's explore
+            other fractions. The key is finding <strong>"good coordinates"</strong>—block
+            widths where the generator k is small, making the geometric skeleton
+            visible.
+          </p>
+
+          <GoodCoordinatesExplorer />
+
+          <p className="text-stone-700 leading-relaxed mb-4 mt-8 text-sm sm:text-base">
+            For deeper analysis, the Orbit Core Explorer lets you examine any
+            fraction's orbit structure in detail. Try changing the base to see
+            how the same orbit looks in different "costumes."
+          </p>
+
+          <OrbitCoreExplorer />
+
+          <div className="bg-violet-50 border border-violet-200 rounded-lg p-4 mt-6">
+            <p className="text-violet-800 text-sm">
+              <strong>Notice:</strong> Composites like 996 work too! The
+              orbit-stack structure is universal—primality adds the QR/NQR coset
+              interpretation, but the underlying pattern exists for any denominator
+              coprime to the base.
+            </p>
+          </div>
+        </section>
+
         {/* PART II */}
         <SectionDivider
           part="Part II"
@@ -359,8 +431,9 @@ const FiniteReptendDocument = () => {
           </h2>
 
           <p className="text-stone-700 leading-relaxed mb-4 text-sm sm:text-base">
-            The 1/19 construction generalizes. For any base B, prime p, driver
-            k, and block size n, we can define:
+            The 1/19 construction generalizes. In our example: B=10, k=5
+            (because 100≡5 mod 19), L=18, and ord₁₉(5)=9. Now let's name these
+            quantities for any prime:
           </p>
 
           <Block>L = ordₚ(B), R = (Bᴸ − 1)/p, k = Bⁿ mod p</Block>
@@ -369,7 +442,8 @@ const FiniteReptendDocument = () => {
             The orbit of k mod p is the sequence [1, k, k², ...] until it
             returns to 1. When the period factorizes as L = n × ord (where ord =
             ordₚ(k)), one natural stack sum has the closed form{' '}
-            <M>S = (Bᴸ − k^ord) / (Bⁿ − k)</M>.
+            <M>S = (Bᴸ − k^ord) / (Bⁿ − k)</M>. For 1/19 with n=2, this gave us
+            the formula <M>S = (10¹⁸ − 5⁹) / 95</M>.
           </p>
         </section>
 
@@ -498,46 +572,18 @@ const FiniteReptendDocument = () => {
             Orbit-Stack framework makes this tension precise and measurable.
           </p>
 
+          <p className="text-stone-700 leading-relaxed mb-4 text-sm sm:text-base">
+            The deepest insight is <strong>base-invariance</strong>: the orbit
+            structure—the circle, the walk, the cosets—exists independent of
+            which base you use to view it. Base 10, base 7, base 2: same circle,
+            different costumes. The decimal expansion is just one photograph of
+            an underlying algebraic reality.
+          </p>
+
           <p className="text-stone-700 leading-relaxed text-sm sm:text-base">
             What looks like endless recurrence is the shadow of a finite
             geometric construction. Numbers don't want to be decimals. They want
             to be orbits.
-          </p>
-        </section>
-
-        <SectionDivider part="Part III" title="The Geometric View" />
-
-        {/* Section 11: The Point and the Path */}
-        <section className="mb-8 sm:mb-10">
-          <h2 className="text-lg sm:text-xl font-serif font-bold text-stone-900 mb-4">
-            11. The Point and the Path
-          </h2>
-
-          <p className="text-stone-700 leading-relaxed mb-4 text-sm sm:text-base">
-            A fraction like <M>1/19</M> isn't an infinite decimal—it's a{' '}
-            <strong>position on a circle</strong>. The circle has 18 points (one
-            for each non-zero residue mod 19). Your starting point is 1.
-          </p>
-
-          <p className="text-stone-700 leading-relaxed mb-4 text-sm sm:text-base">
-            The <strong>base</strong> is how you walk. When you "compute" the
-            decimal in base 10, you're stepping around the circle with step size
-            10. Each step: multiply your position by the base, wrap around (mod
-            p), and the overflow becomes a digit.
-          </p>
-
-          <p className="text-stone-700 leading-relaxed mb-6 text-sm sm:text-base">
-            Different bases give <strong>different walks</strong>. Same circle,
-            same starting point, different tours. Try switching from base 10 to
-            base 7 below—watch the path change, the digits change, but the
-            structure remains. The "infinite" repetition? It's just the finite
-            orbit, looped forever. The snake eating its tail.
-          </p>
-
-          <CircleWalkPlayground />
-
-          <p className="text-stone-600 text-xs sm:text-sm mt-6 italic text-center">
-            The number is the point. The decimal is the path you trace.
           </p>
         </section>
 
