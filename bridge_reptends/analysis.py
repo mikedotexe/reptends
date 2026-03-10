@@ -3,11 +3,20 @@
 Core analysis functions for reptend structure.
 
 This module provides:
-- Universal functions (work for any modulus n coprime to base)
-- Prime-specific functions (QR/coset analysis requiring prime p)
+- Universal functions for multiplicative order and long-division remainders
+- Prime-specific functions for QR/coset analysis requiring prime p
 
-Key insight: Reptends are geometric series with carry correction.
-The skeleton 1/n = Σ k^j / B^(j+1) works for any n.
+Standard algebraic starting point:
+for a block base B = base^m and modulus N, write
+
+    B = qN + k, with 0 <= k < N.
+
+Then
+
+    1/N = q/(B-k) = (q/B) * 1/(1-k/B) = Σ q*k^j / B^(j+1).
+
+The literal power pattern 1, k, k^2, ... is the special case q = 1, i.e.
+N = B - k. That is the clean "bridge" case emphasized by the demos.
 
 Authors: Mike & Claude
 Date: December 2025
@@ -66,6 +75,41 @@ def long_division_remainders(n: int, base: int = 10, steps: Optional[int] = None
     return remainders
 
 
+def stride_order(p: int, base: int, stride: int) -> Optional[int]:
+    """
+    Compute ord_p(base^stride) using the exact order formula.
+
+    If r = ord_p(base), then
+
+        ord_p(base^stride) = r / gcd(r, stride).
+
+    Returns None when base and p are not coprime.
+    """
+    reptend_len = multiplicative_order(base, p)
+    if reptend_len is None:
+        return None
+    return reptend_len // gcd(reptend_len, stride)
+
+
+def reptend_type(p: int, base: int) -> str:
+    """
+    Classify the prime/base pair by the order of the base.
+
+    Returns one of:
+    - "full" if ord_p(base) = p - 1
+    - "half" if ord_p(base) = (p - 1) / 2
+    - "degenerate" otherwise
+    """
+    reptend_len = multiplicative_order(base, p)
+    half = (p - 1) // 2
+
+    if reptend_len == p - 1:
+        return "full"
+    if reptend_len == half:
+        return "half"
+    return "degenerate"
+
+
 def find_generator(remainders: list[int], n: int) -> Optional[int]:
     """
     Find the constant ratio k such that r_{i+1} = k * r_i (mod n).
@@ -117,24 +161,29 @@ def find_qr_strides(p: int, base: int) -> list[int]:
     """
     Find all strides m where base^m is a QR-generator mod p.
 
-    This is the key "fingerprint" of a prime: which powers of the base
-    generate the quadratic residue subgroup?
+    Let r = ord_p(base) and half = (p-1)/2. Then
+
+        ord_p(base^m) = r / gcd(r, m).
+
+    So base^m is a QR-generator exactly when
+
+        r / gcd(r, m) = half.
+
+    This gives an exact classification:
+    QR-generating strides exist iff r is half or 2*half = p-1.
 
     Returns sorted list of stride values.
     """
-    half = (p - 1) // 2
     reptend_len = multiplicative_order(base, p)
-
     if reptend_len is None:
         return []
 
-    qr_strides = []
-    for m in range(1, reptend_len + 1):
-        k = pow(base, m, p)
-        if is_qr_generator(k, p):
-            qr_strides.append(m)
-
-    return qr_strides
+    half = (p - 1) // 2
+    return [
+        m
+        for m in range(1, reptend_len + 1)
+        if reptend_len // gcd(reptend_len, m) == half
+    ]
 
 
 @dataclass
@@ -147,6 +196,7 @@ class PrimeAnalysis:
     qr_strides: list[int]        # All m where base^m is QR-generator
     stride_count: int            # len(qr_strides)
     base_is_qr_gen: bool         # Is base itself a QR-generator? (1 in qr_strides)
+    reptend_type: str            # full / half / degenerate
     family: Optional[str] = None # Detected family (if any)
 
 
@@ -177,6 +227,7 @@ def analyze_prime(p: int, base: int = 10) -> PrimeAnalysis:
         qr_strides=qr_strides,
         stride_count=len(qr_strides),
         base_is_qr_gen=(1 in qr_strides),
+        reptend_type=reptend_type(p, base),
     )
 
 

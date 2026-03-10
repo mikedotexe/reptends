@@ -2,10 +2,8 @@
 """
 Deeper exploration of stride patterns.
 
-This module investigates specific hypotheses about stride structure:
-1. Is stride count related to φ((p-1)/2)?
-2. What's the relationship between reptend length and stride existence?
-3. Can we predict stride patterns from p's factorization structure?
+This module illustrates exact order-theoretic facts about QR-generating
+strides and then looks for secondary patterns in the resulting stride sets.
 
 Authors: Mike & Claude
 Date: December 2025
@@ -16,6 +14,7 @@ from collections import defaultdict
 
 from .analysis import (
     multiplicative_order,
+    reptend_type,
     find_qr_strides,
     analyze_prime,
 )
@@ -65,16 +64,13 @@ def sieve_primes(max_n: int) -> list[int]:
 
 def investigate_stride_count_formula(max_p: int = 500, base: int = 10):
     """
-    Investigate: Is stride count = φ(half) / something?
+    Verify the exact stride-count formula.
 
-    For a prime p with half = (p-1)/2:
-    - φ(half) counts elements coprime to half
-    - Stride count is the number of m where base^m is a QR-generator
-
-    Hypothesis: stride_count = φ(half) when certain conditions hold.
+    Let r = ord_p(base) and half = (p-1)/2. Then QR-generating strides exist
+    iff r is half or p-1, and in those cases the count is φ(half).
     """
     print("=" * 70)
-    print("INVESTIGATING: Stride Count vs φ(half)")
+    print("VERIFYING: Stride Count vs φ(half)")
     print("=" * 70)
 
     primes = [p for p in sieve_primes(max_p) if p > 2 and p != base]
@@ -90,6 +86,7 @@ def investigate_stride_count_formula(max_p: int = 500, base: int = 10):
         stride_count = len(qr_strides)
 
         ratio = stride_count / phi_half if phi_half > 0 else 0
+        exact_count = phi_half if reptend_len in (half, p - 1) else 0
 
         data.append({
             'p': p,
@@ -97,14 +94,15 @@ def investigate_stride_count_formula(max_p: int = 500, base: int = 10):
             'phi_half': phi_half,
             'reptend_len': reptend_len,
             'stride_count': stride_count,
+            'exact_count': exact_count,
             'ratio': ratio,
             'factors_half': factorize(half),
         })
 
-        if stride_count == phi_half:
+        if stride_count == exact_count:
             matches += 1
 
-    print(f"\nPrimes where stride_count = φ(half): {matches}/{len(primes)}")
+    print(f"\nPrime/base pairs matching the exact formula: {matches}/{len(primes)}")
 
     # Look at the ratios
     ratios = [d['ratio'] for d in data]
@@ -130,9 +128,9 @@ def investigate_stride_count_formula(max_p: int = 500, base: int = 10):
 
 def investigate_reptend_vs_strides(max_p: int = 500, base: int = 10):
     """
-    Investigate: How does reptend length relate to stride existence?
+    Investigate how reptend length controls stride existence.
 
-    Hypothesis: If ord_p(base) = (p-1)/2 (half-reptend), then base itself is QR-gen.
+    Exact fact: stride 1 appears iff ord_p(base) = (p-1)/2.
     """
     print("\n" + "=" * 70)
     print("INVESTIGATING: Reptend Length vs Stride Existence")
@@ -175,8 +173,8 @@ def investigate_stride_patterns(max_p: int = 200, base: int = 10):
     """
     Look for arithmetic patterns in stride lists.
 
-    Observation: Strides often seem to form arithmetic progressions or have
-    multiplicative structure.
+    After the exact order classification is fixed, look for residual
+    arithmetic structure in the stride values themselves.
     """
     print("\n" + "=" * 70)
     print("INVESTIGATING: Stride Arithmetic Patterns")
@@ -198,7 +196,7 @@ def investigate_stride_patterns(max_p: int = 200, base: int = 10):
         # Check if strides are all odd or all even
         parities = set(s % 2 for s in qr_strides)
 
-        print(f"\np={p}, half={half}")
+        print(f"\np={p}, half={half}, reptend_type={reptend_type(p, base)}")
         print(f"  Strides: {qr_strides}")
         print(f"  Differences: {diffs}")
         print(f"  Is AP: {is_ap} (common diff = {diffs[0] if is_ap else 'N/A'})")

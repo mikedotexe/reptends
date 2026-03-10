@@ -1,18 +1,27 @@
 #!/usr/bin/env python3
 """
-Orbit Weave + Closure Flux: Algebraic decomposition of reptend integers.
+Algebraic decomposition of reptend integers.
 
-The reptend integer R = (B^L - 1)/M decomposes as R = W + F where:
-- W = (B^L - k^L)/M is the "orbit weave" (finite body)
-- F = (k^L - 1)/M is the "closure flux" (correction that seals the loop)
-- k = B mod M is the "bridge residue"
-- L = ord_M(B) is the orbit length
+For a purely periodic modulus M and block base B, write
 
-This provides a complementary view to coset analysis: instead of studying
-remainder sequences, we study the algebraic structure of the reptend integer.
+    B = qM + k, with 0 <= k < M.
 
-Key insight: When k is small (a "bridge prime"), the weave W shows clean
-geometric structure and the flux F is the carry correction.
+Then
+
+    1/M = q/(B-k) = (q/B) * 1/(1-k/B) = Σ q*k^j / B^(j+1).
+
+The reptend integer also decomposes as
+
+    R = W + F
+
+where:
+- R = (B^L - 1)/M
+- W = (B^L - k^L)/M
+- F = (k^L - 1)/M
+- L = ord_M(B)
+
+The labels "orbit weave" for W and "closure flux" for F are optional
+terminology for this standard algebraic split.
 
 Authors: Mike & Claude
 Date: December 2025
@@ -153,7 +162,10 @@ def best_bridge_mode(M: int, base: int = 10, kmax: int = 5, mmax: int = 24) -> O
         return None
 
     for m in range(1, mmax + 1):
-        k = pow(base, m, M)
+        B = base ** m
+        if B <= M:
+            continue
+        k = B % M
         if 1 <= k <= kmax:
             return m
     return None
@@ -192,7 +204,7 @@ def find_good_modes(
     - q: quotient in B = qM + k
 
     The canonical decomposition B = qM + k gives:
-        1/M = q/(B-k) = q/(qM)
+        1/M = q/(B-k)
 
     Parameters:
         M: modulus (should be coprime to base)
@@ -203,10 +215,8 @@ def find_good_modes(
 
     Example:
         >>> find_good_modes(19, base=10, kmax=5)
-        [(1, 1, 0), (2, 5, 5)]
-        # m=1: 10 = 0×19 + 10? No, 10 mod 19 = 10 > 5. Actually:
-        # m=1: 10 mod 19 = 10 (too big)
-        # m=2: 100 = 5×19 + 5, so k=5, q=5 ✓
+        [(18, 1, 52631578947368421), ..., (2, 5, 5), ...]
+        # In particular, m=2 gives 100 = 5×19 + 5.
 
         >>> find_good_modes(37, base=10, kmax=5)
         [(3, 1, 27)]
@@ -218,6 +228,8 @@ def find_good_modes(
     modes = []
     for m in range(1, mmax + 1):
         B = base ** m
+        if B <= M:
+            continue
         k = B % M
         if 1 <= k <= kmax:
             q = (B - k) // M  # Since k = B mod M, (B-k) is divisible by M
@@ -321,7 +333,7 @@ def weave(B: int, L: int, k: int, M: int) -> int:
     """
     W = (B^L - k^L) / M
 
-    The "orbit weave" - the main structural component.
+    Main body term in the algebraic decomposition.
 
     Requires: B^L - k^L ≡ 0 (mod M)
     """
@@ -336,7 +348,7 @@ def flux(k: int, L: int, M: int) -> int:
     """
     F = (k^L - 1) / M
 
-    The "closure flux" - the correction that seals the loop.
+    Correction term in the algebraic decomposition.
 
     Requires: k^L ≡ 1 (mod M)
     """
@@ -508,12 +520,26 @@ def orbit_weave_analysis(
 # Skeleton + Carry Analysis
 # =============================================================================
 
+def raw_series_blocks(q: int, k: int, n_blocks: int) -> list[int]:
+    """
+    Exact geometric coefficients q*k^0, q*k^1, q*k^2, ...
+
+    These are the block coefficients in
+
+        1/N = q/(B-k) = Σ q*k^j / B^(j+1).
+
+    In the special case q = 1 (equivalently N = B - k), these reduce to
+    literal powers of k.
+    """
+    return [q * (k ** j) for j in range(n_blocks)]
+
+
 def raw_power_blocks(k: int, m: int, n_blocks: int) -> list[int]:
     """
-    Raw geometric skeleton: k^0, k^1, k^2, ... (no carry applied).
+    Raw geometric skeleton in the special q = 1 case: k^0, k^1, k^2, ...
 
-    These are the "injected" blocks from 1/(B-k) = Σ k^j / B^(j+1).
-    When k^j >= B = 10^m, they overflow and need carry correction.
+    This is the bridge case N = B - k, where the exact coefficients are
+    literal powers of k.
     """
     return [k**j for j in range(n_blocks)]
 
@@ -549,7 +575,7 @@ def apply_carry(raw_blocks: list[int], B: int) -> list[str]:
 def skeleton_vs_actual(N: int, base: int = 10, n_blocks: int = 12,
                        prefer_m: int | None = None) -> dict:
     """
-    Compare raw geometric skeleton to actual long-division blocks.
+    Compare exact geometric coefficients to actual long-division blocks.
 
     Parameters:
     - N: denominator
@@ -558,10 +584,11 @@ def skeleton_vs_actual(N: int, base: int = 10, n_blocks: int = 12,
     - prefer_m: force specific block width (None = auto-detect near-power mode)
 
     Returns dict with:
-    - raw: the k^j power blocks (before carry)
+    - raw: the q*k^j coefficient blocks (before carry)
     - carried: raw blocks with carry applied
     - actual: true long-division blocks
-    - overflow_at: first index where k^j >= B
+    - q: quotient in B = qN + k
+    - overflow_at: first index where q*k^j >= B
     - flux_visible: indices where carried != raw (showing carry effect)
     """
     M, stripped = strip_base_factors(N, base)
@@ -580,12 +607,11 @@ def skeleton_vs_actual(N: int, base: int = 10, n_blocks: int = 12,
                 m = m_bridge
 
     B = base ** m
-    # IMPORTANT: Use k = B mod N (not M) for the skeleton
-    # The geometric series is 1/N = 1/(B-k) = Σ k^j / B^(j+1)
     k = B % N
+    q = (B - k) // N
 
-    # Raw power blocks
-    raw = raw_power_blocks(k, m, n_blocks)
+    # Exact geometric coefficients in 1/N = q/(B-k)
+    raw = raw_series_blocks(q, k, n_blocks)
 
     # Apply carry
     carried = apply_carry(raw, B)
@@ -610,6 +636,7 @@ def skeleton_vs_actual(N: int, base: int = 10, n_blocks: int = 12,
         "m": m,
         "B": B,
         "k": k,
+        "q": q,
         "raw": raw,
         "raw_display": raw_strs,
         "carried": carried,
@@ -642,17 +669,20 @@ def print_skeleton_analysis(N: int, base: int = 10, n_blocks: int = 12,
     print(f"{'='*60}")
 
     print(f"Mode m={result['m']}, B=10^{result['m']}={result['B']}")
-    print(f"k = B mod N = {result['B']} mod {N} = {result['k']}")
-    print(f"N = B - k = {result['B']} - {result['k']} = {result['B'] - result['k']}")
+    print(f"Write B = qN + k with q={result['q']} and k={result['k']}")
+    print(f"  {result['B']} = {result['q']}×{N} + {result['k']}")
     if result['M'] != N:
         print(f"Coprime part M = {result['M']} (stripped base factors)")
 
-    print(f"\nRaw skeleton (k^j, no carry):")
+    if result["q"] == 1:
+        print(f"\nRaw skeleton (special q=1 case, coefficients k^j):")
+    else:
+        print(f"\nRaw skeleton (exact coefficients q·k^j):")
     print(f"  {' '.join(result['raw_display'][:n_blocks])}")
 
     if result['overflow_at'] is not None:
         print(f"\n  First overflow at j={result['overflow_at']}: "
-              f"k^{result['overflow_at']} = {result['raw'][result['overflow_at']]} >= {result['B']}")
+              f"coefficient = {result['raw'][result['overflow_at']]} >= {result['B']}")
 
     print(f"\nAfter carry propagation:")
     print(f"  {' '.join(result['carried'][:n_blocks])}")
@@ -673,8 +703,8 @@ def print_skeleton_analysis(N: int, base: int = 10, n_blocks: int = 12,
         print(f"\n✓ Carried skeleton matches actual blocks perfectly!")
     else:
         print(f"\n✓ Skeleton valid for first {match_count} blocks")
-        print(f"  Blocks 0-{match_count-1}: raw powers + carry = actual digits")
-        print(f"  Block {match_count}+: cyclic closure effects (flux)")
+        print(f"  Blocks 0-{match_count-1}: geometric coefficients + carry = actual digits")
+        print(f"  Block {match_count}+: cyclic closure effects (correction term)")
         print(f"  (The infinite geometric series diverges from finite reptend)")
 
 
@@ -683,7 +713,7 @@ def print_skeleton_analysis(N: int, base: int = 10, n_blocks: int = 12,
 # =============================================================================
 
 def print_analysis(ow: OrbitWeaveAnalysis, nblocks: int = 10) -> None:
-    """Pretty-print an orbit weave analysis."""
+    """Pretty-print the algebraic decomposition analysis."""
     print(f"\nN = {ow.N}")
 
     if ow.stripped_factors:
@@ -712,8 +742,8 @@ def print_analysis(ow: OrbitWeaveAnalysis, nblocks: int = 10) -> None:
     Wb = ow.blocks("W", showL)
 
     print(f"  reptend R blocks: {' '.join(Rb)}{'...' if ow.L > showL else ''}")
-    print(f"  weave W blocks:   {' '.join(Wb)}{'...' if ow.L > showL else ''}")
-    print(f"  closure flux F = {ow.F}")
+    print(f"  body term W ('weave') blocks: {' '.join(Wb)}{'...' if ow.L > showL else ''}")
+    print(f"  correction term F ('closure flux') = {ow.F}")
 
     if ow.bridge_factor is not None:
         print(f"  bridge factor t = (B-k)/M = {ow.bridge_factor}")
@@ -727,7 +757,7 @@ if __name__ == "__main__":
     import sys
 
     print("=" * 70)
-    print("ORBIT WEAVE + CLOSURE FLUX - Algebraic Reptend Decomposition")
+    print("ALGEBRAIC REPTEND DECOMPOSITION")
     print("=" * 70)
 
     # Default test cases

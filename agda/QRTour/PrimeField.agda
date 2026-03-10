@@ -3,19 +3,21 @@ module QRTour.PrimeField where
 open import Data.Nat
   using (ℕ; zero; suc; _+_; _*_ ; _^_; _≤_; _<_; _>_; _∸_; NonZero)
 open import Data.Nat.Properties
-  using (≤-refl; _≟_; *-assoc; *-comm; *-identityˡ; *-identityʳ)
+  using (≤-refl; _≟_; *-assoc; *-comm; *-identityˡ; *-identityʳ; +-suc; m+n∸n≡m)
 open import Data.Nat.DivMod as DivMod
-  using (_mod_; _%_; m%n%n≡m%n; %-distribˡ-*; m%n<n)
+  using (_mod_; _%_; m%n%n≡m%n; %-distribˡ-*; m%n<n; [m+kn]%n≡m%n)
 open import Data.Fin using (toℕ; fromℕ<)
 open import Data.Fin.Properties using (toℕ-fromℕ<)
 open import Relation.Nullary.Decidable
   using (⌊_⌋)
 open import Relation.Binary.PropositionalEquality
-  using (_≡_; refl; sym; trans; cong; cong₂)
+  using (_≡_; refl; sym; trans; cong; cong₂; subst)
 open import Data.Product
   using (_×_; Σ; Σ-syntax; _,_)
 open import Relation.Nullary
   using (Dec; yes; no)
+open import Data.Nat.Solver using (module +-*-Solver)
+open +-*-Solver using (solve; _:*_; _:+_; con; _:=_)
 
 ------------------------------------------------------------------------
 -- Prime modulus and arithmetic modulo p.
@@ -267,9 +269,26 @@ record PrimeField : Set₁ where
       -- We need a lemma: (p - 1)² ≡ 1 (mod p)
       -- This is actually a general fact about modular arithmetic
 
-      -- Postulate for now; the algebraic proof is tedious
-      postulate
-        neg1-squared-helper : ((p ∸ 1) * (p ∸ 1)) % p ≡ 1 % p
+      p≡p∸2+2 : p ≡ (p ∸ 2) + 2
+      p≡p∸2+2 = sym (m∸n+n≡m p≥2)
+
+      p∸2+2∸1≡p∸2+1 : ((p ∸ 2) + 2) ∸ 1 ≡ (p ∸ 2) + 1
+      p∸2+2∸1≡p∸2+1 = cong (_∸ 1) (+-suc (p ∸ 2) 1)
+
+      p∸1≡p∸2+1 : p ∸ 1 ≡ (p ∸ 2) + 1
+      p∸1≡p∸2+1 = trans (cong (_∸ 1) p≡p∸2+2) p∸2+2∸1≡p∸2+1
+
+      square-as-one-plus-multiple : ((p ∸ 1) * (p ∸ 1)) ≡ 1 + (p ∸ 2) * p
+      square-as-one-plus-multiple =
+        trans (cong₂ _*_ p∸1≡p∸2+1 p∸1≡p∸2+1)
+              (trans
+                (solve 1 (λ a → (a :+ con 1) :* (a :+ con 1) := con 1 :+ (a :* (a :+ con 2))) refl (p ∸ 2))
+                (cong (λ x → 1 + (p ∸ 2) * x) (sym p≡p∸2+2)))
+
+      neg1-squared-helper : ((p ∸ 1) * (p ∸ 1)) % p ≡ 1 % p
+      neg1-squared-helper =
+        trans (cong (_% p) square-as-one-plus-multiple)
+              ([m+kn]%n≡m%n 1 (p ∸ 2) p)
 
       goal : ((p ∸ 1) * (p ∸ 1)) ≡ₚ 1
       goal = trans (toℕ-mod≡% ((p ∸ 1) * (p ∸ 1)))
@@ -281,8 +300,69 @@ record PrimeField : Set₁ where
   -- This is a standard property of exponentiation in any commutative ring.
   ----------------------------------------------------------------------
 
-  postulate
-    powMod-mult : ∀ a b n → powMod (a * b) n ≡ₚ (powMod a n * powMod b n)
+  powMod-mult : ∀ a b n → powMod (a * b) n ≡ₚ (powMod a n * powMod b n)
+  powMod-mult a b zero = goal
+    where
+      step1 : 1 ≡ₚ (1 * 1)
+      step1 = ≡ₚ-sym (*-identityʳ-≡ₚ 1)
+
+      step2 : (1 * 1) ≡ₚ (powMod a zero * powMod b zero)
+      step2 = *-cong-≡ₚ {1} {powMod a zero} {1} {powMod b zero}
+                (≡ₚ-sym (powMod-zero a))
+                (≡ₚ-sym (powMod-zero b))
+
+      goal : powMod (a * b) zero ≡ₚ (powMod a zero * powMod b zero)
+      goal = ≡ₚ-trans (powMod-zero (a * b)) (≡ₚ-trans step1 step2)
+  powMod-mult a b (suc n) = goal
+    where
+      A = powMod a n
+      B = powMod b n
+
+      step1 : powMod (a * b) (suc n) ≡ₚ (powMod (a * b) n * (a * b))
+      step1 = powMod-suc (a * b) n
+
+      step2 : (powMod (a * b) n * (a * b)) ≡ₚ ((A * B) * (a * b))
+      step2 = *-cong-≡ₚ {powMod (a * b) n} {A * B} {a * b} {a * b}
+                (powMod-mult a b n)
+                ≡ₚ-refl
+
+      step3 : ((A * B) * (a * b)) ≡ₚ (A * (B * (a * b)))
+      step3 = *-assoc-≡ₚ A B (a * b)
+
+      step4a : (B * (a * b)) ≡ₚ ((B * a) * b)
+      step4a = ≡ₚ-sym (*-assoc-≡ₚ B a b)
+
+      step4 : (A * (B * (a * b))) ≡ₚ (A * ((B * a) * b))
+      step4 = *-cong-≡ₚ-left A step4a
+
+      step5a : ((B * a) * b) ≡ₚ ((a * B) * b)
+      step5a = *-cong-≡ₚ {B * a} {a * B} {b} {b} (*-comm-≡ₚ B a) ≡ₚ-refl
+
+      step5 : (A * ((B * a) * b)) ≡ₚ (A * ((a * B) * b))
+      step5 = *-cong-≡ₚ-left A step5a
+
+      step6a : ((a * B) * b) ≡ₚ (a * (B * b))
+      step6a = *-assoc-≡ₚ a B b
+
+      step6 : (A * ((a * B) * b)) ≡ₚ (A * (a * (B * b)))
+      step6 = *-cong-≡ₚ-left A step6a
+
+      step7 : (A * (a * (B * b))) ≡ₚ ((A * a) * (B * b))
+      step7 = ≡ₚ-sym (*-assoc-≡ₚ A a (B * b))
+
+      step8 : ((A * a) * (B * b)) ≡ₚ (powMod a (suc n) * powMod b (suc n))
+      step8 = *-cong-≡ₚ {A * a} {powMod a (suc n)} {B * b} {powMod b (suc n)}
+                (≡ₚ-sym (powMod-suc a n))
+                (≡ₚ-sym (powMod-suc b n))
+
+      goal : powMod (a * b) (suc n) ≡ₚ (powMod a (suc n) * powMod b (suc n))
+      goal = ≡ₚ-trans step1
+             (≡ₚ-trans step2
+             (≡ₚ-trans step3
+             (≡ₚ-trans step4
+             (≡ₚ-trans step5
+             (≡ₚ-trans step6
+             (≡ₚ-trans step7 step8))))))
 
   ----------------------------------------------------------------------
   -- Modular inverse: for prime p and 0 < a, there exists a⁻¹ such that

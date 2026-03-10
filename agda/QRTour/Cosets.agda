@@ -13,7 +13,7 @@ open import Data.Nat
 open import Data.Nat.Properties
   using (_≟_)
 open import Data.Nat.DivMod as DivMod
-  using (_mod_; _%_; [m+n]%n≡m%n)
+  using (_mod_; _%_; [m+n]%n≡m%n; m%n<n; m<n⇒m%n≡m)
 open import Data.Fin using (toℕ)
 open import Relation.Binary.PropositionalEquality
   using (_≡_; refl; sym; trans; cong; cong₂; subst)
@@ -401,12 +401,20 @@ postulate
 -- Helper: for values already reduced mod p, ≡ₚ implies ≡
 -- powMod a n < p (since it's toℕ of a Fin p), and 1 < p
 -- So if powMod a n ≡ₚ 1, then powMod a n ≡ 1
-postulate
-  ≡ₚ-to-≡-reduced : ∀ {x} → x < p → x ≡ₚ 1 → x ≡ 1
+≡ₚ-to-≡-reduced : ∀ {x} → x < p → x ≡ₚ 1 → x ≡ 1
+≡ₚ-to-≡-reduced {x} x<p x≡ₚ1 =
+  trans (sym x-mod)
+        (trans x≡ₚ1 one-mod)
+  where
+    x-mod : toℕ (x mod p) ≡ x
+    x-mod = trans (toℕ-mod≡% x) (m<n⇒m%n≡m x<p)
+
+    one-mod : toℕ (1 mod p) ≡ 1
+    one-mod = trans (toℕ-mod≡% 1) (m<n⇒m%n≡m p≥2)
 
 -- powMod a n < p (it's the result of toℕ ∘ _ mod p)
-postulate
-  powMod-<p : ∀ a n → powMod a n < p
+powMod-<p : ∀ a n → powMod a n < p
+powMod-<p a n = subst (_< p) (sym (toℕ-mod≡% (a ^ n))) (m%n<n (a ^ n) p)
 
 qr-decidable : ∀ a → (a > 0) → Dec (QR a)
 qr-decidable a a>0 with powMod a half ≟ 1

@@ -43,9 +43,13 @@ def is_qr(a: int, p: int) -> bool:
     Returns True for QR, False for NQR.
     Returns True for a ≡ 0 (mod p) by convention.
 
-    Note: The Euler criterion is a primality-dependent concept. The geometric
-    series skeleton (1/N = Σ k^j / B^(j+1)) works for ANY N coprime to base,
-    but QR/NQR coset analysis specifically requires prime moduli.
+    Note: The Euler criterion is a primality-dependent concept. The universal
+    rational identity is
+
+        1/N = q/(B-k) = Σ q*k^j / B^(j+1)
+
+    after writing B = qN + k. QR/NQR coset analysis is an additional
+    prime-only layer on top of that algebra.
     """
     a = a % p
     if a == 0:

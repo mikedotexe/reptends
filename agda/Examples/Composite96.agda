@@ -26,6 +26,14 @@ import GeometricStack.Capacity as Cap
 import GeometricStack.Positional as Pos
 
 ------------------------------------------------------------------------
+-- Assumption legend for this example
+--
+-- This example is fully local to GeometricStack. It uses no Lean-backed
+-- postulates; the point is to show that the geometric skeleton layer is
+-- meaningful even before any prime-field semantics are added.
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
 -- Family: base = 10, k = 4 (from 10² mod 96)
 --
 -- This is the geometric skeleton: a[i] = 4^i

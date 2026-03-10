@@ -1,0 +1,1586 @@
+{
+  "canonical_examples": [
+    {
+      "category": "canonical",
+      "explanation": "small-residue block coordinate with remainder k = 1 and quotient q = 27, so the raw coefficients qk^j are the constant sequence 27",
+      "label": "Constant-coefficient bridge",
+      "n": 37,
+      "primary_vocabulary_id": "good_mode"
+    },
+    {
+      "category": "canonical",
+      "explanation": "small-residue block coordinate with q = 1 and remainder k = 3, so the raw coefficients qk^j reduce to literal powers of k and the period is nontrivial",
+      "label": "Prime q=1 bridge",
+      "n": 97,
+      "primary_vocabulary_id": "good_mode"
+    },
+    {
+      "category": "canonical",
+      "explanation": "remainder orbit under multiplication by the base splits by CRT across 3 and 83 while still admitting a readable small-residue block coordinate",
+      "label": "Composite periodic core",
+      "n": 249,
+      "primary_vocabulary_id": "remainder_orbit"
+    },
+    {
+      "category": "canonical",
+      "explanation": "strip base factors to the purely periodic modulus 249; the example shows both preperiod behavior and a q = 1 bridge-style coordinate",
+      "label": "Composite with preperiod",
+      "n": 996,
+      "primary_vocabulary_id": "remainder_orbit"
+    },
+    {
+      "category": "canonical",
+      "explanation": "generator of the QR subgroup appears at stride 2, but the exact QR-generating strides are not all even, making this a useful high-signal counterexample",
+      "label": "Prime QR counterexample",
+      "n": 19,
+      "primary_vocabulary_id": "qr_generator"
+    }
+  ],
+  "case_studies": {
+    "carry_dfa": [
+      {
+        "distinctive_feature": "in this block coordinate both machines collapse to one observed state, giving the trivial state-relabeling regime",
+        "factorization_status": {
+          "implemented": "finite-window output agreement between the carry-propagated block normalization and the long-division DFA",
+          "open_boundary": "canonical factorization of the entire long-division DFA into orbit plus carry is not established here"
+        },
+        "label": "Trivial state relabeling",
+        "n": 21,
+        "summary_lines": [
+          "N = 21, base = 10, block base B = 1000000",
+          "q = 47619, k = 1, block width m = 6",
+          "carry states = (0,)",
+          "remainder states = (1,)",
+          "carry graph classes = 1",
+          "remainder graph classes = 1",
+          "finite-window word agreement = True",
+          "state-count match = True",
+          "minimized-class-count match = True",
+          "remainder state -> carry state: functional=True, injective=True, max fiber size=1",
+          "carry state -> remainder state: functional=True, injective=True, max fiber size=1",
+          "factorization regime = state_relabeling",
+          "state-relabeling candidate holds = True",
+          "remainder-to-carry quotient candidate holds = True",
+          "carry-to-remainder lift candidate holds = True",
+          "implemented statement: finite-window output agreement between the carry-propagated block normalization and the long-division DFA",
+          "open boundary: canonical factorization of the entire long-division DFA into orbit plus carry is not established here",
+          "theorem target: Promote finite-window agreement to a canonical state-level factorization, ideally by a global remainder-to-carry morphism that explains the displayed word for every coprime modulus.",
+          "refutation target: Find a bounded example where the displayed words agree on the visible window but even the observed remainder-to-carry quotient candidate fails or becomes incompatible with any simple state relabeling.",
+          "weaker replacement: If a canonical factorization fails, downgrade to finite-window output agreement plus an observed quotient-from-remainder-to-carry framework, without claiming a unique global state factorization."
+        ]
+      },
+      {
+        "distinctive_feature": "finite-window outputs match, but the observed state-level relation is only a remainder-to-carry quotient candidate rather than a simple relabeling",
+        "factorization_status": {
+          "implemented": "finite-window output agreement between the carry-propagated block normalization and the long-division DFA",
+          "open_boundary": "canonical factorization of the entire long-division DFA into orbit plus carry is not established here"
+        },
+        "label": "Prime carry interaction",
+        "n": 97,
+        "summary_lines": [
+          "N = 97, base = 10, block base B = 100",
+          "q = 1, k = 3, block width m = 2",
+          "carry states = (0, 2, 7, 22, 67, 196)",
+          "remainder states = (1, 3, 9, 27, 49, 50, 53, 62, 81)",
+          "carry graph classes = 6",
+          "remainder graph classes = 9",
+          "finite-window word agreement = True",
+          "state-count match = False",
+          "minimized-class-count match = False",
+          "remainder state -> carry state: functional=True, injective=False, max fiber size=1",
+          "carry state -> remainder state: functional=False, injective=False, max fiber size=4",
+          "factorization regime = quotient_candidate_only",
+          "state-relabeling candidate holds = False",
+          "remainder-to-carry quotient candidate holds = True",
+          "carry-to-remainder lift candidate holds = False",
+          "implemented statement: finite-window output agreement between the carry-propagated block normalization and the long-division DFA",
+          "open boundary: canonical factorization of the entire long-division DFA into orbit plus carry is not established here",
+          "theorem target: Promote finite-window agreement to a canonical state-level factorization, ideally by a global remainder-to-carry morphism that explains the displayed word for every coprime modulus.",
+          "refutation target: Find a bounded example where the displayed words agree on the visible window but even the observed remainder-to-carry quotient candidate fails or becomes incompatible with any simple state relabeling.",
+          "weaker replacement: If a canonical factorization fails, downgrade to finite-window output agreement plus an observed quotient-from-remainder-to-carry framework, without claiming a unique global state factorization."
+        ]
+      },
+      {
+        "distinctive_feature": "the same quotient-only regime persists in a composite example with preperiod and stripped-core structure",
+        "factorization_status": {
+          "implemented": "finite-window output agreement between the carry-propagated block normalization and the long-division DFA",
+          "open_boundary": "canonical factorization of the entire long-division DFA into orbit plus carry is not established here"
+        },
+        "label": "Composite preperiod plus carry",
+        "n": 996,
+        "summary_lines": [
+          "N = 996, base = 10, block base B = 1000",
+          "q = 1, k = 4, block width m = 3",
+          "carry states = (0, 1, 4, 16, 65)",
+          "remainder states = (1, 4, 16, 28, 64, 112, 256, 448, 796)",
+          "carry graph classes = 5",
+          "remainder graph classes = 9",
+          "finite-window word agreement = True",
+          "state-count match = False",
+          "minimized-class-count match = False",
+          "remainder state -> carry state: functional=True, injective=False, max fiber size=1",
+          "carry state -> remainder state: functional=False, injective=False, max fiber size=4",
+          "factorization regime = quotient_candidate_only",
+          "state-relabeling candidate holds = False",
+          "remainder-to-carry quotient candidate holds = True",
+          "carry-to-remainder lift candidate holds = False",
+          "implemented statement: finite-window output agreement between the carry-propagated block normalization and the long-division DFA",
+          "open boundary: canonical factorization of the entire long-division DFA into orbit plus carry is not established here",
+          "theorem target: Promote finite-window agreement to a canonical state-level factorization, ideally by a global remainder-to-carry morphism that explains the displayed word for every coprime modulus.",
+          "refutation target: Find a bounded example where the displayed words agree on the visible window but even the observed remainder-to-carry quotient candidate fails or becomes incompatible with any simple state relabeling.",
+          "weaker replacement: If a canonical factorization fails, downgrade to finite-window output agreement plus an observed quotient-from-remainder-to-carry framework, without claiming a unique global state factorization."
+        ]
+      }
+    ],
+    "carry_selector": [
+      {
+        "base": 10,
+        "counterexample_target": "Use this case to test naive claims that larger block widths, stripped cores, or output agreement alone determine the state-level regime.",
+        "explanation": "The selector profile finite_word_only -> state_relabeling -> finite_word_only shows that trivial relabeling can appear only at one isolated block width.",
+        "heuristic_note": "Selector profiles appear to capture stable family behavior rather than just finding the smallest residue coordinate.",
+        "label": "Isolated k = 1 relabeling window",
+        "n": 21,
+        "primary_vocabulary_id": "carry_layer",
+        "profile": {
+          "finite_word_only_modes": [
+            2,
+            3,
+            4,
+            5,
+            7
+          ],
+          "has_isolated_relabeling_window": true,
+          "profile_class": "isolated_k_one_relabeling",
+          "quotient_modes": [],
+          "relabeling_modes": [
+            6
+          ],
+          "selected_k": 1,
+          "selected_m": 6,
+          "selected_q": 47619,
+          "transition_signature": [
+            "finite_word_only",
+            "state_relabeling",
+            "finite_word_only"
+          ]
+        },
+        "summary_lines": [
+          "selector modes scanned = [2, 3, 4, 5, 6, 7]",
+          "transition signature = ('finite_word_only', 'state_relabeling', 'finite_word_only')",
+          "relabeling modes = (6,)",
+          "quotient modes = ()",
+          "finite-word-only modes = (2, 3, 4, 5, 7)",
+          "selected m = 6"
+        ],
+        "theorem_candidate": "Classify when selector profiles admit isolated or repeated state-relabeling windows beyond the trivial k = 1 coordinates."
+      },
+      {
+        "base": 10,
+        "counterexample_target": "Use this case to test naive claims that larger block widths, stripped cores, or output agreement alone determine the state-level regime.",
+        "explanation": "This is the cleanest decimal example where the selector chooses a genuine non-k = 1 relabeling window, at m = 6 with k = 16.",
+        "heuristic_note": "Selector profiles appear to capture stable family behavior rather than just finding the smallest residue coordinate.",
+        "label": "Isolated non-k = 1 relabeling window",
+        "n": 249,
+        "primary_vocabulary_id": "carry_layer",
+        "profile": {
+          "finite_word_only_modes": [],
+          "has_isolated_relabeling_window": true,
+          "profile_class": "isolated_non_k_one_relabeling",
+          "quotient_modes": [
+            3,
+            4,
+            5,
+            7
+          ],
+          "relabeling_modes": [
+            6
+          ],
+          "selected_k": 16,
+          "selected_m": 6,
+          "selected_q": 4016,
+          "transition_signature": [
+            "quotient_candidate_only",
+            "state_relabeling",
+            "quotient_candidate_only"
+          ]
+        },
+        "summary_lines": [
+          "selector modes scanned = [3, 4, 5, 6, 7]",
+          "transition signature = ('quotient_candidate_only', 'state_relabeling', 'quotient_candidate_only')",
+          "relabeling modes = (6,)",
+          "quotient modes = (3, 4, 5, 7)",
+          "finite-word-only modes = ()",
+          "selected m = 6"
+        ],
+        "theorem_candidate": "Classify when selector profiles admit isolated or repeated state-relabeling windows beyond the trivial k = 1 coordinates."
+      },
+      {
+        "base": 10,
+        "counterexample_target": "Use this case to test naive claims that larger block widths, stripped cores, or output agreement alone determine the state-level regime.",
+        "explanation": "The same-core denominator 996 never reaches a relabeling window on the tested profile, even though 249 does.",
+        "heuristic_note": "Selector profiles appear to capture stable family behavior rather than just finding the smallest residue coordinate.",
+        "label": "Same-core quotient-only persistence",
+        "n": 996,
+        "primary_vocabulary_id": "carry_layer",
+        "profile": {
+          "finite_word_only_modes": [],
+          "has_isolated_relabeling_window": false,
+          "profile_class": "quotient_only",
+          "quotient_modes": [
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "relabeling_modes": [],
+          "selected_k": 4,
+          "selected_m": 3,
+          "selected_q": 1,
+          "transition_signature": [
+            "quotient_candidate_only"
+          ]
+        },
+        "summary_lines": [
+          "selector modes scanned = [3, 4, 5, 6, 7]",
+          "transition signature = ('quotient_candidate_only',)",
+          "relabeling modes = ()",
+          "quotient modes = (3, 4, 5, 6, 7)",
+          "finite-word-only modes = ()",
+          "selected m = 3"
+        ],
+        "theorem_candidate": "Classify when selector profiles admit isolated or repeated state-relabeling windows beyond the trivial k = 1 coordinates."
+      }
+    ],
+    "carry_selector_families": [
+      {
+        "counterexample_target": "Refute any claim that state relabeling can only occur at trivial constant-coefficient or repunit-style coordinates.",
+        "explanation": "State-relabeling is not confined to k = 1 coordinates. The selector isolates nontrivial relabeling windows at examples like 17, 19, 29, and 249 in base 10.",
+        "heuristic_note": "Non-k = 1 relabeling windows appear sparse and often isolated in m, which makes them plausible theorem targets rather than random noise.",
+        "label": "Non-k = 1 relabeling windows",
+        "members": [
+          17,
+          19,
+          29,
+          249
+        ],
+        "primary_vocabulary_id": "carry_layer",
+        "summary_lines": [
+          "N = 17",
+          "selector modes scanned = [2, 3, 4, 5, 6, 7]",
+          "transition signature = ('quotient_candidate_only', 'finite_word_only', 'state_relabeling', 'quotient_candidate_only')",
+          "relabeling modes = (5,)",
+          "quotient modes = (2, 3, 6, 7)",
+          "finite-word-only modes = (4,)",
+          "selected m = 5",
+          "---",
+          "N = 19",
+          "selector modes scanned = [2, 3, 4, 5, 6, 7]",
+          "transition signature = ('quotient_candidate_only', 'finite_word_only', 'state_relabeling', 'quotient_candidate_only', 'finite_word_only', 'state_relabeling')",
+          "relabeling modes = (4, 7)",
+          "quotient modes = (2, 5)",
+          "finite-word-only modes = (3, 6)",
+          "selected m = 4",
+          "---",
+          "N = 29",
+          "selector modes scanned = [2, 3, 4, 5, 6, 7]",
+          "transition signature = ('quotient_candidate_only', 'finite_word_only', 'state_relabeling', 'quotient_candidate_only', 'finite_word_only')",
+          "relabeling modes = (5,)",
+          "quotient modes = (2, 3, 6)",
+          "finite-word-only modes = (4, 7)",
+          "selected m = 5",
+          "---",
+          "N = 249",
+          "selector modes scanned = [3, 4, 5, 6, 7]",
+          "transition signature = ('quotient_candidate_only', 'state_relabeling', 'quotient_candidate_only')",
+          "relabeling modes = (6,)",
+          "quotient modes = (3, 4, 5, 7)",
+          "finite-word-only modes = ()",
+          "selected m = 6"
+        ],
+        "theorem_candidate": "Determine arithmetic criteria for non-k = 1 selector windows where the observed carry and remainder states become bijective on the visible trace."
+      },
+      {
+        "counterexample_target": "Use same-core families to reject any theorem candidate that ignores actual-denominator effects once the periodic core is fixed.",
+        "explanation": "The selector profile is not determined by stripped periodic core. Core 249 supports an isolated relabeling window, while same-core 498 and 996 stay quotient-only.",
+        "heuristic_note": "The selector profile depends on the actual denominator, not just the periodic core and not just the visible output word.",
+        "label": "Same-core relabeling loss",
+        "members": [
+          249,
+          498,
+          996
+        ],
+        "primary_vocabulary_id": "remainder_orbit",
+        "summary_lines": [
+          "left/right = 249/996 in base 10",
+          "shared periodic core = 249",
+          "left signature = ('quotient_candidate_only', 'state_relabeling', 'quotient_candidate_only')",
+          "right signature = ('quotient_candidate_only',)",
+          "common relabeling modes = ()",
+          "left-only relabeling modes = (6,)",
+          "right-only relabeling modes = ()",
+          "relabeling window destroyed = True",
+          "relabeling window created = False",
+          "relabeling window shifted = False",
+          "---",
+          "249 selector signature = ('quotient_candidate_only', 'state_relabeling', 'quotient_candidate_only'), relabeling modes = (6,)",
+          "498 selector signature = ('quotient_candidate_only',), relabeling modes = ()",
+          "996 selector signature = ('quotient_candidate_only',), relabeling modes = ()"
+        ],
+        "theorem_candidate": "Classify which same-core deformations preserve, shift, or destroy relabeling windows."
+      },
+      {
+        "counterexample_target": "Reject any monotonicity rule that predicts relabeling windows only move in one direction or can only disappear.",
+        "explanation": "Small-multiple moves can preserve and enlarge relabeling windows rather than merely shifting or destroying them: 17 relabels at m = 5, 34 relabels at m = 5 and 7, and 68 loses relabeling entirely.",
+        "heuristic_note": "Selector profiles behave like family objects under small multiples, not like single-coordinate accidents.",
+        "label": "Small-multiple relabeling shift and enlargement",
+        "members": [
+          17,
+          34,
+          68
+        ],
+        "primary_vocabulary_id": "carry_layer",
+        "summary_lines": [
+          "left/right = 17/34 in base 10",
+          "shared periodic core = 17",
+          "left signature = ('quotient_candidate_only', 'finite_word_only', 'state_relabeling', 'quotient_candidate_only')",
+          "right signature = ('quotient_candidate_only', 'finite_word_only', 'state_relabeling', 'quotient_candidate_only', 'state_relabeling')",
+          "common relabeling modes = (5,)",
+          "left-only relabeling modes = ()",
+          "right-only relabeling modes = (7,)",
+          "relabeling window destroyed = False",
+          "relabeling window created = False",
+          "relabeling window shifted = True",
+          "---",
+          "selector modes scanned = [2, 3, 4, 5, 6, 7]",
+          "transition signature = ('quotient_candidate_only', 'finite_word_only', 'quotient_candidate_only')",
+          "relabeling modes = ()",
+          "quotient modes = (2, 3, 5, 6, 7)",
+          "finite-word-only modes = (4,)",
+          "selected m = 2"
+        ],
+        "theorem_candidate": "Describe how multiplying by stripped base factors changes selector signatures and relabeling-mode sets."
+      }
+    ],
+    "composite_examples": [
+      {
+        "actual_k": 1,
+        "actual_m": 6,
+        "actual_q": 47619,
+        "carry_graph_class_count": 1,
+        "carry_state_count": 1,
+        "carry_summary": "carry states = 1, minimized classes = 1, lookahead = 0",
+        "coordinate_summary": "actual coordinate m = 6, q = 47619, k = 1; periodic-core coordinate m = 6, q = 47619, k = 1",
+        "core_k": 1,
+        "core_m": 6,
+        "core_q": 47619,
+        "crt_summary": "CRT local data: 3:ord=1:lambda=2, 7:ord=6:lambda=6",
+        "explanation": "two CRT components with local orders 1 and 6, so ord_M(base) = lambda(M) = 6; the small-residue block coordinate has k = 1, so the carry layer stays trivial",
+        "family_id": "clean-crt-split",
+        "label": "CRT split with exact lambda",
+        "n": 21,
+        "preperiod_summary": "preperiod length = 0 digit(s)",
+        "profile": {
+          "N": 21,
+          "base": 10,
+          "base_factorization": {
+            "2": 1,
+            "5": 1
+          },
+          "carmichael_value": 6,
+          "components": [
+            {
+              "exponent": 1,
+              "local_lambda": 2,
+              "local_order": 1,
+              "modulus": 3,
+              "prime": 3
+            },
+            {
+              "exponent": 1,
+              "local_lambda": 6,
+              "local_order": 6,
+              "modulus": 7,
+              "prime": 7
+            }
+          ],
+          "global_order": 6,
+          "preperiod_digits": 0,
+          "stripped_factors": {},
+          "stripped_modulus": 21
+        }
+      },
+      {
+        "actual_k": 1,
+        "actual_m": 3,
+        "actual_q": 37,
+        "carry_graph_class_count": 1,
+        "carry_state_count": 1,
+        "carry_summary": "carry states = 1, minimized classes = 1, lookahead = 0",
+        "coordinate_summary": "actual coordinate m = 3, q = 37, k = 1; periodic-core coordinate m = 3, q = 37, k = 1",
+        "core_k": 1,
+        "core_m": 3,
+        "core_q": 37,
+        "crt_summary": "CRT local data: 27:ord=3:lambda=18",
+        "explanation": "prime-power example where ord_M(base) = 3 is a strict divisor of lambda(M) = 18, showing that the Carmichael value is an upper bound rather than an equality in general",
+        "family_id": "prime-power-lifting",
+        "label": "Prime-power strict Carmichael bound",
+        "n": 27,
+        "preperiod_summary": "preperiod length = 0 digit(s)",
+        "profile": {
+          "N": 27,
+          "base": 10,
+          "base_factorization": {
+            "2": 1,
+            "5": 1
+          },
+          "carmichael_value": 18,
+          "components": [
+            {
+              "exponent": 3,
+              "local_lambda": 18,
+              "local_order": 3,
+              "modulus": 27,
+              "prime": 3
+            }
+          ],
+          "global_order": 3,
+          "preperiod_digits": 0,
+          "stripped_factors": {},
+          "stripped_modulus": 27
+        }
+      },
+      {
+        "actual_k": 4,
+        "actual_m": 3,
+        "actual_q": 4,
+        "carry_graph_class_count": 7,
+        "carry_state_count": 7,
+        "carry_summary": "carry states = 7, minimized classes = 7, lookahead = 2",
+        "coordinate_summary": "actual coordinate m = 3, q = 4, k = 4; periodic-core coordinate m = 3, q = 4, k = 4",
+        "core_k": 4,
+        "core_m": 3,
+        "core_q": 4,
+        "crt_summary": "CRT local data: 3:ord=1:lambda=2, 83:ord=41:lambda=82",
+        "explanation": "purely periodic composite core with components 3 and 83; the 83-component carries the full period 41, while the small-residue block coordinate is 10^3 = 4*249 + 4",
+        "family_id": "shared-periodic-core",
+        "label": "Composite periodic core",
+        "n": 249,
+        "preperiod_summary": "preperiod length = 0 digit(s)",
+        "profile": {
+          "N": 249,
+          "base": 10,
+          "base_factorization": {
+            "2": 1,
+            "5": 1
+          },
+          "carmichael_value": 82,
+          "components": [
+            {
+              "exponent": 1,
+              "local_lambda": 2,
+              "local_order": 1,
+              "modulus": 3,
+              "prime": 3
+            },
+            {
+              "exponent": 1,
+              "local_lambda": 82,
+              "local_order": 41,
+              "modulus": 83,
+              "prime": 83
+            }
+          ],
+          "global_order": 41,
+          "preperiod_digits": 0,
+          "stripped_factors": {},
+          "stripped_modulus": 249
+        }
+      },
+      {
+        "actual_k": 4,
+        "actual_m": 3,
+        "actual_q": 1,
+        "carry_graph_class_count": 5,
+        "carry_state_count": 5,
+        "carry_summary": "carry states = 5, minimized classes = 5, lookahead = 1",
+        "coordinate_summary": "actual coordinate m = 3, q = 1, k = 4; periodic-core coordinate m = 3, q = 4, k = 4",
+        "core_k": 4,
+        "core_m": 3,
+        "core_q": 4,
+        "crt_summary": "CRT local data: 3:ord=1:lambda=2, 83:ord=41:lambda=82",
+        "explanation": "same stripped periodic core as 249, but with a two-digit preperiod from the removed factor 2^2; the actual denominator still admits the bridge-style coordinate 10^3 = 1*996 + 4",
+        "family_id": "shared-periodic-core",
+        "label": "Preperiod plus periodic core",
+        "n": 996,
+        "preperiod_summary": "preperiod length = 2 digit(s)",
+        "profile": {
+          "N": 996,
+          "base": 10,
+          "base_factorization": {
+            "2": 1,
+            "5": 1
+          },
+          "carmichael_value": 82,
+          "components": [
+            {
+              "exponent": 1,
+              "local_lambda": 2,
+              "local_order": 1,
+              "modulus": 3,
+              "prime": 3
+            },
+            {
+              "exponent": 1,
+              "local_lambda": 82,
+              "local_order": 41,
+              "modulus": 83,
+              "prime": 83
+            }
+          ],
+          "global_order": 41,
+          "preperiod_digits": 2,
+          "stripped_factors": {
+            "2": 2
+          },
+          "stripped_modulus": 249
+        }
+      }
+    ],
+    "composite_families": [
+      {
+        "carry_focus": "carry stays secondary here; the main phenomenon is local order growth versus the Carmichael bound",
+        "coordinate_focus": "small-residue coordinates exist, but the family is primarily about order lifting across 3, 9, 27, 81",
+        "crt_focus": "single-component prime-power family where local order can stabilize before growing",
+        "explanation": "This family shows a genuinely composite phenomenon: local orders on prime powers do not simply copy the prime case. For base 10, ord_3(10) = ord_9(10) = 1, then the order grows to 3 on 27 and 9 on 81.",
+        "label": "Prime-power lifting at p = 3",
+        "members": [
+          3,
+          9,
+          27,
+          81
+        ],
+        "preperiod_focus": "no stripped base factors appear because every member is coprime to the base",
+        "primary_vocabulary_id": "remainder_orbit"
+      },
+      {
+        "carry_focus": "249 has 7 carry states while 996 has 5; the carry layer changes, but the periodic core does not",
+        "coordinate_focus": "249 uses m = 3, q = 4, k = 4; 996 uses m = 3, q = 1, k = 4",
+        "crt_focus": "both examples share the same CRT local orders because the purely periodic modulus is 249 in both cases",
+        "explanation": "This family separates the purely periodic remainder-orbit structure from the base-factor preperiod. The pair is the clearest composite example where CRT data, preperiod length, and carry normalization can be discussed independently.",
+        "label": "Shared periodic core 249 / 996",
+        "members": [
+          249,
+          996
+        ],
+        "preperiod_focus": "only 996 has a preperiod, coming from the stripped factor 2^2",
+        "primary_vocabulary_id": "good_mode"
+      }
+    ],
+    "visibility": [
+      {
+        "counterexample_target": "Use this case family to test and refute naive visibility rules based only on local overflow.",
+        "explanation": "q is large but k = 1, so every requested raw block is already legal and no incoming carry appears.",
+        "family_id": "q-positive-family",
+        "heuristic_note": "Small k still correlates with longer readable raw prefixes, but the exact boundary is not yet a theorem.",
+        "label": "Carry-free constant window",
+        "n": 21,
+        "profile": {
+          "B": 1000000,
+          "agreement_identity_holds": true,
+          "base": 10,
+          "certified_lookahead_blocks": 0,
+          "exact_gap_numerator": 1,
+          "first_incoming_carry_position": null,
+          "first_local_overflow_position": null,
+          "first_mismatch_position": null,
+          "incoming_carry_formula_holds": true,
+          "k": 1,
+          "lookahead_blocks": 0,
+          "lookahead_certificate_matches": true,
+          "lookahead_lower_bound": 0,
+          "m": 6,
+          "mismatch_regime": "fully_visible_window",
+          "period": 6,
+          "periodic_modulus": 21,
+          "preperiod_digits": 0,
+          "q": 47619,
+          "raw_prefix_agreement_length": 6,
+          "requested_blocks": 6
+        },
+        "summary_lines": [
+          "N = 21, periodic modulus = 21, base = 10",
+          "block width m = 6, block base B = 1000000, q = 47619, k = 1",
+          "period = 6, preperiod digits = 0",
+          "raw-prefix agreement length = 6",
+          "first local overflow position = None",
+          "first incoming carry position = None",
+          "predicted incoming carry position = None",
+          "lookahead lower bound = 0",
+          "minimal stabilization lookahead = 0",
+          "certified stabilization lookahead = 0",
+          "exact gap numerator at that lookahead = 1",
+          "mismatch regime = fully_visible_window",
+          "implemented relation: agreement length = min(local overflow boundary, incoming-carry boundary)",
+          "incoming-carry formula holds on this case = True",
+          "raw-prefix formula holds on this case = True",
+          "lookahead certificate matches on this case = True"
+        ],
+        "theorem_candidate": "Extend the exact incoming-carry boundary to useful bounds for stabilization lookahead and same-core families."
+      },
+      {
+        "counterexample_target": "Use this case family to test and refute naive visibility rules based only on local overflow.",
+        "explanation": "q > 1 and k = 1 give a constant raw coefficient stream, making this the cleanest non-bridge positive-q case.",
+        "family_id": "q-positive-family",
+        "heuristic_note": "Small k still correlates with longer readable raw prefixes, but the exact boundary is not yet a theorem.",
+        "label": "Positive-q constant coefficient window",
+        "n": 37,
+        "profile": {
+          "B": 1000,
+          "agreement_identity_holds": true,
+          "base": 10,
+          "certified_lookahead_blocks": 0,
+          "exact_gap_numerator": 1,
+          "first_incoming_carry_position": null,
+          "first_local_overflow_position": null,
+          "first_mismatch_position": null,
+          "incoming_carry_formula_holds": true,
+          "k": 1,
+          "lookahead_blocks": 0,
+          "lookahead_certificate_matches": true,
+          "lookahead_lower_bound": 0,
+          "m": 3,
+          "mismatch_regime": "fully_visible_window",
+          "period": 3,
+          "periodic_modulus": 37,
+          "preperiod_digits": 0,
+          "q": 27,
+          "raw_prefix_agreement_length": 6,
+          "requested_blocks": 6
+        },
+        "summary_lines": [
+          "N = 37, periodic modulus = 37, base = 10",
+          "block width m = 3, block base B = 1000, q = 27, k = 1",
+          "period = 3, preperiod digits = 0",
+          "raw-prefix agreement length = 6",
+          "first local overflow position = None",
+          "first incoming carry position = None",
+          "predicted incoming carry position = None",
+          "lookahead lower bound = 0",
+          "minimal stabilization lookahead = 0",
+          "certified stabilization lookahead = 0",
+          "exact gap numerator at that lookahead = 1",
+          "mismatch regime = fully_visible_window",
+          "implemented relation: agreement length = min(local overflow boundary, incoming-carry boundary)",
+          "incoming-carry formula holds on this case = True",
+          "raw-prefix formula holds on this case = True",
+          "lookahead certificate matches on this case = True"
+        ],
+        "theorem_candidate": "Extend the exact incoming-carry boundary to useful bounds for stabilization lookahead and same-core families."
+      },
+      {
+        "counterexample_target": "Use this case family to test and refute naive visibility rules based only on local overflow.",
+        "explanation": "The displayed block at position 4 changes because of incoming carry even though the local raw coefficient 81 is still below 100.",
+        "family_id": "q-one-family",
+        "heuristic_note": "Small k still correlates with longer readable raw prefixes, but the exact boundary is not yet a theorem.",
+        "label": "Incoming carry before local overflow",
+        "n": 97,
+        "profile": {
+          "B": 100,
+          "agreement_identity_holds": true,
+          "base": 10,
+          "certified_lookahead_blocks": 2,
+          "exact_gap_numerator": 4217,
+          "first_incoming_carry_position": 4,
+          "first_local_overflow_position": 5,
+          "first_mismatch_position": 4,
+          "incoming_carry_formula_holds": true,
+          "k": 3,
+          "lookahead_blocks": 2,
+          "lookahead_certificate_matches": true,
+          "lookahead_lower_bound": 2,
+          "m": 2,
+          "mismatch_regime": "incoming_carry_before_local_overflow",
+          "period": 96,
+          "periodic_modulus": 97,
+          "preperiod_digits": 0,
+          "q": 1,
+          "raw_prefix_agreement_length": 4,
+          "requested_blocks": 8
+        },
+        "summary_lines": [
+          "N = 97, periodic modulus = 97, base = 10",
+          "block width m = 2, block base B = 100, q = 1, k = 3",
+          "period = 96, preperiod digits = 0",
+          "raw-prefix agreement length = 4",
+          "first local overflow position = 5",
+          "first incoming carry position = 4",
+          "predicted incoming carry position = 4",
+          "lookahead lower bound = 2",
+          "minimal stabilization lookahead = 2",
+          "certified stabilization lookahead = 2",
+          "exact gap numerator at that lookahead = 4217",
+          "mismatch regime = incoming_carry_before_local_overflow",
+          "implemented relation: agreement length = min(local overflow boundary, incoming-carry boundary)",
+          "incoming-carry formula holds on this case = True",
+          "raw-prefix formula holds on this case = True",
+          "lookahead certificate matches on this case = True"
+        ],
+        "theorem_candidate": "Extend the exact incoming-carry boundary to useful bounds for stabilization lookahead and same-core families."
+      },
+      {
+        "counterexample_target": "Use this case family to test and refute naive visibility rules based only on local overflow.",
+        "explanation": "The positive-q case already exhibits early incoming carry, so naive q*k^j < B visibility rules fail outside q = 1 as well.",
+        "family_id": "q-positive-family",
+        "heuristic_note": "Small k still correlates with longer readable raw prefixes, but the exact boundary is not yet a theorem.",
+        "label": "Positive-q carry intrusion",
+        "n": 249,
+        "profile": {
+          "B": 1000,
+          "agreement_identity_holds": true,
+          "base": 10,
+          "certified_lookahead_blocks": 2,
+          "exact_gap_numerator": 807424,
+          "first_incoming_carry_position": 3,
+          "first_local_overflow_position": 4,
+          "first_mismatch_position": 3,
+          "incoming_carry_formula_holds": true,
+          "k": 4,
+          "lookahead_blocks": 2,
+          "lookahead_certificate_matches": true,
+          "lookahead_lower_bound": 2,
+          "m": 3,
+          "mismatch_regime": "incoming_carry_before_local_overflow",
+          "period": 41,
+          "periodic_modulus": 249,
+          "preperiod_digits": 0,
+          "q": 4,
+          "raw_prefix_agreement_length": 3,
+          "requested_blocks": 8
+        },
+        "summary_lines": [
+          "N = 249, periodic modulus = 249, base = 10",
+          "block width m = 3, block base B = 1000, q = 4, k = 4",
+          "period = 41, preperiod digits = 0",
+          "raw-prefix agreement length = 3",
+          "first local overflow position = 4",
+          "first incoming carry position = 3",
+          "predicted incoming carry position = 3",
+          "lookahead lower bound = 2",
+          "minimal stabilization lookahead = 2",
+          "certified stabilization lookahead = 2",
+          "exact gap numerator at that lookahead = 807424",
+          "mismatch regime = incoming_carry_before_local_overflow",
+          "implemented relation: agreement length = min(local overflow boundary, incoming-carry boundary)",
+          "incoming-carry formula holds on this case = True",
+          "raw-prefix formula holds on this case = True",
+          "lookahead certificate matches on this case = True"
+        ],
+        "theorem_candidate": "Extend the exact incoming-carry boundary to useful bounds for stabilization lookahead and same-core families."
+      },
+      {
+        "counterexample_target": "Use this case family to test and refute naive visibility rules based only on local overflow.",
+        "explanation": "This shares the periodic core of 249 but adds a decimal preperiod, separating periodic-core structure from visible-prefix behavior.",
+        "family_id": "shared-periodic-core",
+        "heuristic_note": "Small k still correlates with longer readable raw prefixes, but the exact boundary is not yet a theorem.",
+        "label": "Shared periodic core with preperiod",
+        "n": 996,
+        "profile": {
+          "B": 1000,
+          "agreement_identity_holds": true,
+          "base": 10,
+          "certified_lookahead_blocks": 1,
+          "exact_gap_numerator": 464,
+          "first_incoming_carry_position": 4,
+          "first_local_overflow_position": 5,
+          "first_mismatch_position": 4,
+          "incoming_carry_formula_holds": true,
+          "k": 4,
+          "lookahead_blocks": 1,
+          "lookahead_certificate_matches": true,
+          "lookahead_lower_bound": 1,
+          "m": 3,
+          "mismatch_regime": "incoming_carry_before_local_overflow",
+          "period": 41,
+          "periodic_modulus": 249,
+          "preperiod_digits": 2,
+          "q": 1,
+          "raw_prefix_agreement_length": 4,
+          "requested_blocks": 8
+        },
+        "summary_lines": [
+          "N = 996, periodic modulus = 249, base = 10",
+          "block width m = 3, block base B = 1000, q = 1, k = 4",
+          "period = 41, preperiod digits = 2",
+          "raw-prefix agreement length = 4",
+          "first local overflow position = 5",
+          "first incoming carry position = 4",
+          "predicted incoming carry position = 4",
+          "lookahead lower bound = 1",
+          "minimal stabilization lookahead = 1",
+          "certified stabilization lookahead = 1",
+          "exact gap numerator at that lookahead = 464",
+          "mismatch regime = incoming_carry_before_local_overflow",
+          "implemented relation: agreement length = min(local overflow boundary, incoming-carry boundary)",
+          "incoming-carry formula holds on this case = True",
+          "raw-prefix formula holds on this case = True",
+          "lookahead certificate matches on this case = True"
+        ],
+        "theorem_candidate": "Extend the exact incoming-carry boundary to useful bounds for stabilization lookahead and same-core families."
+      }
+    ],
+    "visibility_families": [
+      {
+        "counterexample_target": "Rule out any visibility criterion that ignores preperiod data once the same q = 1 residue pattern appears in both pure and preperiodic settings.",
+        "explanation": "Both cases have q = 1 and small k, but one is prime-purely-periodic and the other has a decimal preperiod. Compare raw-prefix agreement length and lookahead rather than only k.",
+        "heuristic_note": "q = 1 often gives unusually readable early blocks, but 996 shows that preperiod and tail carry still matter.",
+        "label": "q = 1 carried-prefix family",
+        "members": [
+          97,
+          996
+        ],
+        "primary_vocabulary_id": "carry_layer",
+        "summary_lines": [],
+        "theorem_candidate": "Use the exact incoming-carry boundary as a base case for proving lookahead bounds in the q = 1 bridge regime."
+      },
+      {
+        "counterexample_target": "Refute any criterion that treats q > 1 as automatically unreadable.",
+        "explanation": "These cases separate positive-q constant windows from positive-q early-carry intrusion, so q > 1 by itself is not a visibility obstruction.",
+        "heuristic_note": "Large q can still be perfectly legible when k = 1, while moderate q with k > 1 can fail early.",
+        "label": "q > 1 carried-prefix family",
+        "members": [
+          21,
+          37,
+          249
+        ],
+        "primary_vocabulary_id": "good_mode",
+        "summary_lines": [],
+        "theorem_candidate": "Determine how q interacts with k and B in quantitative lookahead bounds once the incoming-carry boundary is fixed exactly."
+      },
+      {
+        "counterexample_target": "Test any proposed same-core formula on both the exact-power case 996/249 and the non-power case 498/249.",
+        "explanation": "This family isolates one periodic core while varying the stripped base-factor ratio. The comparison 996/249 shows the exact k-power shift law, while 498/249 shows the broader two-point interval law when the q-ratio is not itself a power of k.",
+        "heuristic_note": "The periodic core strongly constrains k and B-k, but lookahead and preperiod behavior still depend on the actual denominator.",
+        "label": "Shared periodic core with different preperiods",
+        "members": [
+          249,
+          498,
+          996
+        ],
+        "primary_vocabulary_id": "remainder_orbit",
+        "summary_lines": [
+          "actual/core = 996/249",
+          "shared B = 1000, shared k = 4, shared B-k = 996",
+          "q_actual = 1, q_core = 4, q_ratio = 4",
+          "floor_log_k(q_ratio) = 1",
+          "q_ratio as power of k = 1",
+          "incoming-carry positions actual/core = 4/3",
+          "local-overflow positions actual/core = 5/4",
+          "raw-prefix agreement actual/core = 4/3",
+          "certified lookahead actual/core = 1/2",
+          "threshold shift interval law holds = True",
+          "threshold shift endpoint = exact",
+          "exact k-power shift law holds = True",
+          "---",
+          "actual/core = 498/249",
+          "shared B = 1000, shared k = 4, shared B-k = 996",
+          "q_actual = 2, q_core = 4, q_ratio = 2",
+          "floor_log_k(q_ratio) = 0",
+          "q_ratio as power of k = None",
+          "incoming-carry positions actual/core = 4/3",
+          "local-overflow positions actual/core = 5/4",
+          "raw-prefix agreement actual/core = 4/3",
+          "certified lookahead actual/core = 1/2",
+          "threshold shift interval law holds = True",
+          "threshold shift endpoint = upper",
+          "exact k-power shift law holds = False"
+        ],
+        "theorem_candidate": "Classify same-core families by q-ratio intervals between consecutive powers of k, and separate which observables satisfy exact shift laws versus interval laws."
+      },
+      {
+        "counterexample_target": "Test whether any claimed exact same-core law survives after changing base while preserving the q-ratio power relation.",
+        "explanation": "Base 7 supplies a non-decimal exact-law family: in the shared coordinate B = 343 and k = 7, the pair 56/8 realizes the same one-block exact shift seen in the decimal 996/249 family.",
+        "heuristic_note": "Exact k-power shift laws appear across bases once a shared coordinate with small k is fixed.",
+        "label": "Cross-base same-core exact law",
+        "members": [
+          8,
+          56
+        ],
+        "primary_vocabulary_id": "remainder_orbit",
+        "summary_lines": [
+          "actual/core = 56/8",
+          "shared B = 343, shared k = 7, shared B-k = 336",
+          "q_actual = 6, q_core = 42, q_ratio = 7",
+          "floor_log_k(q_ratio) = 1",
+          "q_ratio as power of k = 1",
+          "incoming-carry positions actual/core = 2/1",
+          "local-overflow positions actual/core = 3/2",
+          "raw-prefix agreement actual/core = 2/1",
+          "certified lookahead actual/core = 3/4",
+          "threshold shift interval law holds = True",
+          "threshold shift endpoint = exact",
+          "exact k-power shift law holds = True"
+        ],
+        "theorem_candidate": "Show which same-core exact-shift laws depend only on the shared q-ratio power relation and not on the ambient base."
+      },
+      {
+        "counterexample_target": "Reject any family claim that only tests one endpoint of the interval law or only exact k-power ratios.",
+        "explanation": "Base 12 exhibits all three local same-core outcomes in one shared coordinate B = 144, k = 4: 10/5 realizes the lower interval endpoint, 70/35 realizes the upper interval endpoint, and 20/5 realizes the exact k-power law.",
+        "heuristic_note": "A single shared coordinate can realize lower-endpoint, upper-endpoint, and exact-shift behavior across different actual/core pairs.",
+        "label": "Cross-base interval endpoints in one coordinate",
+        "members": [
+          5,
+          10,
+          20,
+          35,
+          70
+        ],
+        "primary_vocabulary_id": "remainder_orbit",
+        "summary_lines": [
+          "actual/core = 10/5",
+          "shared B = 144, shared k = 4, shared B-k = 140",
+          "q_actual = 14, q_core = 28, q_ratio = 2",
+          "floor_log_k(q_ratio) = 0",
+          "q_ratio as power of k = None",
+          "incoming-carry positions actual/core = 1/1",
+          "local-overflow positions actual/core = 2/2",
+          "raw-prefix agreement actual/core = 1/1",
+          "certified lookahead actual/core = 3/4",
+          "threshold shift interval law holds = True",
+          "threshold shift endpoint = lower",
+          "exact k-power shift law holds = False",
+          "---",
+          "actual/core = 70/35",
+          "shared B = 144, shared k = 4, shared B-k = 140",
+          "q_actual = 2, q_core = 4, q_ratio = 2",
+          "floor_log_k(q_ratio) = 0",
+          "q_ratio as power of k = None",
+          "incoming-carry positions actual/core = 3/2",
+          "local-overflow positions actual/core = 4/3",
+          "raw-prefix agreement actual/core = 3/2",
+          "certified lookahead actual/core = 3/3",
+          "threshold shift interval law holds = True",
+          "threshold shift endpoint = upper",
+          "exact k-power shift law holds = False",
+          "---",
+          "actual/core = 20/5",
+          "shared B = 144, shared k = 4, shared B-k = 140",
+          "q_actual = 7, q_core = 28, q_ratio = 4",
+          "floor_log_k(q_ratio) = 1",
+          "q_ratio as power of k = 1",
+          "incoming-carry positions actual/core = 2/1",
+          "local-overflow positions actual/core = 3/2",
+          "raw-prefix agreement actual/core = 2/1",
+          "certified lookahead actual/core = 3/4",
+          "threshold shift interval law holds = True",
+          "threshold shift endpoint = exact",
+          "exact k-power shift law holds = True"
+        ],
+        "theorem_candidate": "Classify which interval-law endpoints can occur in a fixed shared coordinate before any exact global lookahead formula is available."
+      }
+    ]
+  },
+  "dataset_kind": "published_example_atlas",
+  "leaderboards": {
+    "bridge_nontrivial": [
+      {
+        "B": 1000,
+        "base": 10,
+        "explanation": "small-residue block coordinate with remainder k = 2; raw coefficients qk^j reduce to literal powers of k; quotient q = 1; raw coefficients qk^j visible for 11 block(s); preperiod length 1 digit(s); period 166 block(s)",
+        "is_trivial_period": false,
+        "k": 2,
+        "m": 3,
+        "n": 998,
+        "period": 166,
+        "periodic_modulus": 499,
+        "preperiod_digits": 1,
+        "primary_vocabulary_id": "good_mode",
+        "q": 1,
+        "q_is_one": true,
+        "score": 950,
+        "visible_prefix": 11
+      },
+      {
+        "B": 100,
+        "base": 10,
+        "explanation": "small-residue block coordinate with remainder k = 3; raw coefficients qk^j reduce to literal powers of k; quotient q = 1; raw coefficients qk^j visible for 10 block(s); period 48 block(s)",
+        "is_trivial_period": false,
+        "k": 3,
+        "m": 2,
+        "n": 97,
+        "period": 48,
+        "periodic_modulus": 97,
+        "preperiod_digits": 0,
+        "primary_vocabulary_id": "good_mode",
+        "q": 1,
+        "q_is_one": true,
+        "score": 899,
+        "visible_prefix": 10
+      },
+      {
+        "B": 1000,
+        "base": 10,
+        "explanation": "small-residue block coordinate with remainder k = 3; raw coefficients qk^j reduce to literal powers of k; quotient q = 1; raw coefficients qk^j visible for 11 block(s); period 166 block(s)",
+        "is_trivial_period": false,
+        "k": 3,
+        "m": 3,
+        "n": 997,
+        "period": 166,
+        "periodic_modulus": 997,
+        "preperiod_digits": 0,
+        "primary_vocabulary_id": "good_mode",
+        "q": 1,
+        "q_is_one": true,
+        "score": 881,
+        "visible_prefix": 11
+      },
+      {
+        "B": 100,
+        "base": 10,
+        "explanation": "small-residue block coordinate with remainder k = 2; raw coefficients qk^j reduce to literal powers of k; quotient q = 1; raw coefficients qk^j visible for 11 block(s); preperiod length 1 digit(s); period 21 block(s)",
+        "is_trivial_period": false,
+        "k": 2,
+        "m": 2,
+        "n": 98,
+        "period": 21,
+        "periodic_modulus": 49,
+        "preperiod_digits": 1,
+        "primary_vocabulary_id": "good_mode",
+        "q": 1,
+        "q_is_one": true,
+        "score": 879,
+        "visible_prefix": 11
+      },
+      {
+        "B": 100000,
+        "base": 10,
+        "explanation": "small-residue block coordinate with remainder k = 3; quotient q = 277; raw coefficients qk^j visible for 11 block(s); period 342 block(s)",
+        "is_trivial_period": false,
+        "k": 3,
+        "m": 5,
+        "n": 361,
+        "period": 342,
+        "periodic_modulus": 361,
+        "preperiod_digits": 0,
+        "primary_vocabulary_id": "good_mode",
+        "q": 277,
+        "q_is_one": false,
+        "score": 785,
+        "visible_prefix": 11
+      },
+      {
+        "B": 1000,
+        "base": 10,
+        "explanation": "small-residue block coordinate with remainder k = 4; raw coefficients qk^j reduce to literal powers of k; quotient q = 1; raw coefficients qk^j visible for 10 block(s); preperiod length 2 digit(s); period 41 block(s)",
+        "is_trivial_period": false,
+        "k": 4,
+        "m": 3,
+        "n": 996,
+        "period": 41,
+        "periodic_modulus": 249,
+        "preperiod_digits": 2,
+        "primary_vocabulary_id": "good_mode",
+        "q": 1,
+        "q_is_one": true,
+        "score": 770,
+        "visible_prefix": 10
+      },
+      {
+        "B": 1000,
+        "base": 10,
+        "explanation": "small-residue block coordinate with remainder k = 5; raw coefficients qk^j reduce to literal powers of k; quotient q = 1; raw coefficients qk^j visible for 10 block(s); preperiod length 1 digit(s); period 33 block(s)",
+        "is_trivial_period": false,
+        "k": 5,
+        "m": 3,
+        "n": 995,
+        "period": 33,
+        "periodic_modulus": 199,
+        "preperiod_digits": 1,
+        "primary_vocabulary_id": "good_mode",
+        "q": 1,
+        "q_is_one": true,
+        "score": 754,
+        "visible_prefix": 10
+      },
+      {
+        "B": 100000,
+        "base": 10,
+        "explanation": "small-residue block coordinate with remainder k = 3; quotient q = 361; raw coefficients qk^j visible for 11 block(s); period 69 block(s)",
+        "is_trivial_period": false,
+        "k": 3,
+        "m": 5,
+        "n": 277,
+        "period": 69,
+        "periodic_modulus": 277,
+        "preperiod_digits": 0,
+        "primary_vocabulary_id": "good_mode",
+        "q": 361,
+        "q_is_one": false,
+        "score": 753,
+        "visible_prefix": 11
+      }
+    ],
+    "bridge_q1": [
+      {
+        "B": 1000,
+        "base": 10,
+        "explanation": "small-residue block coordinate with remainder k = 2; raw coefficients qk^j reduce to literal powers of k; quotient q = 1; raw coefficients qk^j visible for 11 block(s); preperiod length 1 digit(s); period 166 block(s)",
+        "is_trivial_period": false,
+        "k": 2,
+        "m": 3,
+        "n": 998,
+        "period": 166,
+        "periodic_modulus": 499,
+        "preperiod_digits": 1,
+        "primary_vocabulary_id": "good_mode",
+        "q": 1,
+        "q_is_one": true,
+        "score": 950,
+        "visible_prefix": 11
+      },
+      {
+        "B": 100,
+        "base": 10,
+        "explanation": "small-residue block coordinate with remainder k = 3; raw coefficients qk^j reduce to literal powers of k; quotient q = 1; raw coefficients qk^j visible for 10 block(s); period 48 block(s)",
+        "is_trivial_period": false,
+        "k": 3,
+        "m": 2,
+        "n": 97,
+        "period": 48,
+        "periodic_modulus": 97,
+        "preperiod_digits": 0,
+        "primary_vocabulary_id": "good_mode",
+        "q": 1,
+        "q_is_one": true,
+        "score": 899,
+        "visible_prefix": 10
+      },
+      {
+        "B": 1000,
+        "base": 10,
+        "explanation": "small-residue block coordinate with remainder k = 3; raw coefficients qk^j reduce to literal powers of k; quotient q = 1; raw coefficients qk^j visible for 11 block(s); period 166 block(s)",
+        "is_trivial_period": false,
+        "k": 3,
+        "m": 3,
+        "n": 997,
+        "period": 166,
+        "periodic_modulus": 997,
+        "preperiod_digits": 0,
+        "primary_vocabulary_id": "good_mode",
+        "q": 1,
+        "q_is_one": true,
+        "score": 881,
+        "visible_prefix": 11
+      },
+      {
+        "B": 100,
+        "base": 10,
+        "explanation": "small-residue block coordinate with remainder k = 2; raw coefficients qk^j reduce to literal powers of k; quotient q = 1; raw coefficients qk^j visible for 11 block(s); preperiod length 1 digit(s); period 21 block(s)",
+        "is_trivial_period": false,
+        "k": 2,
+        "m": 2,
+        "n": 98,
+        "period": 21,
+        "periodic_modulus": 49,
+        "preperiod_digits": 1,
+        "primary_vocabulary_id": "good_mode",
+        "q": 1,
+        "q_is_one": true,
+        "score": 879,
+        "visible_prefix": 11
+      },
+      {
+        "B": 1000,
+        "base": 10,
+        "explanation": "small-residue block coordinate with remainder k = 4; raw coefficients qk^j reduce to literal powers of k; quotient q = 1; raw coefficients qk^j visible for 10 block(s); preperiod length 2 digit(s); period 41 block(s)",
+        "is_trivial_period": false,
+        "k": 4,
+        "m": 3,
+        "n": 996,
+        "period": 41,
+        "periodic_modulus": 249,
+        "preperiod_digits": 2,
+        "primary_vocabulary_id": "good_mode",
+        "q": 1,
+        "q_is_one": true,
+        "score": 770,
+        "visible_prefix": 10
+      },
+      {
+        "B": 1000,
+        "base": 10,
+        "explanation": "small-residue block coordinate with remainder k = 5; raw coefficients qk^j reduce to literal powers of k; quotient q = 1; raw coefficients qk^j visible for 10 block(s); preperiod length 1 digit(s); period 33 block(s)",
+        "is_trivial_period": false,
+        "k": 5,
+        "m": 3,
+        "n": 995,
+        "period": 33,
+        "periodic_modulus": 199,
+        "preperiod_digits": 1,
+        "primary_vocabulary_id": "good_mode",
+        "q": 1,
+        "q_is_one": true,
+        "score": 754,
+        "visible_prefix": 10
+      }
+    ],
+    "composite_crt": [
+      {
+        "base": 10,
+        "best_k": 1,
+        "best_m": 6,
+        "best_q": 47619,
+        "component_count": 2,
+        "explanation": "remainder orbit under multiplication by the base splits by CRT across 3 (ord 1), 7 (ord 6); global period 6; preperiod 0 digit(s); small-residue block coordinate m = 6 gives q = 47619, k = 1",
+        "global_order": 6,
+        "n": 21,
+        "preperiod_digits": 0,
+        "primary_vocabulary_id": "remainder_orbit",
+        "score": 569,
+        "stripped_modulus": 21
+      },
+      {
+        "base": 10,
+        "best_k": 1,
+        "best_m": 3,
+        "best_q": 37,
+        "component_count": 1,
+        "explanation": "remainder orbit under multiplication by the base splits by CRT across 27 (ord 3); global period 3; preperiod 0 digit(s); small-residue block coordinate m = 3 gives q = 37, k = 1",
+        "global_order": 3,
+        "n": 27,
+        "preperiod_digits": 0,
+        "primary_vocabulary_id": "remainder_orbit",
+        "score": 474,
+        "stripped_modulus": 27
+      },
+      {
+        "base": 10,
+        "best_k": 4,
+        "best_m": 3,
+        "best_q": 4,
+        "component_count": 2,
+        "explanation": "remainder orbit under multiplication by the base splits by CRT across 3 (ord 1), 83 (ord 41); global period 41; preperiod 0 digit(s); small-residue block coordinate m = 3 gives q = 4, k = 4",
+        "global_order": 41,
+        "n": 249,
+        "preperiod_digits": 0,
+        "primary_vocabulary_id": "remainder_orbit",
+        "score": 938,
+        "stripped_modulus": 249
+      },
+      {
+        "base": 10,
+        "best_k": 4,
+        "best_m": 3,
+        "best_q": 4,
+        "component_count": 2,
+        "explanation": "remainder orbit under multiplication by the base splits by CRT across 3 (ord 1), 83 (ord 41); global period 41; preperiod 2 digit(s); small-residue block coordinate m = 3 gives q = 4, k = 4",
+        "global_order": 41,
+        "n": 996,
+        "preperiod_digits": 2,
+        "primary_vocabulary_id": "remainder_orbit",
+        "score": 955,
+        "stripped_modulus": 249
+      },
+      {
+        "base": 10,
+        "best_k": 2,
+        "best_m": 2,
+        "best_q": 2,
+        "component_count": 1,
+        "explanation": "remainder orbit under multiplication by the base splits by CRT across 49 (ord 42); global period 42; preperiod 0 digit(s); small-residue block coordinate m = 2 gives q = 2, k = 2",
+        "global_order": 42,
+        "n": 49,
+        "preperiod_digits": 0,
+        "primary_vocabulary_id": "remainder_orbit",
+        "score": 888,
+        "stripped_modulus": 49
+      },
+      {
+        "base": 10,
+        "best_k": 2,
+        "best_m": 2,
+        "best_q": 2,
+        "component_count": 1,
+        "explanation": "remainder orbit under multiplication by the base splits by CRT across 49 (ord 42); global period 42; preperiod 1 digit(s); small-residue block coordinate m = 2 gives q = 2, k = 2",
+        "global_order": 42,
+        "n": 98,
+        "preperiod_digits": 1,
+        "primary_vocabulary_id": "remainder_orbit",
+        "score": 863,
+        "stripped_modulus": 49
+      },
+      {
+        "base": 10,
+        "best_k": 4,
+        "best_m": 4,
+        "best_q": 68,
+        "component_count": 2,
+        "explanation": "remainder orbit under multiplication by the base splits by CRT across 3 (ord 1), 49 (ord 42); global period 42; preperiod 1 digit(s); small-residue block coordinate m = 4 gives q = 68, k = 4",
+        "global_order": 42,
+        "n": 294,
+        "preperiod_digits": 1,
+        "primary_vocabulary_id": "remainder_orbit",
+        "score": 853,
+        "stripped_modulus": 147
+      },
+      {
+        "base": 10,
+        "best_k": 1,
+        "best_m": 6,
+        "best_q": 15873,
+        "component_count": 2,
+        "explanation": "remainder orbit under multiplication by the base splits by CRT across 9 (ord 1), 7 (ord 6); global period 6; preperiod 1 digit(s); small-residue block coordinate m = 6 gives q = 15873, k = 1",
+        "global_order": 6,
+        "n": 126,
+        "preperiod_digits": 1,
+        "primary_vocabulary_id": "remainder_orbit",
+        "score": 841,
+        "stripped_modulus": 63
+      }
+    ],
+    "prime_qr": [
+      {
+        "base": 10,
+        "explanation": "generator of the QR subgroup at stride 2; remainder k = 3; reptend type full; 16 QR-generating stride(s)",
+        "p": 97,
+        "preferred_k": 3,
+        "preferred_stride": 2,
+        "primary_vocabulary_id": "qr_generator",
+        "reptend_type": "full",
+        "score": 323,
+        "stride_count": 16
+      },
+      {
+        "base": 10,
+        "explanation": "generator of the QR subgroup at stride 2; remainder k = 6; reptend type full; 22 QR-generating stride(s)",
+        "p": 47,
+        "preferred_k": 6,
+        "preferred_stride": 2,
+        "primary_vocabulary_id": "qr_generator",
+        "reptend_type": "full",
+        "score": 284,
+        "stride_count": 22
+      },
+      {
+        "base": 10,
+        "explanation": "generator of the QR subgroup at stride 2; remainder k = 5; reptend type full; 6 QR-generating stride(s)",
+        "p": 19,
+        "preferred_k": 5,
+        "preferred_stride": 2,
+        "primary_vocabulary_id": "qr_generator",
+        "reptend_type": "full",
+        "score": 276,
+        "stride_count": 6
+      },
+      {
+        "base": 10,
+        "explanation": "generator of the QR subgroup at stride 1; remainder k = 10; reptend type half; 40 QR-generating stride(s)",
+        "p": 83,
+        "preferred_k": 10,
+        "preferred_stride": 1,
+        "primary_vocabulary_id": "qr_generator",
+        "reptend_type": "half",
+        "score": 259,
+        "stride_count": 40
+      },
+      {
+        "base": 10,
+        "explanation": "generator of the QR subgroup at stride 1; remainder k = 10; reptend type half; 52 QR-generating stride(s)",
+        "p": 107,
+        "preferred_k": 10,
+        "preferred_stride": 1,
+        "primary_vocabulary_id": "qr_generator",
+        "reptend_type": "half",
+        "score": 259,
+        "stride_count": 52
+      },
+      {
+        "base": 10,
+        "explanation": "generator of the QR subgroup at stride 1; remainder k = 10; reptend type half; 40 QR-generating stride(s)",
+        "p": 151,
+        "preferred_k": 10,
+        "preferred_stride": 1,
+        "primary_vocabulary_id": "qr_generator",
+        "reptend_type": "half",
+        "score": 259,
+        "stride_count": 40
+      },
+      {
+        "base": 10,
+        "explanation": "generator of the QR subgroup at stride 1; remainder k = 10; reptend type half; 54 QR-generating stride(s)",
+        "p": 163,
+        "preferred_k": 10,
+        "preferred_stride": 1,
+        "primary_vocabulary_id": "qr_generator",
+        "reptend_type": "half",
+        "score": 259,
+        "stride_count": 54
+      },
+      {
+        "base": 10,
+        "explanation": "generator of the QR subgroup at stride 1; remainder k = 10; reptend type half; 72 QR-generating stride(s)",
+        "p": 191,
+        "preferred_k": 10,
+        "preferred_stride": 1,
+        "primary_vocabulary_id": "qr_generator",
+        "reptend_type": "half",
+        "score": 259,
+        "stride_count": 72
+      }
+    ]
+  },
+  "manifest": {
+    "build_command": "search-reptends published-atlas --max 1200 --top 8 --output data/example_atlas.json",
+    "builder": "bridge_reptends.search:build_example_atlas",
+    "normalization": "UTF-8 JSON, indent=2, sort_keys=True, trailing newline",
+    "publication_layer": "published",
+    "source_files": [
+      "bridge_reptends/search.py",
+      "bridge_reptends/composite.py",
+      "bridge_reptends/transducer.py",
+      "bridge_reptends/visibility.py",
+      "data/claim_registry.json",
+      "data/vocabulary.json"
+    ]
+  },
+  "metadata": {
+    "base": 10,
+    "max_n": 1200,
+    "max_p": 1200,
+    "publication_layer": "published",
+    "standard_label_first": true,
+    "top": 8
+  },
+  "provenance": {
+    "base": 10,
+    "cross_base_selector_bases": [
+      7,
+      10,
+      12
+    ],
+    "max_n": 1200,
+    "max_p": 1200,
+    "standard_label_first": true,
+    "top": 8
+  },
+  "research_layers": {
+    "carry_selector": {
+      "bases": [
+        {
+          "base": 7,
+          "classification_bound": 120,
+          "finite_word_only": 12,
+          "isolated_k_one_relabeling": 9,
+          "isolated_non_k_one_relabeling": 25,
+          "max_m": 8,
+          "mixed_without_relabeling": 27,
+          "n_blocks": 8,
+          "non_k_one_count": 26,
+          "profile_count": 117,
+          "publication_decision": "published_research_layer",
+          "quotient_only": 13,
+          "repeated_k_one_relabeling": 30,
+          "repeated_non_k_one_relabeling": 1,
+          "same_core_disagreement_count": 14,
+          "same_core_multi_member_count": 0,
+          "sample_non_k_one_examples": [
+            "N=11 @ m=7 with k=6",
+            "N=13 @ m=7 with k=6",
+            "N=47 @ m=6 with k=8",
+            "N=74 @ m=5 with k=9",
+            "N=31 @ m=8 with k=10"
+          ],
+          "sample_same_core_families": [
+            "core 2: members [2, 14, 98], selected [2]",
+            "core 3: members [3, 21], selected [3]",
+            "core 4: members [4, 28], selected [4]",
+            "core 5: members [5, 35], selected [5]",
+            "core 6: members [6, 42], selected [6]"
+          ],
+          "summary_lines": [
+            "base 7: 26 selected non-k = 1 relabeling windows up to N <= 120",
+            "same-core disagreement groups = 14",
+            "no multi-member same-core relabeling families appear in this bounded sweep"
+          ]
+        },
+        {
+          "base": 10,
+          "classification_bound": 120,
+          "finite_word_only": 39,
+          "isolated_k_one_relabeling": 10,
+          "isolated_non_k_one_relabeling": 19,
+          "max_m": 8,
+          "mixed_without_relabeling": 13,
+          "n_blocks": 8,
+          "non_k_one_count": 21,
+          "profile_count": 105,
+          "publication_decision": "published_research_layer",
+          "quotient_only": 14,
+          "repeated_k_one_relabeling": 8,
+          "repeated_non_k_one_relabeling": 2,
+          "same_core_disagreement_count": 19,
+          "same_core_multi_member_count": 5,
+          "sample_non_k_one_examples": [
+            "N=17 @ m=5 with k=6",
+            "N=29 @ m=5 with k=8",
+            "N=58 @ m=5 with k=8",
+            "N=59 @ m=6 with k=9",
+            "N=53 @ m=7 with k=13"
+          ],
+          "sample_same_core_families": [
+            "core 17: members [17, 34, 68, 85], selected [17, 34]",
+            "core 19: members [19, 38, 76, 95], selected [19, 38, 95]",
+            "core 23: members [23, 46, 92, 115], selected [23, 46]",
+            "core 29: members [29, 58, 116], selected [29, 58]",
+            "core 57: members [57, 114], selected [57, 114]"
+          ],
+          "summary_lines": [
+            "base 10: 21 selected non-k = 1 relabeling windows up to N <= 120",
+            "same-core disagreement groups = 19",
+            "multi-member same-core relabeling families = 5"
+          ]
+        },
+        {
+          "base": 12,
+          "classification_bound": 120,
+          "finite_word_only": 38,
+          "isolated_k_one_relabeling": 8,
+          "isolated_non_k_one_relabeling": 14,
+          "max_m": 8,
+          "mixed_without_relabeling": 23,
+          "n_blocks": 8,
+          "non_k_one_count": 14,
+          "profile_count": 99,
+          "publication_decision": "published_research_layer",
+          "quotient_only": 14,
+          "repeated_k_one_relabeling": 2,
+          "repeated_non_k_one_relabeling": 0,
+          "same_core_disagreement_count": 14,
+          "same_core_multi_member_count": 4,
+          "sample_non_k_one_examples": [
+            "N=37 @ m=5 with k=7",
+            "N=47 @ m=4 with k=9",
+            "N=49 @ m=4 with k=9",
+            "N=23 @ m=6 with k=9",
+            "N=25 @ m=6 with k=9"
+          ],
+          "sample_same_core_families": [
+            "core 23: members [23, 46, 69, 92], selected [23, 69]",
+            "core 25: members [25, 50, 75, 100], selected [25, 75]",
+            "core 47: members [47, 94], selected [47, 94]",
+            "core 49: members [49, 98], selected [49, 98]"
+          ],
+          "summary_lines": [
+            "base 12: 14 selected non-k = 1 relabeling windows up to N <= 120",
+            "same-core disagreement groups = 14",
+            "multi-member same-core relabeling families = 4"
+          ]
+        }
+      ],
+      "classification_bound": 120,
+      "decision": "Selector profiles are now part of the published atlas as a research layer: non-k = 1 relabeling windows and same-core disagreement recur in bounded sweeps across bases 7, 10, and 12.",
+      "publication_status": "published_research_layer"
+    }
+  },
+  "schema_version": "2.7"
+}

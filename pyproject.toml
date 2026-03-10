@@ -37,6 +37,10 @@ dev = ["pytest", "mypy"]
 
 [project.scripts]
 sweep-primes = "bridge_reptends.sweep:main"
+search-reptends = "bridge_reptends.search:main"
+sync-registry-docs = "bridge_reptends.sync_registry_docs:main"
+build-expository-note = "bridge_reptends.build_expository_note:main"
+ci-checks = "bridge_reptends.ci_checks:main"
 
 [project.urls]
 Repository = "https://github.com/mpurvis/quadratic-residue-reptends"

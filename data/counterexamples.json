@@ -1,0 +1,123 @@
+[
+  {
+    "id": "legacy_unweighted_series_37",
+    "claim_id": "series_q_weighted_identity",
+    "legacy_claim": "The raw block coefficients are always 1, k, k^2, ...",
+    "parameters": {
+      "N": 37,
+      "base": 10,
+      "m": 3
+    },
+    "observed": "Here B = 1000 = 27*37 + 1, so q = 27 and the exact coefficients are 27, 27, 27, ... rather than 1, 1, 1, ...",
+    "replacement": "Use 1/N = q/(B-k) = Σ qk^j / B^(j+1) and reserve literal k^j blocks for the special case q = 1."
+  },
+  {
+    "id": "legacy_full_even_19",
+    "claim_id": "qr_stride_classification",
+    "legacy_claim": "Full reptend implies all even strides are QR-generators.",
+    "parameters": {
+      "p": 19,
+      "base": 10
+    },
+    "observed": "The exact QR-generating strides are [2, 4, 8, 10, 14, 16], which omits 6 and 12 even though ord_19(10) = 18.",
+    "replacement": "When ord_p(B) = p-1, the QR-generating strides are m = 2u with gcd(u, (p-1)/2) = 1."
+  },
+  {
+    "id": "legacy_half_consecutive_31",
+    "claim_id": "qr_stride_classification",
+    "legacy_claim": "Half reptend implies all consecutive strides are QR-generators.",
+    "parameters": {
+      "p": 31,
+      "base": 10
+    },
+    "observed": "The exact QR-generating strides are [1, 2, 4, 7, 8, 11, 13, 14], not the full interval 1..15.",
+    "replacement": "When ord_p(B) = (p-1)/2, the QR-generating strides are exactly the m with gcd(m, (p-1)/2) = 1."
+  },
+  {
+    "id": "legacy_zero_quotient_mode",
+    "claim_id": "positive_q_good_modes",
+    "legacy_claim": "Any small residue k = B mod M is automatically a meaningful coordinate choice.",
+    "parameters": {
+      "N": 37,
+      "base": 10,
+      "m": 1
+    },
+    "observed": "At m = 1 we have B = 10 < 37, so q = 0 and there is no usable q-weighted block decomposition yet.",
+    "replacement": "Require B > M so q > 0 before calling a mode a good coordinate."
+  },
+  {
+    "id": "legacy_visibility_local_overflow_97",
+    "claim_id": "incoming_carry_position_formula",
+    "legacy_claim": "The first visible mismatch occurs exactly when the local raw coefficient first satisfies qk^j >= B.",
+    "parameters": {
+      "N": 97,
+      "base": 10,
+      "m": 2
+    },
+    "observed": "Here q = 1, k = 3, B = 100. The local overflow boundary is j = 5 because 3^5 = 243 >= 100, but the first incoming carry arrives already at j = 4 because floor(3^5 / 97) = 2.",
+    "replacement": "Use the tail formula carry_in(j) = floor(qk^(j+1)/(B-k)); the first incoming-carry position is the least j with qk^(j+1) >= B-k."
+  },
+  {
+    "id": "legacy_visibility_local_overflow_249",
+    "claim_id": "incoming_carry_position_formula",
+    "legacy_claim": "Positive q only changes coefficient size; it does not change when incoming carry first appears.",
+    "parameters": {
+      "N": 249,
+      "base": 10,
+      "m": 3
+    },
+    "observed": "Here q = 4, k = 4, B = 1000. The first local overflow is j = 4 because 4*4^4 = 1024 >= 1000, but the first incoming carry appears earlier at j = 3 because floor(4*4^4 / 996) = 1.",
+    "replacement": "Incoming carry depends on the geometric tail qk^(j+1)/(B-k), not only on the local block size qk^j."
+  },
+  {
+    "id": "carry_state_relabeling_failure_97",
+    "claim_id": "carry_dfa_factorization",
+    "legacy_claim": "Once outputs match, the carry transducer and long-division DFA are just the same observed machine with states relabeled.",
+    "parameters": {
+      "N": 97,
+      "base": 10,
+      "m": 2
+    },
+    "observed": "On the canonical 8-block window, outputs match, and the observed remainder-to-carry map is functional, but carry state 0 aligns with four different remainder states {1, 3, 9, 27}. Simple state relabeling already fails on the observed window.",
+    "replacement": "Separate finite-window word agreement, observed quotient candidates, and canonical global factorization. Matching outputs do not by themselves imply state relabeling."
+  },
+  {
+    "id": "carry_state_relabeling_failure_996",
+    "claim_id": "carry_dfa_factorization",
+    "legacy_claim": "Composite preperiod cases behave like trivial state relabelings once the carry window is stabilized.",
+    "parameters": {
+      "N": 996,
+      "base": 10,
+      "m": 3
+    },
+    "observed": "On the canonical 8-block window, outputs match, and the observed remainder-to-carry map is still functional, but carry state 0 aligns with four different remainder states {1, 4, 16, 64}. The composite/preperiod case stays quotient-like rather than collapsing to a simple relabeling.",
+    "replacement": "Treat composite carry/DFA comparisons as evidence for or against specific state-map notions. Stabilized output agreement does not force a unique state-level factorization."
+  },
+  {
+    "id": "carry_selector_monotonicity_failure_21",
+    "claim_id": "carry_dfa_factorization",
+    "legacy_claim": "Once a state-relabeling window appears at some block width, larger block widths preserve or improve that regime.",
+    "parameters": {
+      "N": 21,
+      "base": 10,
+      "m_values": [
+        6,
+        7
+      ]
+    },
+    "observed": "For 1/21 in base 10, the selector profile has finite_word_only at m = 5, state_relabeling at m = 6, and finite_word_only again at m = 7. The relabeling window is isolated rather than monotone in m.",
+    "replacement": "Track selector profiles explicitly. State-level regimes can change nonmonotonically with block width, so theorem attempts must quantify over m rather than assume larger blocks only help."
+  },
+  {
+    "id": "carry_selector_core_invariance_failure_996",
+    "claim_id": "carry_dfa_factorization",
+    "legacy_claim": "The Track 17 selector profile is determined by the stripped periodic core alone.",
+    "parameters": {
+      "core": 249,
+      "actual": 996,
+      "base": 10
+    },
+    "observed": "The selector profile for 249 is quotient_candidate_only -> state_relabeling -> quotient_candidate_only, with an isolated relabeling window at m = 6. The same-core denominator 996 remains quotient_candidate_only across its tested modes. The selector profile is not periodic-core invariant.",
+    "replacement": "Treat the selector profile as a property of the actual denominator and chosen coordinates, not of the stripped periodic core alone."
+  }
+]

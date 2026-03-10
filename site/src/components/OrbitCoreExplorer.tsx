@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import SkeletonAnnotatedReptend from "./SkeletonAnnotatedReptend";
 
 // =============================================================================
 // Types
@@ -368,6 +369,7 @@ export default function OrbitCoreExplorer() {
   const [mMax, _setMMax] = useState(24);
   void _setKMax; void _setMMax; // Silence unused warnings - could expose as controls later
   const [showOverlay, setShowOverlay] = useState(true); // Start expanded
+  const [overlayInline, setOverlayInline] = useState(true); // Inline vs table view
 
   // TOE moment: animated snap
   const [snapSpeedMs, setSnapSpeedMs] = useState(170);
@@ -550,7 +552,9 @@ export default function OrbitCoreExplorer() {
     <div className="flex flex-col gap-2">
       <div className="text-xl sm:text-2xl font-serif font-semibold tracking-tight text-stone-900">Orbit Core Explorer</div>
       <div className="text-sm text-stone-700 max-w-3xl">
-        Repeating decimals are a finite orbit in <span className="font-mono">(Z/MZ)×</span> under multiplication by <span className="font-mono">B=b^m</span>. In log-coordinates on the cyclic subgroup ⟨B⟩, the dynamics is <span className="font-mono">t ↦ t+1</span>. Digits are a deterministic coding.
+        Repeating decimals are a finite orbit in <span className="font-mono">(Z/MZ)×</span> under multiplication by <span className="font-mono">B=b^m</span>.
+        In log-coordinates on <span className="font-mono">⟨B⟩</span>, the dynamics is <span className="font-mono">t ↦ t+1</span>—that is,
+        stepping through the orbit is just counting. Digits are a deterministic coding.
       </div>
     </div>
   );
@@ -623,9 +627,9 @@ export default function OrbitCoreExplorer() {
       </div>
 
       <div className="rounded-2xl border border-stone-200 bg-white p-4">
-        <div className="text-xs font-mono text-stone-500 mb-2">TOE moment: snap to good coordinates</div>
+        <div className="text-xs font-mono text-stone-500 mb-2">"Aha" moment: snap to good coordinates</div>
         <div className="text-sm text-stone-700">
-          Animate <span className="font-mono">m</span> until a coordinate system reveals a small residue <span className="font-mono">k = b^m mod M</span>.
+          Find a block width <span className="font-mono">m</span> where the residue <span className="font-mono">k = b^m mod M</span> is small—making the pattern visible.
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">
           <button
@@ -804,7 +808,7 @@ export default function OrbitCoreExplorer() {
                 <ScorePill label="L" value={model.L} />
                 {model.k !== undefined && model.k > 0 && model.safeB && model.Bnum && model.k < model.Bnum ? (
                   <ScorePill
-                    label="visibility"
+                    label="heuristic vis"
                     value={`${visibilityLength({ B: model.Bnum, k: model.k, q: model.q ?? 0, L: model.L })}/${model.L}`}
                   />
                 ) : null}
@@ -870,21 +874,65 @@ export default function OrbitCoreExplorer() {
         </div>
       )}
       <div className="mt-3 text-xs text-stone-600">
-        Score is a simple blend of (visibility fraction) and (small k). It's a heuristic to make the idea approachable.
+        Score is a simple blend of a heuristic visibility fraction and small k. Exact Track 16 observables such as raw-prefix agreement length, incoming-carry position, and stabilization lookahead live in the published atlas and `search-reptends visibility-profiles`.
       </div>
     </div>
   );
 
+  // Build reptend string from digit blocks for inline view
+  const reptendString = useMemo(() => {
+    if (!model.full1?.digits) return "";
+    return model.full1.digits.map(d => formatBlock(d, model.m)).join("");
+  }, [model.full1?.digits, model.m]);
+
   const skeletonOverlay = (
     <div className="rounded-2xl border border-stone-200 bg-white p-4">
-      <div className="text-xs font-mono text-stone-500 mb-2">Skeleton overlay (one orbit window)</div>
+      <div className="flex justify-between items-center mb-2">
+        <div className="text-xs font-mono text-stone-500">Skeleton overlay (one orbit window)</div>
+        {model.overlay && (
+          <div className="flex gap-1 text-[10px]">
+            <button
+              onClick={() => setOverlayInline(true)}
+              className={`px-2 py-0.5 rounded ${overlayInline ? 'bg-stone-700 text-white' : 'bg-stone-200 text-stone-600 hover:bg-stone-300'}`}
+            >
+              Inline
+            </button>
+            <button
+              onClick={() => setOverlayInline(false)}
+              className={`px-2 py-0.5 rounded ${!overlayInline ? 'bg-stone-700 text-white' : 'bg-stone-200 text-stone-600 hover:bg-stone-300'}`}
+            >
+              Table
+            </button>
+          </div>
+        )}
+      </div>
       {model.error || model.M === 1 ? (
         <div className="text-sm text-stone-700">No repeating orbit to overlay.</div>
       ) : !model.overlay ? (
         <div className="text-sm text-stone-700">
           Overlay is shown only when <span className="font-mono">0 &lt; k &lt; B</span> and <span className="font-mono">L</span> is small enough.
         </div>
+      ) : overlayInline ? (
+        /* Inline view using SkeletonAnnotatedReptend */
+        <>
+          <div className="text-sm text-stone-700 mb-3">
+            The skeleton k<sup>j</sup> blocks live directly in the reptend digits.
+            {model.k === 1 && (
+              <span className="ml-2 text-emerald-600 font-medium">Perfect: k=1 means constant skeleton!</span>
+            )}
+          </div>
+          {reptendString && model.k !== undefined && model.q !== undefined && (
+            <SkeletonAnnotatedReptend
+              reptend={reptendString}
+              m={model.m}
+              k={model.k}
+              q={model.q}
+              maxBlocks={Math.min(12, model.L)}
+            />
+          )}
+        </>
       ) : (
+        /* Table view - the original detailed comparison */
         <>
           <div className="text-sm text-stone-700">
             Raw skeleton terms are <span className="font-mono">q·k^t</span> (not digits). Normalize them in base <span className="font-mono">B</span> with carries (right→left) and compare to true digits from the orbit machine.
@@ -937,9 +985,9 @@ export default function OrbitCoreExplorer() {
             )}
           </div>
           {!model.error && model.M !== 1 && model.full1 && model.R !== undefined ? (
-            <div className="text-right">
+            <div className="text-right min-w-0">
               <div className="text-xs text-stone-600">repetend integer R</div>
-              <div className="font-mono text-stone-900 text-sm">{formatBigIntGrouped(model.R)}</div>
+              <div className="font-mono text-stone-900 text-sm break-all">{formatBigIntGrouped(model.R)}</div>
             </div>
           ) : null}
         </div>

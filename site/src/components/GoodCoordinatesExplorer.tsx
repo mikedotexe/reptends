@@ -8,6 +8,7 @@ import {
   multiplicativeOrder,
   GoodCoordinateEntry
 } from '../lib/math';
+import SkeletonAnnotatedReptend from './SkeletonAnnotatedReptend';
 
 const PRESET_MODULI = [19, 37, 97, 199];
 const PRESET_BASES = [2, 7, 10, 12];
@@ -323,52 +324,75 @@ const DetailPanel = ({ M, base, entry, onClose }: DetailPanelProps) => {
             />
           )}
 
-          {/* Detailed breakdown for k > 1 */}
-          {k > 1 && (
-            <>
-              {/* Skeleton blocks */}
-              <div>
-                <div className="font-medium mb-2">
-                  Skeleton (k<sup>j</sup> = {k}<sup>j</sup>):
-                </div>
-                <div className="bg-stone-200 rounded px-3 py-2 font-mono text-xs sm:text-sm overflow-x-auto">
-                  <div className="flex gap-2 flex-wrap">
-                    {skeleton.map((block, i) => (
-                      <span
-                        key={i}
-                        className={block.startsWith('[') ? 'text-amber-600' : 'text-stone-800'}
-                      >
-                        {block}
-                      </span>
-                    ))}
-                    <span className="text-stone-400">...</span>
-                  </div>
-                </div>
+          {/* Annotated reptend showing skeleton blocks in the digits */}
+          {reptend && (
+            <div className="bg-stone-200 rounded px-3 sm:px-4 py-3">
+              <div className="font-medium mb-3 text-stone-700">
+                Skeleton in the Digits:
               </div>
-
-              {/* With carry */}
-              <div>
-                <div className="font-medium mb-2">After carry propagation:</div>
-                <div className="bg-stone-200 rounded px-3 py-2 font-mono text-xs sm:text-sm overflow-x-auto">
-                  <div className="flex gap-2 flex-wrap">
-                    {withCarry.map((block, i) => (
-                      <span key={i} className="text-stone-800">{block}</span>
-                    ))}
-                    <span className="text-stone-400">...</span>
-                  </div>
-                </div>
-              </div>
-            </>
+              <SkeletonAnnotatedReptend
+                reptend={reptend}
+                m={m}
+                k={k}
+                q={q}
+                maxBlocks={10}
+              />
+            </div>
           )}
 
-          {/* Full reptend for reference */}
-          {reptend && (
-            <div>
-              <div className="text-xs text-stone-500 mb-1">Full reptend ({reptend.length} digits):</div>
-              <div className="font-mono text-xs bg-stone-200 rounded px-3 py-2 break-all max-h-20 overflow-y-auto">
+          {/* Detailed breakdown for k > 1 - now collapsible */}
+          {k > 1 && (
+            <details className="text-sm">
+              <summary className="text-stone-600 cursor-pointer hover:text-stone-800 font-medium">
+                Raw skeleton comparison (expand)
+              </summary>
+              <div className="mt-3 space-y-3">
+                {/* Skeleton blocks */}
+                <div>
+                  <div className="text-xs text-stone-500 mb-1">
+                    Raw skeleton (k<sup>j</sup> = {k}<sup>j</sup>):
+                  </div>
+                  <div className="bg-stone-100 rounded px-3 py-2 font-mono text-xs overflow-x-auto">
+                    <div className="flex gap-2 flex-wrap">
+                      {skeleton.map((block, i) => (
+                        <span
+                          key={i}
+                          className={block.startsWith('[') ? 'text-amber-600' : 'text-stone-700'}
+                        >
+                          {block}
+                        </span>
+                      ))}
+                      <span className="text-stone-400">...</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* With carry */}
+                <div>
+                  <div className="text-xs text-stone-500 mb-1">After carry propagation:</div>
+                  <div className="bg-stone-100 rounded px-3 py-2 font-mono text-xs overflow-x-auto">
+                    <div className="flex gap-2 flex-wrap">
+                      {withCarry.map((block, i) => (
+                        <span key={i} className="text-stone-700">{block}</span>
+                      ))}
+                      <span className="text-stone-400">...</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </details>
+          )}
+
+          {/* Full reptend for reference - also collapsible */}
+          {reptend && reptend.length > m * 10 && (
+            <details className="text-sm">
+              <summary className="text-stone-500 cursor-pointer hover:text-stone-700 text-xs">
+                Full reptend ({reptend.length} digits)
+              </summary>
+              <div className="mt-2 font-mono text-xs bg-stone-100 rounded px-3 py-2 break-all max-h-32 overflow-y-auto">
                 0.{reptend}...
               </div>
-            </div>
+            </details>
           )}
         </div>
       </div>

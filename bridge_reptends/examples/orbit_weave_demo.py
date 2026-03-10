@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-Orbit Weave + Closure Flux: Interactive Demo
+Algebraic reptend decomposition demo.
 
 This demo shows the algebraic decomposition of reptend integers:
     R = W + F
 where:
     R = (B^L - 1) / M    (reptend integer)
-    W = (B^L - k^L) / M  (orbit weave - finite body)
-    F = (k^L - 1) / M    (closure flux - correction)
+    W = (B^L - k^L) / M  (body term; "orbit weave")
+    F = (k^L - 1) / M    (correction term; "closure flux")
     k = B mod M          (bridge residue)
     L = ord_M(B)         (orbit length)
 
@@ -43,7 +43,7 @@ def demo_canonical_example():
 
     if ow.k is not None and is_qr_generator(ow.k, ow.M):
         print(f"k = {ow.k} is a QR-generator (ord = {multiplicative_order(ow.k, ow.M)} = (p-1)/2).")
-        print("So the weave W traverses the entire QR subgroup.")
+        print("So the body term W traverses the entire QR subgroup.")
 
 
 def demo_composites():
@@ -154,12 +154,12 @@ def demo_skeleton_and_carry():
     print("=" * 70)
 
     print("""
-For N = B - k (near a power of base):
-  1/N = 1/(B-k) = (1/B) × 1/(1 - k/B) = Σ k^j / B^(j+1)
+For any choice of block base B = qN + k:
+  1/N = q/(B-k) = (q/B) × 1/(1 - k/B) = Σ q*k^j / B^(j+1)
 
-Layer 1 (SKELETON): Raw blocks are powers of k: 1, k, k², k³, ...
-Layer 2 (CARRY):    When k^j ≥ B, overflow carries left
-Layer 3 (FLUX):     Cyclic closure when reptend wraps around
+Layer 1 (SKELETON): Raw coefficients are q*k^j
+Layer 2 (CARRY):    When q*k^j ≥ B, overflow carries left
+Layer 3 (CLOSURE):  Cyclic wrap of the finite reptend
 """)
 
     print("The 10^n - 4 family (k=4 in all cases):")

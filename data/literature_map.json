@@ -1,0 +1,44 @@
+[
+  {
+    "id": "conrad_orders",
+    "author": "Keith Conrad",
+    "title": "Orders in Modular Arithmetic",
+    "url": "https://kconrad.math.uconn.edu/blurbs/ugradnumthy/ordersmodm.pdf",
+    "tags": ["multiplicative-order", "decimal-periods", "classical"]
+  },
+  {
+    "id": "conrad_qr_patterns",
+    "author": "Keith Conrad",
+    "title": "Quadratic Residue Patterns Modulo a Prime",
+    "url": "https://kconrad.math.uconn.edu/blurbs/ugradnumthy/QuadraticResiduePatterns.pdf",
+    "tags": ["quadratic-residues", "cosets", "classical"]
+  },
+  {
+    "id": "conrad_crt",
+    "author": "Keith Conrad",
+    "title": "Chinese Remainder Theorem",
+    "url": "https://kconrad.math.uconn.edu/blurbs/ugradnumthy/crt.pdf",
+    "tags": ["crt", "composites", "classical"]
+  },
+  {
+    "id": "conrad_qp",
+    "author": "Keith Conrad",
+    "title": "The p-adic Expansion of Rational Numbers",
+    "url": "https://kconrad.math.uconn.edu/blurbs/gradnumthy/rationalsinQp.pdf",
+    "tags": ["rational-expansions", "periodicity", "classical"]
+  },
+  {
+    "id": "leavitt_repeating_decimals",
+    "author": "William G. Leavitt",
+    "title": "A Theorem on Repeating Decimals",
+    "url": "https://digitalcommons.unl.edu/cgi/viewcontent.cgi?article=1047&context=mathfacpub",
+    "tags": ["repeating-decimals", "midy", "classical"]
+  },
+  {
+    "id": "allouche_shallit",
+    "author": "Jean-Paul Allouche and Jeffrey Shallit",
+    "title": "Automatic Sequences: Theory, Applications, Generalizations",
+    "url": "https://www.cambridge.org/core/books/automatic-sequences/B092437A099192BA22DE4CF638142558",
+    "tags": ["automata", "transducers", "numeration-systems"]
+  }
+]

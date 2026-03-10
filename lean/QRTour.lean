@@ -12,6 +12,8 @@ import QRTour.BridgeQuality
 import QRTour.SignedBridge
 import QRTour.PAdicBridge
 import QRTour.CosetStructure
+import QRTour.CompositePeriod
+import QRTour.Preperiod
 import QRTour.Examples
 
 /-!
@@ -42,6 +44,7 @@ then this stride-m sequence visits every quadratic residue exactly once.
 
 - `QRTour.Basic` - Prime field setup with `ZMod p`
 - `QRTour.QuadraticResidues` - QR definitions and QR generators
+- `QRTour.QuadraticResidues.pow_isQRGenerator_iff` - exact order/gcd classification for QR-generating powers
 - `QRTour.RemainderOrbit` - Long division remainders and the main theorem
 - `QRTour.PrimitiveRoots` - Full generators (primitive roots) and subgroup generators
 - `QRTour.Digits` - Digit-remainder duality and reptend periodicity
@@ -50,6 +53,8 @@ then this stride-m sequence visits every quadratic residue exactly once.
 - `QRTour.SignedBridge` - Unified plus/minus bridges, alternating sign structure
 - `QRTour.PAdicBridge` - P-adic structure in bridges, block values, periodicity
 - `QRTour.CosetStructure` - Two-coset partition based on QR/NQR numerators
+- `QRTour.CompositePeriod` - finite-family CRT period theorem for composite moduli
+- `QRTour.Preperiod` - local valuation theorem behind composite preperiod lengths
 - `QRTour.Examples` - Concrete examples with p = 97
 
 ## Porting from Agda

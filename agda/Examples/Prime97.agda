@@ -19,6 +19,19 @@ import QRTour.QuadraticResidues as QR
 import QRTour.RemainderOrbit as RO
 
 ------------------------------------------------------------------------
+-- Assumption legend for this example
+--
+-- Local Agda proofs in this file:
+--   p≥2-proof, p>2-proof, p-1-even-proof, k97≡3, r0
+--
+-- Local Agda theorems imported from QRTour.RemainderOrbit:
+--   remainders-are-powers, stride-orbit
+--
+-- Lean-backed postulates still assumed here:
+--   prime-97, k97-is-qr-generator
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
 -- The prime field: p = 97
 ------------------------------------------------------------------------
 

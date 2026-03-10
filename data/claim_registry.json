@@ -1,0 +1,260 @@
+[
+  {
+    "id": "series_q_weighted_identity",
+    "title": "Exact q-weighted geometric series",
+    "statement": "For B = qM + k with gcd(B, M) = 1 and 0 <= k < M, we have 1/M = q/(B-k) = Σ_{j>=0} qk^j / B^(j+1).",
+    "status": "classical",
+    "repo_status": "documented and tested",
+    "proof_status": "elementary algebraic derivation in docs and code comments",
+    "evidence": [
+      "bridge_reptends/orbit_weave.py",
+      "tests/test_geometric_series.py"
+    ],
+    "vocabulary_ids": [
+      "quotient_q",
+      "remainder_k",
+      "skeleton"
+    ],
+    "source_ids": [
+      "conrad_qp",
+      "leavitt_repeating_decimals"
+    ],
+    "counterexample_ids": [
+      "legacy_unweighted_series_37"
+    ]
+  },
+  {
+    "id": "power_order_formula",
+    "title": "Order of a power",
+    "statement": "If r = ord_n(a), then ord_n(a^m) = r / gcd(r, m).",
+    "status": "classical",
+    "repo_status": "implemented and tested",
+    "proof_status": "used explicitly in Python and indirectly in Lean classification",
+    "evidence": [
+      "bridge_reptends/analysis.py",
+      "tests/test_stride_classification.py"
+    ],
+    "vocabulary_ids": [
+      "qr_generator",
+      "remainder_orbit"
+    ],
+    "source_ids": [
+      "conrad_orders"
+    ],
+    "counterexample_ids": []
+  },
+  {
+    "id": "qr_stride_classification",
+    "title": "Exact QR-generator stride classification",
+    "statement": "For an odd prime p and h = (p-1)/2, the stride m is QR-generating for base B exactly when ord_p(B) / gcd(ord_p(B), m) = h. Therefore QR-generating strides exist iff ord_p(B) is h or 2h, and their count is φ(h).",
+    "status": "reproved-here",
+    "repo_status": "fully formalized in Lean at the base level and backed by Python counterexample/regression tests",
+    "proof_status": "formalized in Lean as pow_isQRGenerator_iff, pow_isQRGenerator_iff_coprime_half, qrGenerator_pow_count_eq_totient, and the base-level full-order reduction theorems culminating in base_qrGenerator_pow_count_eq_totient",
+    "evidence": [
+      "lean/QRTour/QuadraticResidues.lean",
+      "tests/test_stride_classification.py"
+    ],
+    "vocabulary_ids": [
+      "qr_generator",
+      "remainder_orbit"
+    ],
+    "source_ids": [
+      "conrad_orders",
+      "conrad_qr_patterns"
+    ],
+    "counterexample_ids": [
+      "legacy_full_even_19",
+      "legacy_half_consecutive_31"
+    ]
+  },
+  {
+    "id": "crt_period_lcm",
+    "title": "Composite period via CRT",
+    "statement": "If M = Π p_i^{e_i} is coprime to the base B, then ord_M(B) is the least common multiple of the local orders ord_{p_i^{e_i}}(B).",
+    "status": "classical",
+    "repo_status": "finite prime-power CRT order theorem formalized in Lean and implemented computationally in Python",
+    "proof_status": "formalized in Lean via the finite-product order theorem orderOf_pi and the prime-power CRT theorem orderOf_unitsEquivPrimePowers; the pairwise theorem orderOf_unitsChineseRemainder remains as the two-factor core",
+    "evidence": [
+      "lean/QRTour/CompositePeriod.lean",
+      "bridge_reptends/composite.py",
+      "tests/test_composite_crt.py"
+    ],
+    "vocabulary_ids": [
+      "remainder_orbit"
+    ],
+    "source_ids": [
+      "conrad_crt",
+      "conrad_orders"
+    ],
+    "counterexample_ids": []
+  },
+  {
+    "id": "preperiod_from_base_factors",
+    "title": "Preperiod from stripped base factors",
+    "statement": "For denominator N and base b = Π p_i^{f_i}, the preperiod length is max_i ceil(v_{p_i}(N)/f_i); stripping those base factors leaves the purely periodic modulus M.",
+    "status": "classical",
+    "repo_status": "implemented, tested, and globally formalized in Lean at the base-prime support level",
+    "proof_status": "formalized in Lean as the max-over-base-primes step count together with the combined base-supported divisibility theorem; the stripped-modulus M statement remains classical/computational",
+    "evidence": [
+      "bridge_reptends/composite.py",
+      "bridge_reptends/orbit_weave.py",
+      "lean/QRTour/Preperiod.lean",
+      "tests/test_composite_crt.py"
+    ],
+    "vocabulary_ids": [
+      "good_mode",
+      "remainder_k"
+    ],
+    "source_ids": [
+      "conrad_qp"
+    ],
+    "counterexample_ids": []
+  },
+  {
+    "id": "carry_window_transducer",
+    "title": "Carry as a deterministic windowed transducer",
+    "statement": "For a finite coefficient word c_0, ..., c_{L-1}, carry propagation can be modeled by a deterministic transducer whose state is the incoming carry from less significant blocks.",
+    "status": "implemented-here",
+    "repo_status": "explicit Python model with state graphs, coarse minimization hooks, carry-vs-remainder comparison reports, and tests",
+    "proof_status": "construction-level result with explicit implemented/open boundary reporting, not separately formalized in Lean or Agda",
+    "evidence": [
+      "bridge_reptends/transducer.py",
+      "tests/test_carry_transducer.py"
+    ],
+    "vocabulary_ids": [
+      "carry_layer"
+    ],
+    "source_ids": [
+      "allouche_shallit"
+    ],
+    "counterexample_ids": []
+  },
+  {
+    "id": "small_k_visibility_heuristic",
+    "title": "Small residue improves visual legibility",
+    "statement": "Small k, and especially q = 1, tends to postpone visible carry interactions and make the early block skeleton easier to read.",
+    "status": "empirical",
+    "repo_status": "searchable and test-backed examples only",
+    "proof_status": "heuristic, not a theorem",
+    "evidence": [
+      "bridge_reptends/search.py",
+      "tests/test_search_datasets.py"
+    ],
+    "vocabulary_ids": [
+      "good_mode",
+      "skeleton",
+      "carry_layer"
+    ],
+    "source_ids": [],
+    "counterexample_ids": []
+  },
+  {
+    "id": "positive_q_good_modes",
+    "title": "Good coordinates require positive q",
+    "statement": "A mode m only gives a usable q-weighted block coordinate when B = base^m exceeds the periodic modulus M, so q = (B-k)/M is positive.",
+    "status": "classical",
+    "repo_status": "implemented and tested",
+    "proof_status": "definition-level guard now enforced in mode search",
+    "evidence": [
+      "bridge_reptends/orbit_weave.py",
+      "tests/test_geometric_series.py"
+    ],
+    "vocabulary_ids": [
+      "good_mode",
+      "quotient_q"
+    ],
+    "source_ids": [],
+    "counterexample_ids": [
+      "legacy_zero_quotient_mode"
+    ]
+  },
+  {
+    "id": "incoming_carry_position_formula",
+    "title": "Exact incoming-carry boundary from the geometric tail",
+    "statement": "For a block coordinate B = qN + k with 0 < k < B, the incoming carry into block j of the raw coefficient stream qk^j equals floor(qk^(j+1)/(B-k)). Therefore the first incoming-carry position is the least j with qk^(j+1) >= B-k.",
+    "status": "classical",
+    "repo_status": "implemented and test-backed in the visibility layer",
+    "proof_status": "direct geometric-tail identity encoded and checked against canonical and swept examples",
+    "evidence": [
+      "bridge_reptends/visibility.py",
+      "docs/CARRIED_PREFIX_VISIBILITY.md",
+      "tests/test_visibility.py"
+    ],
+    "vocabulary_ids": [
+      "good_mode",
+      "skeleton",
+      "carry_layer"
+    ],
+    "source_ids": [],
+    "counterexample_ids": [
+      "legacy_visibility_local_overflow_97",
+      "legacy_visibility_local_overflow_249"
+    ]
+  },
+  {
+    "id": "same_core_threshold_shift_interval",
+    "title": "Same-core threshold shifts are controlled by q-ratio intervals",
+    "statement": "Fix a block coordinate with shared B and k, and compare an actual denominator to its stripped periodic core. If k^s <= (q_core / q_actual) < k^(s+1), then the incoming-carry and local-overflow thresholds for the core occur earlier by either s or s+1 blocks. When q_core / q_actual = k^s exactly, the shift is exactly s blocks.",
+    "status": "classical",
+    "repo_status": "implemented and tested for same-core comparison objects and canonical family examples",
+    "proof_status": "direct threshold inequality encoded in the visibility family layer",
+    "evidence": [
+      "bridge_reptends/visibility.py",
+      "docs/CARRIED_PREFIX_VISIBILITY.md",
+      "tests/test_visibility.py"
+    ],
+    "vocabulary_ids": [
+      "good_mode",
+      "carry_layer",
+      "remainder_orbit"
+    ],
+    "source_ids": [],
+    "counterexample_ids": []
+  },
+  {
+    "id": "small_k_visibility_threshold",
+    "title": "Exact visibility threshold for carried prefixes",
+    "statement": "There is a sharp arithmetic criterion, in terms of q, k, B, and the period data, for the minimal stabilization lookahead and the remaining global visibility behavior beyond the now-implemented incoming-carry and raw-prefix boundary formulas.",
+    "status": "open",
+    "repo_status": "tracked with exact observables, an implemented incoming-carry boundary formula, canonical case families, and exported visibility datasets; the remaining lookahead formula remains open",
+    "proof_status": "not established here",
+    "evidence": [
+      "bridge_reptends/visibility.py",
+      "docs/CARRIED_PREFIX_VISIBILITY.md",
+      "tests/test_visibility.py"
+    ],
+    "vocabulary_ids": [
+      "good_mode",
+      "skeleton",
+      "carry_layer"
+    ],
+    "source_ids": [],
+    "counterexample_ids": []
+  },
+  {
+    "id": "carry_dfa_factorization",
+    "title": "Canonical factorization of long division into orbit and carry",
+    "statement": "The long-division DFA factors canonically into a remainder-orbit system together with a carry transducer for all coprime bases and moduli.",
+    "status": "open",
+    "repo_status": "tracked with explicit comparison interfaces, state-map candidate reports, bounded counterexample search, and an open-boundary statement separating state relabeling, quotient candidates, and the global theorem",
+    "proof_status": "not established here",
+    "evidence": [
+      "bridge_reptends/transducer.py",
+      "docs/CARRY_TRANSDUCER.md",
+      "tests/test_carry_transducer.py"
+    ],
+    "vocabulary_ids": [
+      "remainder_orbit",
+      "carry_layer"
+    ],
+    "source_ids": [
+      "allouche_shallit"
+    ],
+    "counterexample_ids": [
+      "carry_state_relabeling_failure_97",
+      "carry_state_relabeling_failure_996",
+      "carry_selector_monotonicity_failure_21",
+      "carry_selector_core_invariance_failure_996"
+    ]
+  }
+]

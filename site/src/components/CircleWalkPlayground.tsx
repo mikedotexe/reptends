@@ -514,10 +514,19 @@ const CircleWalkPlayground = () => {
                   {/* Center label */}
                   <text
                     x="100"
-                    y="100"
+                    y="95"
                     textAnchor="middle"
                     dominantBaseline="middle"
-                    className="text-[10px] font-mono fill-stone-400"
+                    className="text-[11px] fill-stone-500"
+                  >
+                    mod {prime}
+                  </text>
+                  <text
+                    x="100"
+                    y="108"
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    className="text-[9px] font-mono fill-stone-400"
                   >
                     (ℤ/{prime}ℤ)*
                   </text>
@@ -583,7 +592,13 @@ const CircleWalkPlayground = () => {
 
               {/* Legend */}
               <div className="mt-4 bg-stone-50 rounded-lg p-3 border border-stone-200">
-                <div className="text-[10px] font-semibold text-stone-600 mb-2">Legend</div>
+                <div className="text-[10px] text-stone-600 mb-2">
+                  <strong>Squares vs non-squares:</strong> Some remainders are "perfect
+                  squares" in modular arithmetic (like 4 = 2², or 5 = 9² mod 19).
+                  These are <span className="text-violet-600">quadratic residues (QR)</span>.
+                  The rest are <span className="text-rose-600">non-residues (NQR)</span>.
+                  Your starting point determines which half you traverse.
+                </div>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[10px] sm:text-xs">
                   <div className="flex items-center gap-2">
                     <svg viewBox="0 0 16 16" className="w-4 h-4">
@@ -864,16 +879,25 @@ const CircleWalkPlayground = () => {
             {/* Center label */}
             <text
               x="100"
-              y="96"
+              y="90"
               textAnchor="middle"
               dominantBaseline="middle"
-              className="text-[10px] sm:text-xs font-mono fill-stone-500"
+              className="text-[11px] sm:text-xs fill-stone-500"
+            >
+              mod {prime}
+            </text>
+            <text
+              x="100"
+              y="102"
+              textAnchor="middle"
+              dominantBaseline="middle"
+              className="text-[8px] font-mono fill-stone-400"
             >
               (ℤ/{prime}ℤ)*
             </text>
             <text
               x="100"
-              y="108"
+              y="113"
               textAnchor="middle"
               dominantBaseline="middle"
               className="text-[9px] font-mono fill-stone-400"
@@ -1396,8 +1420,17 @@ const CircleWalkPlayground = () => {
             The Two Cosets
           </div>
           <p className="text-fuchsia-700 text-xs sm:text-sm leading-relaxed mb-3">
+            A <strong>coset</strong> is one "half" of the group.
             The multiplicative group (ℤ/{prime}ℤ)* has {prime - 1} elements. The squaring map x → x² is 2-to-1,
-            so exactly half are squares (QR) and half are non-squares (NQR).
+            so exactly half are squares (QR) and half are non-squares (NQR). These two halves are the two cosets.
+            Which coset you land in after multiplication depends on what you multiply by:
+          </p>
+          <div className="text-fuchsia-600 text-[10px] sm:text-xs mb-3 font-mono bg-fuchsia-100 rounded p-2">
+            QR × QR = QR &nbsp;•&nbsp; QR × NQR = NQR &nbsp;•&nbsp; NQR × NQR = QR
+          </div>
+          <p className="text-fuchsia-700 text-xs sm:text-sm leading-relaxed mb-3">
+            So if the block multiplier d is a QR, you stay in your starting coset forever.
+            If d is an NQR, you flip between cosets with each block.
           </p>
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div className="bg-violet-100 rounded p-3 border border-violet-200">

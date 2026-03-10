@@ -1,0 +1,65 @@
+[
+  {
+    "id": "remainder_k",
+    "preferred_label": "remainder k = B mod M",
+    "repo_aliases": ["bridge residue", "gap d in near-power examples"],
+    "meaning": "The residue of the block base B modulo the purely periodic modulus M in B = qM + k.",
+    "scope": "all coprime moduli"
+  },
+  {
+    "id": "quotient_q",
+    "preferred_label": "quotient q = (B-k)/M",
+    "repo_aliases": ["bridge factor"],
+    "meaning": "The quotient in the canonical decomposition B = qM + k. It supplies the missing factor in the exact geometric series.",
+    "scope": "all coprime moduli"
+  },
+  {
+    "id": "skeleton",
+    "preferred_label": "raw coefficients qk^j",
+    "repo_aliases": ["skeleton", "raw powers in the q=1 bridge case"],
+    "meaning": "The uncarried block coefficients in the exact identity 1/M = Σ qk^j / B^(j+1).",
+    "scope": "all coprime moduli"
+  },
+  {
+    "id": "carry_layer",
+    "preferred_label": "carry-propagated block normalization",
+    "repo_aliases": ["carry layer"],
+    "meaning": "The deterministic carry process that converts raw coefficients into admissible base-B blocks.",
+    "scope": "all coprime moduli"
+  },
+  {
+    "id": "body_term",
+    "preferred_label": "body term W = (B^L - k^L)/M",
+    "repo_aliases": ["orbit weave"],
+    "meaning": "The finite algebraic body term in the decomposition R = W + F.",
+    "scope": "all coprime moduli"
+  },
+  {
+    "id": "correction_term",
+    "preferred_label": "correction term F = (k^L - 1)/M",
+    "repo_aliases": ["closure flux", "cyclic flux"],
+    "meaning": "The finite correction term completing the reptend decomposition R = W + F.",
+    "scope": "all coprime moduli"
+  },
+  {
+    "id": "good_mode",
+    "preferred_label": "small-residue block coordinate",
+    "repo_aliases": ["good coordinates", "bridge mode"],
+    "meaning": "A block width m for which B = base^m exceeds M and the residue k = B mod M is small enough to make early coefficients easy to read.",
+    "scope": "all coprime moduli"
+  },
+  {
+    "id": "qr_generator",
+    "preferred_label": "generator of the quadratic-residue subgroup",
+    "repo_aliases": ["QR-generator"],
+    "meaning": "An element of order (p-1)/2 in (Z/pZ)*, equivalently a generator of the subgroup of quadratic residues.",
+    "scope": "odd primes"
+  },
+  {
+    "id": "remainder_orbit",
+    "preferred_label": "remainder orbit under multiplication by the base",
+    "repo_aliases": ["circle walk"],
+    "meaning": "The long-division remainder sequence r_{n+1} = Br_n mod N, interpreted as a walk on the unit group.",
+    "scope": "all coprime moduli"
+  }
+]
