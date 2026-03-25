@@ -13,6 +13,9 @@ iteration. It keeps CI lightweight while still covering:
 from __future__ import annotations
 
 import importlib.util
+import re
+import shutil
+import subprocess
 from pathlib import Path
 
 
@@ -27,7 +30,41 @@ TESTS = (
 )
 
 
+def _lean_sorry_matches() -> list[str]:
+    lean_dir = ROOT / "lean"
+    rg = shutil.which("rg")
+    if rg is not None:
+        result = subprocess.run(
+            [rg, "-n", r"\bsorry\b", str(lean_dir)],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode == 0:
+            return [line for line in result.stdout.splitlines() if line.strip()]
+        if result.returncode == 1:
+            return []
+        raise RuntimeError(result.stderr.strip() or "rg failed while scanning Lean sources")
+
+    matches: list[str] = []
+    pattern = re.compile(r"\bsorry\b")
+    for path in sorted(lean_dir.rglob("*.lean")):
+        for line_number, line in enumerate(path.read_text().splitlines(), start=1):
+            if pattern.search(line):
+                matches.append(f"{path}:{line_number}:{line.strip()}")
+    return matches
+
+
+def check_lean_surface() -> None:
+    matches = _lean_sorry_matches()
+    if matches:
+        formatted = "\n".join(matches)
+        raise AssertionError(f"Lean sources still contain `sorry`:\n{formatted}")
+    print("PASS lean::no_sorry")
+
+
 def run_ci_checks() -> int:
+    check_lean_surface()
     tests_dir = ROOT / "tests"
     total = 0
     for filename in TESTS:

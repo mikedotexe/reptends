@@ -2,11 +2,12 @@
   {
     "id": "series_q_weighted_identity",
     "title": "Exact q-weighted geometric series",
-    "statement": "For B = qM + k with gcd(B, M) = 1 and 0 <= k < M, we have 1/M = q/(B-k) = Σ_{j>=0} qk^j / B^(j+1).",
-    "status": "classical",
-    "repo_status": "documented and tested",
-    "proof_status": "elementary algebraic derivation in docs and code comments",
+    "statement": "For a good block coordinate with B = qM + k, 0 <= k < M, and B > M, we have 1/M = q/(B-k) = \u03a3_{j>=0} qk^j / B^(j+1).",
+    "status": "reproved-here",
+    "repo_status": "formalized in Lean and tested",
+    "proof_status": "Lean theorems in QRTour.OrbitWeave formalize the good-mode fraction identity, the finite partial-sum identity, and the geometric-series expansion.",
     "evidence": [
+      "lean/QRTour/OrbitWeave.lean",
       "bridge_reptends/orbit_weave.py",
       "tests/test_geometric_series.py"
     ],
@@ -46,7 +47,7 @@
   {
     "id": "qr_stride_classification",
     "title": "Exact QR-generator stride classification",
-    "statement": "For an odd prime p and h = (p-1)/2, the stride m is QR-generating for base B exactly when ord_p(B) / gcd(ord_p(B), m) = h. Therefore QR-generating strides exist iff ord_p(B) is h or 2h, and their count is φ(h).",
+    "statement": "For an odd prime p and h = (p-1)/2, the stride m is QR-generating for base B exactly when ord_p(B) / gcd(ord_p(B), m) = h. Therefore QR-generating strides exist iff ord_p(B) is h or 2h, and their count is \u03c6(h).",
     "status": "reproved-here",
     "repo_status": "fully formalized in Lean at the base level and backed by Python counterexample/regression tests",
     "proof_status": "formalized in Lean as pow_isQRGenerator_iff, pow_isQRGenerator_iff_coprime_half, qrGenerator_pow_count_eq_totient, and the base-level full-order reduction theorems culminating in base_qrGenerator_pow_count_eq_totient",
@@ -70,7 +71,7 @@
   {
     "id": "crt_period_lcm",
     "title": "Composite period via CRT",
-    "statement": "If M = Π p_i^{e_i} is coprime to the base B, then ord_M(B) is the least common multiple of the local orders ord_{p_i^{e_i}}(B).",
+    "statement": "If M = \u03a0 p_i^{e_i} is coprime to the base B, then ord_M(B) is the least common multiple of the local orders ord_{p_i^{e_i}}(B).",
     "status": "classical",
     "repo_status": "finite prime-power CRT order theorem formalized in Lean and implemented computationally in Python",
     "proof_status": "formalized in Lean via the finite-product order theorem orderOf_pi and the prime-power CRT theorem orderOf_unitsEquivPrimePowers; the pairwise theorem orderOf_unitsChineseRemainder remains as the two-factor core",
@@ -91,7 +92,7 @@
   {
     "id": "preperiod_from_base_factors",
     "title": "Preperiod from stripped base factors",
-    "statement": "For denominator N and base b = Π p_i^{f_i}, the preperiod length is max_i ceil(v_{p_i}(N)/f_i); stripping those base factors leaves the purely periodic modulus M.",
+    "statement": "For denominator N and base b = \u03a0 p_i^{f_i}, the preperiod length is max_i ceil(v_{p_i}(N)/f_i); stripping those base factors leaves the purely periodic modulus M.",
     "status": "classical",
     "repo_status": "implemented, tested, and globally formalized in Lean at the base-prime support level",
     "proof_status": "formalized in Lean as the max-over-base-primes step count together with the combined base-supported divisibility theorem; the stripped-modulus M statement remains classical/computational",
@@ -115,9 +116,10 @@
     "title": "Carry as a deterministic windowed transducer",
     "statement": "For a finite coefficient word c_0, ..., c_{L-1}, carry propagation can be modeled by a deterministic transducer whose state is the incoming carry from less significant blocks.",
     "status": "implemented-here",
-    "repo_status": "explicit Python model with state graphs, coarse minimization hooks, carry-vs-remainder comparison reports, and tests",
-    "proof_status": "construction-level result with explicit implemented/open boundary reporting, not separately formalized in Lean or Agda",
+    "repo_status": "explicit Python model with state graphs, coarse minimization hooks, carry-vs-remainder comparison reports, tests, and an initial Lean finite-normalization surface",
+    "proof_status": "construction-level result with explicit implemented/open boundary reporting; Lean now formalizes the finite normalization recursion, traced finite runs with per-step Euclidean semantics, and value-preservation lemmas, but not yet the full carry-vs-remainder comparison layer",
     "evidence": [
+      "lean/QRTour/CarryTransducer.lean",
       "bridge_reptends/transducer.py",
       "tests/test_carry_transducer.py"
     ],
@@ -152,10 +154,11 @@
     "id": "positive_q_good_modes",
     "title": "Good coordinates require positive q",
     "statement": "A mode m only gives a usable q-weighted block coordinate when B = base^m exceeds the periodic modulus M, so q = (B-k)/M is positive.",
-    "status": "classical",
-    "repo_status": "implemented and tested",
-    "proof_status": "definition-level guard now enforced in mode search",
+    "status": "reproved-here",
+    "repo_status": "formalized in Lean and implemented in search guards",
+    "proof_status": "Lean theorem BlockCoordinate.positive_q_good_modes proves q = (B-k)/M is positive on good modes",
     "evidence": [
+      "lean/QRTour/OrbitWeave.lean",
       "bridge_reptends/orbit_weave.py",
       "tests/test_geometric_series.py"
     ],
@@ -172,10 +175,11 @@
     "id": "incoming_carry_position_formula",
     "title": "Exact incoming-carry boundary from the geometric tail",
     "statement": "For a block coordinate B = qN + k with 0 < k < B, the incoming carry into block j of the raw coefficient stream qk^j equals floor(qk^(j+1)/(B-k)). Therefore the first incoming-carry position is the least j with qk^(j+1) >= B-k.",
-    "status": "classical",
-    "repo_status": "implemented and test-backed in the visibility layer",
-    "proof_status": "direct geometric-tail identity encoded and checked against canonical and swept examples",
+    "status": "reproved-here",
+    "repo_status": "formalized in Lean and mirrored in the Python visibility layer",
+    "proof_status": "Lean theorems in QRTour.Visibility formalize the exact carry quotient, the positivity threshold, and the least-position boundary predicate.",
     "evidence": [
+      "lean/QRTour/Visibility.lean",
       "bridge_reptends/visibility.py",
       "docs/CARRIED_PREFIX_VISIBILITY.md",
       "tests/test_visibility.py"
@@ -195,10 +199,11 @@
     "id": "same_core_threshold_shift_interval",
     "title": "Same-core threshold shifts are controlled by q-ratio intervals",
     "statement": "Fix a block coordinate with shared B and k, and compare an actual denominator to its stripped periodic core. If k^s <= (q_core / q_actual) < k^(s+1), then the incoming-carry and local-overflow thresholds for the core occur earlier by either s or s+1 blocks. When q_core / q_actual = k^s exactly, the shift is exactly s blocks.",
-    "status": "classical",
-    "repo_status": "implemented and tested for same-core comparison objects and canonical family examples",
-    "proof_status": "direct threshold inequality encoded in the visibility family layer",
+    "status": "reproved-here",
+    "repo_status": "formalized in Lean and implemented/tested in the visibility family layer",
+    "proof_status": "Lean theorems in QRTour.Visibility prove the generic adjacent-threshold interval law, the exact k-power shift law, and same-core corollaries for incoming-carry and local-overflow boundaries.",
     "evidence": [
+      "lean/QRTour/Visibility.lean",
       "bridge_reptends/visibility.py",
       "docs/CARRIED_PREFIX_VISIBILITY.md",
       "tests/test_visibility.py"

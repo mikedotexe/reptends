@@ -75,8 +75,10 @@ example : strideRemainder bs 4 = 81 := by native_decide -- 10^8 ≡ 3⁴ = 81
 
 /-! ### Order of 3
 
-Proving that ord₉₇(3) = 48 is the key fact. orderOf is not directly computable
-with native_decide, so we use sorry as a placeholder.
+Proving that ord₉₇(3) = 48 is the key fact.
+
+We certify it by showing `3^48 = 1` and then ruling out every smaller positive
+exponent with a finite case split.
 -/
 
 /-- 3 has order 48 in (ZMod 97)ˣ.

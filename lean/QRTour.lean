@@ -14,6 +14,9 @@ import QRTour.PAdicBridge
 import QRTour.CosetStructure
 import QRTour.CompositePeriod
 import QRTour.Preperiod
+import QRTour.OrbitWeave
+import QRTour.Visibility
+import QRTour.CarryTransducer
 import QRTour.Examples
 
 /-!
@@ -55,6 +58,9 @@ then this stride-m sequence visits every quadratic residue exactly once.
 - `QRTour.CosetStructure` - Two-coset partition based on QR/NQR numerators
 - `QRTour.CompositePeriod` - finite-family CRT period theorem for composite moduli
 - `QRTour.Preperiod` - local valuation theorem behind composite preperiod lengths
+- `QRTour.OrbitWeave` - block-coordinate arithmetic for the q-weighted series layer
+- `QRTour.Visibility` - exact incoming-carry boundaries and same-core threshold shifts
+- `QRTour.CarryTransducer` - finite carry-normalization on raw coefficient words
 - `QRTour.Examples` - Concrete examples with p = 97
 
 ## Porting from Agda

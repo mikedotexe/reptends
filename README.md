@@ -11,7 +11,7 @@ are unique integers `q, k` with
 B = qN + k,   0 ≤ k < N.
 ```
 
-Then
+When `B > N` (the good-mode case, equivalently `q > 0`), we have the exact identity
 
 ```
 1/N = q/(B-k) = (q/B) × 1/(1 - k/B) = Σ q k^j / B^(j+1)
@@ -256,8 +256,8 @@ build-expository-note
 
 <!-- REGISTRY_SUMMARY_START -->
 - total claims: 12
-- classical: 7
-- reproved-here: 1
+- classical: 3
+- reproved-here: 5
 - implemented-here: 1
 - empirical: 1
 - open: 2
@@ -270,7 +270,8 @@ Current open claim IDs:
 - `carry_dfa_factorization` - Canonical factorization of long division into orbit and carry
 <!-- OPEN_CLAIMS_END -->
 
-- [docs/ROADMAP.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/ROADMAP.md) - working todo list and execution order
+- [ROADMAP.md](/Users/mikepurvis/other/quadratic-residue-reptends/ROADMAP.md) - root Lean-first fortification roadmap
+- [docs/ROADMAP.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/ROADMAP.md) - broader working todo list and execution order
 - [AGENT_TRACK_PLAYBOOK.md](/Users/mikepurvis/other/quadratic-residue-reptends/AGENT_TRACK_PLAYBOOK.md) - repository-agnostic guide for creating track-based hardening agents
 - [docs/AGDA_CORRESPONDENCE.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/AGDA_CORRESPONDENCE.md) - Agda postulate audit, Lean correspondences, and proof-surface legend
 - [docs/PROOF_STATUS_ATLAS.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/PROOF_STATUS_ATLAS.md) - exact claims, tagged by status

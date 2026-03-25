@@ -58,6 +58,7 @@ yarn build
 Use these as the mathematical and editorial source of truth:
 
 - [README.md](README.md) for the project overview and command map.
+- [ROADMAP.md](ROADMAP.md) for the root Lean-first fortification plan.
 - [docs/AGDA_CORRESPONDENCE.md](docs/AGDA_CORRESPONDENCE.md) for the Agda postulate audit and Lean correspondence map.
 - [docs/PROOF_STATUS_ATLAS.md](docs/PROOF_STATUS_ATLAS.md) for theorem status and claim IDs.
 - [docs/VOCABULARY.md](docs/VOCABULARY.md) for standard-label-first terminology.
