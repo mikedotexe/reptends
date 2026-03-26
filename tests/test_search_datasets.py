@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 from bridge_reptends import (
+    build_claim_witness_rows,
     build_example_atlas,
     composite_profile_rows,
     find_legacy_counterexamples,
@@ -80,9 +81,22 @@ def test_example_atlas_contains_canonical_examples_and_leaderboards() -> None:
     assert "bridge_nontrivial" in atlas["leaderboards"]
     assert "composite_crt" in atlas["leaderboards"]
     assert "prime_qr" in atlas["leaderboards"]
-    assert atlas["schema_version"] == "2.7"
+    assert atlas["schema_version"] == "2.9"
     assert atlas["dataset_kind"] == "published_example_atlas"
     assert atlas["manifest"]["publication_layer"] == "published"
+    assert "data/theorem_witnesses.json" in atlas["manifest"]["source_files"]
+    assert "claim_witnesses" in atlas
+    witness_rows = atlas["claim_witnesses"]["rows"]
+    witness_ids = {row["witness_id"] for row in witness_rows}
+    assert "series_q_weighted_identity_prime97_stride2" in witness_ids
+    assert "small_k_visibility_threshold_target_97_249_996" in witness_ids
+    featured_ids = set(atlas["claim_witnesses"]["featured_ids"])
+    assert {
+        "series_q_weighted_identity_prime97_stride2",
+        "same_core_threshold_shift_interval_996_over_249",
+        "small_k_visibility_threshold_target_97_249_996",
+        "carry_dfa_factorization_target_21_97_996",
+    } == featured_ids
     assert "case_studies" in atlas
     assert "research_layers" in atlas
     assert "carry_dfa" in atlas["case_studies"]
@@ -91,6 +105,12 @@ def test_example_atlas_contains_canonical_examples_and_leaderboards() -> None:
     assert "visibility" in atlas["case_studies"]
     assert "visibility_families" in atlas["case_studies"]
     assert "composite_families" in atlas["case_studies"]
+    visibility_by_n = {entry["n"]: entry for entry in atlas["case_studies"]["visibility"]}
+    carry_by_n = {entry["n"]: entry for entry in atlas["case_studies"]["carry_dfa"]}
+    assert "small_k_visibility_threshold" in visibility_by_n[97]["claim_context"]["related_open_claim_ids"]
+    assert "incoming_carry_position_formula_prime97_stride2" in visibility_by_n[97]["claim_context"]["matching_witness_ids"]
+    assert "carry_dfa_factorization" in carry_by_n[97]["claim_context"]["related_open_claim_ids"]
+    assert "carry_window_transducer_prime97_window6" in carry_by_n[97]["claim_context"]["matching_witness_ids"]
     selector_labels = {entry["label"] for entry in atlas["case_studies"]["carry_selector_families"]}
     assert "Same-core relabeling loss" in selector_labels
     assert "Small-multiple relabeling shift and enlargement" in selector_labels
@@ -102,6 +122,16 @@ def test_example_atlas_contains_canonical_examples_and_leaderboards() -> None:
     family_labels = {entry["label"] for entry in atlas["case_studies"]["visibility_families"]}
     assert "Cross-base same-core exact law" in family_labels
     assert "Cross-base interval endpoints in one coordinate" in family_labels
+
+
+def test_claim_witness_rows_surface_all_registry_witnesses() -> None:
+    rows = build_claim_witness_rows()
+    by_id = {row["witness_id"]: row for row in rows}
+
+    assert "same_core_threshold_shift_interval_996_over_249" in by_id
+    assert by_id["same_core_threshold_shift_interval_996_over_249"]["claim_id"] == "same_core_threshold_shift_interval"
+    assert by_id["small_k_visibility_threshold_target_97_249_996"]["claim_status"] == "open"
+    assert by_id["small_k_visibility_heuristic_family_21_37_97_249_996"]["kind"] == "empirical-witness"
 
 
 def test_example_atlas_snapshot_matches_checked_in_data() -> None:

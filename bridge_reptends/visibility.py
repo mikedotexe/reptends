@@ -21,6 +21,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from .composite import crt_period_profile
+from .registry import claim_context_for_parameters
 from .transducer import CarryTransition, carry_window_example
 
 
@@ -954,6 +955,16 @@ def visibility_profile_rows(
                 "incoming_carry_formula_holds": profile.incoming_carry_formula_holds,
                 "agreement_identity_holds": profile.agreement_identity_holds,
                 "lookahead_certificate_matches": profile.lookahead_certificate_matches,
+                **claim_context_for_parameters(
+                    (
+                        "incoming_carry_position_formula",
+                        "small_k_visibility_threshold",
+                        "small_k_visibility_heuristic",
+                    ),
+                    base=profile.base,
+                    n=profile.n,
+                    requested_blocks=profile.requested_blocks,
+                ),
             }
         )
     rows.sort(
@@ -1054,6 +1065,16 @@ def same_core_visibility_rows(
                 "exact_shift_law_holds": comparison.exact_shift_law_holds,
                 "threshold_shift_endpoint": comparison.threshold_shift_endpoint,
                 "family_law": "exact" if comparison.exact_shift_law_holds else "interval",
+                **claim_context_for_parameters(
+                    (
+                        "same_core_threshold_shift_interval",
+                        "small_k_visibility_threshold",
+                    ),
+                    base=base,
+                    actual=comparison.actual_profile.n,
+                    core=comparison.core_profile.n,
+                    requested_blocks=comparison.actual_profile.requested_blocks,
+                ),
             }
         )
     rows.sort(

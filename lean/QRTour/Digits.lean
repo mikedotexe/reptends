@@ -117,7 +117,9 @@ noncomputable def reptendPeriod (p : ℕ) [Fact (Nat.Prime p)] (B : ℕ) (hB : N
     have h_le : p ≤ 1 := Nat.le_of_dvd Nat.one_pos h_gcd
     exact Nat.not_succ_le_self 1 (Nat.lt_of_lt_of_le (Fact.out : Nat.Prime p).one_lt h_le)))
 
-/-- Digits are periodic with period = reptendPeriod. -/
+/-- Claim `digit_periodicity`: the digit sequence of `1/p` in base `B` is
+periodic with period `ord_p(B)`, and each digit is extracted by the Euclidean
+digit/remainder equation proved above. -/
 theorem digit_periodic (B : ℕ) (hB : Nat.Coprime B p) (n : ℕ) :
     digit p B (n + reptendPeriod p B hB) = digit p B n := by
   simp only [digit]
@@ -171,5 +173,16 @@ theorem digit_as_overflow (B : ℕ) (n : ℕ) :
   constructor
   · rfl
   · exact remainder_succ_eq_mod (p := p) B n
+
+section Examples
+
+local instance : Fact (Nat.Prime 19) := ⟨by native_decide⟩
+
+example :
+    digit 19 10 (0 + reptendPeriod 19 10 (by native_decide : Nat.Coprime 10 19)) =
+      digit 19 10 0 := by
+  simpa using digit_periodic (p := 19) 10 (by native_decide : Nat.Coprime 10 19) 0
+
+end Examples
 
 end QRTour

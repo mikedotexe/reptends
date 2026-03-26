@@ -1,8 +1,10 @@
 """
-Machine-readable registry for claims, sources, counterexamples, and vocabulary.
+Machine-readable registry for claims, module roles, witnesses, sources, counterexamples, and vocabulary.
 
 The repo uses these records to keep public prose aligned with exact statements:
 - claims are tagged as classical / reproved-here / empirical / implemented-here / open
+- Lean modules are classified as claim carriers, public support, or infrastructure
+- theorem witnesses tie claim IDs to canonical tuples, empirical families, or open targets
 - counterexamples point back to the claims they correct
 - vocabulary entries map coined labels to standard terminology
 """
@@ -59,6 +61,28 @@ class ClaimRecord:
     vocabulary_ids: tuple[str, ...]
     source_ids: tuple[str, ...]
     counterexample_ids: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class LeanModuleRecord:
+    id: str
+    path: str
+    current_role: str
+    promotion_decision: str
+    claim_ids: tuple[str, ...]
+    rationale: str
+
+
+@dataclass(frozen=True)
+class TheoremWitnessRecord:
+    id: str
+    claim_id: str
+    kind: str
+    label: str
+    tuple_display: str
+    parameters: dict[str, Any]
+    summary: str
+    evidence: tuple[str, ...]
 
 
 def _load_json(filename: str) -> Any:
@@ -128,6 +152,38 @@ def load_claim_registry() -> list[ClaimRecord]:
     ]
 
 
+def load_lean_module_index() -> list[LeanModuleRecord]:
+    """Load the Lean module role/promotion index."""
+    return [
+        LeanModuleRecord(
+            id=entry["id"],
+            path=entry["path"],
+            current_role=entry["current_role"],
+            promotion_decision=entry["promotion_decision"],
+            claim_ids=tuple(entry["claim_ids"]),
+            rationale=entry["rationale"],
+        )
+        for entry in _load_json("lean_module_index.json")
+    ]
+
+
+def load_theorem_witnesses() -> list[TheoremWitnessRecord]:
+    """Load the theorem-witness atlas."""
+    return [
+        TheoremWitnessRecord(
+            id=entry["id"],
+            claim_id=entry["claim_id"],
+            kind=entry["kind"],
+            label=entry["label"],
+            tuple_display=entry["tuple_display"],
+            parameters=dict(entry["parameters"]),
+            summary=entry["summary"],
+            evidence=tuple(entry["evidence"]),
+        )
+        for entry in _load_json("theorem_witnesses.json")
+    ]
+
+
 def literature_lookup() -> dict[str, LiteratureSource]:
     """Index the literature map by source id."""
     return {source.id: source for source in load_literature_map()}
@@ -146,6 +202,81 @@ def counterexample_lookup() -> dict[str, CounterexampleRecord]:
 def claim_lookup() -> dict[str, ClaimRecord]:
     """Index the claim registry by id."""
     return {record.id: record for record in load_claim_registry()}
+
+
+def lean_module_lookup() -> dict[str, LeanModuleRecord]:
+    """Index the Lean module registry by module id."""
+    return {record.id: record for record in load_lean_module_index()}
+
+
+def theorem_witness_lookup() -> dict[str, TheoremWitnessRecord]:
+    """Index the theorem-witness registry by witness id."""
+    return {record.id: record for record in load_theorem_witnesses()}
+
+
+def claim_context_for_parameters(
+    related_claim_ids: tuple[str, ...] | list[str],
+    *,
+    base: int | None = None,
+    n: int | None = None,
+    actual: int | None = None,
+    core: int | None = None,
+    requested_blocks: int | None = None,
+) -> dict[str, list[str]]:
+    """
+    Match claim and witness context for a concrete exported example.
+
+    This keeps search/report rows tied to the registry without requiring each
+    export surface to hard-code witness ids.
+    """
+    claims = claim_lookup()
+    related_ids = [claim_id for claim_id in related_claim_ids if claim_id in claims]
+    matched_witnesses: list[TheoremWitnessRecord] = []
+    family_members = {value for value in (n, actual, core) if value is not None}
+
+    for witness in load_theorem_witnesses():
+        if witness.claim_id not in related_ids:
+            continue
+        params = witness.parameters
+        if base is not None and "base" in params and params["base"] != base:
+            continue
+        if (
+            requested_blocks is not None
+            and "requestedBlocks" in params
+            and params["requestedBlocks"] != requested_blocks
+        ):
+            continue
+        if actual is not None and core is not None:
+            if params.get("actual") == actual and params.get("core") == core:
+                matched_witnesses.append(witness)
+                continue
+        if n is not None:
+            if params.get("N") == n or params.get("n") == n or params.get("p") == n:
+                matched_witnesses.append(witness)
+                continue
+        family_n = params.get("family_N")
+        if isinstance(family_n, list) and family_members.intersection(family_n):
+            matched_witnesses.append(witness)
+
+    return {
+        "related_claim_ids": related_ids,
+        "related_open_claim_ids": [
+            claim_id for claim_id in related_ids if claims[claim_id].status == "open"
+        ],
+        "matching_claim_ids": sorted({witness.claim_id for witness in matched_witnesses}),
+        "matching_witness_ids": [witness.id for witness in matched_witnesses],
+    }
+
+
+def theorem_witnesses_by_claim(
+    witnesses: list[TheoremWitnessRecord] | None = None,
+) -> dict[str, tuple[TheoremWitnessRecord, ...]]:
+    """Group theorem witnesses by claim id."""
+    records = witnesses or load_theorem_witnesses()
+    grouped: dict[str, list[TheoremWitnessRecord]] = {}
+    for record in records:
+        grouped.setdefault(record.claim_id, []).append(record)
+    return {claim_id: tuple(entries) for claim_id, entries in grouped.items()}
 
 
 def claims_by_status(claims: list[ClaimRecord] | None = None) -> dict[str, tuple[ClaimRecord, ...]]:
@@ -216,5 +347,59 @@ def render_vocabulary_table_lines(entries: list[VocabularyEntry] | None = None) 
         aliases = ", ".join(entry.repo_aliases)
         lines.append(
             f"| `{entry.id}` | {entry.preferred_label} | {aliases} | {entry.meaning} | {entry.scope} |"
+        )
+    return tuple(lines)
+
+
+def render_lean_module_index_lines(
+    modules: list[LeanModuleRecord] | None = None,
+) -> tuple[str, ...]:
+    """Render the Lean module audit table for the theorem guide."""
+    records = modules or load_lean_module_index()
+    lines = [
+        "| Module | Current role | Promotion decision | Associated claim IDs |",
+        "|--------|--------------|--------------------|----------------------|",
+    ]
+    for record in records:
+        claim_ids = ", ".join(f"`{claim_id}`" for claim_id in record.claim_ids) or "none"
+        module_link = f"[{record.path.removeprefix('lean/')}]({DATA_DIR.parent / record.path})"
+        lines.append(
+            f"| {module_link} | {record.current_role} | {record.promotion_decision} | {claim_ids} |"
+        )
+    return tuple(lines)
+
+
+def render_theorem_witness_summary_lines(
+    witnesses: list[TheoremWitnessRecord] | None = None,
+) -> tuple[str, ...]:
+    """Render a short theorem-witness summary block suitable for docs/tests."""
+    records = witnesses or load_theorem_witnesses()
+    kind_order = ("theorem-witness", "empirical-witness", "open-target")
+    counts = {kind: 0 for kind in kind_order}
+    for record in records:
+        counts[record.kind] = counts.get(record.kind, 0) + 1
+    lines = [f"- total witness records: {len(records)}"]
+    lines.extend(f"- {kind}: {counts.get(kind, 0)}" for kind in kind_order)
+    extra_kinds = sorted(kind for kind in counts if kind not in kind_order)
+    lines.extend(f"- {kind}: {counts[kind]}" for kind in extra_kinds)
+    return tuple(lines)
+
+
+def render_theorem_witness_table_lines(
+    witnesses: list[TheoremWitnessRecord] | None = None,
+    claims: dict[str, ClaimRecord] | None = None,
+) -> tuple[str, ...]:
+    """Render the theorem-witness atlas table for public docs."""
+    records = witnesses or load_theorem_witnesses()
+    claim_records = claims or claim_lookup()
+    lines = [
+        "| Witness ID | Claim ID | Claim Status | Kind | Canonical tuple or family | Why this witness | Repo Evidence |",
+        "|------------|----------|--------------|------|---------------------------|------------------|---------------|",
+    ]
+    for record in records:
+        claim_status = claim_records[record.claim_id].status
+        evidence_links = ", ".join(_doc_link(path) for path in record.evidence)
+        lines.append(
+            f"| `{record.id}` | `{record.claim_id}` | `{claim_status}` | `{record.kind}` | {record.tuple_display} | {record.summary} | {evidence_links} |"
         )
     return tuple(lines)

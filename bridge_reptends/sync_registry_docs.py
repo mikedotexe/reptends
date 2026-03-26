@@ -1,8 +1,9 @@
 """
 Sync registry-backed Markdown blocks into public docs.
 
-This keeps selected outward surfaces derived from the machine-readable claim and
-vocabulary registries rather than maintained by hand.
+This keeps selected outward surfaces derived from the machine-readable claim,
+Lean-module, theorem-witness, and vocabulary registries rather than maintained
+by hand.
 """
 
 from __future__ import annotations
@@ -12,8 +13,11 @@ from pathlib import Path
 
 from .registry import (
     render_claim_table_lines,
+    render_lean_module_index_lines,
     render_open_claim_lines,
     render_registry_summary_lines,
+    render_theorem_witness_summary_lines,
+    render_theorem_witness_table_lines,
     render_vocabulary_table_lines,
 )
 
@@ -42,6 +46,13 @@ def sync_registry_docs() -> tuple[Path, ...]:
         ),
         ROOT / "docs" / "VOCABULARY.md": (
             ("<!-- VOCABULARY_TABLE_START -->", "<!-- VOCABULARY_TABLE_END -->", render_vocabulary_table_lines()),
+        ),
+        ROOT / "lean" / "THEOREM_GUIDE.md": (
+            ("<!-- LEAN_MODULE_INDEX_START -->", "<!-- LEAN_MODULE_INDEX_END -->", render_lean_module_index_lines()),
+        ),
+        ROOT / "docs" / "THEOREM_WITNESS_ATLAS.md": (
+            ("<!-- THEOREM_WITNESS_SUMMARY_START -->", "<!-- THEOREM_WITNESS_SUMMARY_END -->", render_theorem_witness_summary_lines()),
+            ("<!-- THEOREM_WITNESS_TABLE_START -->", "<!-- THEOREM_WITNESS_TABLE_END -->", render_theorem_witness_table_lines()),
         ),
     }
 

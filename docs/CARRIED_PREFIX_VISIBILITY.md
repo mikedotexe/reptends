@@ -70,6 +70,10 @@ unit to the visible prefix integer, stabilization is impossible. This yields
 The least `L` satisfying this is exposed as
 `lookahead_tail_mass_lower_bound(...)`.
 
+Lean now formalizes this lower-bound inequality as a necessary consequence of
+the exact fixed-window certificate, so the coarse tail-mass bound and the exact
+gap certificate now sit in one theorem layer rather than only in parallel code.
+
 Exact finite-window certificate:
 
 Let `x_L` be the truncation through block `n + L - 1`. Writing
@@ -88,6 +92,11 @@ This is exposed through:
 - `lookahead_gap_numerator(...)`
 - `lookahead_certificate_holds(...)`
 - `certified_lookahead_blocks(...)`
+
+Lean now also proves that once this exact certificate holds at some lookahead
+`L`, it continues to hold for any larger lookahead window. This is a finite
+transport theorem for already-stabilized visible prefixes, not a theorem about
+the least/global lookahead itself.
 
 ## Implemented Relation for the Visible Raw Prefix
 
@@ -165,6 +174,15 @@ If the same-core ratio satisfies `k^s <= q_core / q_actual < k^(s+1)`, then the
 incoming-carry and local-overflow thresholds shift earlier by either `s` or
 `s+1` blocks, with the exact `s`-block shift in the power case above.
 
+As recorded under claim `same_core_threshold_shift_interval` in
+[docs/PROOF_STATUS_ATLAS.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/PROOF_STATUS_ATLAS.md),
+the Lean same-core layer now also packages a reusable endpoint criterion for
+the non-power interval case: once the actual and stripped-core boundary indices
+`a` and `c` are fixed, the lower versus upper label is decided by whether the
+stripping factor times the actual raw coefficient at index `a - s` stays below
+or already reaches the relevant threshold (`B - k` for incoming carry, `B` for
+local overflow).
+
 The comparison `498 / 249` is the default non-power example:
 
 - `q_core / q_actual = 2`,
@@ -174,6 +192,37 @@ The comparison `498 / 249` is the default non-power example:
 The certified lookahead still varies more subtly across the family, so it
 remains tracked as a stronger family-level observable rather than a closed-form
 same-core theorem.
+
+Lean now also packages one exact same-core transport theorem directly beneath
+that open boundary: in the `q_core / q_actual = k^s` regime, once the same-core
+incoming-carry and local-overflow boundaries are chosen with the core boundary
+not later than the actual one, the first visible mismatch position shifts by
+exactly `s` blocks as well. This is a transport law for the already-identified
+boundary layer, not a closed-form theorem for minimal stabilization lookahead.
+
+Lean now also packages two same-core lookahead-support laws beneath that same
+open claim in the exact `q_core / q_actual = k^s` regime:
+
+- the raw tail-mass inequality `q*k^(n+L) < B^L * (B-k)` transports exactly
+  between the stripped core at `(n, L)` and the actual denominator at
+  `(n + s, L)`, and
+- the coarse sufficient condition `k^(n+L) < modulus` transports exactly under
+  that same requested-block shift as well, so the stripped core can certify a
+  shifted actual window without claiming any least-lookahead theorem.
+
+Lean now also packages the exact fixed-window certificate at that same level:
+
+- in the exact `q_core / q_actual = k^s` regime, the shifted actual prefix
+  equality
+  `emittedPrefixValue_actual(n + s) = truncatedVisiblePrefixValue_actual(n + s, L)`
+  is equivalent to the stripped-core prefix equality
+  `emittedPrefixValue_core(n) = truncatedVisiblePrefixValue_core(n, L)`, so
+  the exact lookahead certificate itself transports between the stripped core
+  at `(n, L)` and the actual denominator at `(n + s, L)`.
+
+This is still a fixed-window theorem. It does not identify the least
+stabilizing lookahead for equal requested windows across a same-core family,
+and it does not close claim `small_k_visibility_threshold`.
 
 ## Cross-Base Fortification
 

@@ -8,7 +8,7 @@ This is the working todo list for the next repository passes. It converts the cu
 - Tag every public mathematical claim as `classical`, `reproved-here`, `implemented-here`, `empirical`, or `open`.
 - Keep prime-only structure separate from general composite/base-expansion structure.
 - Preserve explicit counterexamples to older prose so they do not reappear.
-- Treat the machine-readable registry files in [data/claim_registry.json](/Users/mikepurvis/other/quadratic-residue-reptends/data/claim_registry.json), [data/counterexamples.json](/Users/mikepurvis/other/quadratic-residue-reptends/data/counterexamples.json), and [data/vocabulary.json](/Users/mikepurvis/other/quadratic-residue-reptends/data/vocabulary.json) as the intended source of truth.
+- Treat the machine-readable registry files in [data/claim_registry.json](/Users/mikepurvis/other/quadratic-residue-reptends/data/claim_registry.json), [data/counterexamples.json](/Users/mikepurvis/other/quadratic-residue-reptends/data/counterexamples.json), [data/vocabulary.json](/Users/mikepurvis/other/quadratic-residue-reptends/data/vocabulary.json), [data/lean_module_index.json](/Users/mikepurvis/other/quadratic-residue-reptends/data/lean_module_index.json), and [data/theorem_witnesses.json](/Users/mikepurvis/other/quadratic-residue-reptends/data/theorem_witnesses.json) as the intended source of truth.
 
 ## Execution Order
 
@@ -30,6 +30,9 @@ This is the working todo list for the next repository passes. It converts the cu
 16. Exact carried-prefix visibility threshold framework
 17. Canonical carry/DFA factorization research framework
 18. Formal-systems integration and release snapshot
+19. Post-exact visibility and finite-carry theorem frontier
+20. Lean public-surface promotion audit
+21. Theorem-witness exposition and research tooling
 
 ## Track 1: Collaborator Docs and Empirical Notes
 
@@ -507,6 +510,183 @@ Acceptance criteria:
 - The repo can produce a clean “state of the project” snapshot for branch, release, or paper work.
 - This track does not add new math claims; it consolidates the stabilized ones.
 
+## Track 19: Post-Exact Visibility and Finite-Carry Theorem Frontier
+
+Status: `in progress`
+
+Why this matters:
+
+- The repo now has an exact finite-window carry/visibility layer, so the next
+  honest mathematical progress is not more setup but sharper intermediate
+  theorems beneath the two remaining open claims.
+- This track is the place to keep gaining exact results without pretending that
+  minimal/global visibility or canonical global DFA factorization are already in
+  reach.
+
+Todo:
+
+- [ ] Split the remaining theorem work explicitly into:
+  - stronger arithmetic control under `small_k_visibility_threshold`
+  - stronger finite state-extraction and invariant work under
+    `carry_dfa_factorization`
+- [ ] Add tranche 19A for exact transport and monotonicity lemmas around the
+  fixed-window gap certificate and visible-prefix agreement.
+- [ ] Add tranche 19B for same-core transfer or arithmetic bound-sharpening
+  theorems that improve the current visibility surface without claiming a full
+  minimal-lookahead formula.
+- [ ] Add tranche 19C for finite carry-state comparison theorems that extract
+  exact invariants from aligned traces without claiming a global morphism or
+  minimization theorem.
+- [ ] Require every theorem-level upgrade on this track to restate the atlas
+  boundary so `small_k_visibility_threshold` and `carry_dfa_factorization`
+  remain explicitly `open` unless they actually move.
+
+Implementation note:
+
+- tranche 19A is now started in Lean:
+  [Visibility.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/Visibility.lean)
+  packages the necessary tail-mass lower bound beneath the exact prefix-gap
+  certificate, proves the truncated visible-prefix value is monotone in
+  lookahead, and transports the exact certificate to larger lookahead windows
+- [CarryComparison.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CarryComparison.lean)
+  now lifts that transport layer to finite visible carry/remainder output
+  agreement
+- tranche 19B is now started in Lean:
+  [CompositeVisibility.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CompositeVisibility.lean)
+  now packages exact same-core transport of the first visible mismatch
+  boundary in the exact `k`-power regime, together with exact same-core
+  transport of the raw tail-mass lower-bound inequality, the shifted coarse
+  `k^(n+L) < modulus` sufficient condition, and the exact fixed-window
+  lookahead certificate itself between the stripped core at `(n, L)` and the
+  actual denominator at `(n + s, L)`, while still stopping short of any
+  minimal/global lookahead theorem
+- [CarryComparison.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CarryComparison.lean)
+  now consumes that exact same-core certificate transport to reprove shifted
+  finite carry/remainder visible-word and output agreement on the actual
+  denominator from a stripped-core certificate
+- the first exact L7.3 state-invariant surface is now also in
+  [CarryComparison.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CarryComparison.lean):
+  aligned finite state records now project positions, coefficients, carry
+  inputs/outputs, remainder inputs/outputs, and the observed finite
+  remainder-to-carry/carry-to-remainder state-pair lists, and each aligned
+  record satisfies the exact local carry-balance and remainder-balance
+  equations; the same module now also defines exact finite-window functional
+  criteria for those observed state-pair lists, finite transition-compatibility
+  theorems under those criteria, and explicit finite conflict lemmas that
+  refute the criteria when the observed pair list disagrees, all while still
+  stopping short of any global morphism or factorization theorem
+
+Acceptance criteria:
+
+- Progress toward the two open claims is broken into exact intermediate
+  theorems rather than vague “study more” tasks.
+- The repo can distinguish fixed-window theorem progress from global theorem
+  progress.
+- No new prose quietly overstates the status of the two open claims.
+
+## Track 20: Lean Public-Surface Promotion Audit
+
+Status: `in progress`
+
+Why this matters:
+
+- The repo now has a substantial Lean tree, and the remaining risk is not just
+  missing proofs but a half-public formal surface where interesting modules are
+  present without a clear outward role.
+- Promotion discipline matters now more than raw theorem count.
+
+Todo:
+
+- [x] Audit the current support-heavy modules:
+  - [lean/QRTour/PrimitiveRoots.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/PrimitiveRoots.lean)
+  - [lean/QRTour/BridgeQuality.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/BridgeQuality.lean)
+  - [lean/QRTour/RemainderOrbit.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/RemainderOrbit.lean)
+  - [lean/QRTour/Bridge.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/Bridge.lean)
+  - [lean/QRTour/CosetStructure.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CosetStructure.lean)
+  - [lean/GeometricStack.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/GeometricStack.lean)
+- [x] For each audited module, assign exactly one role:
+  - atlas-backed claim carrier
+  - public support surface
+  - specialized infrastructure
+- [x] Record the resulting audit in
+  [data/lean_module_index.json](/Users/mikepurvis/other/quadratic-residue-reptends/data/lean_module_index.json)
+  and the generated module table in
+  [lean/THEOREM_GUIDE.md](/Users/mikepurvis/other/quadratic-residue-reptends/lean/THEOREM_GUIDE.md).
+- [x] Require every already-landed promotion to come with:
+  - a claim ID
+  - theorem-guide entry
+  - atlas and registry sync
+  - focused CI coverage
+  - one canonical witness example when appropriate
+- [ ] Prefer explicit support-only classification over weak or inflated claim
+  promotion.
+
+Current landing:
+
+- The current audit is now machine-readable and CI-checked rather than a
+  hand-maintained paragraph in the theorem guide.
+- No new claim ID was forced in this pass; the point of Track 20A was to make
+  the present public surface legible before promoting anything else.
+
+Acceptance criteria:
+
+- No mathematically interesting Lean module remains in an ambiguous outward
+  state.
+- The theorem guide, atlas, and CI surface agree on what is public and what is
+  infrastructure.
+- New claim IDs reflect real theorem families rather than small convenience
+  lemmas.
+
+## Track 21: Theorem-Witness Exposition and Research Tooling
+
+Status: `in progress`
+
+Why this matters:
+
+- The formal and registry-backed surfaces are now strong enough that the next
+  big gain is discoverability: canonical witnesses, claim-linked examples, and
+  bounded research outputs.
+- This is the natural bridge between theorem progress, site exposition, and
+  open-claim research.
+
+Todo:
+
+- [x] Add a theorem-witness atlas keyed by claim ID with canonical tuples,
+  witness families, and evidence paths.
+- [x] Expose claim-linked witness rows for docs and generated notes.
+- [x] Expose claim-linked witness rows for search and site-facing data
+  so public examples are generated from stable identifiers rather than edited by
+  hand.
+- [ ] Add bounded search and export tooling targeted specifically at:
+  - `small_k_visibility_threshold`
+  - `carry_dfa_factorization`
+  rather than only generic sweeps.
+- [x] Keep theorem witnesses, empirical witnesses, and open-target families
+  clearly separated in the generated surfaces.
+- [ ] Use this track to connect theorem-level progress to Track 18 release
+  snapshots without blurring theorem status.
+
+Current landing:
+
+- The witness atlas now lives in
+  [data/theorem_witnesses.json](/Users/mikepurvis/other/quadratic-residue-reptends/data/theorem_witnesses.json)
+  and [docs/THEOREM_WITNESS_ATLAS.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/THEOREM_WITNESS_ATLAS.md).
+- Every current claim ID has a named witness or open target family with
+  evidence paths checked in CI.
+- The published example atlas and the site-facing atlas library now expose
+  claim-linked witness rows directly, so theorem witnesses are no longer only a
+  docs-facing registry surface.
+- Visibility and carry search/report rows now expose related claim IDs, open
+  claim IDs, and matching witness IDs, and the published atlas case studies now
+  thread that claim context directly into individual examples.
+
+Acceptance criteria:
+
+- Each atlas-backed claim has at least one named canonical witness path in the
+  repo.
+- Each open claim has named target families and bounded research outputs.
+- Claim-linked examples can be published without hand-maintained theorem prose.
+
 ## Current State
 
 Tracks 1 through 17 are now implemented. The repo has:
@@ -522,7 +702,13 @@ Tracks 1 through 17 are now implemented. The repo has:
 9. an exact Track 16 visibility framework with cross-base family studies,
 10. a Track 17 carry/DFA research framework that separates state relabeling, quotient candidates, and the still-open global theorem.
 
-Track 18 is now the remaining planned release-facing consolidation pass:
+Tracks 18 through 21 are now the active next-phase passes:
 
-1. add the proof-system legend across public surfaces,
-2. package the current proof status, open claims, dataset version, and note state into one clean release snapshot.
+1. add the proof-system legend across public surfaces and package a clean
+   release snapshot,
+2. push the exact carry/visibility frontier through honest intermediate
+   theorems beneath the two open claims,
+3. continue classifying and, when warranted, promote the remaining Lean support
+   modules without inflating the atlas,
+4. extend theorem-witness and research-tooling surfaces so the formal and
+   open-claim layers are easier to explore and publish.

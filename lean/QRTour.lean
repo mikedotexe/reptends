@@ -17,6 +17,8 @@ import QRTour.Preperiod
 import QRTour.OrbitWeave
 import QRTour.Visibility
 import QRTour.CarryTransducer
+import QRTour.CarryComparison
+import QRTour.CompositeVisibility
 import QRTour.Examples
 
 /-!
@@ -61,6 +63,8 @@ then this stride-m sequence visits every quadratic residue exactly once.
 - `QRTour.OrbitWeave` - block-coordinate arithmetic for the q-weighted series layer
 - `QRTour.Visibility` - exact incoming-carry boundaries and same-core threshold shifts
 - `QRTour.CarryTransducer` - finite carry-normalization on raw coefficient words
+- `QRTour.CarryComparison` - exact finite-window carry/remainder trace alignment
+- `QRTour.CompositeVisibility` - same-core family packaging for stripped periodic cores
 - `QRTour.Examples` - Concrete examples with p = 97
 
 ## Porting from Agda

@@ -20,6 +20,7 @@ from dataclasses import dataclass
 
 from .orbit_weave import apply_carry, raw_series_blocks, skeleton_vs_actual
 from .orbit_weave import strip_base_factors
+from .registry import claim_context_for_parameters
 
 
 def _fiber_map(pairs: tuple[tuple[int, int], ...]) -> tuple[tuple[int, tuple[int, ...]], ...]:
@@ -409,7 +410,7 @@ class ObservedStateMap:
 
     def summary_line(self) -> str:
         return (
-            f"{self.source_kind} -> {self.target_kind}: functional={self.is_functional}, "
+            f"{self.source_kind} -> {self.target_kind}: finite-window functional criterion={self.is_functional}, "
             f"injective={self.is_injective}, max fiber size={self.max_fiber_size}"
         )
 
@@ -465,15 +466,16 @@ class FactorizationDecisionReport:
     def refutation_target(self) -> str:
         return (
             "Find a bounded example where the displayed words agree on the visible window but even the "
-            "observed remainder-to-carry quotient candidate fails or becomes incompatible with any simple "
-            "state relabeling."
+            "observed finite-window remainder-to-carry functional criterion fails, or where the observed "
+            "transition data becomes incompatible with any simple state relabeling."
         )
 
     @property
     def weaker_replacement(self) -> str:
         return (
-            "If a canonical factorization fails, downgrade to finite-window output agreement plus an "
-            "observed quotient-from-remainder-to-carry framework, without claiming a unique global state factorization."
+            "If a canonical factorization fails, downgrade to finite-window output agreement plus observed "
+            "finite functional criteria and a quotient-from-remainder-to-carry framework, without claiming "
+            "a unique global state factorization."
         )
 
     def summary_lines(self) -> tuple[str, ...]:
@@ -1354,19 +1356,19 @@ def canonical_carry_dfa_examples(base: int = 10) -> tuple[CarryDFACase, ...]:
             "Trivial state relabeling",
             21,
             6,
-            "in this block coordinate both machines collapse to one observed state, giving the trivial state-relabeling regime",
+            "in this block coordinate both observed finite-window functional criteria hold and both machines collapse to one state, giving the trivial relabeling regime",
         ),
         (
             "Prime carry interaction",
             97,
             2,
-            "finite-window outputs match, but the observed state-level relation is only a remainder-to-carry quotient candidate rather than a simple relabeling",
+            "finite-window outputs match, the observed remainder-to-carry functional criterion holds, and the carry-to-remainder criterion fails, so the window is quotient-only rather than a relabeling",
         ),
         (
             "Composite preperiod plus carry",
             996,
             3,
-            "the same quotient-only regime persists in a composite example with preperiod and stripped-core structure",
+            "the same quotient-only finite-window regime persists in a composite example with preperiod and same-core structure",
         ),
     ]
     return tuple(
@@ -1539,6 +1541,11 @@ def carry_factorization_rows(
                 "quotient_modes": list(profile.quotient_modes),
                 "finite_word_only_modes": list(profile.finite_word_only_modes),
                 "has_isolated_relabeling_window": profile.has_isolated_relabeling_window,
+                **claim_context_for_parameters(
+                    ("carry_window_transducer", "carry_dfa_factorization"),
+                    base=comparison.base,
+                    n=comparison.n,
+                ),
             }
         )
     priority = {

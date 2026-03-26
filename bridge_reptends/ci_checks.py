@@ -20,12 +20,25 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent.parent
+LAKE = shutil.which("lake") or str(Path.home() / ".elan" / "bin" / "lake")
+LEAN_TARGETS = (
+    "QRTour.Digits",
+    "QRTour.SignedBridge",
+    "QRTour.PAdicBridge",
+    "QRTour.Visibility",
+    "QRTour.CarryComparison",
+    "QRTour.CompositeVisibility",
+    "QRTour",
+)
 TESTS = (
     "test_carry_transducer.py",
+    "test_visibility.py",
+    "test_composite_crt.py",
     "test_search_datasets.py",
     "test_api_normalization.py",
     "test_expository_note.py",
     "test_registry.py",
+    "test_theorem_witnesses.py",
     "test_doc_drift.py",
 )
 
@@ -63,8 +76,22 @@ def check_lean_surface() -> None:
     print("PASS lean::no_sorry")
 
 
+def check_lean_targets() -> None:
+    lean_dir = ROOT / "lean"
+    for target in LEAN_TARGETS:
+        subprocess.run(
+            [LAKE, "build", target],
+            cwd=lean_dir,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        print(f"PASS lean::build::{target}")
+
+
 def run_ci_checks() -> int:
     check_lean_surface()
+    check_lean_targets()
     tests_dir = ROOT / "tests"
     total = 0
     for filename in TESTS:

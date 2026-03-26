@@ -1,22 +1,35 @@
 # Expository Note
 
-This note is generated from the claim registry, vocabulary registry, and published example atlas.
+This note is generated from the claim registry, theorem-witness registry, vocabulary registry, and published example atlas.
 Each theorem-level item is tagged by claim ID and points back to concrete evidence.
 
 ## Registry Snapshot
 
-- total claims: 12
-- classical: 7
-- reproved-here: 1
+- total claims: 15
+- classical: 3
+- reproved-here: 8
 - implemented-here: 1
 - empirical: 1
 - open: 2
 
+## Theorem-Witness Surface
+
+Use [THEOREM_WITNESS_ATLAS.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/THEOREM_WITNESS_ATLAS.md) for the claim-linked witness registry.
+- total witness records: 15
+- theorem-witness: 12
+- empirical-witness: 1
+- open-target: 2
+
+- `series_q_weighted_identity_prime97_stride2` -> `series_q_weighted_identity`: (base=10, N=97, stride=2, B=100, q=1, k=3)
+- `same_core_threshold_shift_interval_996_over_249` -> `same_core_threshold_shift_interval`: (base=10, actual=996, core=249, stride=3, B=1000, k=4)
+- `small_k_visibility_threshold_target_97_249_996` -> `small_k_visibility_threshold`: (base=10, requestedBlocks=8, N in {97, 249, 996})
+- `carry_dfa_factorization_target_21_97_996` -> `carry_dfa_factorization`: (base=10, N in {21, 97, 996})
+
 ## Classical Background
 
-- `series_q_weighted_identity` (classical)
-  Statement: For B = qM + k with gcd(B, M) = 1 and 0 <= k < M, we have 1/M = q/(B-k) = Σ_{j>=0} qk^j / B^(j+1).
-  Evidence: [orbit_weave.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/orbit_weave.py), [test_geometric_series.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_geometric_series.py)
+- `series_q_weighted_identity` (reproved-here)
+  Statement: For a good block coordinate with B = qM + k, 0 <= k < M, and B > M, we have 1/M = q/(B-k) = Σ_{j>=0} qk^j / B^(j+1).
+  Evidence: [OrbitWeave.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/OrbitWeave.lean), [orbit_weave.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/orbit_weave.py), [test_geometric_series.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_geometric_series.py)
 - `power_order_formula` (classical)
   Statement: If r = ord_n(a), then ord_n(a^m) = r / gcd(r, m).
   Evidence: [analysis.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/analysis.py), [test_stride_classification.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_stride_classification.py)
@@ -25,13 +38,13 @@ Each theorem-level item is tagged by claim ID and points back to concrete eviden
   Evidence: [CompositePeriod.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CompositePeriod.lean), [composite.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/composite.py), [test_composite_crt.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_composite_crt.py)
 - `preperiod_from_base_factors` (classical)
   Statement: For denominator N and base b = Π p_i^{f_i}, the preperiod length is max_i ceil(v_{p_i}(N)/f_i); stripping those base factors leaves the purely periodic modulus M.
-  Evidence: [composite.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/composite.py), [orbit_weave.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/orbit_weave.py), [Preperiod.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/Preperiod.lean), [test_composite_crt.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_composite_crt.py)
-- `incoming_carry_position_formula` (classical)
+  Evidence: [composite.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/composite.py), [orbit_weave.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/orbit_weave.py), [Preperiod.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/Preperiod.lean), [CompositeVisibility.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CompositeVisibility.lean), [test_composite_crt.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_composite_crt.py)
+- `incoming_carry_position_formula` (reproved-here)
   Statement: For a block coordinate B = qN + k with 0 < k < B, the incoming carry into block j of the raw coefficient stream qk^j equals floor(qk^(j+1)/(B-k)). Therefore the first incoming-carry position is the least j with qk^(j+1) >= B-k.
-  Evidence: [visibility.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/visibility.py), [CARRIED_PREFIX_VISIBILITY.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/CARRIED_PREFIX_VISIBILITY.md), [test_visibility.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_visibility.py)
-- `same_core_threshold_shift_interval` (classical)
-  Statement: Fix a block coordinate with shared B and k, and compare an actual denominator to its stripped periodic core. If k^s <= (q_core / q_actual) < k^(s+1), then the incoming-carry and local-overflow thresholds for the core occur earlier by either s or s+1 blocks. When q_core / q_actual = k^s exactly, the shift is exactly s blocks.
-  Evidence: [visibility.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/visibility.py), [CARRIED_PREFIX_VISIBILITY.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/CARRIED_PREFIX_VISIBILITY.md), [test_visibility.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_visibility.py)
+  Evidence: [Visibility.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/Visibility.lean), [visibility.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/visibility.py), [CARRIED_PREFIX_VISIBILITY.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/CARRIED_PREFIX_VISIBILITY.md), [test_visibility.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_visibility.py)
+- `same_core_threshold_shift_interval` (reproved-here)
+  Statement: Fix a block coordinate with shared B and k, and compare an actual denominator to its stripped periodic core. If k^s <= (q_core / q_actual) < k^(s+1), then the incoming-carry and local-overflow thresholds for the core occur earlier by either s or s+1 blocks. When q_core / q_actual = k^s exactly, the shift is exactly s blocks. In the non-power interval case, Lean also packages scaled-raw-coefficient sufficient criteria for the lower and upper endpoint labels at fixed boundary data.
+  Evidence: [Visibility.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/Visibility.lean), [CompositeVisibility.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CompositeVisibility.lean), [visibility.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/visibility.py), [CARRIED_PREFIX_VISIBILITY.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/CARRIED_PREFIX_VISIBILITY.md), [test_visibility.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_visibility.py)
 
 ## Formalized Results
 
@@ -39,26 +52,38 @@ Each theorem-level item is tagged by claim ID and points back to concrete eviden
   Statement: For an odd prime p and h = (p-1)/2, the stride m is QR-generating for base B exactly when ord_p(B) / gcd(ord_p(B), m) = h. Therefore QR-generating strides exist iff ord_p(B) is h or 2h, and their count is φ(h).
   Proof status: formalized in Lean as pow_isQRGenerator_iff, pow_isQRGenerator_iff_coprime_half, qrGenerator_pow_count_eq_totient, and the base-level full-order reduction theorems culminating in base_qrGenerator_pow_count_eq_totient
   Evidence: [QuadraticResidues.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/QuadraticResidues.lean), [test_stride_classification.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_stride_classification.py)
+- `digit_periodicity` (reproved-here)
+  Statement: For an odd prime p and a base B coprime to p, the base-B digits of 1/p are periodic with period ord_p(B). At each step, the digit is the Euclidean quotient in B*r_n = d_n*p + r_{n+1}.
+  Proof status: Lean theorems in QRTour.Digits formalize the Euclidean digit/remainder equation, the digit bound, the period defined by orderOf on units, and the exact digit periodicity theorem.
+  Evidence: [Digits.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/Digits.lean), [AGDA_CORRESPONDENCE.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/AGDA_CORRESPONDENCE.md), [ci_checks.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/ci_checks.py)
+- `signed_bridge_recurrence` (reproved-here)
+  Statement: If a prime denominator satisfies B^k ≡ ±d (mod p), then the remainder orbit obeys r[n+k] = (±d)r[n]. Consequently r[n+2k] = d^2 r[n], so the sign always cancels after two stride steps.
+  Proof status: Lean theorems in QRTour.SignedBridge formalize the signed k-step recurrence, the two-step sign-cancellation law, and the conversion of ordinary bridge coordinates into the minus branch of the signed package.
+  Evidence: [SignedBridge.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/SignedBridge.lean), [PAdicBridge.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/PAdicBridge.lean), [ci_checks.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/ci_checks.py), [README.md](/Users/mikepurvis/other/quadratic-residue-reptends/README.md)
+- `bridge_block_value_periodicity` (reproved-here)
+  Statement: For a bridge coordinate with B^k ≡ d (mod p), the block values at positions j*k are exactly d^j in ZMod p. Therefore the block sequence is periodic with period ord_p(d).
+  Proof status: Lean theorems in QRTour.PAdicBridge formalize the block-value geometric identity, define bridgeOrder as the order of d in the unit group, and prove that the block sequence repeats with period bridgeOrder.
+  Evidence: [PAdicBridge.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/PAdicBridge.lean), [Bridge.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/Bridge.lean), [ci_checks.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/ci_checks.py), [README.md](/Users/mikepurvis/other/quadratic-residue-reptends/README.md)
 - `crt_period_lcm` (classical)
   Statement: If M = Π p_i^{e_i} is coprime to the base B, then ord_M(B) is the least common multiple of the local orders ord_{p_i^{e_i}}(B).
   Proof status: formalized in Lean via the finite-product order theorem orderOf_pi and the prime-power CRT theorem orderOf_unitsEquivPrimePowers; the pairwise theorem orderOf_unitsChineseRemainder remains as the two-factor core
   Evidence: [CompositePeriod.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CompositePeriod.lean), [composite.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/composite.py), [test_composite_crt.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_composite_crt.py)
 - `preperiod_from_base_factors` (classical)
   Statement: For denominator N and base b = Π p_i^{f_i}, the preperiod length is max_i ceil(v_{p_i}(N)/f_i); stripping those base factors leaves the purely periodic modulus M.
-  Proof status: formalized in Lean as the max-over-base-primes step count together with the combined base-supported divisibility theorem; the stripped-modulus M statement remains classical/computational
-  Evidence: [composite.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/composite.py), [orbit_weave.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/orbit_weave.py), [Preperiod.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/Preperiod.lean), [test_composite_crt.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_composite_crt.py)
+  Proof status: Lean formalizes the local ceiling-valuation theorem, the global max-over-base-primes step count, the positivity and self-divisibility of the base-supported factor, and the divisibility of that factor into base^preperiodSteps; the stripped-modulus M statement itself remains classical/computational
+  Evidence: [composite.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/composite.py), [orbit_weave.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/orbit_weave.py), [Preperiod.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/Preperiod.lean), [CompositeVisibility.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CompositeVisibility.lean), [test_composite_crt.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_composite_crt.py)
 
 ## Implementation Layers
 
 - Standard vocabulary anchors: `small-residue block coordinate`, `remainder orbit under multiplication by the base`, `carry-propagated block normalization`.
 - `carry_window_transducer` (implemented-here)
   Statement: For a finite coefficient word c_0, ..., c_{L-1}, carry propagation can be modeled by a deterministic transducer whose state is the incoming carry from less significant blocks.
-  Repo status: explicit Python model with state graphs, coarse minimization hooks, carry-vs-remainder comparison reports, and tests
-  Evidence: [transducer.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/transducer.py), [test_carry_transducer.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_carry_transducer.py)
-- `positive_q_good_modes` (classical)
+  Repo status: explicit Python model with state graphs, coarse minimization hooks, carry-vs-remainder comparison reports, tests, and a Lean finite-window normalization/comparison surface
+  Evidence: [CarryTransducer.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CarryTransducer.lean), [CarryComparison.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CarryComparison.lean), [transducer.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/transducer.py), [test_carry_transducer.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_carry_transducer.py)
+- `positive_q_good_modes` (reproved-here)
   Statement: A mode m only gives a usable q-weighted block coordinate when B = base^m exceeds the periodic modulus M, so q = (B-k)/M is positive.
-  Repo status: implemented and tested
-  Evidence: [orbit_weave.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/orbit_weave.py), [test_geometric_series.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_geometric_series.py)
+  Repo status: formalized in Lean and implemented in search guards
+  Evidence: [OrbitWeave.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/OrbitWeave.lean), [orbit_weave.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/orbit_weave.py), [test_geometric_series.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_geometric_series.py)
 - `small_k_visibility_heuristic` (empirical)
   Statement: Small k, and especially q = 1, tends to postpone visible carry interactions and make the early block skeleton easier to read.
   Repo status: searchable and test-backed examples only
@@ -77,13 +102,13 @@ Composite family case studies:
 - Shared periodic core 249 / 996 (249, 996) - This family separates the purely periodic remainder-orbit structure from the base-factor preperiod. The pair is the clearest composite example where CRT data, preperiod length, and carry normalization can be discussed independently.
 
 Carry / DFA case studies:
-- `1/21` - Trivial state relabeling: in this block coordinate both machines collapse to one observed state, giving the trivial state-relabeling regime
+- `1/21` - Trivial state relabeling: in this block coordinate both observed finite-window functional criteria hold and both machines collapse to one state, giving the trivial relabeling regime
   Implemented boundary: finite-window output agreement between the carry-propagated block normalization and the long-division DFA
   Open boundary: canonical factorization of the entire long-division DFA into orbit plus carry is not established here
-- `1/97` - Prime carry interaction: finite-window outputs match, but the observed state-level relation is only a remainder-to-carry quotient candidate rather than a simple relabeling
+- `1/97` - Prime carry interaction: finite-window outputs match, the observed remainder-to-carry functional criterion holds, and the carry-to-remainder criterion fails, so the window is quotient-only rather than a relabeling
   Implemented boundary: finite-window output agreement between the carry-propagated block normalization and the long-division DFA
   Open boundary: canonical factorization of the entire long-division DFA into orbit plus carry is not established here
-- `1/996` - Composite preperiod plus carry: the same quotient-only regime persists in a composite example with preperiod and stripped-core structure
+- `1/996` - Composite preperiod plus carry: the same quotient-only finite-window regime persists in a composite example with preperiod and same-core structure
   Implemented boundary: finite-window output agreement between the carry-propagated block normalization and the long-division DFA
   Open boundary: canonical factorization of the entire long-division DFA into orbit plus carry is not established here
 
@@ -147,7 +172,7 @@ Visibility family studies:
 
 - `small_k_visibility_threshold`
   Statement: There is a sharp arithmetic criterion, in terms of q, k, B, and the period data, for the minimal stabilization lookahead and the remaining global visibility behavior beyond the now-implemented incoming-carry and raw-prefix boundary formulas.
-  Evidence: [visibility.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/visibility.py), [CARRIED_PREFIX_VISIBILITY.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/CARRIED_PREFIX_VISIBILITY.md), [test_visibility.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_visibility.py)
+  Evidence: [Visibility.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/Visibility.lean), [CarryComparison.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CarryComparison.lean), [CompositeVisibility.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CompositeVisibility.lean), [visibility.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/visibility.py), [CARRIED_PREFIX_VISIBILITY.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/CARRIED_PREFIX_VISIBILITY.md), [test_visibility.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_visibility.py)
 - `carry_dfa_factorization`
   Statement: The long-division DFA factors canonically into a remainder-orbit system together with a carry transducer for all coprime bases and moduli.
   Evidence: [transducer.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/transducer.py), [CARRY_TRANSDUCER.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/CARRY_TRANSDUCER.md), [test_carry_transducer.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_carry_transducer.py)

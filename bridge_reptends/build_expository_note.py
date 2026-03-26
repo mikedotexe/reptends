@@ -6,7 +6,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .registry import claim_lookup, open_claims, render_registry_summary_lines, vocabulary_lookup
+from .registry import (
+    claim_lookup,
+    load_theorem_witnesses,
+    open_claims,
+    render_registry_summary_lines,
+    render_theorem_witness_summary_lines,
+    vocabulary_lookup,
+)
 from .search import build_example_atlas
 
 
@@ -21,6 +28,7 @@ def _doc_link(path: str) -> str:
 def render_expository_note_lines() -> tuple[str, ...]:
     claims = claim_lookup()
     vocabulary = vocabulary_lookup()
+    witnesses = {record.id: record for record in load_theorem_witnesses()}
     atlas = build_example_atlas(max_n=1200, max_p=1200, top=8)
 
     classical_ids = (
@@ -33,6 +41,9 @@ def render_expository_note_lines() -> tuple[str, ...]:
     )
     formalized_ids = (
         "qr_stride_classification",
+        "digit_periodicity",
+        "signed_bridge_recurrence",
+        "bridge_block_value_periodicity",
         "crt_period_lcm",
         "preperiod_from_base_factors",
     )
@@ -45,12 +56,22 @@ def render_expository_note_lines() -> tuple[str, ...]:
     lines = [
         "# Expository Note",
         "",
-        "This note is generated from the claim registry, vocabulary registry, and published example atlas.",
+        "This note is generated from the claim registry, theorem-witness registry, vocabulary registry, and published example atlas.",
         "Each theorem-level item is tagged by claim ID and points back to concrete evidence.",
         "",
         "## Registry Snapshot",
         "",
         *render_registry_summary_lines(),
+        "",
+        "## Theorem-Witness Surface",
+        "",
+        "Use [THEOREM_WITNESS_ATLAS.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/THEOREM_WITNESS_ATLAS.md) for the claim-linked witness registry.",
+        *render_theorem_witness_summary_lines(),
+        "",
+        f"- `{witnesses['series_q_weighted_identity_prime97_stride2'].id}` -> `{witnesses['series_q_weighted_identity_prime97_stride2'].claim_id}`: {witnesses['series_q_weighted_identity_prime97_stride2'].tuple_display}",
+        f"- `{witnesses['same_core_threshold_shift_interval_996_over_249'].id}` -> `{witnesses['same_core_threshold_shift_interval_996_over_249'].claim_id}`: {witnesses['same_core_threshold_shift_interval_996_over_249'].tuple_display}",
+        f"- `{witnesses['small_k_visibility_threshold_target_97_249_996'].id}` -> `{witnesses['small_k_visibility_threshold_target_97_249_996'].claim_id}`: {witnesses['small_k_visibility_threshold_target_97_249_996'].tuple_display}",
+        f"- `{witnesses['carry_dfa_factorization_target_21_97_996'].id}` -> `{witnesses['carry_dfa_factorization_target_21_97_996'].claim_id}`: {witnesses['carry_dfa_factorization_target_21_97_996'].tuple_display}",
         "",
         "## Classical Background",
         "",
@@ -208,6 +229,33 @@ def render_expository_note_lines() -> tuple[str, ...]:
         lines.append(
             f"- {family['label']} ({', '.join(str(member) for member in family['members'])}) - {family['explanation']}"
         )
+
+    covered_claim_ids = (
+        set(classical_ids)
+        | set(formalized_ids)
+        | set(implementation_ids)
+        | {claim.id for claim in open_claims()}
+    )
+    missing_claims = [
+        claim for claim_id, claim in claims.items() if claim_id not in covered_claim_ids
+    ]
+    if missing_claims:
+        lines.extend(
+            [
+                "",
+                "## Additional Registry Claims",
+                "",
+            ]
+        )
+        for claim in missing_claims:
+            evidence = ", ".join(_doc_link(path) for path in claim.evidence)
+            lines.extend(
+                [
+                    f"- `{claim.id}` ({claim.status})",
+                    f"  Statement: {claim.statement}",
+                    f"  Evidence: {evidence}",
+                ]
+            )
 
     lines.extend(
         [

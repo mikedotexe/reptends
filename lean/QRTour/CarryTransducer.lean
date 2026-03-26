@@ -327,6 +327,17 @@ theorem CarryTransducer.mem_traceBlocks_nonleft_block_lt
   simpa [CarryTransducer.traceReversed] using
     T.mem_traceReversedAux_nonleft_block_lt hrev hleft
 
+theorem CarryTransducer.mem_traceBlocks_value
+    (T : CarryTransducer) {coefficients : List ℕ} {step : CarryTraceStep}
+    (hstep : step ∈ T.traceBlocks coefficients) :
+    step.coefficient + step.carryIn = step.blockValue + T.blockBase * step.carryOut := by
+  have hrev : step ∈ T.traceReversed coefficients.reverse := by
+    have : step ∈ (T.traceReversed coefficients.reverse).reverse := by
+      simpa [CarryTransducer.traceBlocks] using hstep
+    exact List.mem_reverse.mp this
+  simpa [CarryTransducer.traceReversed] using
+    T.mem_traceReversedAux_value hrev
+
 /-- Evaluate a least-significant-first block word as a base-`B` numeral. -/
 def CarryTransducer.evalReversed (T : CarryTransducer) : List ℕ → ℕ
   | [] => 0
@@ -748,6 +759,13 @@ theorem BlockCoordinate.traceRawWord_map_blockValue
     (C.traceRawWord hgood length).map CarryTraceStep.blockValue = C.normalizedRawWord hgood length := by
   simpa [BlockCoordinate.traceRawWord, BlockCoordinate.normalizedRawWord] using
     (C.carryTransducer hgood).traceBlocks_map_blockValue (C.rawCoefficientWord length)
+
+theorem BlockCoordinate.mem_traceRawWord_value
+    (C : BlockCoordinate) (hgood : C.goodMode) {length : ℕ} {step : CarryTraceStep}
+    (hstep : step ∈ C.traceRawWord hgood length) :
+    step.coefficient + step.carryIn = step.blockValue + C.blockBase * step.carryOut := by
+  simpa [BlockCoordinate.traceRawWord, BlockCoordinate.carryTransducer] using
+    (C.carryTransducer hgood).mem_traceBlocks_value hstep
 
 /-- One emitted long-division step in block coordinates. -/
 structure RemainderTraceStep where

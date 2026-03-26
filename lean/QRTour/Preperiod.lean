@@ -140,14 +140,42 @@ private theorem factorization_basePrimeSupportFactor (base n : ℕ) :
   unfold basePrimeSupportFactorization at hp
   exact
     Nat.prime_of_mem_primeFactors
-      ((Finsupp.support_onFinset_subset :
-        (Finsupp.onFinset base.primeFactors
-          (fun q => if q ∈ base.primeFactors then padicValNat q n else 0)
-          (by
-            intro q hq
-            by_cases hmem : q ∈ base.primeFactors
-            · exact hmem
-            · simp [hmem] at hq)).support ⊆ base.primeFactors) hp)
+    ((Finsupp.support_onFinset_subset :
+      (Finsupp.onFinset base.primeFactors
+        (fun q => if q ∈ base.primeFactors then padicValNat q n else 0)
+        (by
+          intro q hq
+          by_cases hmem : q ∈ base.primeFactors
+          · exact hmem
+          · simp [hmem] at hq)).support ⊆ base.primeFactors) hp)
+
+/-- The base-supported prime-power factor is always positive. -/
+theorem basePrimeSupportFactor_pos (base n : ℕ) :
+    0 < basePrimeSupportFactor base n := by
+  unfold basePrimeSupportFactor
+  apply Nat.pos_of_ne_zero
+  exact Finset.prod_ne_zero_iff.mpr fun p hp =>
+    pow_ne_zero _ (Nat.prime_of_mem_primeFactors hp).ne_zero
+
+/-- The base-supported prime-power factor divides the original denominator. -/
+theorem basePrimeSupportFactor_dvd (base n : ℕ) :
+    basePrimeSupportFactor base n ∣ n := by
+  have hleft_ne : basePrimeSupportFactor base n ≠ 0 :=
+    Nat.ne_of_gt (basePrimeSupportFactor_pos base n)
+  by_cases hn : n = 0
+  · simp [hn]
+  · rw [← Nat.factorization_le_iff_dvd hleft_ne hn]
+    intro q
+    by_cases hq : q ∈ base.primeFactors
+    · have hq_prime : Nat.Prime q := Nat.prime_of_mem_primeFactors hq
+      haveI : Fact q.Prime := ⟨hq_prime⟩
+      have hlocal : q ^ padicValNat q n ∣ n := pow_padicValNat_dvd (p := q)
+      have hle : padicValNat q n ≤ n.factorization q :=
+        hq_prime.pow_dvd_iff_le_factorization hn |>.mp hlocal
+      rw [factorization_basePrimeSupportFactor, basePrimeSupportFactorization_apply, if_pos hq]
+      simpa using hle
+    · rw [factorization_basePrimeSupportFactor, basePrimeSupportFactorization_apply, if_neg hq]
+      exact Nat.zero_le _
 
 /-- The base-supported prime-power part of `n` divides `base^preperiodSteps`. -/
 theorem basePrimeSupportFactor_dvd_base_pow_preperiodSteps {base n : ℕ}

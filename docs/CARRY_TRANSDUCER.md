@@ -22,6 +22,14 @@ The long-division DFA and the carry transducer are not the same machine.
 - The long-division DFA uses remainder states and emits displayed blocks directly.
 - The carry transducer uses carry states and consumes the raw coefficient stream.
 - On the finite window used by the repo, both produce the same displayed block word.
+- Lean now also packages aligned finite state records carrying
+  `(position, coefficient, carryIn, carryOut, remainderIn, remainderOut)` on
+  those windows, together with the exact local carry-balance and
+  remainder-balance equations at each aligned position, plus exact
+  finite-window functional criteria for the observed remainder-to-carry and
+  carry-to-remainder state-pair lists, finite transition-compatibility
+  theorems under those criteria, and explicit finite conflict lemmas when the
+  observed pair list violates them.
 
 That is the implemented bridge, not yet a full canonical factorization theorem.
 

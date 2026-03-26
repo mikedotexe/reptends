@@ -174,6 +174,8 @@ claims. It closes the main results that Agda still leaves postulated:
 - `base_qrGenerator_pow_count_eq_totient` - when `ord_p(B)` is `h` or `2h`, the number of QR-generating strides for the actual base element is exactly `φ(h)`
 - `qr_tour_cover` - QR generator covers all QRs
 - `Bridge.remainder_k_step` - r[n+k] = d × r[n] for bridge primes
+- `SignedBridge.remainder_2k_step` - if `B^k ≡ ±d`, then `r[n+2k] = d² × r[n]` and the sign cancels
+- `Bridge.blockValue_periodic` - bridge block values are powers of `d` and repeat with period `ord_p(d)`
 - `orderOf_unitsChineseRemainder` - pairwise CRT sends unit order to the lcm of two component orders
 - `orderOf_unitsEquivPrimePowers` - finite prime-power CRT sends unit order to the lcm of all prime-power component orders
 - `preperiodPrimeSteps_le_iff` - the local preperiod contribution of a base prime is `ceil(v_p(N)/v_p(base))`
@@ -236,7 +238,9 @@ bridge-reptends/
     ├── claim_registry.json
     ├── counterexamples.json
     ├── example_atlas.json
+    ├── lean_module_index.json
     ├── literature_map.json
+    ├── theorem_witnesses.json
     ├── vocabulary.json
     └── sweep_500.csv
 ```
@@ -255,9 +259,9 @@ build-expository-note
 ### Registry Snapshot
 
 <!-- REGISTRY_SUMMARY_START -->
-- total claims: 12
+- total claims: 15
 - classical: 3
-- reproved-here: 5
+- reproved-here: 8
 - implemented-here: 1
 - empirical: 1
 - open: 2
@@ -275,15 +279,19 @@ Current open claim IDs:
 - [AGENT_TRACK_PLAYBOOK.md](/Users/mikepurvis/other/quadratic-residue-reptends/AGENT_TRACK_PLAYBOOK.md) - repository-agnostic guide for creating track-based hardening agents
 - [docs/AGDA_CORRESPONDENCE.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/AGDA_CORRESPONDENCE.md) - Agda postulate audit, Lean correspondences, and proof-surface legend
 - [docs/PROOF_STATUS_ATLAS.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/PROOF_STATUS_ATLAS.md) - exact claims, tagged by status
+- [docs/THEOREM_WITNESS_ATLAS.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/THEOREM_WITNESS_ATLAS.md) - generated canonical witness and open-target atlas keyed by claim ID
 - [docs/COUNTEREXAMPLES.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/COUNTEREXAMPLES.md) - concrete failures of older prose
 - [DISCOVERIES.md](/Users/mikepurvis/other/quadratic-residue-reptends/DISCOVERIES.md) - empirical notes and curated examples, not a theorem source
 - [docs/LITERATURE_MAP.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/LITERATURE_MAP.md) - where each claim family comes from
 - [docs/VOCABULARY.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/VOCABULARY.md) - preferred standardized terms
+- [lean/THEOREM_GUIDE.md](/Users/mikepurvis/other/quadratic-residue-reptends/lean/THEOREM_GUIDE.md) - Lean-facing claim carriers and generated module audit
 - [docs/COMPOSITES_CRT.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/COMPOSITES_CRT.md) - composite/CRT generalization
 - [docs/CARRY_TRANSDUCER.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/CARRY_TRANSDUCER.md) - carry layer as a standard transducer with explicit graph/comparison interfaces
 - [docs/CARRIED_PREFIX_VISIBILITY.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/CARRIED_PREFIX_VISIBILITY.md) - exact Track 16 observables for raw-prefix agreement, incoming carry, and stabilization lookahead
 - [docs/EXPOSITORY_NOTE.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/EXPOSITORY_NOTE.md) - generated note built from the registry and published atlas
 - [data/example_atlas.json](/Users/mikepurvis/other/quadratic-residue-reptends/data/example_atlas.json) - curated Track 3 atlas of canonical search examples
+- [data/theorem_witnesses.json](/Users/mikepurvis/other/quadratic-residue-reptends/data/theorem_witnesses.json) - machine-readable canonical witnesses and open-target families
+- [data/lean_module_index.json](/Users/mikepurvis/other/quadratic-residue-reptends/data/lean_module_index.json) - machine-readable Lean module role and promotion audit
 
 ## The Canonical Example: 1/97
 

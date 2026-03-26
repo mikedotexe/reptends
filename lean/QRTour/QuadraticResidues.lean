@@ -263,31 +263,36 @@ theorem pow_isQRGenerator_iff_even_and_coprime_half_of_full_order
       exact Nat.eq_of_mul_eq_mul_left hhalf_pos hcompare.symm
     have htwo_dvd_m : 2 ∣ m := hgcd_eq_two ▸ Nat.gcd_dvd_right (p - 1) m
     rcases htwo_dvd_m with ⟨n, hm2⟩
-    refine ⟨⟨n, by simpa [Nat.two_mul, Nat.add_comm] using hm2⟩, ?_⟩
+    refine ⟨⟨n, by simpa [Nat.two_mul] using hm2⟩, ?_⟩
     have hgcd_half : Nat.gcd (half p) n = 1 := by
       have : 2 * Nat.gcd (half p) n = 2 := by
         calc
           2 * Nat.gcd (half p) n = Nat.gcd (2 * half p) (2 * n) := by
             symm
             exact Nat.gcd_mul_left 2 (half p) n
-          _ = Nat.gcd (p - 1) m := by simpa [hspec, hm2]
+          _ = Nat.gcd (p - 1) m := by simp [hspec, hm2]
           _ = 2 := hgcd_eq_two
       exact Nat.eq_of_mul_eq_mul_left (by omega) this
     have hm_div : m / 2 = n := by
-      simpa [hm2, Nat.mul_comm] using Nat.mul_div_right n (by decide : 0 < 2)
-    exact Nat.coprime_iff_gcd_eq_one.mpr (by simpa [hm_div] using hgcd_half)
+      rw [hm2]
+      exact Nat.mul_div_right n (m := 2) (by decide : 0 < 2)
+    exact Nat.coprime_iff_gcd_eq_one.mpr (by simp [hm_div, hgcd_half])
   · rintro ⟨h_even, hcop⟩
     rcases h_even with ⟨n, hn⟩
-    have hm2 : m = 2 * n := by simpa [Nat.two_mul, Nat.add_comm] using hn
+    have hm2 : m = 2 * n := by simpa [Nat.two_mul] using hn
     have hm_div : m / 2 = n := by
-      simpa [hm2, Nat.mul_comm] using Nat.mul_div_right n (by decide : 0 < 2)
+      rw [hm2]
+      exact Nat.mul_div_right n (m := 2) (by decide : 0 < 2)
     have hgcd_eq_two : Nat.gcd (p - 1) m = 2 := by
       calc
-        Nat.gcd (p - 1) m = Nat.gcd (2 * half p) (2 * n) := by simpa [hspec, hm2]
+        Nat.gcd (p - 1) m = Nat.gcd (2 * half p) (2 * n) := by simp [hspec, hm2]
         _ = 2 * Nat.gcd (half p) n := Nat.gcd_mul_left 2 (half p) n
-        _ = 2 := by rw [Nat.coprime_iff_gcd_eq_one.mp (by simpa [hm_div] using hcop), mul_one]
+        _ = 2 := by
+          have hcop' : Nat.gcd (half p) n = 1 := by
+            simpa [hm_div] using hcop
+          rw [hcop', mul_one]
     rw [hgcd_eq_two, hspec]
-    simpa [Nat.mul_comm] using Nat.mul_div_right (half p) (by decide : 0 < 2)
+    exact Nat.mul_div_right (half p) (m := 2) (by decide : 0 < 2)
 
 /-- If the base element already has order `(p-1)/2`, then exactly `φ((p-1)/2)` of its
 powers below that order are QR-generating. -/
@@ -332,7 +337,7 @@ theorem order_eq_full_qrGenerator_pow_count_eq_totient
       ⟨h_even, hcop⟩
     rcases h_even with ⟨n, hn⟩
     have hm2 : m = 2 * n := by simpa [Nat.two_mul, Nat.add_comm] using hn
-    refine ⟨n, ?_, by simpa [hm2]⟩
+    refine ⟨n, ?_, by simp [hm2]⟩
     show n ∈ source
     apply Finset.mem_filter.mpr
     constructor

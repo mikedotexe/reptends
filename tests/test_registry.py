@@ -3,7 +3,9 @@ from pathlib import Path
 from bridge_reptends import (
     load_claim_registry,
     load_counterexamples,
+    load_lean_module_index,
     load_literature_map,
+    load_theorem_witnesses,
     load_vocabulary,
 )
 
@@ -32,6 +34,33 @@ def test_claim_registry_cross_references_are_valid() -> None:
 
     for record in counterexamples:
         assert record.claim_id in claim_ids
+
+
+def test_lean_module_index_and_theorem_witnesses_cross_references_are_valid() -> None:
+    claim_ids = {claim.id for claim in load_claim_registry()}
+
+    modules = load_lean_module_index()
+    assert modules
+    assert len({module.id for module in modules}) == len(modules)
+    for module in modules:
+        assert module.current_role
+        assert module.promotion_decision
+        assert module.rationale
+        assert (ROOT / module.path).exists()
+        assert all(claim_id in claim_ids for claim_id in module.claim_ids)
+
+    witnesses = load_theorem_witnesses()
+    assert witnesses
+    assert len({witness.id for witness in witnesses}) == len(witnesses)
+    for witness in witnesses:
+        assert witness.claim_id in claim_ids
+        assert witness.kind
+        assert witness.label
+        assert witness.tuple_display
+        assert witness.summary
+        assert witness.parameters
+        for evidence_path in witness.evidence:
+            assert (ROOT / evidence_path).exists()
 
 
 def test_vocabulary_entries_have_preferred_labels_and_aliases() -> None:

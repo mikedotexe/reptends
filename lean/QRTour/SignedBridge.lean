@@ -83,7 +83,10 @@ structure SignedBridge (B p k : ℕ) (sign : BridgeSign) (d : ℕ) where
 def SignedBridge.multiplier (_sb : SignedBridge B p k sign d) : ZMod p :=
   (sign.toInt * d : ℤ)
 
-/-- The key k-step recurrence for signed bridges: r[n+k] = multiplier × r[n]. -/
+/-- Claim `signed_bridge_recurrence`: if a block coordinate satisfies
+`B^k ≡ sign * d (mod p)`, then the remainder orbit advances by that signed
+multiplier every `k` steps, and after `2k` steps the sign cancels so the orbit
+advances by `d^2`. -/
 theorem SignedBridge.remainder_k_step (sb : SignedBridge B p k sign d) (n : ℕ) :
     @remainder p ⟨sb.prime_p⟩ B (n + k) = sb.multiplier * @remainder p ⟨sb.prime_p⟩ B n := by
   simp only [remainder_eq_pow, pow_add, sb.bridge_eq, multiplier]

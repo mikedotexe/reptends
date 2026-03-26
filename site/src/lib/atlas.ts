@@ -1,6 +1,7 @@
 import claimRegistryData from '../../../data/claim_registry.json';
 import counterexamplesData from '../../../data/counterexamples.json';
 import exampleAtlasData from '../../../data/example_atlas.json';
+import theoremWitnessesData from '../../../data/theorem_witnesses.json';
 import vocabularyData from '../../../data/vocabulary.json';
 
 export interface ClaimRecord {
@@ -31,6 +32,37 @@ export interface VocabularyEntry {
   repo_aliases: string[];
   meaning: string;
   scope: string;
+}
+
+export interface TheoremWitnessRecord {
+  id: string;
+  claim_id: string;
+  kind: 'theorem-witness' | 'empirical-witness' | 'open-target';
+  label: string;
+  tuple_display: string;
+  parameters: Record<string, number | string | number[] | string[] | Record<string, number>>;
+  summary: string;
+  evidence: string[];
+}
+
+export interface ClaimWitnessRow {
+  witness_id: string;
+  claim_id: string;
+  claim_title: string;
+  claim_status: ClaimRecord['status'];
+  kind: TheoremWitnessRecord['kind'];
+  label: string;
+  tuple_display: string;
+  parameters: Record<string, number | string | number[] | string[] | Record<string, number>>;
+  summary: string;
+  evidence: string[];
+}
+
+export interface ClaimContext {
+  related_claim_ids: string[];
+  related_open_claim_ids: string[];
+  matching_claim_ids: string[];
+  matching_witness_ids: string[];
 }
 
 export interface SearchPreviewEntry {
@@ -93,8 +125,13 @@ export interface PrimeQRLeaderboardEntry {
 }
 
 export interface ExampleAtlas {
+  claim_witnesses: {
+    featured_ids: string[];
+    rows: ClaimWitnessRow[];
+  };
   case_studies: {
     carry_dfa: Array<{
+      claim_context: ClaimContext;
       distinctive_feature: string;
       factorization_status: {
         implemented: string;
@@ -137,6 +174,7 @@ export interface ExampleAtlas {
       theorem_candidate: string;
     }>;
     visibility: Array<{
+      claim_context: ClaimContext;
       counterexample_target: string;
       explanation: string;
       family_id: string;
@@ -272,6 +310,7 @@ export interface ExampleAtlas {
 
 export const claimRegistry = claimRegistryData as unknown as ClaimRecord[];
 export const counterexamples = counterexamplesData as unknown as CounterexampleRecord[];
+export const theoremWitnessRegistry = theoremWitnessesData as unknown as TheoremWitnessRecord[];
 export const vocabulary = vocabularyData as unknown as VocabularyEntry[];
 export const exampleAtlas = exampleAtlasData as unknown as ExampleAtlas;
 
@@ -287,6 +326,7 @@ export const featuredClaims = claimRegistry.filter(claim =>
 
 export const openClaims = claimRegistry.filter(claim => claim.status === 'open');
 export const claimById = new Map(claimRegistry.map(claim => [claim.id, claim]));
+export const theoremWitnessById = new Map(theoremWitnessRegistry.map(witness => [witness.id, witness]));
 export const vocabularyById = new Map(vocabulary.map(entry => [entry.id, entry]));
 
 export const featuredCounterexamples = counterexamples.filter(counterexample =>
@@ -298,6 +338,13 @@ export const featuredCounterexamples = counterexamples.filter(counterexample =>
 );
 
 export const canonicalExamples = exampleAtlas.canonical_examples;
+export const claimWitnessRows = exampleAtlas.claim_witnesses.rows;
+export const featuredClaimWitnesses = exampleAtlas.claim_witnesses.featured_ids
+  .map(id => claimWitnessRows.find(row => row.witness_id === id))
+  .filter((row): row is ClaimWitnessRow => row !== undefined);
+export const theoremWitnesses = claimWitnessRows.filter(row => row.kind === 'theorem-witness');
+export const empiricalWitnesses = claimWitnessRows.filter(row => row.kind === 'empirical-witness');
+export const openClaimTargets = claimWitnessRows.filter(row => row.kind === 'open-target');
 export const bridgeHighlights = exampleAtlas.leaderboards.bridge_nontrivial;
 export const bridgeQ1Highlights = exampleAtlas.leaderboards.bridge_q1;
 export const compositeHighlights = exampleAtlas.leaderboards.composite_crt;

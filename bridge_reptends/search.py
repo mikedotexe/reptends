@@ -30,6 +30,7 @@ from .composite import (
     crt_period_profile,
 )
 from .orbit_weave import factorize, find_good_modes, skeleton_vs_actual, strip_base_factors
+from .registry import claim_context_for_parameters, claim_lookup, load_theorem_witnesses
 from .transducer import (
     canonical_carry_dfa_examples,
     canonical_carry_selector_case_studies,
@@ -51,7 +52,7 @@ from .visibility import (
 
 
 DEFAULT_MIN_SIGNAL_MODULUS = 19
-PUBLISHED_ATLAS_SCHEMA_VERSION = "2.7"
+PUBLISHED_ATLAS_SCHEMA_VERSION = "2.9"
 
 
 def sieve_primes(max_n: int) -> list[int]:
@@ -131,6 +132,29 @@ class CanonicalExample:
     category: str
     primary_vocabulary_id: str
     explanation: str
+
+
+def build_claim_witness_rows() -> list[dict[str, object]]:
+    """Return enriched theorem-witness rows for search/site-facing exports."""
+    claims = claim_lookup()
+    rows: list[dict[str, object]] = []
+    for witness in load_theorem_witnesses():
+        claim = claims[witness.claim_id]
+        rows.append(
+            {
+                "witness_id": witness.id,
+                "claim_id": witness.claim_id,
+                "claim_title": claim.title,
+                "claim_status": claim.status,
+                "kind": witness.kind,
+                "label": witness.label,
+                "tuple_display": witness.tuple_display,
+                "parameters": witness.parameters,
+                "summary": witness.summary,
+                "evidence": list(witness.evidence),
+            }
+        )
+    return rows
 
 
 def _bridge_score(
@@ -684,6 +708,7 @@ def build_example_atlas(
     carry_selector_research = carry_selector_research_rows()
     visibility_cases = canonical_visibility_case_studies(base=base)
     visibility_families = canonical_visibility_family_studies(base=base)
+    claim_witness_rows = build_claim_witness_rows()
 
     canonical_examples = [
         CanonicalExample(
@@ -737,6 +762,7 @@ def build_example_atlas(
                 "bridge_reptends/transducer.py",
                 "bridge_reptends/visibility.py",
                 "data/claim_registry.json",
+                "data/theorem_witnesses.json",
                 "data/vocabulary.json",
             ],
         },
@@ -763,6 +789,15 @@ def build_example_atlas(
             "prime_qr": [asdict(candidate) for candidate in prime_qr],
         },
         "canonical_examples": [asdict(example) for example in canonical_examples],
+        "claim_witnesses": {
+            "featured_ids": [
+                "series_q_weighted_identity_prime97_stride2",
+                "same_core_threshold_shift_interval_996_over_249",
+                "small_k_visibility_threshold_target_97_249_996",
+                "carry_dfa_factorization_target_21_97_996",
+            ],
+            "rows": claim_witness_rows,
+        },
         "case_studies": {
             "composite_examples": [asdict(case) for case in composite_case_studies],
             "composite_families": [asdict(case) for case in composite_family_studies],
@@ -775,6 +810,11 @@ def build_example_atlas(
                         "implemented": case.factorization_status[0],
                         "open_boundary": case.factorization_status[1],
                     },
+                    "claim_context": claim_context_for_parameters(
+                        ("carry_window_transducer", "carry_dfa_factorization"),
+                        base=base,
+                        n=case.n,
+                    ),
                     "summary_lines": list(case.comparison.summary_lines()),
                 }
                 for case in carry_cases
@@ -817,6 +857,16 @@ def build_example_atlas(
                     "theorem_candidate": case.theorem_candidate,
                     "heuristic_note": case.heuristic_note,
                     "counterexample_target": case.counterexample_target,
+                    "claim_context": claim_context_for_parameters(
+                        (
+                            "incoming_carry_position_formula",
+                            "small_k_visibility_threshold",
+                            "small_k_visibility_heuristic",
+                        ),
+                        base=base,
+                        n=case.n,
+                        requested_blocks=case.profile.requested_blocks,
+                    ),
                     "summary_lines": list(case.profile.summary_lines()),
                     "profile": {
                         "periodic_modulus": case.profile.periodic_modulus,

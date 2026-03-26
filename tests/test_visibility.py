@@ -104,6 +104,10 @@ def test_visibility_profile_rows_export_exact_observables() -> None:
     assert by_n[97]["incoming_carry_formula_holds"] is True
     assert by_n[97]["agreement_identity_holds"] is True
     assert by_n[97]["lookahead_certificate_matches"] is True
+    assert "incoming_carry_position_formula" in by_n[97]["matching_claim_ids"]
+    assert "small_k_visibility_threshold" in by_n[97]["related_open_claim_ids"]
+    assert "incoming_carry_position_formula_prime97_stride2" in by_n[97]["matching_witness_ids"]
+    assert "small_k_visibility_threshold_target_97_249_996" in by_n[97]["matching_witness_ids"]
     assert by_n[37]["mismatch_regime"] == "fully_visible_window"
 
 
@@ -170,8 +174,15 @@ def test_same_core_mode_selector_prefers_informative_cross_base_coordinates() ->
 
 
 def test_same_core_visibility_rows_surface_cross_base_examples() -> None:
+    by_actual_10 = {row["actual_n"]: row for row in same_core_visibility_rows(1000, base=10, n_blocks=8)}
     by_actual_7 = {row["actual_n"]: row for row in same_core_visibility_rows(100, base=7, n_blocks=8)}
     by_actual_12 = {row["actual_n"]: row for row in same_core_visibility_rows(200, base=12, n_blocks=8)}
+
+    assert 996 in by_actual_10
+    assert "same_core_threshold_shift_interval" in by_actual_10[996]["matching_claim_ids"]
+    assert "small_k_visibility_threshold" in by_actual_10[996]["related_open_claim_ids"]
+    assert "same_core_threshold_shift_interval_996_over_249" in by_actual_10[996]["matching_witness_ids"]
+    assert "small_k_visibility_threshold_target_97_249_996" in by_actual_10[996]["matching_witness_ids"]
 
     assert 56 in by_actual_7
     assert by_actual_7[56]["core_n"] == 8

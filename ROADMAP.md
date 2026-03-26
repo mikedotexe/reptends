@@ -1,6 +1,6 @@
 # Lean 4 Fortification Roadmap
 
-**Updated**: 2026-03-24
+**Updated**: 2026-03-25
 
 This file is the root-level Lean-first companion to [docs/ROADMAP.md](docs/ROADMAP.md).
 Use it when the question is specifically:
@@ -24,6 +24,9 @@ Current local survey findings:
 - the proof atlas already treats the main exact prime/composite claims as
   formalized or Lean-backed, especially:
   - `qr_stride_classification`
+  - `digit_periodicity`
+  - `signed_bridge_recurrence`
+  - `bridge_block_value_periodicity`
   - `crt_period_lcm`
   - `preperiod_from_base_factors`
 - the exact block-coordinate and carry-boundary claims are now Lean-backed:
@@ -31,8 +34,16 @@ Current local survey findings:
   - `positive_q_good_modes`
   - `incoming_carry_position_formula`
   - `same_core_threshold_shift_interval`
-- the strongest remaining exact arithmetic work is now the finite
-  carry-normalization layer rather than the raw series/visibility formulas
+- the finite carry-normalization and fixed-window visibility layers are now
+  Lean-backed, including exact fixed-window carry/remainder output agreement
+- the strongest remaining Lean work is now family packaging, release-surface
+  hardening, and any future step beyond finite-window comparison without
+  overclaiming the open global problems
+- the next Lean phase now splits naturally into three lanes:
+  - theorem-frontier work beneath the two still-open carry/visibility claims
+  - promotion or explicit de-promotion of the remaining support modules
+  - theorem-witness and research-tooling surfaces that make the formal core
+    easier to explore and publish honestly
 - the two main open claims remain:
   - `small_k_visibility_threshold`
   - `carry_dfa_factorization`
@@ -139,7 +150,7 @@ Acceptance:
 
 ### Track L4: Finite Carry-Transducer Normalization
 
-Status: `in progress`
+Status: `implemented for finite-window normalization/comparison`
 
 Suggested Lean surface:
 - [lean/QRTour/CarryTransducer.lean](lean/QRTour/CarryTransducer.lean)
@@ -179,26 +190,25 @@ Current landing:
   paired traces and projection lemmas for coefficients, carry states,
   remainder states, and both output words
 
-Next logical items:
-- sharpen the exact finite-window agreement hypothesis from the literal
-  `k^L < N` tail-vanishing condition to visibility-style or lookahead-style
-  certificates that match the current Python analysis surface more closely
-- promote the paired carry/remainder trace surface from projection lemmas to
-  explicit finite-window state-comparison theorems
-- distinguish carefully between:
-  - exact finite-word output agreement
-  - observed state-quotient or relabeling candidates
+Current landing beyond the original target:
+- [lean/QRTour/Visibility.lean](lean/QRTour/Visibility.lean) now formalizes the
+  exact fixed-window gap certificate and proves it is equivalent to visible
+  prefix agreement at fixed `(requestedBlocks, lookaheadBlocks)`
+- [lean/QRTour/CarryComparison.lean](lean/QRTour/CarryComparison.lean) now
+  splits the comparison layer out of the normalization core and proves exact
+  finite carry/remainder output agreement under that certificate
+- the repo now has an honest Lean boundary between:
+  - finite normalization and traced comparison
+  - exact fixed-window visible-word agreement
   - the still-open global `carry_dfa_factorization` claim
-- only after that, decide whether the state-comparison layer should stay inside
-  [lean/QRTour/CarryTransducer.lean](lean/QRTour/CarryTransducer.lean) or split
-  into a dedicated comparison module
 
 Why this matters:
 - it formalizes the exact part of the carry story without overcommitting to the
   still-open global factorization claim
-- it gives the repo an exact finite-word agreement theorem whenever the
-  correction tail vanishes inside the visible window
-- it sets up a clean later interface for comparing carry states to remainder states
+- it now gives the repo an exact finite-word agreement theorem using the same
+  gap-style fixed-window certificate as the Python visibility layer
+- it sets up a clean interface for later state-level comparison work without
+  pretending that finite comparison already proves the global conjecture
 
 Acceptance:
 - the repository can cite a Lean theorem for finite-window carry normalization
@@ -206,7 +216,7 @@ Acceptance:
 
 ### Track L5: Composite-and-Visibility Integration
 
-Status: `after L2-L4`
+Status: `implemented for same-core family packaging`
 
 Suggested Lean surface:
 - [lean/QRTour/CompositeVisibility.lean](lean/QRTour/CompositeVisibility.lean)
@@ -222,6 +232,21 @@ What to prove:
 - family-level lemmas for same-core examples, rather than example-by-example
   computations in Python
 
+Current landing:
+- [lean/QRTour/CompositeVisibility.lean](lean/QRTour/CompositeVisibility.lean)
+  now defines the stripped periodic modulus, packages actual/core block
+  coordinates, exposes the stripping-factor arithmetic from
+  [lean/QRTour/Preperiod.lean](lean/QRTour/Preperiod.lean), and proves
+  actual-versus-stripped-core incoming-carry and local-overflow shift theorems
+  as Lean family results
+- the same module now also packages a reusable endpoint-sensitive criterion for
+  the non-power interval cases: at fixed actual/core boundary data, the lower
+  versus upper endpoint is decided by whether the stripping factor times the
+  actual raw coefficient at the candidate shifted index stays below or reaches
+  the relevant threshold
+- the same-core family surface is now a Lean module boundary instead of only a
+  Python reporting layer
+
 Why this matters:
 - it turns several strong composite examples into theorem families
 - it strengthens the bridge from exact composite arithmetic to the visibility layer
@@ -231,18 +256,180 @@ Acceptance:
 
 ### Track L6: Release-Facing Lean Surface
 
-Status: `after theorem growth`
+Status: `in progress`
 
 Goal:
 - make the Lean contribution legible to a mathematician in one pass
 
 Tasks:
-- add a short root-level theorem guide or extend the atlas with a Lean module index
-- link each promoted exact claim to its Lean module and theorem name
+- expand the Lean theorem guide into a true module/claim index
+- classify “present but unpromoted” Lean modules as public claim carriers,
+  public support modules, or supporting infrastructure
+- add stronger focused Lean acceptance checks beyond `lake build` plus no-`sorry`
 - keep README and atlas wording synchronized with the actual Lean surface
 
 Acceptance:
 - a reader can find the main Lean theorem families without reading the Python first
+
+### Track L7: Theorem Frontier Beyond Exact Fixed-Window Comparison
+
+Status: `in progress`
+
+Goal:
+- push the current exact carry/visibility layer one step closer to the two open
+  claims without pretending either open claim is solved
+
+Tasks:
+- split the remaining theorem work into two explicit subproblems:
+  - stronger arithmetic control of fixed-window and minimal-lookahead behavior
+    under `small_k_visibility_threshold`
+  - stronger finite carry-state invariants and extracted comparison laws under
+    `carry_dfa_factorization`
+- add exact intermediate theorems such as:
+  - transport lemmas for fixed-window lookahead certificates
+  - same-core transfer results for visible-word stabilization hypotheses
+  - finite state-extraction theorems from aligned carry/remainder traces that
+    stop short of global DFA factorization
+- require each tranche to end with atlas/theorem-guide wording that still keeps
+  both global claims explicitly `open`
+
+Tranches:
+- L7.1: visibility-certificate transport and bound sharpening
+- L7.2: same-core lookahead transfer and finite-window family theorems
+- L7.3: finite carry-state invariant extraction without global morphism claims
+
+Current landing:
+- L7.1 is now underway in [lean/QRTour/Visibility.lean](lean/QRTour/Visibility.lean)
+  and [lean/QRTour/CarryComparison.lean](lean/QRTour/CarryComparison.lean):
+  Lean now packages the necessary tail-mass lower bound beneath the exact
+  fixed-window certificate, monotonicity of the truncated visible-prefix
+  integer in lookahead, and transport of certificate-driven visible-word
+  agreement to larger finite windows
+- L7.2 is now started in [lean/QRTour/CompositeVisibility.lean](lean/QRTour/CompositeVisibility.lean):
+  Lean now packages exact same-core transport of the first visible mismatch
+  boundary in the exact `k`-power regime, together with exact same-core
+  transport of the raw tail-mass lower-bound inequality, the shifted coarse
+  `k^(n+L) < modulus` sufficient condition, and the exact fixed-window
+  lookahead certificate itself between the stripped core at `(n, L)` and the
+  actual denominator at `(n + s, L)`
+- [lean/QRTour/CarryComparison.lean](lean/QRTour/CarryComparison.lean) now
+  consumes that exact same-core certificate transport to reprove shifted
+  finite carry/remainder visible-word agreement on the actual denominator from
+  a stripped-core certificate
+- L7.3 now has its first exact finite state-invariant surface in
+  [lean/QRTour/CarryComparison.lean](lean/QRTour/CarryComparison.lean):
+  `stateAlignments` now project positions, coefficients, carry inputs/outputs,
+  and remainder inputs/outputs; recover the observed finite
+  remainder-to-carry and carry-to-remainder state-pair lists; and prove the
+  exact local carry-balance and remainder-balance equations at each aligned
+  position, together with shifted same-core aligned-output agreement and exact
+  finite-window functional criteria for the observed remainder-to-carry and
+  carry-to-remainder state-pair lists
+- the same module now also proves exact finite transition-compatibility
+  theorems: when an observed functional criterion holds, repeated source
+  states with the same coefficient force matching finite transition data, and
+  explicit conflict lemmas now refute the corresponding finite functional
+  criterion whenever the observed pair list disagrees
+- this strengthens the exact support beneath `small_k_visibility_threshold`
+  and `carry_dfa_factorization` without claiming any least-lookahead or global
+  factorization theorem
+
+Acceptance:
+- the repo gains exact intermediate theorems that sharpen both open frontiers
+- neither `small_k_visibility_threshold` nor `carry_dfa_factorization` is
+  restated as closed or nearly closed before the theorem boundary truly moves
+
+### Track L8: Support-Module Promotion Audit
+
+Status: `in progress`
+
+Goal:
+- decide which remaining Lean modules deserve atlas-backed claim status and
+  which should remain public support or internal infrastructure
+
+Tasks:
+- audit:
+  - [lean/QRTour/PrimitiveRoots.lean](lean/QRTour/PrimitiveRoots.lean)
+  - [lean/QRTour/BridgeQuality.lean](lean/QRTour/BridgeQuality.lean)
+  - [lean/QRTour/RemainderOrbit.lean](lean/QRTour/RemainderOrbit.lean)
+  - [lean/QRTour/Bridge.lean](lean/QRTour/Bridge.lean)
+  - [lean/QRTour/CosetStructure.lean](lean/QRTour/CosetStructure.lean)
+  - [lean/GeometricStack.lean](lean/GeometricStack.lean)
+- for each module, choose exactly one role:
+  - atlas-backed claim carrier
+  - public support surface
+  - specialized infrastructure
+- require any promotion to come with:
+  - a claim ID
+  - theorem-guide entry
+  - atlas/registry sync
+  - focused CI coverage
+  - one canonical witness or example when appropriate
+
+Tranches:
+- L8.1: audit and classify every remaining support module
+- L8.2: promote at most one clearly claim-worthy module family
+- L8.3: harden CI and public docs around the resulting classification
+
+Current landing:
+- L8.1 is now implemented as a machine-readable audit in
+  [data/lean_module_index.json](data/lean_module_index.json) and a generated
+  module table in [lean/THEOREM_GUIDE.md](lean/THEOREM_GUIDE.md)
+- the current pass explicitly classifies `PrimitiveRoots`, `BridgeQuality`,
+  `RemainderOrbit`, `Bridge`, `CosetStructure`, `Examples`, and the
+  `GeometricStack` surface rather than leaving them in a half-public state
+- this tranche does not force any new claim IDs beyond the already-promoted
+  `Digits`, `SignedBridge`, and `PAdicBridge` surfaces
+
+Acceptance:
+- no mathematically interesting Lean module remains in a half-public state
+- the theorem guide and atlas tell the same story about module roles
+
+### Track L9: Theorem-Witness and Research-Tooling Surface
+
+Status: `in progress`
+
+Goal:
+- make the formal core and the open frontiers explorable through canonical
+  witnesses, generated outputs, and claim-linked research tools
+
+Tasks:
+- add a theorem-witness layer keyed by claim ID, with canonical tuples such as:
+  - `(base, N, stride, B, q, k)` for block-coordinate claims
+  - same-core family pairs and chosen shared coordinates
+  - canonical carry/transducer windows for finite comparison results
+- expose those witnesses in generated docs, search outputs, or site-facing data
+- add bounded research-tooling outputs targeted specifically at:
+  - `small_k_visibility_threshold`
+  - `carry_dfa_factorization`
+  rather than only generic sweeps
+- keep theorem witnesses and research witnesses separate from theorem promotion:
+  witness-rich does not mean theorem-level
+
+Tranches:
+- L9.1: claim-linked theorem-witness atlas
+- L9.2: search/export support for canonical witnesses
+- L9.3: research tooling for targeted open-claim sweeps and release snapshots
+
+Current landing:
+- L9.1 is now implemented as
+  [data/theorem_witnesses.json](data/theorem_witnesses.json) together with the
+  generated [docs/THEOREM_WITNESS_ATLAS.md](docs/THEOREM_WITNESS_ATLAS.md)
+- each current claim ID now has a named canonical witness, empirical witness,
+  or open target family with evidence paths checked in CI
+- the generated note, theorem guide, and registry-backed doc sync surface now
+  point back to those witnesses so public examples are less narrative-driven
+- the published atlas in [data/example_atlas.json](data/example_atlas.json) now
+  carries claim-linked witness rows, and the site-facing atlas library exports
+  those witness rows directly
+- visibility and carry search/report rows now expose related claim IDs, open
+  claim IDs, and matching witness IDs, and the published atlas case studies now
+  thread that claim context directly into individual examples
+
+Acceptance:
+- each atlas-backed claim has a canonical witness path in the repo
+- each open claim has named target families and bounded research outputs
+- the repo can publish claim-linked examples without hand-maintained narrative drift
 
 ## What Not To Prioritize Yet
 
@@ -255,13 +442,13 @@ Acceptance:
 - do not treat empirical visibility heuristics as theorem targets before the
   exact incoming-carry and threshold laws are fully formalized
 
-## Practical First Tranche
+## Practical Next Tranches
 
-If starting the next Lean pass immediately, do this:
+If starting the next Lean-centered phase immediately, do this:
 
-1. keep Track L1 green with `python -m bridge_reptends.ci_checks` and `lake build`
-2. extend [lean/QRTour/OrbitWeave.lean](lean/QRTour/OrbitWeave.lean) from block-coordinate arithmetic into the weighted-series theorems
-3. prove the exact `B = qN + k` weighted-series identity plus a finite partial-sum form
-4. update [docs/PROOF_STATUS_ATLAS.md](docs/PROOF_STATUS_ATLAS.md) if that claim moves from `classical` to `reproved-here`
+1. keep the current Lean surface green with `/opt/homebrew/bin/python3.14 -m bridge_reptends.ci_checks` and `lake build`
+2. continue Track L7.2 with same-core visibility transport or honest arithmetic bound-sharpening beneath `small_k_visibility_threshold`
+3. use Track L8.2 only if one remaining support module truly earns an atlas claim ID without inflating the surface
+4. push Track L9.2 so canonical witnesses flow into search outputs, exports, and site-facing data
 
-That is the shortest route to a materially stronger Lean story for this repo.
+That is the shortest route to a materially stronger next-phase Lean story for this repo.

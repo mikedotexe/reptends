@@ -1,0 +1,192 @@
+[
+  {
+    "id": "QRTour.Basic",
+    "path": "lean/QRTour/Basic.lean",
+    "current_role": "foundational arithmetic and divisibility helper layer",
+    "promotion_decision": "keep as foundational infrastructure",
+    "claim_ids": [],
+    "rationale": "This module exists to keep later theorem carriers readable; it does not present a standalone outward claim family."
+  },
+  {
+    "id": "QRTour.RemainderOrbit",
+    "path": "lean/QRTour/RemainderOrbit.lean",
+    "current_role": "prime-tour remainder-orbit semantics and period support",
+    "promotion_decision": "keep as public support surface",
+    "claim_ids": [
+      "qr_stride_classification",
+      "digit_periodicity"
+    ],
+    "rationale": "Its theorems support the public QR and digit surfaces, but the current atlas claims are better presented through the more targeted QR and digit modules."
+  },
+  {
+    "id": "QRTour.Bridge",
+    "path": "lean/QRTour/Bridge.lean",
+    "current_role": "exact bridge-coordinate recurrence layer",
+    "promotion_decision": "keep as public support surface",
+    "claim_ids": [
+      "signed_bridge_recurrence",
+      "bridge_block_value_periodicity"
+    ],
+    "rationale": "The bridge recurrence infrastructure is essential, but the current public claim surfaces are clearer when carried by the signed and block-value specializations."
+  },
+  {
+    "id": "QRTour.CosetStructure",
+    "path": "lean/QRTour/CosetStructure.lean",
+    "current_role": "QR and NQR subgroup-translation structure",
+    "promotion_decision": "keep as public support surface",
+    "claim_ids": [
+      "qr_stride_classification"
+    ],
+    "rationale": "This module explains the subgroup picture used by the QR story, but it is support for the public claim rather than a separate atlas-sized theorem family."
+  },
+  {
+    "id": "QRTour.QuadraticResidues",
+    "path": "lean/QRTour/QuadraticResidues.lean",
+    "current_role": "atlas-backed QR stride classification carrier",
+    "promotion_decision": "keep as public theorem surface",
+    "claim_ids": [
+      "qr_stride_classification"
+    ],
+    "rationale": "This module contains the exact theorem family the atlas now cites for QR-generating stride classification and counting."
+  },
+  {
+    "id": "QRTour.OrbitWeave",
+    "path": "lean/QRTour/OrbitWeave.lean",
+    "current_role": "atlas-backed q-weighted series and body/correction algebra core",
+    "promotion_decision": "keep as public theorem surface",
+    "claim_ids": [
+      "series_q_weighted_identity",
+      "positive_q_good_modes"
+    ],
+    "rationale": "This is the canonical Lean carrier for the q-weighted geometric identity and the good-mode positivity boundary."
+  },
+  {
+    "id": "QRTour.Digits",
+    "path": "lean/QRTour/Digits.lean",
+    "current_role": "digit and remainder Euclidean equation plus digit periodicity",
+    "promotion_decision": "keep as public theorem surface",
+    "claim_ids": [
+      "digit_periodicity"
+    ],
+    "rationale": "The digit-periodicity claim is compact, reusable, and best carried by this module directly."
+  },
+  {
+    "id": "QRTour.PrimitiveRoots",
+    "path": "lean/QRTour/PrimitiveRoots.lean",
+    "current_role": "general generator hierarchy above the QR-specific public surface",
+    "promotion_decision": "leave as supporting infrastructure for now",
+    "claim_ids": [],
+    "rationale": "The module is mathematically useful, but its current contents are broader than the repo's present public claim boundary."
+  },
+  {
+    "id": "QRTour.BridgeQuality",
+    "path": "lean/QRTour/BridgeQuality.lean",
+    "current_role": "exploratory bridge-deficit and quality layer",
+    "promotion_decision": "leave as supporting infrastructure for now",
+    "claim_ids": [],
+    "rationale": "This remains research support rather than a single stable theorem family suitable for a claim ID."
+  },
+  {
+    "id": "QRTour.SignedBridge",
+    "path": "lean/QRTour/SignedBridge.lean",
+    "current_role": "signed plus/minus bridge recurrence package with sign cancellation",
+    "promotion_decision": "keep as public theorem surface",
+    "claim_ids": [
+      "signed_bridge_recurrence"
+    ],
+    "rationale": "The signed recurrence and two-step cancellation law form a clear public theorem package."
+  },
+  {
+    "id": "QRTour.PAdicBridge",
+    "path": "lean/QRTour/PAdicBridge.lean",
+    "current_role": "bridge block-value geometricity and periodicity layer",
+    "promotion_decision": "keep as public theorem surface",
+    "claim_ids": [
+      "bridge_block_value_periodicity"
+    ],
+    "rationale": "This module supports exactly one crisp outward claim: block values along bridge strides form a geometric sequence with the expected period."
+  },
+  {
+    "id": "QRTour.CompositePeriod",
+    "path": "lean/QRTour/CompositePeriod.lean",
+    "current_role": "CRT order and composite period theorem carrier",
+    "promotion_decision": "keep as public theorem surface",
+    "claim_ids": [
+      "crt_period_lcm"
+    ],
+    "rationale": "The current classical-with-Lean-backing composite period claim lands naturally here."
+  },
+  {
+    "id": "QRTour.Preperiod",
+    "path": "lean/QRTour/Preperiod.lean",
+    "current_role": "valuation and base-factor preperiod theorem carrier",
+    "promotion_decision": "keep as public theorem surface",
+    "claim_ids": [
+      "preperiod_from_base_factors"
+    ],
+    "rationale": "This is the exact Lean location for the local and global arithmetic beneath the repo's preperiod statement."
+  },
+  {
+    "id": "QRTour.Visibility",
+    "path": "lean/QRTour/Visibility.lean",
+    "current_role": "incoming-carry theorem surface and exact fixed-window lookahead certificate layer",
+    "promotion_decision": "keep as public theorem surface with open-boundary support",
+    "claim_ids": [
+      "incoming_carry_position_formula",
+      "same_core_threshold_shift_interval",
+      "small_k_visibility_threshold"
+    ],
+    "rationale": "This module now carries the exact fixed-window visibility theorem layer while still stopping short of the global open visibility claim."
+  },
+  {
+    "id": "QRTour.CarryTransducer",
+    "path": "lean/QRTour/CarryTransducer.lean",
+    "current_role": "finite carry normalization and traced transducer core",
+    "promotion_decision": "keep as public support surface under the open carry boundary",
+    "claim_ids": [
+      "carry_window_transducer",
+      "carry_dfa_factorization"
+    ],
+    "rationale": "The finite deterministic carry layer is exact and public, but it is still support beneath the open global factorization claim."
+  },
+  {
+    "id": "QRTour.CarryComparison",
+    "path": "lean/QRTour/CarryComparison.lean",
+    "current_role": "explicit finite carry and remainder comparison layer",
+    "promotion_decision": "keep as public support surface under the open carry boundary",
+    "claim_ids": [
+      "carry_window_transducer",
+      "small_k_visibility_threshold",
+      "carry_dfa_factorization"
+    ],
+    "rationale": "This module packages certified finite-word and finite-trace agreement without overstating the still-open global DFA statement."
+  },
+  {
+    "id": "QRTour.CompositeVisibility",
+    "path": "lean/QRTour/CompositeVisibility.lean",
+    "current_role": "same-core family packaging, endpoint labels, and coordinate-selection layer",
+    "promotion_decision": "keep as public support surface tied to exact same-core laws",
+    "claim_ids": [
+      "preperiod_from_base_factors",
+      "same_core_threshold_shift_interval",
+      "small_k_visibility_threshold"
+    ],
+    "rationale": "It turns the preperiod arithmetic into exact same-core shift theorems and selection criteria, but it does not yet close the minimal-lookahead frontier."
+  },
+  {
+    "id": "QRTour.Examples",
+    "path": "lean/QRTour/Examples.lean",
+    "current_role": "worked Lean acceptance examples and theorem smoke tests",
+    "promotion_decision": "keep as public example surface, not atlas-backed",
+    "claim_ids": [],
+    "rationale": "The file is valuable as a compact acceptance layer, but its purpose is validation and exposition rather than new outward claim transport."
+  },
+  {
+    "id": "GeometricStack",
+    "path": "lean/GeometricStack.lean",
+    "current_role": "companion overflow and decomposition library family",
+    "promotion_decision": "keep as specialized companion infrastructure",
+    "claim_ids": [],
+    "rationale": "The GeometricStack family underpins some digit and overflow viewpoints, but it remains a companion library rather than a direct atlas-backed theorem surface."
+  }
+]

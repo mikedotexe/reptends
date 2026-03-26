@@ -101,7 +101,9 @@ theorem Bridge.d_ne_zero (br : Bridge B p k d) : (d : ZMod p) ≠ 0 := by
 noncomputable def bridgeOrder (br : Bridge B p k d) : ℕ :=
   orderOf (Units.mk0 (d : ZMod p) br.d_ne_zero)
 
-/-- The block sequence has period equal to the order of d. -/
+/-- Claim `bridge_block_value_periodicity`: in a bridge coordinate `B^k ≡ d`,
+the block values at positions `j*k` are exactly the geometric sequence `d^j`,
+so the block sequence is periodic with period `orderOf d`. -/
 theorem Bridge.blockValue_periodic (br : Bridge B p k d) (j : ℕ) :
     blockValue (p := p) B k (j + bridgeOrder br) = blockValue (p := p) B k j := by
   haveI : Fact (Nat.Prime p) := ⟨br.prime_p⟩

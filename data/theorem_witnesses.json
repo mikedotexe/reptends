@@ -1,0 +1,318 @@
+[
+  {
+    "id": "series_q_weighted_identity_prime97_stride2",
+    "claim_id": "series_q_weighted_identity",
+    "kind": "theorem-witness",
+    "label": "Prime q = 1 bridge",
+    "tuple_display": "(base=10, N=97, stride=2, B=100, q=1, k=3)",
+    "parameters": {
+      "base": 10,
+      "N": 97,
+      "stride": 2,
+      "B": 100,
+      "q": 1,
+      "k": 3
+    },
+    "summary": "Canonical q = 1 coordinate where the visible coefficients are literal powers of k.",
+    "evidence": [
+      "lean/QRTour/OrbitWeave.lean",
+      "bridge_reptends/orbit_weave.py",
+      "tests/test_geometric_series.py"
+    ]
+  },
+  {
+    "id": "power_order_formula_prime19_stride2",
+    "claim_id": "power_order_formula",
+    "kind": "theorem-witness",
+    "label": "Order reduction by stride",
+    "tuple_display": "(base=10, p=19, ord_p(base)=18, stride=2, ord_p(base^stride)=9)",
+    "parameters": {
+      "base": 10,
+      "p": 19,
+      "order": 18,
+      "stride": 2,
+      "stride_order": 9
+    },
+    "summary": "A compact prime example where ord(base^m) is visibly ord(base) divided by gcd.",
+    "evidence": [
+      "bridge_reptends/analysis.py",
+      "tests/test_stride_classification.py"
+    ]
+  },
+  {
+    "id": "qr_stride_classification_prime97_stride2",
+    "claim_id": "qr_stride_classification",
+    "kind": "theorem-witness",
+    "label": "Prime 97 QR-generating stride",
+    "tuple_display": "(base=10, p=97, ord_p(base)=96, stride=2, ord_p(base^stride)=48)",
+    "parameters": {
+      "base": 10,
+      "p": 97,
+      "order": 96,
+      "stride": 2,
+      "half_order": 48
+    },
+    "summary": "This is the canonical decimal example where the stride order drops exactly to the QR subgroup size.",
+    "evidence": [
+      "lean/QRTour/QuadraticResidues.lean",
+      "tests/test_stride_classification.py"
+    ]
+  },
+  {
+    "id": "digit_periodicity_prime19_base10",
+    "claim_id": "digit_periodicity",
+    "kind": "theorem-witness",
+    "label": "Prime 19 decimal digits",
+    "tuple_display": "(base=10, p=19, ord_p(base)=18)",
+    "parameters": {
+      "base": 10,
+      "p": 19,
+      "period": 18
+    },
+    "summary": "A small prime witness where the Euclidean digit step and full repeating period are both easy to inspect.",
+    "evidence": [
+      "lean/QRTour/Digits.lean",
+      "docs/AGDA_CORRESPONDENCE.md",
+      "bridge_reptends/ci_checks.py"
+    ]
+  },
+  {
+    "id": "signed_bridge_recurrence_prime97_stride2",
+    "claim_id": "signed_bridge_recurrence",
+    "kind": "theorem-witness",
+    "label": "Signed bridge plus branch",
+    "tuple_display": "(base=10, p=97, stride=2, d=3, 10^2 ≡ +3 mod 97)",
+    "parameters": {
+      "base": 10,
+      "p": 97,
+      "stride": 2,
+      "d": 3,
+      "sign": 1
+    },
+    "summary": "The standard 97 example witnesses the signed recurrence package even before using a minus-branch example.",
+    "evidence": [
+      "lean/QRTour/SignedBridge.lean",
+      "lean/QRTour/PAdicBridge.lean",
+      "bridge_reptends/ci_checks.py"
+    ]
+  },
+  {
+    "id": "bridge_block_value_periodicity_prime97_stride2",
+    "claim_id": "bridge_block_value_periodicity",
+    "kind": "theorem-witness",
+    "label": "Bridge block geometric sequence",
+    "tuple_display": "(base=10, p=97, stride=2, d=3, block values at 2j are 3^j mod 97)",
+    "parameters": {
+      "base": 10,
+      "p": 97,
+      "stride": 2,
+      "d": 3
+    },
+    "summary": "This witnesses the block-value geometric law and its period in the cleanest decimal bridge case.",
+    "evidence": [
+      "lean/QRTour/PAdicBridge.lean",
+      "lean/QRTour/Bridge.lean",
+      "bridge_reptends/ci_checks.py"
+    ]
+  },
+  {
+    "id": "crt_period_lcm_mod21_base10",
+    "claim_id": "crt_period_lcm",
+    "kind": "theorem-witness",
+    "label": "Composite 21 CRT period",
+    "tuple_display": "(base=10, N=21=3·7, ord_3(10)=1, ord_7(10)=6, ord_21(10)=lcm(1,6)=6)",
+    "parameters": {
+      "base": 10,
+      "N": 21,
+      "prime_factors": [
+        3,
+        7
+      ],
+      "local_orders": [
+        1,
+        6
+      ],
+      "global_order": 6
+    },
+    "summary": "A tiny composite witness where the CRT least-common-multiple law is completely transparent.",
+    "evidence": [
+      "lean/QRTour/CompositePeriod.lean",
+      "bridge_reptends/composite.py",
+      "tests/test_composite_crt.py"
+    ]
+  },
+  {
+    "id": "preperiod_from_base_factors_n996_base10",
+    "claim_id": "preperiod_from_base_factors",
+    "kind": "theorem-witness",
+    "label": "Composite preperiod from base factors",
+    "tuple_display": "(base=10, N=996=2^2·3·83, preperiod=2, stripped core=249)",
+    "parameters": {
+      "base": 10,
+      "N": 996,
+      "factorization": {
+        "2": 2,
+        "3": 1,
+        "83": 1
+      },
+      "preperiod": 2,
+      "stripped_core": 249
+    },
+    "summary": "The canonical decimal composite where the preperiod is entirely explained by the base-supported factor 2^2.",
+    "evidence": [
+      "lean/QRTour/Preperiod.lean",
+      "lean/QRTour/CompositeVisibility.lean",
+      "tests/test_composite_crt.py"
+    ]
+  },
+  {
+    "id": "carry_window_transducer_prime97_window6",
+    "claim_id": "carry_window_transducer",
+    "kind": "theorem-witness",
+    "label": "Finite carried window on 1/97",
+    "tuple_display": "(base=10, N=97, stride=2, requestedBlocks=6, lookahead=3)",
+    "parameters": {
+      "base": 10,
+      "N": 97,
+      "stride": 2,
+      "requestedBlocks": 6,
+      "lookahead": 3
+    },
+    "summary": "A finite 97-window witnesses deterministic carry normalization and agreement with the emitted block word.",
+    "evidence": [
+      "lean/QRTour/CarryTransducer.lean",
+      "lean/QRTour/CarryComparison.lean",
+      "tests/test_carry_transducer.py"
+    ]
+  },
+  {
+    "id": "small_k_visibility_heuristic_family_21_37_97_249_996",
+    "claim_id": "small_k_visibility_heuristic",
+    "kind": "empirical-witness",
+    "label": "Published visibility heuristic family",
+    "tuple_display": "(base=10, N in {21, 37, 97, 249, 996})",
+    "parameters": {
+      "base": 10,
+      "family_N": [
+        21,
+        37,
+        97,
+        249,
+        996
+      ]
+    },
+    "summary": "The published visibility cases show that small k and especially q = 1 often delay visible carry, but only as an empirical pattern.",
+    "evidence": [
+      "bridge_reptends/search.py",
+      "data/example_atlas.json",
+      "tests/test_search_datasets.py"
+    ]
+  },
+  {
+    "id": "positive_q_good_modes_n249_stride3",
+    "claim_id": "positive_q_good_modes",
+    "kind": "theorem-witness",
+    "label": "Positive q composite coordinate",
+    "tuple_display": "(base=10, N=249, stride=3, B=1000, q=4, k=4)",
+    "parameters": {
+      "base": 10,
+      "N": 249,
+      "stride": 3,
+      "B": 1000,
+      "q": 4,
+      "k": 4
+    },
+    "summary": "This composite coordinate is the standard positive-q witness showing why good modes require B > N.",
+    "evidence": [
+      "lean/QRTour/OrbitWeave.lean",
+      "bridge_reptends/orbit_weave.py",
+      "tests/test_geometric_series.py"
+    ]
+  },
+  {
+    "id": "incoming_carry_position_formula_prime97_stride2",
+    "claim_id": "incoming_carry_position_formula",
+    "kind": "theorem-witness",
+    "label": "Incoming carry before local overflow",
+    "tuple_display": "(base=10, N=97, stride=2, B=100, q=1, k=3, first incoming carry=4)",
+    "parameters": {
+      "base": 10,
+      "N": 97,
+      "stride": 2,
+      "B": 100,
+      "q": 1,
+      "k": 3,
+      "firstIncomingCarryPosition": 4
+    },
+    "summary": "The standard 1/97 window shows the exact incoming-carry boundary before the first local overflow.",
+    "evidence": [
+      "lean/QRTour/Visibility.lean",
+      "docs/CARRIED_PREFIX_VISIBILITY.md",
+      "tests/test_visibility.py"
+    ]
+  },
+  {
+    "id": "same_core_threshold_shift_interval_996_over_249",
+    "claim_id": "same_core_threshold_shift_interval",
+    "kind": "theorem-witness",
+    "label": "Shared-core exact one-block shift",
+    "tuple_display": "(base=10, actual=996, core=249, stride=3, B=1000, k=4)",
+    "parameters": {
+      "base": 10,
+      "actual": 996,
+      "core": 249,
+      "stride": 3,
+      "B": 1000,
+      "k": 4
+    },
+    "summary": "The 996 over 249 family is the canonical same-core witness for the exact k-power shift law.",
+    "evidence": [
+      "lean/QRTour/CompositeVisibility.lean",
+      "lean/QRTour/Visibility.lean",
+      "tests/test_visibility.py"
+    ]
+  },
+  {
+    "id": "small_k_visibility_threshold_target_97_249_996",
+    "claim_id": "small_k_visibility_threshold",
+    "kind": "open-target",
+    "label": "Visibility target family",
+    "tuple_display": "(base=10, requestedBlocks=8, N in {97, 249, 996})",
+    "parameters": {
+      "base": 10,
+      "requestedBlocks": 8,
+      "family_N": [
+        97,
+        249,
+        996
+      ]
+    },
+    "summary": "These cases bracket the current exact fixed-window layer while still leaving the minimal-lookahead theorem open.",
+    "evidence": [
+      "lean/QRTour/Visibility.lean",
+      "lean/QRTour/CarryComparison.lean",
+      "tests/test_visibility.py"
+    ]
+  },
+  {
+    "id": "carry_dfa_factorization_target_21_97_996",
+    "claim_id": "carry_dfa_factorization",
+    "kind": "open-target",
+    "label": "Carry versus remainder state family",
+    "tuple_display": "(base=10, N in {21, 97, 996})",
+    "parameters": {
+      "base": 10,
+      "family_N": [
+        21,
+        97,
+        996
+      ]
+    },
+    "summary": "The canonical carry trio still separates finite output agreement from the open global factorization question.",
+    "evidence": [
+      "lean/QRTour/CarryTransducer.lean",
+      "lean/QRTour/CarryComparison.lean",
+      "tests/test_carry_transducer.py"
+    ]
+  }
+]

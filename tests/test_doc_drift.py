@@ -2,8 +2,11 @@ from pathlib import Path
 
 from bridge_reptends import (
     render_claim_table_lines,
+    render_lean_module_index_lines,
     render_open_claim_lines,
     render_registry_summary_lines,
+    render_theorem_witness_summary_lines,
+    render_theorem_witness_table_lines,
     render_vocabulary_table_lines,
 )
 
@@ -15,6 +18,8 @@ AGENTS = ROOT / "AGENTS.md"
 CLAUDE = ROOT / "CLAUDE.md"
 DISCOVERIES = ROOT / "DISCOVERIES.md"
 DOCS_DIR = ROOT / "docs"
+LEAN_GUIDE = ROOT / "lean" / "THEOREM_GUIDE.md"
+WITNESS_ATLAS = DOCS_DIR / "THEOREM_WITNESS_ATLAS.md"
 AGDA_CORRESPONDENCE = DOCS_DIR / "AGDA_CORRESPONDENCE.md"
 PUBLIC_DOCS = [README, AGENTS, CLAUDE, DISCOVERIES, *sorted(DOCS_DIR.glob("*.md"))]
 
@@ -126,6 +131,9 @@ def test_registry_summary_blocks_match_registry_data() -> None:
     expected_open = list(render_open_claim_lines())
     expected_claim_table = list(render_claim_table_lines())
     expected_vocabulary_table = list(render_vocabulary_table_lines())
+    expected_module_index = list(render_lean_module_index_lines())
+    expected_witness_summary = list(render_theorem_witness_summary_lines())
+    expected_witness_table = list(render_theorem_witness_table_lines())
 
     for path in [README, DOCS_DIR / "PROOF_STATUS_ATLAS.md"]:
         text = path.read_text()
@@ -137,6 +145,13 @@ def test_registry_summary_blocks_match_registry_data() -> None:
 
     vocabulary_text = (DOCS_DIR / "VOCABULARY.md").read_text()
     assert _extract_block(vocabulary_text, "<!-- VOCABULARY_TABLE_START -->", "<!-- VOCABULARY_TABLE_END -->") == expected_vocabulary_table
+
+    theorem_guide_text = LEAN_GUIDE.read_text()
+    assert _extract_block(theorem_guide_text, "<!-- LEAN_MODULE_INDEX_START -->", "<!-- LEAN_MODULE_INDEX_END -->") == expected_module_index
+
+    witness_text = WITNESS_ATLAS.read_text()
+    assert _extract_block(witness_text, "<!-- THEOREM_WITNESS_SUMMARY_START -->", "<!-- THEOREM_WITNESS_SUMMARY_END -->") == expected_witness_summary
+    assert _extract_block(witness_text, "<!-- THEOREM_WITNESS_TABLE_START -->", "<!-- THEOREM_WITNESS_TABLE_END -->") == expected_witness_table
 
 
 def test_normalized_source_and_vocabulary_ids_are_visible_in_docs() -> None:

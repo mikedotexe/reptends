@@ -97,7 +97,8 @@ def test_canonical_carry_dfa_examples_cover_named_cases() -> None:
 
     assert {21, 97, 996}.issubset(cases)
     assert cases[21].comparison.outputs_match is True
-    assert "state-relabeling regime" in cases[21].distinctive_feature
+    assert "functional criteria hold" in cases[21].distinctive_feature
+    assert "trivial relabeling" in cases[21].distinctive_feature
     assert "preperiod" in cases[996].distinctive_feature
 
 
@@ -252,8 +253,13 @@ def test_carry_factorization_rows_surface_canonical_track_17_regimes() -> None:
     assert by_n[21]["has_isolated_relabeling_window"] is True
     assert by_n[97]["factorization_regime"] == "quotient_candidate_only"
     assert by_n[97]["counterexample_to_state_relabeling"] is True
+    assert "carry_window_transducer" in by_n[97]["matching_claim_ids"]
+    assert "carry_dfa_factorization" in by_n[97]["related_open_claim_ids"]
+    assert "carry_window_transducer_prime97_window6" in by_n[97]["matching_witness_ids"]
+    assert "carry_dfa_factorization_target_21_97_996" in by_n[97]["matching_witness_ids"]
     assert by_n[996]["factorization_regime"] == "quotient_candidate_only"
     assert by_n[996]["remainder_to_carry_quotient_candidate"] is True
+    assert "carry_dfa_factorization_target_21_97_996" in by_n[996]["matching_witness_ids"]
     assert by_n[249]["factorization_regime"] == "state_relabeling"
     assert by_n[249]["transition_signature"] == [
         "quotient_candidate_only",
