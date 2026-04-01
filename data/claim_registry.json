@@ -2,7 +2,7 @@
   {
     "id": "series_q_weighted_identity",
     "title": "Exact q-weighted geometric series",
-    "statement": "For a good block coordinate with B = qM + k, 0 <= k < M, and B > M, we have 1/M = q/(B-k) = \u03a3_{j>=0} qk^j / B^(j+1).",
+    "statement": "For a good block coordinate with B = qM + k, 0 <= k < M, and B > M, we have 1/M = q/(B-k) = Σ_{j>=0} qk^j / B^(j+1).",
     "status": "reproved-here",
     "repo_status": "formalized in Lean and tested",
     "proof_status": "Lean theorems in QRTour.OrbitWeave formalize the good-mode fraction identity, the finite partial-sum identity, and the geometric-series expansion.",
@@ -47,7 +47,7 @@
   {
     "id": "qr_stride_classification",
     "title": "Exact QR-generator stride classification",
-    "statement": "For an odd prime p and h = (p-1)/2, the stride m is QR-generating for base B exactly when ord_p(B) / gcd(ord_p(B), m) = h. Therefore QR-generating strides exist iff ord_p(B) is h or 2h, and their count is \u03c6(h).",
+    "statement": "For an odd prime p and h = (p-1)/2, the stride m is QR-generating for base B exactly when ord_p(B) / gcd(ord_p(B), m) = h. Therefore QR-generating strides exist iff ord_p(B) is h or 2h, and their count is φ(h).",
     "status": "reproved-here",
     "repo_status": "fully formalized in Lean at the base level and backed by Python counterexample/regression tests",
     "proof_status": "formalized in Lean as pow_isQRGenerator_iff, pow_isQRGenerator_iff_coprime_half, qrGenerator_pow_count_eq_totient, and the base-level full-order reduction theorems culminating in base_qrGenerator_pow_count_eq_totient",
@@ -129,7 +129,7 @@
   {
     "id": "crt_period_lcm",
     "title": "Composite period via CRT",
-    "statement": "If M = \u03a0 p_i^{e_i} is coprime to the base B, then ord_M(B) is the least common multiple of the local orders ord_{p_i^{e_i}}(B).",
+    "statement": "If M = Π p_i^{e_i} is coprime to the base B, then ord_M(B) is the least common multiple of the local orders ord_{p_i^{e_i}}(B).",
     "status": "classical",
     "repo_status": "finite prime-power CRT order theorem formalized in Lean and implemented computationally in Python",
     "proof_status": "formalized in Lean via the finite-product order theorem orderOf_pi and the prime-power CRT theorem orderOf_unitsEquivPrimePowers; the pairwise theorem orderOf_unitsChineseRemainder remains as the two-factor core",
@@ -150,7 +150,7 @@
   {
     "id": "preperiod_from_base_factors",
     "title": "Preperiod from stripped base factors",
-    "statement": "For denominator N and base b = \u03a0 p_i^{f_i}, the preperiod length is max_i ceil(v_{p_i}(N)/f_i); stripping those base factors leaves the purely periodic modulus M.",
+    "statement": "For denominator N and base b = Π p_i^{f_i}, the preperiod length is max_i ceil(v_{p_i}(N)/f_i); stripping those base factors leaves the purely periodic modulus M.",
     "status": "classical",
     "repo_status": "implemented, tested, and globally formalized in Lean at the base-prime support level, with the stripping factor now exposed to the composite-visibility family layer",
     "proof_status": "Lean formalizes the local ceiling-valuation theorem, the global max-over-base-primes step count, the positivity and self-divisibility of the base-supported factor, and the divisibility of that factor into base^preperiodSteps; the stripped-modulus M statement itself remains classical/computational",
@@ -175,8 +175,8 @@
     "title": "Carry as a deterministic windowed transducer",
     "statement": "For a finite coefficient word c_0, ..., c_{L-1}, carry propagation can be modeled by a deterministic transducer whose state is the incoming carry from less significant blocks.",
     "status": "implemented-here",
-    "repo_status": "explicit Python model with state graphs, coarse minimization hooks, carry-vs-remainder comparison reports, tests, and a Lean finite-window normalization/comparison surface",
-    "proof_status": "construction-level result with explicit implemented/open boundary reporting; Lean now formalizes the finite normalization recursion, traced finite runs with per-step Euclidean semantics, exact fixed-window carry/remainder trace alignment, and certified finite output agreement, but not the global DFA factorization layer",
+    "repo_status": "explicit Python model with state graphs, coarse minimization hooks, carry-vs-remainder comparison reports, tests, and a Lean finite-window normalization/comparison surface including exact same-core shifted transport for observed remainder/carry state-pair windows",
+    "proof_status": "construction-level result with explicit implemented/open boundary reporting; Lean now formalizes the finite normalization recursion, traced finite runs with per-step Euclidean semantics, exact fixed-window carry/remainder trace alignment, certified finite output agreement, exact finite-window functional criteria for observed state-pair lists, and exact same-core transport of observed remainder-to-carry functionality together with its finite transition-compatibility consequences, but not the global DFA factorization layer",
     "evidence": [
       "lean/QRTour/CarryTransducer.lean",
       "lean/QRTour/CarryComparison.lean",
@@ -258,10 +258,10 @@
   {
     "id": "same_core_threshold_shift_interval",
     "title": "Same-core threshold shifts are controlled by q-ratio intervals",
-    "statement": "Fix a block coordinate with shared B and k, and compare an actual denominator to its stripped periodic core. If k^s <= (q_core / q_actual) < k^(s+1), then the incoming-carry and local-overflow thresholds for the core occur earlier by either s or s+1 blocks. When q_core / q_actual = k^s exactly, the shift is exactly s blocks. In the non-power interval case, Lean also packages scaled-raw-coefficient sufficient criteria for the lower and upper endpoint labels at fixed boundary data.",
+    "statement": "Fix a block coordinate with shared B and k, and compare an actual denominator to its stripped periodic core. If k^s <= (q_core / q_actual) < k^(s+1), then the incoming-carry and local-overflow thresholds, and therefore the first visible mismatch boundary, for the core occur earlier by either s or s+1 blocks. When q_core / q_actual = k^s exactly, the shift is exactly s blocks. In the non-power interval case, Lean also packages scaled-raw-coefficient sufficient criteria for the lower and upper endpoint labels at fixed boundary data and propagates aligned lower/upper labels to the first visible mismatch boundary.",
     "status": "reproved-here",
     "repo_status": "formalized in Lean and implemented/tested in the visibility family layer",
-    "proof_status": "Lean theorems in QRTour.Visibility prove the generic adjacent-threshold interval law and the exact k-power shift law, while QRTour.CompositeVisibility now packages those results for actual-versus-stripped-core families, characterizes same-core compatibility by exact quotient scaling, gives a practical near-denominator q = 1 coordinate-selection criterion, and adds exact/lower/upper endpoint labels together with scaled-raw-coefficient sufficient criteria for the non-power same-core cases.",
+    "proof_status": "Lean theorems in QRTour.Visibility prove the generic adjacent-threshold interval law and the exact k-power shift law, while QRTour.CompositeVisibility now packages those results for actual-versus-stripped-core families, characterizes same-core compatibility by exact quotient scaling, gives a practical near-denominator q = 1 coordinate-selection criterion, lifts the interval and exact-shift laws to the first visible mismatch boundary, and adds exact/lower/upper endpoint labels together with scaled-raw-coefficient sufficient criteria for the non-power same-core cases, including aligned lower/upper endpoint propagation to the first visible mismatch boundary.",
     "evidence": [
       "lean/QRTour/Visibility.lean",
       "lean/QRTour/CompositeVisibility.lean",
@@ -282,8 +282,8 @@
     "title": "Exact visibility threshold for carried prefixes",
     "statement": "There is a sharp arithmetic criterion, in terms of q, k, B, and the period data, for the minimal stabilization lookahead and the remaining global visibility behavior beyond the now-implemented incoming-carry and raw-prefix boundary formulas.",
     "status": "open",
-    "repo_status": "tracked with exact observables, Lean formalization of the fixed-window gap certificate, its necessary tail-mass lower bound, monotone transport to larger lookahead windows, certified visible-word agreement, exact same-core visible-mismatch transport in the k-power regime, exact same-core transport of the raw tail-mass inequality and shifted coarse sufficient criterion, canonical case families, and exported visibility datasets; the least/global lookahead formula remains open",
-    "proof_status": "Lean now formalizes the exact fixed-window certificate q*k^(n+L) < gap_L*(B-k), its iff with visible-prefix agreement at fixed (n, L), the necessary tail-mass lower bound q*k^(n+L) < B^L*(B-k), monotone persistence of the certificate under extra lookahead, the resulting finite carry/remainder output agreement layer, exact same-core transport of the first visible mismatch boundary in the k-power regime, and exact same-core transport of both the raw tail-mass inequality and the coarse k^(n+L) < modulus sufficient condition; the minimal/global theorem remains open",
+    "repo_status": "tracked with exact observables, Lean formalization of the fixed-window gap certificate, its necessary tail-mass lower bound, monotone transport to larger lookahead windows, certified visible-word agreement, same-core interval/exact/lower/upper endpoint transport for the first visible mismatch boundary, exact same-core transport of the raw tail-mass inequality and shifted coarse sufficient criterion, exact same-core transport of observed remainder-to-carry functionality plus shifted finite transition compatibility, canonical case families, and exported visibility datasets; the least/global lookahead formula remains open",
+    "proof_status": "Lean now formalizes the exact fixed-window certificate q*k^(n+L) < gap_L*(B-k), its iff with visible-prefix agreement at fixed (n, L), the necessary tail-mass lower bound q*k^(n+L) < B^L*(B-k), monotone persistence of the certificate under extra lookahead, the resulting finite carry/remainder output agreement layer, same-core interval transport of the first visible mismatch boundary together with its exact k-power specialization and aligned lower/upper endpoint classification, exact same-core transport of both the raw tail-mass inequality and the coarse k^(n+L) < modulus sufficient condition, and exact same-core transport of observed remainder-to-carry functionality together with its finite transition-compatibility consequences; the minimal/global theorem remains open",
     "evidence": [
       "lean/QRTour/Visibility.lean",
       "lean/QRTour/CarryComparison.lean",
@@ -291,6 +291,38 @@
       "bridge_reptends/visibility.py",
       "docs/CARRIED_PREFIX_VISIBILITY.md",
       "tests/test_visibility.py"
+    ],
+    "lean_support_items": [
+      {
+        "module": "lean/QRTour/Visibility.lean",
+        "theorems": [
+          "BlockCoordinate.lookaheadCertificateHolds_iff_tail_lt_gapModulus",
+          "BlockCoordinate.lookaheadCertificateHolds_implies_tailMassLowerBound",
+          "BlockCoordinate.lookaheadCertificateHolds_of_lookaheadCertificate_add"
+        ],
+        "role": "Exact fixed-window certificate, its necessary tail-mass lower bound, and monotone transport to larger lookahead windows."
+      },
+      {
+        "module": "lean/QRTour/CarryComparison.lean",
+        "theorems": [
+          "actualCoordinate_visibleCarryPairs_output_agreement_of_core_tail_lt_gapModulus_add_exact",
+          "strippedCoordinate_visibleCarryPairs_output_agreement_of_actual_tail_lt_gapModulus_add_exact",
+          "actualCoordinate_stateAlignments_output_agreement_of_core_tail_lt_gapModulus_add_exact",
+          "strippedCoordinate_stateAlignments_output_agreement_of_actual_tail_lt_gapModulus_add_exact",
+          "actualCoordinate_stateAlignments_output_agreement_pointwise_of_core_tail_lt_gapModulus_add_exact",
+          "strippedCoordinate_stateAlignments_output_agreement_pointwise_of_actual_tail_lt_gapModulus_add_exact"
+        ],
+        "role": "Finite carry/remainder output agreement from the certificate and the exact tail-versus-gap inequality, including forward/reverse same-core pair/state packaging and pointwise wrappers on both shifted and stripped-core windows."
+      },
+      {
+        "module": "lean/QRTour/CompositeVisibility.lean",
+        "theorems": [
+          "sameCoreCompatible_firstVisibleMismatchPosition_shift_exact",
+          "sameCoreCompatible_lookaheadCertificateHolds_iff_add_exact",
+          "sameCoreCompatible_tailMassLowerBound_iff_add"
+        ],
+        "role": "Exact same-core transport of the first visible mismatch boundary, the lookahead certificate, and the raw tail-mass inequality in the `k^s` regime."
+      }
     ],
     "vocabulary_ids": [
       "good_mode",
@@ -305,12 +337,36 @@
     "title": "Canonical factorization of long division into orbit and carry",
     "statement": "The long-division DFA factors canonically into a remainder-orbit system together with a carry transducer for all coprime bases and moduli.",
     "status": "open",
-    "repo_status": "tracked with explicit comparison interfaces, state-map candidate reports, bounded counterexample search, and an open-boundary statement separating state relabeling, quotient candidates, and the global theorem",
-    "proof_status": "not established here",
+    "repo_status": "tracked with explicit comparison interfaces, state-map candidate reports, bounded counterexample search, Lean formalization of the finite normalization/comparison support layer, and an open-boundary statement separating state relabeling, quotient candidates, and the global theorem",
+    "proof_status": "Lean now formalizes finite carry normalization, aligned carry/remainder traces, observed state-pair projections, local carry-balance and remainder-balance equations, finite functional and transition-compatibility criteria, and explicit finite conflict lemmas, but no global factorization, minimization, or canonical morphism theorem",
     "evidence": [
+      "lean/QRTour/CarryTransducer.lean",
+      "lean/QRTour/CarryComparison.lean",
       "bridge_reptends/transducer.py",
       "docs/CARRY_TRANSDUCER.md",
       "tests/test_carry_transducer.py"
+    ],
+    "lean_support_items": [
+      {
+        "module": "lean/QRTour/CarryTransducer.lean",
+        "theorems": [
+          "CarryTransducer.normalizes_deterministic",
+          "BlockCoordinate.normalizedRawWord_eq_emittedBlockWord_of_remainderK_pow_lt_modulus",
+          "BlockCoordinate.carryRemainderPairs_output_agreement_of_remainderK_pow_lt_modulus"
+        ],
+        "role": "Deterministic finite normalization and exact finite carry/remainder output agreement under the explicit `k^L < modulus` hypothesis."
+      },
+      {
+        "module": "lean/QRTour/CarryComparison.lean",
+        "theorems": [
+          "BlockCoordinate.visibleCarryWord_eq_emittedBlockWord_of_lookaheadCertificate",
+          "BlockCoordinate.stateAlignments_output_agreement_of_lookaheadCertificate",
+          "BlockCoordinate.stateAlignments_remainderToCarry_transition_compatible_of_functional",
+          "BlockCoordinate.not_remainderToCarryFunctional_of_conflict",
+          "BlockCoordinate.not_carryToRemainderFunctional_of_conflict"
+        ],
+        "role": "Fixed-window visible-word agreement, state-alignment compatibility criteria, and explicit finite conflict refutations without a global factorization theorem."
+      }
     ],
     "vocabulary_ids": [
       "remainder_orbit",

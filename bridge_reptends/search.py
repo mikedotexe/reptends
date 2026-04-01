@@ -5,6 +5,7 @@ Search and dataset generation for notable reptend examples.
 This module turns the repo's exploratory scripts into reusable outputs:
 - bridge-candidate ranking for readable q-weighted skeletons
 - distinct leaderboards for q=1 bridges, nontrivial bridges, composites, and prime QR examples
+- claim-linked theorem-witness exports for the current atlas-backed formal surface
 - explicit legacy counterexample search
 - composite CRT profile export
 - a curated example atlas suitable for docs and the site
@@ -30,7 +31,7 @@ from .composite import (
     crt_period_profile,
 )
 from .orbit_weave import factorize, find_good_modes, skeleton_vs_actual, strip_base_factors
-from .registry import claim_context_for_parameters, claim_lookup, load_theorem_witnesses
+from .registry import STATUS_ORDER, claim_context_for_parameters, claim_lookup, load_theorem_witnesses
 from .transducer import (
     canonical_carry_dfa_examples,
     canonical_carry_selector_case_studies,
@@ -53,6 +54,7 @@ from .visibility import (
 
 DEFAULT_MIN_SIGNAL_MODULUS = 19
 PUBLISHED_ATLAS_SCHEMA_VERSION = "2.9"
+WITNESS_KIND_ORDER = ("theorem-witness", "empirical-witness", "open-target")
 
 
 def sieve_primes(max_n: int) -> list[int]:
@@ -134,12 +136,30 @@ class CanonicalExample:
     explanation: str
 
 
-def build_claim_witness_rows() -> list[dict[str, object]]:
+def build_claim_witness_rows(
+    *,
+    claim_id: str | None = None,
+    status: str | None = None,
+    kind: str | None = None,
+) -> list[dict[str, object]]:
     """Return enriched theorem-witness rows for search/site-facing exports."""
     claims = claim_lookup()
+    if claim_id is not None and claim_id not in claims:
+        raise ValueError(f"unknown claim_id: {claim_id}")
+    if status is not None and status not in STATUS_ORDER:
+        raise ValueError(f"unknown claim status: {status}")
+    if kind is not None and kind not in WITNESS_KIND_ORDER:
+        raise ValueError(f"unknown witness kind: {kind}")
+
     rows: list[dict[str, object]] = []
     for witness in load_theorem_witnesses():
         claim = claims[witness.claim_id]
+        if claim_id is not None and witness.claim_id != claim_id:
+            continue
+        if status is not None and claim.status != status:
+            continue
+        if kind is not None and witness.kind != kind:
+            continue
         rows.append(
             {
                 "witness_id": witness.id,
@@ -154,6 +174,16 @@ def build_claim_witness_rows() -> list[dict[str, object]]:
                 "evidence": list(witness.evidence),
             }
         )
+    status_rank = {value: index for index, value in enumerate(STATUS_ORDER)}
+    kind_rank = {value: index for index, value in enumerate(WITNESS_KIND_ORDER)}
+    rows.sort(
+        key=lambda row: (
+            status_rank[row["claim_status"]],
+            row["claim_id"],
+            kind_rank[row["kind"]],
+            row["witness_id"],
+        )
+    )
     return rows
 
 
@@ -1070,6 +1100,21 @@ def main() -> None:
     atlas_parser.add_argument("--top", type=int, default=8)
     atlas_parser.add_argument("--output", type=str, default=None)
 
+    witness_parser = subparsers.add_parser(
+        "theorem-witnesses",
+        help="Export claim-linked theorem, empirical, or open-target witness rows from the registry-backed theorem surface",
+    )
+    witness_parser.add_argument("--claim", type=str, default=None, help="Restrict to a single claim ID")
+    witness_parser.add_argument("--status", type=str, choices=STATUS_ORDER, default=None, help="Restrict by claim status")
+    witness_parser.add_argument(
+        "--kind",
+        type=str,
+        choices=WITNESS_KIND_ORDER,
+        default=None,
+        help="Restrict by witness kind",
+    )
+    witness_parser.add_argument("--output", type=str, default=None)
+
     args = parser.parse_args()
 
     if args.command in {"small-residue-coordinates", "bridges"}:
@@ -1168,6 +1213,12 @@ def main() -> None:
         else:
             print(json.dumps(payload, indent=2))
         return
+    elif args.command == "theorem-witnesses":
+        rows = build_claim_witness_rows(
+            claim_id=args.claim,
+            status=args.status,
+            kind=args.kind,
+        )
     elif args.command in {"visibility-profiles", "visibility"}:
         rows = visibility_profile_rows(
             args.max,

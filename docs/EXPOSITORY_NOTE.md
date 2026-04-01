@@ -3,7 +3,18 @@
 This note is generated from the claim registry, theorem-witness registry, vocabulary registry, and published example atlas.
 Each theorem-level item is tagged by claim ID and points back to concrete evidence.
 
-## Registry Snapshot
+## Proof-System Legend
+
+- `Lean-formalized`: proved in the Lean tree and suitable for theorem-level citation in the current public surface.
+- `Agda-locally-proved`: discharged inside the Agda pedagogical companion surface without relying on Agda postulates.
+- `Agda-postulated but Lean-backed`: still explicit as an Agda postulate, but closed by Lean or an atlas-backed Lean-backed claim in this repo.
+- `empirical`: implemented and regression-tested here, but not promoted to theorem status.
+- `open`: tracked as an unresolved claim boundary or interface question, not an established result.
+
+## Release Snapshot
+
+Use [PROOF_STATUS_ATLAS.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/PROOF_STATUS_ATLAS.md) as the theorem-level status source of truth.
+Current registry counts:
 
 - total claims: 15
 - classical: 3
@@ -12,13 +23,17 @@ Each theorem-level item is tagged by claim ID and points back to concrete eviden
 - empirical: 1
 - open: 2
 
+Current open claim IDs:
+- `small_k_visibility_threshold` - Exact visibility threshold for carried prefixes
+- `carry_dfa_factorization` - Canonical factorization of long division into orbit and carry
+
 ## Theorem-Witness Surface
 
 Use [THEOREM_WITNESS_ATLAS.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/THEOREM_WITNESS_ATLAS.md) for the claim-linked witness registry.
-- total witness records: 15
-- theorem-witness: 12
+- total witness records: 17
+- theorem-witness: 13
 - empirical-witness: 1
-- open-target: 2
+- open-target: 3
 
 - `series_q_weighted_identity_prime97_stride2` -> `series_q_weighted_identity`: (base=10, N=97, stride=2, B=100, q=1, k=3)
 - `same_core_threshold_shift_interval_996_over_249` -> `same_core_threshold_shift_interval`: (base=10, actual=996, core=249, stride=3, B=1000, k=4)
@@ -43,7 +58,7 @@ Use [THEOREM_WITNESS_ATLAS.md](/Users/mikepurvis/other/quadratic-residue-reptend
   Statement: For a block coordinate B = qN + k with 0 < k < B, the incoming carry into block j of the raw coefficient stream qk^j equals floor(qk^(j+1)/(B-k)). Therefore the first incoming-carry position is the least j with qk^(j+1) >= B-k.
   Evidence: [Visibility.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/Visibility.lean), [visibility.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/visibility.py), [CARRIED_PREFIX_VISIBILITY.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/CARRIED_PREFIX_VISIBILITY.md), [test_visibility.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_visibility.py)
 - `same_core_threshold_shift_interval` (reproved-here)
-  Statement: Fix a block coordinate with shared B and k, and compare an actual denominator to its stripped periodic core. If k^s <= (q_core / q_actual) < k^(s+1), then the incoming-carry and local-overflow thresholds for the core occur earlier by either s or s+1 blocks. When q_core / q_actual = k^s exactly, the shift is exactly s blocks. In the non-power interval case, Lean also packages scaled-raw-coefficient sufficient criteria for the lower and upper endpoint labels at fixed boundary data.
+  Statement: Fix a block coordinate with shared B and k, and compare an actual denominator to its stripped periodic core. If k^s <= (q_core / q_actual) < k^(s+1), then the incoming-carry and local-overflow thresholds, and therefore the first visible mismatch boundary, for the core occur earlier by either s or s+1 blocks. When q_core / q_actual = k^s exactly, the shift is exactly s blocks. In the non-power interval case, Lean also packages scaled-raw-coefficient sufficient criteria for the lower and upper endpoint labels at fixed boundary data and propagates aligned lower/upper labels to the first visible mismatch boundary.
   Evidence: [Visibility.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/Visibility.lean), [CompositeVisibility.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CompositeVisibility.lean), [visibility.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/visibility.py), [CARRIED_PREFIX_VISIBILITY.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/CARRIED_PREFIX_VISIBILITY.md), [test_visibility.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_visibility.py)
 
 ## Formalized Results
@@ -78,7 +93,7 @@ Use [THEOREM_WITNESS_ATLAS.md](/Users/mikepurvis/other/quadratic-residue-reptend
 - Standard vocabulary anchors: `small-residue block coordinate`, `remainder orbit under multiplication by the base`, `carry-propagated block normalization`.
 - `carry_window_transducer` (implemented-here)
   Statement: For a finite coefficient word c_0, ..., c_{L-1}, carry propagation can be modeled by a deterministic transducer whose state is the incoming carry from less significant blocks.
-  Repo status: explicit Python model with state graphs, coarse minimization hooks, carry-vs-remainder comparison reports, tests, and a Lean finite-window normalization/comparison surface
+  Repo status: explicit Python model with state graphs, coarse minimization hooks, carry-vs-remainder comparison reports, tests, and a Lean finite-window normalization/comparison surface including exact same-core shifted transport for observed remainder/carry state-pair windows
   Evidence: [CarryTransducer.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CarryTransducer.lean), [CarryComparison.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CarryComparison.lean), [transducer.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/transducer.py), [test_carry_transducer.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_carry_transducer.py)
 - `positive_q_good_modes` (reproved-here)
   Statement: A mode m only gives a usable q-weighted block coordinate when B = base^m exceeds the periodic modulus M, so q = (B-k)/M is positive.
@@ -175,4 +190,4 @@ Visibility family studies:
   Evidence: [Visibility.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/Visibility.lean), [CarryComparison.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CarryComparison.lean), [CompositeVisibility.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CompositeVisibility.lean), [visibility.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/visibility.py), [CARRIED_PREFIX_VISIBILITY.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/CARRIED_PREFIX_VISIBILITY.md), [test_visibility.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_visibility.py)
 - `carry_dfa_factorization`
   Statement: The long-division DFA factors canonically into a remainder-orbit system together with a carry transducer for all coprime bases and moduli.
-  Evidence: [transducer.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/transducer.py), [CARRY_TRANSDUCER.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/CARRY_TRANSDUCER.md), [test_carry_transducer.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_carry_transducer.py)
+  Evidence: [CarryTransducer.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CarryTransducer.lean), [CarryComparison.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CarryComparison.lean), [transducer.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/transducer.py), [CARRY_TRANSDUCER.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/CARRY_TRANSDUCER.md), [test_carry_transducer.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_carry_transducer.py)

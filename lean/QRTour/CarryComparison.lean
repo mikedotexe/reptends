@@ -38,6 +38,24 @@ theorem map_rdrop {α β : Type*} (f : α → β) (l : List α) (n : ℕ) :
     (l.rdrop n).map f = (l.map f).rdrop n := by
   simp [List.rdrop_eq_reverse_drop_reverse, List.map_reverse]
 
+theorem drop_rdrop_eq_rdrop_drop_of_length_eq {α : Type*} {l : List α} {s n k : ℕ}
+    (hlen : l.length = s + n + k) :
+    (l.rdrop k).drop s = (l.drop s).rdrop k := by
+  have hk : k ≤ (l.drop s).length := by
+    rw [List.length_drop, hlen]
+    omega
+  calc
+    (l.rdrop k).drop s = ((l.take s ++ l.drop s).rdrop k).drop s := by
+        rw [List.take_append_drop]
+    _ = (l.take s ++ (l.drop s).rdrop k).drop s := by
+        rw [List.rdrop_append_of_le_length _ hk]
+    _ = (l.drop s).rdrop k := by
+        have hs : (l.take s).length = s := by
+          rw [List.length_take, hlen]
+          omega
+        rw [List.drop_append, hs]
+        simp
+
 def FunctionalOnFst {α β : Type*} (pairs : List (α × β)) : Prop :=
   ∀ a ∈ pairs, ∀ b ∈ pairs, a.1 = b.1 → a.2 = b.2
 
@@ -61,6 +79,64 @@ theorem functionalOnFst_iff_getElem {α β : Type*} {pairs : List (α × β)} :
     exact h i hi j hj hab
 
 end List
+
+theorem CarryTransducer.traceReversedAux_take_map_carryIn_append
+    (T : CarryTransducer) (coefficients suffix : List ℕ) (carryIn : ℕ) :
+    ((T.traceReversedAux (coefficients ++ suffix) carryIn).take coefficients.length).map
+        CarryTraceStep.carryIn =
+      (T.traceReversedAux coefficients carryIn).map CarryTraceStep.carryIn := by
+  induction coefficients generalizing carryIn with
+  | nil =>
+      simp [CarryTransducer.traceReversedAux]
+  | cons coefficient tail ih =>
+      cases tail with
+      | nil =>
+          cases suffix with
+          | nil =>
+              simp [CarryTransducer.traceReversedAux, CarryTransducer.mkTraceStep]
+          | cons next rest =>
+              simp [CarryTransducer.traceReversedAux, CarryTransducer.mkTraceStep]
+      | cons next rest =>
+          simp [CarryTransducer.traceReversedAux, List.map_take]
+          simpa [List.map_take] using ih ((coefficient + carryIn) / T.blockBase)
+
+theorem CarryTransducer.traceReversed_take_map_carryIn_append
+    (T : CarryTransducer) (coefficients suffix : List ℕ) :
+    ((T.traceReversed (coefficients ++ suffix)).take coefficients.length).map
+        CarryTraceStep.carryIn =
+      (T.traceReversed coefficients).map CarryTraceStep.carryIn := by
+  simpa [CarryTransducer.traceReversed] using
+    T.traceReversedAux_take_map_carryIn_append coefficients suffix 0
+
+theorem CarryTransducer.traceBlocks_map_carryIn_drop_prefix_of_append
+    (T : CarryTransducer) (leading coefficients : List ℕ) :
+    ((T.traceBlocks (leading ++ coefficients)).map CarryTraceStep.carryIn).drop leading.length =
+      (T.traceBlocks coefficients).map CarryTraceStep.carryIn := by
+  have hdrop_rtake :
+      ((T.traceBlocks (leading ++ coefficients)).map CarryTraceStep.carryIn).drop leading.length =
+        ((T.traceBlocks (leading ++ coefficients)).map CarryTraceStep.carryIn).rtake
+          coefficients.length := by
+    unfold List.rtake
+    rw [List.length_map, CarryTransducer.traceBlocks_length]
+    simp
+  calc
+    ((T.traceBlocks (leading ++ coefficients)).map CarryTraceStep.carryIn).drop leading.length
+      = ((T.traceBlocks (leading ++ coefficients)).map CarryTraceStep.carryIn).rtake
+          coefficients.length := hdrop_rtake
+    _ = List.reverse
+          ((((T.traceBlocks (leading ++ coefficients)).map CarryTraceStep.carryIn).reverse).take
+            coefficients.length) := by
+          rw [List.rtake_eq_reverse_take_reverse]
+    _ = List.reverse
+          (((T.traceReversed (coefficients.reverse ++ leading.reverse)).map
+              CarryTraceStep.carryIn).take coefficients.length) := by
+          simp [CarryTransducer.traceBlocks, List.reverse_append, List.map_reverse]
+    _ = List.reverse ((T.traceReversed coefficients.reverse).map CarryTraceStep.carryIn) := by
+          simpa [List.length_reverse, List.map_take] using
+            congrArg List.reverse
+              (T.traceReversed_take_map_carryIn_append coefficients.reverse leading.reverse)
+    _ = (T.traceBlocks coefficients).map CarryTraceStep.carryIn := by
+          simp [CarryTransducer.traceBlocks, List.map_reverse]
 
 /-- The visible prefix of the carried raw trace after dropping the lookahead tail. -/
 def BlockCoordinate.visibleCarryTrace
@@ -285,6 +361,40 @@ theorem actualCoordinate_visibleCarryWord_eq_emittedBlockWord_of_core_lookaheadC
   exact actual.visibleCarryWord_eq_emittedBlockWord_of_lookaheadCertificate
     hgood hmod (requestedBlocks + s) lookaheadBlocks hcertActual
 
+/-- In the exact `k^s` same-core regime, the core tail-versus-gap-modulus
+inequality is enough to certify visible carry/output agreement for the shifted
+actual denominator. This is the gap-arithmetic form of the same finite-window
+comparison theorem. -/
+theorem actualCoordinate_visibleCarryWord_eq_emittedBlockWord_of_core_tail_lt_gapModulus_add_exact
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hmod : 1 < (actualCoordinate base n stride hn).modulus)
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s)
+    (htail :
+      (strippedCoordinate base n stride hn).remainderK ^ (requestedBlocks + lookaheadBlocks) <
+        (strippedCoordinate base n stride hn).lookaheadGapNumerator
+          requestedBlocks lookaheadBlocks *
+          (strippedCoordinate base n stride hn).modulus) :
+    (actualCoordinate base n stride hn).visibleCarryWord hgood (requestedBlocks + s) lookaheadBlocks =
+      (actualCoordinate base n stride hn).emittedBlockWord (requestedBlocks + s) := by
+  let actual := actualCoordinate base n stride hn
+  have htailActual :
+      actual.remainderK ^ ((requestedBlocks + s) + lookaheadBlocks) <
+        actual.lookaheadGapNumerator (requestedBlocks + s) lookaheadBlocks * actual.modulus :=
+    (sameCoreCompatible_tail_lt_gapModulus_iff_add_exact
+      (base := base) (n := n) (stride := stride) (s := s)
+      (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+      (hn := hn) hcompat hfactor).2 htail
+  have hcertActual :
+      actual.lookaheadCertificateHolds (requestedBlocks + s) lookaheadBlocks := by
+    rw [actual.lookaheadCertificateHolds_iff_tail_lt_gapModulus
+      hgood (requestedBlocks + s) lookaheadBlocks]
+    exact htailActual
+  exact actual.visibleCarryWord_eq_emittedBlockWord_of_lookaheadCertificate
+    hgood hmod (requestedBlocks + s) lookaheadBlocks hcertActual
+
 /-- Reverse exact same-core transport form for the finite carried visible word. -/
 theorem strippedCoordinate_visibleCarryWord_eq_emittedBlockWord_of_actual_lookaheadCertificate_add_exact
     {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
@@ -307,6 +417,41 @@ theorem strippedCoordinate_visibleCarryWord_eq_emittedBlockWord_of_actual_lookah
       (base := base) (n := n) (stride := stride) (s := s)
       (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
       (hn := hn) hgood hcompat hfactor hcert
+  exact core.visibleCarryWord_eq_emittedBlockWord_of_lookaheadCertificate
+    hcoreGood hmod requestedBlocks lookaheadBlocks hcertCore
+
+/-- Reverse exact same-core transport form in the gap-arithmetic language:
+the shifted actual tail-versus-gap-modulus inequality certifies the stripped
+core visible carry/output agreement on the unshifted window. -/
+theorem strippedCoordinate_visibleCarryWord_eq_emittedBlockWord_of_actual_tail_lt_gapModulus_add_exact
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hmod : 1 < (strippedCoordinate base n stride hn).modulus)
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s)
+    (htail :
+      (actualCoordinate base n stride hn).remainderK ^ ((requestedBlocks + s) + lookaheadBlocks) <
+        (actualCoordinate base n stride hn).lookaheadGapNumerator
+          (requestedBlocks + s) lookaheadBlocks *
+          (actualCoordinate base n stride hn).modulus) :
+    (strippedCoordinate base n stride hn).visibleCarryWord
+        (strippedCoordinate_goodMode_of_actual_goodMode hn hgood) requestedBlocks lookaheadBlocks =
+      (strippedCoordinate base n stride hn).emittedBlockWord requestedBlocks := by
+  let core := strippedCoordinate base n stride hn
+  have hcoreGood : core.goodMode := strippedCoordinate_goodMode_of_actual_goodMode hn hgood
+  have htailCore :
+      core.remainderK ^ (requestedBlocks + lookaheadBlocks) <
+        core.lookaheadGapNumerator requestedBlocks lookaheadBlocks * core.modulus :=
+    (sameCoreCompatible_tail_lt_gapModulus_iff_add_exact
+      (base := base) (n := n) (stride := stride) (s := s)
+      (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+      (hn := hn) hcompat hfactor).1 htail
+  have hcertCore :
+      core.lookaheadCertificateHolds requestedBlocks lookaheadBlocks := by
+    rw [core.lookaheadCertificateHolds_iff_tail_lt_gapModulus
+      hcoreGood requestedBlocks lookaheadBlocks]
+    exact htailCore
   exact core.visibleCarryWord_eq_emittedBlockWord_of_lookaheadCertificate
     hcoreGood hmod requestedBlocks lookaheadBlocks hcertCore
 
@@ -493,6 +638,61 @@ theorem actualCoordinate_visibleCarryPairs_output_agreement_of_core_lookaheadCer
     (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
     (hn := hn) hgood hmod hcompat hfactor hcert
 
+/-- Gap-arithmetic transport form for finite carried/remainder output
+agreement on the shifted actual denominator. This stays below the open
+global visibility boundary. -/
+theorem actualCoordinate_visibleCarryPairs_output_agreement_of_core_tail_lt_gapModulus_add_exact
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hmod : 1 < (actualCoordinate base n stride hn).modulus)
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s)
+    (htail :
+      (strippedCoordinate base n stride hn).remainderK ^ (requestedBlocks + lookaheadBlocks) <
+        (strippedCoordinate base n stride hn).lookaheadGapNumerator
+          requestedBlocks lookaheadBlocks *
+          (strippedCoordinate base n stride hn).modulus) :
+    ((actualCoordinate base n stride hn).visibleCarryPairs hgood (requestedBlocks + s) lookaheadBlocks).map
+        (fun pair => pair.1.blockValue) =
+      ((actualCoordinate base n stride hn).visibleCarryPairs hgood (requestedBlocks + s) lookaheadBlocks).map
+        (fun pair => pair.2.blockValue) := by
+  let actual := actualCoordinate base n stride hn
+  rw [actual.visibleCarryPairs_map_carryBlockValue, actual.visibleCarryPairs_map_remainderBlockValue]
+  exact actualCoordinate_visibleCarryWord_eq_emittedBlockWord_of_core_tail_lt_gapModulus_add_exact
+    (base := base) (n := n) (stride := stride) (s := s)
+    (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+    (hn := hn) hgood hmod hcompat hfactor htail
+
+/-- Reverse gap-arithmetic transport form for finite carried/remainder output
+agreement on the stripped core. This packages the unshifted side of the same
+finite-window comparison theorem. -/
+theorem strippedCoordinate_visibleCarryPairs_output_agreement_of_actual_tail_lt_gapModulus_add_exact
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hmod : 1 < (strippedCoordinate base n stride hn).modulus)
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s)
+    (htail :
+      (actualCoordinate base n stride hn).remainderK ^ ((requestedBlocks + s) + lookaheadBlocks) <
+        (actualCoordinate base n stride hn).lookaheadGapNumerator
+          (requestedBlocks + s) lookaheadBlocks *
+          (actualCoordinate base n stride hn).modulus) :
+    ((strippedCoordinate base n stride hn).visibleCarryPairs
+        (strippedCoordinate_goodMode_of_actual_goodMode hn hgood) requestedBlocks lookaheadBlocks).map
+        (fun pair => pair.1.blockValue) =
+      ((strippedCoordinate base n stride hn).visibleCarryPairs
+        (strippedCoordinate_goodMode_of_actual_goodMode hn hgood) requestedBlocks lookaheadBlocks).map
+        (fun pair => pair.2.blockValue) := by
+  let core := strippedCoordinate base n stride hn
+  let hcoreGood := strippedCoordinate_goodMode_of_actual_goodMode hn hgood
+  rw [core.visibleCarryPairs_map_carryBlockValue, core.visibleCarryPairs_map_remainderBlockValue]
+  exact strippedCoordinate_visibleCarryWord_eq_emittedBlockWord_of_actual_tail_lt_gapModulus_add_exact
+    (base := base) (n := n) (stride := stride) (s := s)
+    (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+    (hn := hn) hgood hmod hcompat hfactor htail
+
 theorem BlockCoordinate.visibleCarryPairs_output_agreement_pointwise_of_lookaheadCertificate
     (C : BlockCoordinate) (hgood : C.goodMode) (hmod : 1 < C.modulus)
     (requestedBlocks lookaheadBlocks : ℕ)
@@ -512,6 +712,86 @@ theorem BlockCoordinate.visibleCarryPairs_output_agreement_pointwise_of_lookahea
       some ((pairs[i]'hi).1.blockValue) = some ((pairs[i]'hi).2.blockValue) := by
     simpa [pairs, List.getElem?_eq_getElem hi] using hmap
   exact Option.some.inj hsome
+
+/-- Pointwise gap-arithmetic transport form for finite carried/remainder output
+agreement on the shifted actual denominator. -/
+theorem actualCoordinate_visibleCarryPairs_output_agreement_pointwise_of_core_tail_lt_gapModulus_add_exact
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hmod : 1 < (actualCoordinate base n stride hn).modulus)
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s)
+    (htail :
+      (strippedCoordinate base n stride hn).remainderK ^ (requestedBlocks + lookaheadBlocks) <
+        (strippedCoordinate base n stride hn).lookaheadGapNumerator
+          requestedBlocks lookaheadBlocks *
+          (strippedCoordinate base n stride hn).modulus)
+    (i : ℕ)
+    (hi :
+      i < ((actualCoordinate base n stride hn).visibleCarryPairs hgood
+        (requestedBlocks + s) lookaheadBlocks).length) :
+    (((actualCoordinate base n stride hn).visibleCarryPairs hgood
+        (requestedBlocks + s) lookaheadBlocks)[i]'hi).1.blockValue =
+      (((actualCoordinate base n stride hn).visibleCarryPairs hgood
+        (requestedBlocks + s) lookaheadBlocks)[i]'hi).2.blockValue := by
+  let actual := actualCoordinate base n stride hn
+  have htailActual :
+      actual.remainderK ^ ((requestedBlocks + s) + lookaheadBlocks) <
+        actual.lookaheadGapNumerator (requestedBlocks + s) lookaheadBlocks * actual.modulus :=
+    (sameCoreCompatible_tail_lt_gapModulus_iff_add_exact
+      (base := base) (n := n) (stride := stride) (s := s)
+      (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+      (hn := hn) hcompat hfactor).2 htail
+  have hcertActual :
+      actual.lookaheadCertificateHolds (requestedBlocks + s) lookaheadBlocks := by
+    rw [actual.lookaheadCertificateHolds_iff_tail_lt_gapModulus
+      hgood (requestedBlocks + s) lookaheadBlocks]
+    exact htailActual
+  exact actual.visibleCarryPairs_output_agreement_pointwise_of_lookaheadCertificate
+    hgood hmod (requestedBlocks + s) lookaheadBlocks hcertActual i hi
+
+/-- Reverse pointwise gap-arithmetic transport form for finite
+carried/remainder output agreement on the stripped core. -/
+theorem strippedCoordinate_visibleCarryPairs_output_agreement_pointwise_of_actual_tail_lt_gapModulus_add_exact
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hmod : 1 < (strippedCoordinate base n stride hn).modulus)
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s)
+    (htail :
+      (actualCoordinate base n stride hn).remainderK ^ ((requestedBlocks + s) + lookaheadBlocks) <
+        (actualCoordinate base n stride hn).lookaheadGapNumerator
+          (requestedBlocks + s) lookaheadBlocks *
+          (actualCoordinate base n stride hn).modulus)
+    (i : ℕ)
+    (hi :
+      i < ((strippedCoordinate base n stride hn).visibleCarryPairs
+        (strippedCoordinate_goodMode_of_actual_goodMode hn hgood)
+        requestedBlocks lookaheadBlocks).length) :
+    (((strippedCoordinate base n stride hn).visibleCarryPairs
+        (strippedCoordinate_goodMode_of_actual_goodMode hn hgood)
+        requestedBlocks lookaheadBlocks)[i]'hi).1.blockValue =
+      (((strippedCoordinate base n stride hn).visibleCarryPairs
+        (strippedCoordinate_goodMode_of_actual_goodMode hn hgood)
+        requestedBlocks lookaheadBlocks)[i]'hi).2.blockValue := by
+  let core := strippedCoordinate base n stride hn
+  let hcoreGood := strippedCoordinate_goodMode_of_actual_goodMode hn hgood
+  have htailCore :
+      core.remainderK ^ (requestedBlocks + lookaheadBlocks) <
+        core.lookaheadGapNumerator requestedBlocks lookaheadBlocks * core.modulus :=
+    (sameCoreCompatible_tail_lt_gapModulus_iff_add_exact
+      (base := base) (n := n) (stride := stride) (s := s)
+      (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+      (hn := hn) hcompat hfactor).1 htail
+  have hcertCore :
+      core.lookaheadCertificateHolds requestedBlocks lookaheadBlocks := by
+    rw [core.lookaheadCertificateHolds_iff_tail_lt_gapModulus
+      hcoreGood requestedBlocks lookaheadBlocks]
+    exact htailCore
+  exact core.visibleCarryPairs_output_agreement_pointwise_of_lookaheadCertificate
+    hcoreGood hmod requestedBlocks lookaheadBlocks hcertCore i hi
 
 theorem BlockCoordinate.visibleCarryPairs_carry_balance
     (C : BlockCoordinate) (hgood : C.goodMode)
@@ -1215,6 +1495,548 @@ theorem BlockCoordinate.not_carryToRemainderFunctional_of_conflict
   intro hfunc
   exact hstate (hfunc i hi j hj hcarry)
 
+theorem BlockCoordinate.blockBase_pow_mod_eq_remainderK_pow_mod
+    (C : BlockCoordinate) (length : ℕ) :
+    C.blockBase ^ length % C.modulus = C.remainderK ^ length % C.modulus := by
+  induction length with
+  | zero =>
+      simp [BlockCoordinate.remainderK]
+  | succ length ih =>
+      calc
+        C.blockBase ^ (length + 1) % C.modulus
+          = ((C.blockBase ^ length % C.modulus) * (C.blockBase % C.modulus)) % C.modulus := by
+              rw [pow_succ, Nat.mul_mod]
+        _ = ((C.remainderK ^ length % C.modulus) * (C.blockBase % C.modulus)) % C.modulus := by
+              rw [ih]
+        _ = ((C.remainderK ^ length % C.modulus) * (C.remainderK % C.modulus)) % C.modulus := by
+              simp [BlockCoordinate.remainderK]
+        _ = ((C.remainderK ^ length % C.modulus) * C.remainderK) % C.modulus := by
+              rw [Nat.mod_eq_of_lt C.remainderK_lt_modulus]
+        _ = (C.remainderK ^ length * C.remainderK) % C.modulus := by
+              symm
+              rw [Nat.mul_mod, Nat.mod_eq_of_lt C.remainderK_lt_modulus]
+        _ = C.remainderK ^ (length + 1) % C.modulus := by
+              rw [pow_succ]
+
+theorem actualCoordinate_rawCoefficientWord_eq_prefix_append_core_add_exact
+    {base n stride s length : ℕ} {hn : 0 < n}
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s) :
+    (actualCoordinate base n stride hn).rawCoefficientWord (s + length) =
+      (actualCoordinate base n stride hn).rawCoefficientWord s ++
+        (strippedCoordinate base n stride hn).rawCoefficientWord length := by
+  let actual := actualCoordinate base n stride hn
+  let core := strippedCoordinate base n stride hn
+  induction length with
+  | zero =>
+      simp [BlockCoordinate.rawCoefficientWord]
+  | succ length ih =>
+      calc
+        actual.rawCoefficientWord (s + (length + 1))
+          = actual.rawCoefficientWord (s + length) ++ [actual.rawCoefficient (s + length)] := by
+              rw [show s + (length + 1) = (s + length) + 1 by omega]
+              simpa [actual] using actual.rawCoefficientWord_succ (s + length)
+        _ = actual.rawCoefficientWord s ++ core.rawCoefficientWord length ++
+              [actual.rawCoefficient (s + length)] := by
+              rw [ih]
+        _ = actual.rawCoefficientWord s ++ core.rawCoefficientWord length ++
+              [core.rawCoefficient length] := by
+              rw [show s + length = length + s by omega]
+              rw [sameCoreCompatible_rawCoefficient_shift_exact
+                (base := base) (n := n) (stride := stride) (s := s)
+                (j := length) (hn := hn) hcompat hfactor]
+        _ = actual.rawCoefficientWord s ++ core.rawCoefficientWord (length + 1) := by
+              rw [core.rawCoefficientWord_succ]
+              simp [List.append_assoc]
+
+theorem actualCoordinate_traceRawWord_map_carryIn_drop_prefix_add_exact
+    {base n stride s length : ℕ} {hn : 0 < n}
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s) :
+    (((actualCoordinate base n stride hn).traceRawWord hgood (s + length)).map
+        CarryTraceStep.carryIn).drop s =
+      ((strippedCoordinate base n stride hn).traceRawWord
+          (sameCoreCompatible_goodMode_of_actual_goodMode
+            (base := base) (n := n) (stride := stride) (hn := hn) hgood) length).map
+        CarryTraceStep.carryIn := by
+  let actual := actualCoordinate base n stride hn
+  let core := strippedCoordinate base n stride hn
+  let hcoreGood :=
+    sameCoreCompatible_goodMode_of_actual_goodMode
+      (base := base) (n := n) (stride := stride) (hn := hn) hgood
+  have hraw :
+      actual.rawCoefficientWord (s + length) =
+        actual.rawCoefficientWord s ++ core.rawCoefficientWord length := by
+    simpa [actual, core] using
+      actualCoordinate_rawCoefficientWord_eq_prefix_append_core_add_exact
+        (base := base) (n := n) (stride := stride) (s := s) (length := length)
+        (hn := hn) hcompat hfactor
+  have hblockBase : actual.blockBase = core.blockBase := by
+    rfl
+  have hcarryDrop :
+      List.drop (actual.rawCoefficientWord s).length
+        (List.map CarryTraceStep.carryIn
+          ((actual.carryTransducer hgood).traceBlocks
+            (actual.rawCoefficientWord s ++ core.rawCoefficientWord length))) =
+        List.map CarryTraceStep.carryIn
+          ((actual.carryTransducer hgood).traceBlocks (core.rawCoefficientWord length)) := by
+    simpa using
+      (actual.carryTransducer hgood).traceBlocks_map_carryIn_drop_prefix_of_append
+        (actual.rawCoefficientWord s) (core.rawCoefficientWord length)
+  calc
+    ((actual.traceRawWord hgood (s + length)).map CarryTraceStep.carryIn).drop s
+      = (((actual.carryTransducer hgood).traceBlocks
+            (actual.rawCoefficientWord s ++ core.rawCoefficientWord length)).map
+          CarryTraceStep.carryIn).drop s := by
+            simp [actual, BlockCoordinate.traceRawWord, hraw]
+    _ = ((actual.carryTransducer hgood).traceBlocks (core.rawCoefficientWord length)).map
+          CarryTraceStep.carryIn := by
+            simpa [actual.rawCoefficientWord_length] using hcarryDrop
+    _ = ((core.traceRawWord hcoreGood length).map CarryTraceStep.carryIn) := by
+          simp [hblockBase, core, BlockCoordinate.traceRawWord, BlockCoordinate.carryTransducer]
+
+theorem actualCoordinate_visibleCarryTrace_map_carryIn_drop_prefix_add_exact
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s) :
+    (((actualCoordinate base n stride hn).visibleCarryTrace hgood
+          (requestedBlocks + s) lookaheadBlocks).map CarryTraceStep.carryIn).drop s =
+      ((strippedCoordinate base n stride hn).visibleCarryTrace
+          (sameCoreCompatible_goodMode_of_actual_goodMode
+            (base := base) (n := n) (stride := stride) (hn := hn) hgood)
+          requestedBlocks lookaheadBlocks).map CarryTraceStep.carryIn := by
+  let actual := actualCoordinate base n stride hn
+  let core := strippedCoordinate base n stride hn
+  let hcoreGood :=
+    sameCoreCompatible_goodMode_of_actual_goodMode
+      (base := base) (n := n) (stride := stride) (hn := hn) hgood
+  let actualCarryIns :=
+    ((actual.traceRawWord hgood (s + (requestedBlocks + lookaheadBlocks))).map
+      CarryTraceStep.carryIn)
+  let coreCarryIns :=
+    ((core.traceRawWord hcoreGood (requestedBlocks + lookaheadBlocks)).map
+      CarryTraceStep.carryIn)
+  have htrace :
+      actualCarryIns.drop s = coreCarryIns := by
+    simpa [actualCarryIns, coreCarryIns, Nat.add_assoc, Nat.add_left_comm, Nat.add_comm] using
+      actualCoordinate_traceRawWord_map_carryIn_drop_prefix_add_exact
+        (base := base) (n := n) (stride := stride) (s := s)
+        (length := requestedBlocks + lookaheadBlocks) (hn := hn) hgood hcompat hfactor
+  calc
+    (((actual.visibleCarryTrace hgood (requestedBlocks + s) lookaheadBlocks).map
+          CarryTraceStep.carryIn).drop s)
+      = (actualCarryIns.rdrop lookaheadBlocks).drop s := by
+          simp [actualCarryIns, actual, BlockCoordinate.visibleCarryTrace_map_carryIn,
+            Nat.add_left_comm, Nat.add_comm]
+    _ = (actualCarryIns.drop s).rdrop lookaheadBlocks := by
+          apply List.drop_rdrop_eq_rdrop_drop_of_length_eq (n := requestedBlocks)
+          simp [actualCarryIns, List.length_map, actual.traceRawWord_length,
+            Nat.add_left_comm, Nat.add_comm]
+    _ = coreCarryIns.rdrop lookaheadBlocks := by
+          rw [htrace]
+    _ = ((core.visibleCarryTrace hcoreGood requestedBlocks lookaheadBlocks).map
+          CarryTraceStep.carryIn) := by
+          simp [coreCarryIns, core, BlockCoordinate.visibleCarryTrace_map_carryIn]
+
+theorem actualCoordinate_longDivisionRemainder_add_exact
+    {base n stride s j : ℕ} {hn : 0 < n}
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s) :
+    (actualCoordinate base n stride hn).longDivisionRemainder (j + s) =
+      (actualCoordinate base n stride hn).remainderK ^ s *
+        (strippedCoordinate base n stride hn).longDivisionRemainder j := by
+  let actual := actualCoordinate base n stride hn
+  let core := strippedCoordinate base n stride hn
+  have hsharedK : core.remainderK = actual.remainderK := by
+    simpa [actual, core] using sameCoreCompatible_remainderK_eq (hn := hn) hcompat
+  have hmod :
+      actual.modulus = actual.remainderK ^ s * core.modulus := by
+    calc
+      actual.modulus = basePrimeSupportFactor base n * core.modulus := by
+        simpa [actual, core, strippedPeriodModulus] using
+          (basePrimeSupportFactor_mul_strippedPeriodModulus base n).symm
+      _ = actual.remainderK ^ s * core.modulus := by
+          rw [hfactor]
+  have hcorePow :
+      core.remainderK ^ j % core.modulus = core.longDivisionRemainder j := by
+    rw [← core.blockBase_pow_mod_eq_remainderK_pow_mod, core.longDivisionRemainder_eq_pow_mod]
+  calc
+    actual.longDivisionRemainder (j + s)
+      = actual.blockBase ^ (j + s) % actual.modulus := by
+          rw [actual.longDivisionRemainder_eq_pow_mod]
+    _ = actual.remainderK ^ (j + s) % actual.modulus := by
+          rw [actual.blockBase_pow_mod_eq_remainderK_pow_mod]
+    _ = (actual.remainderK ^ s * actual.remainderK ^ j) % actual.modulus := by
+          rw [show j + s = s + j by omega, Nat.pow_add, Nat.mul_comm]
+    _ = actual.remainderK ^ s * (actual.remainderK ^ j % core.modulus) := by
+          rw [hmod, Nat.mul_mod_mul_left]
+    _ = actual.remainderK ^ s * (core.remainderK ^ j % core.modulus) := by
+          rw [← hsharedK]
+    _ = actual.remainderK ^ s * core.longDivisionRemainder j := by
+          rw [hcorePow]
+
+theorem actualCoordinate_longDivisionRemainder_prefix_eq_pow
+    {base n stride s i : ℕ} {hn : 0 < n}
+    (hk : 1 < (actualCoordinate base n stride hn).remainderK)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s)
+    (hi : i < s) :
+    (actualCoordinate base n stride hn).longDivisionRemainder i =
+      (actualCoordinate base n stride hn).remainderK ^ i := by
+  let actual := actualCoordinate base n stride hn
+  let core := strippedCoordinate base n stride hn
+  have hmod :
+      actual.modulus = actual.remainderK ^ s * core.modulus := by
+    calc
+      actual.modulus = basePrimeSupportFactor base n * core.modulus := by
+        simpa [actual, core, strippedPeriodModulus] using
+          (basePrimeSupportFactor_mul_strippedPeriodModulus base n).symm
+      _ = actual.remainderK ^ s * core.modulus := by
+          rw [hfactor]
+  have hpow_lt_shift : actual.remainderK ^ i < actual.remainderK ^ s := by
+    exact Nat.pow_lt_pow_right hk hi
+  have hpow_le_mod : actual.remainderK ^ s ≤ actual.modulus := by
+    rw [hmod]
+    exact Nat.le_mul_of_pos_right _ (strippedPeriodModulus_pos hn)
+  have hpow_lt_mod : actual.remainderK ^ i < actual.modulus :=
+    lt_of_lt_of_le hpow_lt_shift hpow_le_mod
+  calc
+    actual.longDivisionRemainder i = actual.blockBase ^ i % actual.modulus := by
+      rw [actual.longDivisionRemainder_eq_pow_mod]
+    _ = actual.remainderK ^ i % actual.modulus := by
+      rw [actual.blockBase_pow_mod_eq_remainderK_pow_mod]
+    _ = actual.remainderK ^ i := Nat.mod_eq_of_lt hpow_lt_mod
+
+theorem actualCoordinate_stateAlignments_carryIn_shift_exact
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s)
+    (j : ℕ)
+    (hjActual :
+      j + s < ((actualCoordinate base n stride hn).stateAlignments hgood
+        (requestedBlocks + s) lookaheadBlocks).length)
+    (hjCore :
+      j < ((strippedCoordinate base n stride hn).stateAlignments
+        (sameCoreCompatible_goodMode_of_actual_goodMode
+          (base := base) (n := n) (stride := stride) (hn := hn) hgood)
+        requestedBlocks lookaheadBlocks).length) :
+    (((actualCoordinate base n stride hn).stateAlignments hgood
+        (requestedBlocks + s) lookaheadBlocks)[j + s]'hjActual).carryIn =
+      (((strippedCoordinate base n stride hn).stateAlignments
+          (sameCoreCompatible_goodMode_of_actual_goodMode
+            (base := base) (n := n) (stride := stride) (hn := hn) hgood)
+          requestedBlocks lookaheadBlocks)[j]'hjCore).carryIn := by
+  let actual := actualCoordinate base n stride hn
+  let core := strippedCoordinate base n stride hn
+  let hcoreGood :=
+    sameCoreCompatible_goodMode_of_actual_goodMode
+      (base := base) (n := n) (stride := stride) (hn := hn) hgood
+  let actualCarryStates :=
+    (actual.stateAlignments hgood (requestedBlocks + s) lookaheadBlocks).map StateAlignment.carryIn
+  let coreCarryStates :=
+    (core.stateAlignments hcoreGood requestedBlocks lookaheadBlocks).map StateAlignment.carryIn
+  have hmap :
+      actualCarryStates.drop s = coreCarryStates := by
+    simpa [actualCarryStates, coreCarryStates, actual.stateAlignments_map_carryIn,
+      core.stateAlignments_map_carryIn] using
+      actualCoordinate_visibleCarryTrace_map_carryIn_drop_prefix_add_exact
+        (base := base) (n := n) (stride := stride) (s := s)
+        (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+        (hn := hn) hgood hcompat hfactor
+  have hjCoreCarry : j < coreCarryStates.length := by
+    simpa [coreCarryStates] using hjCore
+  have hjDrop : j < (actualCarryStates.drop s).length := by
+    simpa [hmap] using hjCoreCarry
+  have hget :
+      (actualCarryStates.drop s)[j]'hjDrop = coreCarryStates[j]'hjCoreCarry := by
+    have hopt :
+        (actualCarryStates.drop s)[j]? = coreCarryStates[j]? := by
+      simpa using congrArg (fun l => l[j]?) hmap
+    exact Option.some.inj (by
+      simpa [List.getElem?_eq_getElem hjDrop, List.getElem?_eq_getElem hjCoreCarry] using hopt)
+  have hdropEq :
+      (actualCarryStates.drop s)[j]'hjDrop =
+        actualCarryStates[j + s]'(by simpa [actualCarryStates] using hjActual) := by
+    have hdropEq' :
+        (actualCarryStates.drop s)[j]'hjDrop =
+          actualCarryStates[s + j]'(by simpa [actualCarryStates, Nat.add_comm] using hjActual) := by
+      exact List.getElem_drop (xs := actualCarryStates) (i := s) (j := j) (h := hjDrop)
+    have hindexEq :
+        actualCarryStates[s + j]'(by simpa [actualCarryStates, Nat.add_comm] using hjActual) =
+          actualCarryStates[j + s]'(by simpa [actualCarryStates] using hjActual) := by
+      exact getElem_congr (c := actualCarryStates) (d := actualCarryStates) rfl
+        (Nat.add_comm s j) (w := by simpa [actualCarryStates, Nat.add_comm] using hjActual)
+    exact hdropEq'.trans hindexEq
+  calc
+    ((actual.stateAlignments hgood (requestedBlocks + s) lookaheadBlocks)[j + s]'hjActual).carryIn
+      = actualCarryStates[j + s]'(by simpa [actualCarryStates] using hjActual) := by
+          simp [actualCarryStates]
+    _ = (actualCarryStates.drop s)[j]'hjDrop := hdropEq.symm
+    _ = coreCarryStates[j]'hjCoreCarry := hget
+    _ = ((core.stateAlignments hcoreGood requestedBlocks lookaheadBlocks)[j]'hjCore).carryIn := by
+          simp [coreCarryStates]
+
+theorem actualCoordinate_stateAlignments_remainderIn_shift_exact
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s)
+    (j : ℕ)
+    (hjActual :
+      j + s < ((actualCoordinate base n stride hn).stateAlignments hgood
+        (requestedBlocks + s) lookaheadBlocks).length)
+    (hjCore :
+      j < ((strippedCoordinate base n stride hn).stateAlignments
+        (sameCoreCompatible_goodMode_of_actual_goodMode
+          (base := base) (n := n) (stride := stride) (hn := hn) hgood)
+        requestedBlocks lookaheadBlocks).length) :
+    (((actualCoordinate base n stride hn).stateAlignments hgood
+        (requestedBlocks + s) lookaheadBlocks)[j + s]'hjActual).remainderIn =
+      (actualCoordinate base n stride hn).remainderK ^ s *
+        (((strippedCoordinate base n stride hn).stateAlignments
+            (sameCoreCompatible_goodMode_of_actual_goodMode
+              (base := base) (n := n) (stride := stride) (hn := hn) hgood)
+            requestedBlocks lookaheadBlocks)[j]'hjCore).remainderIn := by
+  let actual := actualCoordinate base n stride hn
+  let core := strippedCoordinate base n stride hn
+  let hcoreGood :=
+    sameCoreCompatible_goodMode_of_actual_goodMode
+      (base := base) (n := n) (stride := stride) (hn := hn) hgood
+  calc
+    ((actual.stateAlignments hgood (requestedBlocks + s) lookaheadBlocks)[j + s]'hjActual).remainderIn
+      = actual.longDivisionRemainder (j + s) := by
+          exact actual.stateAlignments_remainderIn_eq_longDivisionRemainder
+            hgood (requestedBlocks + s) lookaheadBlocks (j + s) hjActual
+    _ = actual.remainderK ^ s * core.longDivisionRemainder j := by
+          exact actualCoordinate_longDivisionRemainder_add_exact
+            (base := base) (n := n) (stride := stride) (s := s) (j := j) (hn := hn)
+            hcompat hfactor
+    _ = actual.remainderK ^ s *
+          ((core.stateAlignments hcoreGood requestedBlocks lookaheadBlocks)[j]'hjCore).remainderIn := by
+          rw [core.stateAlignments_remainderIn_eq_longDivisionRemainder
+            hcoreGood requestedBlocks lookaheadBlocks j hjCore]
+
+/-- Exact same-core transport of the observed remainder-to-carry functional
+criterion itself. This is a finite-window support theorem beneath the open
+global carry/visibility boundary. -/
+theorem actualCoordinate_stateAlignments_remainderToCarryFunctional_of_core_add_exact
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hk : 1 < (actualCoordinate base n stride hn).remainderK)
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s)
+    (hcoreGood : (strippedCoordinate base n stride hn).goodMode)
+    (hfunc :
+      (strippedCoordinate base n stride hn).remainderToCarryFunctional
+        hcoreGood requestedBlocks lookaheadBlocks) :
+    (actualCoordinate base n stride hn).remainderToCarryFunctional
+      hgood (requestedBlocks + s) lookaheadBlocks := by
+  let actual := actualCoordinate base n stride hn
+  let core := strippedCoordinate base n stride hn
+  let hcoreGood' :=
+    sameCoreCompatible_goodMode_of_actual_goodMode
+      (base := base) (n := n) (stride := stride) (hn := hn) hgood
+  have hfunc' :
+      core.remainderToCarryFunctional hcoreGood' requestedBlocks lookaheadBlocks := by
+    simpa [core] using hfunc
+  have hkpos : 0 < actual.remainderK := lt_trans Nat.zero_lt_one hk
+  intro i hi j hj hstate
+  by_cases hi_lt : i < s
+  · by_cases hj_lt : j < s
+    · rw [actual.stateAlignments_remainderIn_eq_longDivisionRemainder
+          hgood (requestedBlocks + s) lookaheadBlocks i hi,
+        actual.stateAlignments_remainderIn_eq_longDivisionRemainder
+          hgood (requestedBlocks + s) lookaheadBlocks j hj,
+        actualCoordinate_longDivisionRemainder_prefix_eq_pow
+          (base := base) (n := n) (stride := stride) (s := s) (i := i) (hn := hn)
+          hk hfactor hi_lt,
+        actualCoordinate_longDivisionRemainder_prefix_eq_pow
+          (base := base) (n := n) (stride := stride) (s := s) (i := j) (hn := hn)
+          hk hfactor hj_lt] at hstate
+      have hij :
+          i = j := Nat.pow_right_injective (Nat.succ_le_of_lt hk) hstate
+      subst hij
+      simp
+    · exfalso
+      have hs_le_j : s ≤ j := Nat.le_of_not_gt hj_lt
+      rw [actual.stateAlignments_remainderIn_eq_longDivisionRemainder
+          hgood (requestedBlocks + s) lookaheadBlocks i hi,
+        actual.stateAlignments_remainderIn_eq_longDivisionRemainder
+          hgood (requestedBlocks + s) lookaheadBlocks j hj,
+        actualCoordinate_longDivisionRemainder_prefix_eq_pow
+          (base := base) (n := n) (stride := stride) (s := s) (i := i) (hn := hn)
+          hk hfactor hi_lt] at hstate
+      have hjShift :
+          actual.longDivisionRemainder j =
+            actual.remainderK ^ s * core.longDivisionRemainder (j - s) := by
+        rw [show j = (j - s) + s by omega]
+        simpa [Nat.add_assoc, Nat.add_left_comm, Nat.add_comm] using
+          actualCoordinate_longDivisionRemainder_add_exact
+            (base := base) (n := n) (stride := stride) (s := s) (j := j - s) (hn := hn)
+            hcompat hfactor
+      rw [hjShift] at hstate
+      have hpow_lt_shift : actual.remainderK ^ i < actual.remainderK ^ s :=
+        Nat.pow_lt_pow_right hk hi_lt
+      have hfactor_le : actual.remainderK ^ s ≤ actual.remainderK ^ i := by
+        exact Nat.le_of_dvd (pow_pos hkpos i) ⟨core.longDivisionRemainder (j - s), hstate⟩
+      exact (not_le_of_gt hpow_lt_shift) hfactor_le
+  · by_cases hj_lt : j < s
+    · exfalso
+      have hs_le_i : s ≤ i := Nat.le_of_not_gt hi_lt
+      rw [actual.stateAlignments_remainderIn_eq_longDivisionRemainder
+          hgood (requestedBlocks + s) lookaheadBlocks i hi,
+        actual.stateAlignments_remainderIn_eq_longDivisionRemainder
+          hgood (requestedBlocks + s) lookaheadBlocks j hj,
+        actualCoordinate_longDivisionRemainder_prefix_eq_pow
+          (base := base) (n := n) (stride := stride) (s := s) (i := j) (hn := hn)
+          hk hfactor hj_lt] at hstate
+      have hiShift :
+          actual.longDivisionRemainder i =
+            actual.remainderK ^ s * core.longDivisionRemainder (i - s) := by
+        rw [show i = (i - s) + s by omega]
+        simpa [Nat.add_assoc, Nat.add_left_comm, Nat.add_comm] using
+          actualCoordinate_longDivisionRemainder_add_exact
+            (base := base) (n := n) (stride := stride) (s := s) (j := i - s) (hn := hn)
+            hcompat hfactor
+      rw [hiShift] at hstate
+      have hpow_lt_shift : actual.remainderK ^ j < actual.remainderK ^ s :=
+        Nat.pow_lt_pow_right hk hj_lt
+      have hfactor_le : actual.remainderK ^ s ≤ actual.remainderK ^ j := by
+        exact Nat.le_of_dvd (pow_pos hkpos j) ⟨core.longDivisionRemainder (i - s), hstate.symm⟩
+      exact (not_le_of_gt hpow_lt_shift) hfactor_le
+    · have hiCore : i - s < requestedBlocks := by
+        rw [actual.stateAlignments_length hgood (requestedBlocks + s) lookaheadBlocks] at hi
+        omega
+      have hjCore : j - s < requestedBlocks := by
+        rw [actual.stateAlignments_length hgood (requestedBlocks + s) lookaheadBlocks] at hj
+        omega
+      have hiRemShift :
+          ((actual.stateAlignments hgood (requestedBlocks + s) lookaheadBlocks)[i]'hi).remainderIn =
+            actual.remainderK ^ s *
+              ((core.stateAlignments hcoreGood' requestedBlocks lookaheadBlocks)[i - s]'(by
+                rw [core.stateAlignments_length]
+                exact hiCore)).remainderIn := by
+        have hiActualShift :
+            (i - s) + s < (actual.stateAlignments hgood (requestedBlocks + s) lookaheadBlocks).length := by
+          simpa [show (i - s) + s = i by omega] using hi
+        simpa [show (i - s) + s = i by omega] using
+          actualCoordinate_stateAlignments_remainderIn_shift_exact
+            (base := base) (n := n) (stride := stride) (s := s)
+            (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+            (hn := hn) hgood hcompat hfactor (i - s) hiActualShift (by
+              rw [core.stateAlignments_length]
+              exact hiCore)
+      have hjRemShift :
+          ((actual.stateAlignments hgood (requestedBlocks + s) lookaheadBlocks)[j]'hj).remainderIn =
+            actual.remainderK ^ s *
+              ((core.stateAlignments hcoreGood' requestedBlocks lookaheadBlocks)[j - s]'(by
+                rw [core.stateAlignments_length]
+                exact hjCore)).remainderIn := by
+        have hjActualShift :
+            (j - s) + s < (actual.stateAlignments hgood (requestedBlocks + s) lookaheadBlocks).length := by
+          simpa [show (j - s) + s = j by omega] using hj
+        simpa [show (j - s) + s = j by omega] using
+          actualCoordinate_stateAlignments_remainderIn_shift_exact
+            (base := base) (n := n) (stride := stride) (s := s)
+            (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+            (hn := hn) hgood hcompat hfactor (j - s) hjActualShift (by
+              rw [core.stateAlignments_length]
+              exact hjCore)
+      rw [hiRemShift, hjRemShift] at hstate
+      have hcoreState :
+          ((core.stateAlignments hcoreGood' requestedBlocks lookaheadBlocks)[i - s]'(by
+            rw [core.stateAlignments_length]
+            exact hiCore)).remainderIn =
+            ((core.stateAlignments hcoreGood' requestedBlocks lookaheadBlocks)[j - s]'(by
+              rw [core.stateAlignments_length]
+              exact hjCore)).remainderIn :=
+        Nat.eq_of_mul_eq_mul_left (pow_pos hkpos s) hstate
+      have hcoreCarry :
+          ((core.stateAlignments hcoreGood' requestedBlocks lookaheadBlocks)[i - s]'(by
+            rw [core.stateAlignments_length]
+            exact hiCore)).carryIn =
+            ((core.stateAlignments hcoreGood' requestedBlocks lookaheadBlocks)[j - s]'(by
+              rw [core.stateAlignments_length]
+              exact hjCore)).carryIn :=
+        hfunc' (i - s) (by
+            rw [core.stateAlignments_length]
+            exact hiCore)
+          (j - s) (by
+            rw [core.stateAlignments_length]
+            exact hjCore) hcoreState
+      have hiCarryShift :
+          ((actual.stateAlignments hgood (requestedBlocks + s) lookaheadBlocks)[i]'hi).carryIn =
+            ((core.stateAlignments hcoreGood' requestedBlocks lookaheadBlocks)[i - s]'(by
+              rw [core.stateAlignments_length]
+              exact hiCore)).carryIn := by
+        have hiActualShift :
+            (i - s) + s < (actual.stateAlignments hgood (requestedBlocks + s) lookaheadBlocks).length := by
+          simpa [show (i - s) + s = i by omega] using hi
+        simpa [show (i - s) + s = i by omega] using
+          actualCoordinate_stateAlignments_carryIn_shift_exact
+            (base := base) (n := n) (stride := stride) (s := s)
+            (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+            (hn := hn) hgood hcompat hfactor (i - s) hiActualShift (by
+              rw [core.stateAlignments_length]
+              exact hiCore)
+      have hjCarryShift :
+          ((actual.stateAlignments hgood (requestedBlocks + s) lookaheadBlocks)[j]'hj).carryIn =
+            ((core.stateAlignments hcoreGood' requestedBlocks lookaheadBlocks)[j - s]'(by
+              rw [core.stateAlignments_length]
+              exact hjCore)).carryIn := by
+        have hjActualShift :
+            (j - s) + s < (actual.stateAlignments hgood (requestedBlocks + s) lookaheadBlocks).length := by
+          simpa [show (j - s) + s = j by omega] using hj
+        simpa [show (j - s) + s = j by omega] using
+          actualCoordinate_stateAlignments_carryIn_shift_exact
+            (base := base) (n := n) (stride := stride) (s := s)
+            (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+            (hn := hn) hgood hcompat hfactor (j - s) hjActualShift (by
+              rw [core.stateAlignments_length]
+              exact hjCore)
+      calc
+        ((actual.stateAlignments hgood (requestedBlocks + s) lookaheadBlocks)[i]'hi).carryIn
+          = ((core.stateAlignments hcoreGood' requestedBlocks lookaheadBlocks)[i - s]'(by
+              rw [core.stateAlignments_length]
+              exact hiCore)).carryIn := hiCarryShift
+        _ = ((core.stateAlignments hcoreGood' requestedBlocks lookaheadBlocks)[j - s]'(by
+              rw [core.stateAlignments_length]
+              exact hjCore)).carryIn := hcoreCarry
+        _ = ((actual.stateAlignments hgood (requestedBlocks + s) lookaheadBlocks)[j]'hj).carryIn := by
+              symm
+              exact hjCarryShift
+
+theorem actualCoordinate_stateAlignments_remainderToCarryFunctional_of_core_remainderKPow_lt_modulus_add
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hk : 1 < (actualCoordinate base n stride hn).remainderK)
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s)
+    (_hpow :
+      (strippedCoordinate base n stride hn).remainderK ^ (requestedBlocks + lookaheadBlocks) <
+        (strippedCoordinate base n stride hn).modulus)
+    (hcoreGood : (strippedCoordinate base n stride hn).goodMode)
+    (hfunc :
+      (strippedCoordinate base n stride hn).remainderToCarryFunctional
+        hcoreGood requestedBlocks lookaheadBlocks) :
+    (actualCoordinate base n stride hn).remainderToCarryFunctional
+      hgood (requestedBlocks + s) lookaheadBlocks := by
+  exact actualCoordinate_stateAlignments_remainderToCarryFunctional_of_core_add_exact
+    (base := base) (n := n) (stride := stride) (s := s)
+    (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+    (hn := hn) hgood hk hcompat hfactor hcoreGood hfunc
+
 /-- Exact same-core transport form for finite aligned state-output agreement on
 the shifted actual denominator. This remains a finite-window theorem only. -/
 theorem actualCoordinate_stateAlignments_output_agreement_of_core_lookaheadCertificate_add_exact
@@ -1237,6 +2059,269 @@ theorem actualCoordinate_stateAlignments_output_agreement_of_core_lookaheadCerti
     (base := base) (n := n) (stride := stride) (s := s)
     (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
     (hn := hn) hgood hmod hcompat hfactor hcert
+
+/-- Gap-arithmetic transport form for finite aligned state-output agreement on
+the shifted actual denominator. This remains a finite-window theorem only. -/
+theorem actualCoordinate_stateAlignments_output_agreement_of_core_tail_lt_gapModulus_add_exact
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hmod : 1 < (actualCoordinate base n stride hn).modulus)
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s)
+    (htail :
+      (strippedCoordinate base n stride hn).remainderK ^ (requestedBlocks + lookaheadBlocks) <
+        (strippedCoordinate base n stride hn).lookaheadGapNumerator
+          requestedBlocks lookaheadBlocks *
+          (strippedCoordinate base n stride hn).modulus) :
+    ((actualCoordinate base n stride hn).stateAlignments hgood (requestedBlocks + s) lookaheadBlocks).map
+        StateAlignment.carryBlockValue =
+      ((actualCoordinate base n stride hn).stateAlignments hgood (requestedBlocks + s) lookaheadBlocks).map
+        StateAlignment.remainderBlockValue := by
+  let actual := actualCoordinate base n stride hn
+  rw [actual.stateAlignments_map_carryBlockValue, actual.stateAlignments_map_remainderBlockValue]
+  exact actualCoordinate_visibleCarryWord_eq_emittedBlockWord_of_core_tail_lt_gapModulus_add_exact
+    (base := base) (n := n) (stride := stride) (s := s)
+    (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+    (hn := hn) hgood hmod hcompat hfactor htail
+
+/-- Reverse gap-arithmetic transport form for finite aligned state-output
+agreement on the stripped core. This packages the unshifted side of the same
+finite-window theorem. -/
+theorem strippedCoordinate_stateAlignments_output_agreement_of_actual_tail_lt_gapModulus_add_exact
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hmod : 1 < (strippedCoordinate base n stride hn).modulus)
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s)
+    (htail :
+      (actualCoordinate base n stride hn).remainderK ^ ((requestedBlocks + s) + lookaheadBlocks) <
+        (actualCoordinate base n stride hn).lookaheadGapNumerator
+          (requestedBlocks + s) lookaheadBlocks *
+          (actualCoordinate base n stride hn).modulus) :
+    ((strippedCoordinate base n stride hn).stateAlignments
+        (strippedCoordinate_goodMode_of_actual_goodMode hn hgood)
+        requestedBlocks lookaheadBlocks).map StateAlignment.carryBlockValue =
+      ((strippedCoordinate base n stride hn).stateAlignments
+        (strippedCoordinate_goodMode_of_actual_goodMode hn hgood)
+        requestedBlocks lookaheadBlocks).map StateAlignment.remainderBlockValue := by
+  let core := strippedCoordinate base n stride hn
+  let hcoreGood := strippedCoordinate_goodMode_of_actual_goodMode hn hgood
+  rw [core.stateAlignments_map_carryBlockValue, core.stateAlignments_map_remainderBlockValue]
+  exact strippedCoordinate_visibleCarryWord_eq_emittedBlockWord_of_actual_tail_lt_gapModulus_add_exact
+    (base := base) (n := n) (stride := stride) (s := s)
+    (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+    (hn := hn) hgood hmod hcompat hfactor htail
+
+/-- Pointwise gap-arithmetic transport form for finite aligned state-output
+agreement on the shifted actual denominator. -/
+theorem actualCoordinate_stateAlignments_output_agreement_pointwise_of_core_tail_lt_gapModulus_add_exact
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hmod : 1 < (actualCoordinate base n stride hn).modulus)
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s)
+    (htail :
+      (strippedCoordinate base n stride hn).remainderK ^ (requestedBlocks + lookaheadBlocks) <
+        (strippedCoordinate base n stride hn).lookaheadGapNumerator
+          requestedBlocks lookaheadBlocks *
+          (strippedCoordinate base n stride hn).modulus)
+    (i : ℕ)
+    (hi :
+      i < ((actualCoordinate base n stride hn).stateAlignments hgood
+        (requestedBlocks + s) lookaheadBlocks).length) :
+    (((actualCoordinate base n stride hn).stateAlignments hgood
+        (requestedBlocks + s) lookaheadBlocks)[i]'hi).carryBlockValue =
+      (((actualCoordinate base n stride hn).stateAlignments hgood
+        (requestedBlocks + s) lookaheadBlocks)[i]'hi).remainderBlockValue := by
+  let actual := actualCoordinate base n stride hn
+  have htailActual :
+      actual.remainderK ^ ((requestedBlocks + s) + lookaheadBlocks) <
+        actual.lookaheadGapNumerator (requestedBlocks + s) lookaheadBlocks * actual.modulus :=
+    (sameCoreCompatible_tail_lt_gapModulus_iff_add_exact
+      (base := base) (n := n) (stride := stride) (s := s)
+      (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+      (hn := hn) hcompat hfactor).2 htail
+  have hcertActual :
+      actual.lookaheadCertificateHolds (requestedBlocks + s) lookaheadBlocks := by
+    rw [actual.lookaheadCertificateHolds_iff_tail_lt_gapModulus
+      hgood (requestedBlocks + s) lookaheadBlocks]
+    exact htailActual
+  exact actual.stateAlignments_output_agreement_pointwise_of_lookaheadCertificate
+    hgood hmod (requestedBlocks + s) lookaheadBlocks hcertActual i hi
+
+/-- Reverse pointwise gap-arithmetic transport form for finite aligned
+state-output agreement on the stripped core. -/
+theorem strippedCoordinate_stateAlignments_output_agreement_pointwise_of_actual_tail_lt_gapModulus_add_exact
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hmod : 1 < (strippedCoordinate base n stride hn).modulus)
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s)
+    (htail :
+      (actualCoordinate base n stride hn).remainderK ^ ((requestedBlocks + s) + lookaheadBlocks) <
+        (actualCoordinate base n stride hn).lookaheadGapNumerator
+          (requestedBlocks + s) lookaheadBlocks *
+          (actualCoordinate base n stride hn).modulus)
+    (i : ℕ)
+    (hi :
+      i < ((strippedCoordinate base n stride hn).stateAlignments
+        (strippedCoordinate_goodMode_of_actual_goodMode hn hgood)
+        requestedBlocks lookaheadBlocks).length) :
+    (((strippedCoordinate base n stride hn).stateAlignments
+        (strippedCoordinate_goodMode_of_actual_goodMode hn hgood)
+        requestedBlocks lookaheadBlocks)[i]'hi).carryBlockValue =
+      (((strippedCoordinate base n stride hn).stateAlignments
+        (strippedCoordinate_goodMode_of_actual_goodMode hn hgood)
+        requestedBlocks lookaheadBlocks)[i]'hi).remainderBlockValue := by
+  let core := strippedCoordinate base n stride hn
+  let hcoreGood := strippedCoordinate_goodMode_of_actual_goodMode hn hgood
+  have htailCore :
+      core.remainderK ^ (requestedBlocks + lookaheadBlocks) <
+        core.lookaheadGapNumerator requestedBlocks lookaheadBlocks * core.modulus :=
+    (sameCoreCompatible_tail_lt_gapModulus_iff_add_exact
+      (base := base) (n := n) (stride := stride) (s := s)
+      (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+      (hn := hn) hcompat hfactor).1 htail
+  have hcertCore :
+      core.lookaheadCertificateHolds requestedBlocks lookaheadBlocks := by
+    rw [core.lookaheadCertificateHolds_iff_tail_lt_gapModulus
+      hcoreGood requestedBlocks lookaheadBlocks]
+    exact htailCore
+  exact core.stateAlignments_output_agreement_pointwise_of_lookaheadCertificate
+    hcoreGood hmod requestedBlocks lookaheadBlocks hcertCore i hi
+
+/-- In the exact `k^s` same-core regime, the coarse stripped-core condition
+`k^(n+L) < modulus` is already enough to upgrade an observed
+remainder-to-carry functional relation on the shifted actual window into the
+full finite transition-compatibility package. This remains a finite-window
+theorem only. -/
+theorem actualCoordinate_stateAlignments_remainderToCarry_transition_compatible_of_core_remainderKPow_lt_modulus_add
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hmod : 1 < (actualCoordinate base n stride hn).modulus)
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s)
+    (hpow :
+      (strippedCoordinate base n stride hn).remainderK ^ (requestedBlocks + lookaheadBlocks) <
+        (strippedCoordinate base n stride hn).modulus)
+    (hfunc :
+      (actualCoordinate base n stride hn).remainderToCarryFunctional
+        hgood (requestedBlocks + s) lookaheadBlocks)
+    (i : ℕ)
+    (hi :
+      i < ((actualCoordinate base n stride hn).stateAlignments hgood
+        (requestedBlocks + s) lookaheadBlocks).length)
+    (j : ℕ)
+    (hj :
+      j < ((actualCoordinate base n stride hn).stateAlignments hgood
+        (requestedBlocks + s) lookaheadBlocks).length)
+    (hstate :
+      (((actualCoordinate base n stride hn).stateAlignments hgood
+          (requestedBlocks + s) lookaheadBlocks)[i]'hi).remainderIn =
+        (((actualCoordinate base n stride hn).stateAlignments hgood
+          (requestedBlocks + s) lookaheadBlocks)[j]'hj).remainderIn)
+    (hcoeff :
+      (((actualCoordinate base n stride hn).stateAlignments hgood
+          (requestedBlocks + s) lookaheadBlocks)[i]'hi).coefficient =
+        (((actualCoordinate base n stride hn).stateAlignments hgood
+          (requestedBlocks + s) lookaheadBlocks)[j]'hj).coefficient) :
+    (((actualCoordinate base n stride hn).stateAlignments hgood
+        (requestedBlocks + s) lookaheadBlocks)[i]'hi).carryIn =
+        (((actualCoordinate base n stride hn).stateAlignments hgood
+          (requestedBlocks + s) lookaheadBlocks)[j]'hj).carryIn ∧
+      (((actualCoordinate base n stride hn).stateAlignments hgood
+          (requestedBlocks + s) lookaheadBlocks)[i]'hi).remainderBlockValue =
+        (((actualCoordinate base n stride hn).stateAlignments hgood
+          (requestedBlocks + s) lookaheadBlocks)[j]'hj).remainderBlockValue ∧
+      (((actualCoordinate base n stride hn).stateAlignments hgood
+          (requestedBlocks + s) lookaheadBlocks)[i]'hi).carryBlockValue =
+        (((actualCoordinate base n stride hn).stateAlignments hgood
+          (requestedBlocks + s) lookaheadBlocks)[j]'hj).carryBlockValue ∧
+      (((actualCoordinate base n stride hn).stateAlignments hgood
+          (requestedBlocks + s) lookaheadBlocks)[i]'hi).remainderOut =
+        (((actualCoordinate base n stride hn).stateAlignments hgood
+          (requestedBlocks + s) lookaheadBlocks)[j]'hj).remainderOut ∧
+      (((actualCoordinate base n stride hn).stateAlignments hgood
+          (requestedBlocks + s) lookaheadBlocks)[i]'hi).carryOut =
+        (((actualCoordinate base n stride hn).stateAlignments hgood
+          (requestedBlocks + s) lookaheadBlocks)[j]'hj).carryOut := by
+  let actual := actualCoordinate base n stride hn
+  have hcertActual :
+      actual.lookaheadCertificateHolds (requestedBlocks + s) lookaheadBlocks :=
+    sameCoreCompatible_lookaheadCertificateHolds_of_core_remainderKPow_lt_modulus_add
+      (base := base) (n := n) (stride := stride) (s := s)
+      (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+      (hn := hn) hgood hcompat hfactor hpow
+  exact actual.stateAlignments_remainderToCarry_transition_compatible_of_functional
+    hgood hmod (requestedBlocks + s) lookaheadBlocks hfunc hcertActual i hi j hj hstate hcoeff
+
+/-- Reverse-direction finite transition compatibility under the same exact
+same-core coarse condition. -/
+theorem actualCoordinate_stateAlignments_carryToRemainder_transition_compatible_of_core_remainderKPow_lt_modulus_add
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hmod : 1 < (actualCoordinate base n stride hn).modulus)
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s)
+    (hpow :
+      (strippedCoordinate base n stride hn).remainderK ^ (requestedBlocks + lookaheadBlocks) <
+        (strippedCoordinate base n stride hn).modulus)
+    (hfunc :
+      (actualCoordinate base n stride hn).carryToRemainderFunctional
+        hgood (requestedBlocks + s) lookaheadBlocks)
+    (i : ℕ)
+    (hi :
+      i < ((actualCoordinate base n stride hn).stateAlignments hgood
+        (requestedBlocks + s) lookaheadBlocks).length)
+    (j : ℕ)
+    (hj :
+      j < ((actualCoordinate base n stride hn).stateAlignments hgood
+        (requestedBlocks + s) lookaheadBlocks).length)
+    (hcarry :
+      (((actualCoordinate base n stride hn).stateAlignments hgood
+          (requestedBlocks + s) lookaheadBlocks)[i]'hi).carryIn =
+        (((actualCoordinate base n stride hn).stateAlignments hgood
+          (requestedBlocks + s) lookaheadBlocks)[j]'hj).carryIn)
+    (hcoeff :
+      (((actualCoordinate base n stride hn).stateAlignments hgood
+          (requestedBlocks + s) lookaheadBlocks)[i]'hi).coefficient =
+        (((actualCoordinate base n stride hn).stateAlignments hgood
+          (requestedBlocks + s) lookaheadBlocks)[j]'hj).coefficient) :
+    (((actualCoordinate base n stride hn).stateAlignments hgood
+        (requestedBlocks + s) lookaheadBlocks)[i]'hi).remainderIn =
+        (((actualCoordinate base n stride hn).stateAlignments hgood
+          (requestedBlocks + s) lookaheadBlocks)[j]'hj).remainderIn ∧
+      (((actualCoordinate base n stride hn).stateAlignments hgood
+          (requestedBlocks + s) lookaheadBlocks)[i]'hi).remainderBlockValue =
+        (((actualCoordinate base n stride hn).stateAlignments hgood
+          (requestedBlocks + s) lookaheadBlocks)[j]'hj).remainderBlockValue ∧
+      (((actualCoordinate base n stride hn).stateAlignments hgood
+          (requestedBlocks + s) lookaheadBlocks)[i]'hi).carryBlockValue =
+        (((actualCoordinate base n stride hn).stateAlignments hgood
+          (requestedBlocks + s) lookaheadBlocks)[j]'hj).carryBlockValue ∧
+      (((actualCoordinate base n stride hn).stateAlignments hgood
+          (requestedBlocks + s) lookaheadBlocks)[i]'hi).remainderOut =
+        (((actualCoordinate base n stride hn).stateAlignments hgood
+          (requestedBlocks + s) lookaheadBlocks)[j]'hj).remainderOut ∧
+      (((actualCoordinate base n stride hn).stateAlignments hgood
+          (requestedBlocks + s) lookaheadBlocks)[i]'hi).carryOut =
+        (((actualCoordinate base n stride hn).stateAlignments hgood
+          (requestedBlocks + s) lookaheadBlocks)[j]'hj).carryOut := by
+  let actual := actualCoordinate base n stride hn
+  have hcertActual :
+      actual.lookaheadCertificateHolds (requestedBlocks + s) lookaheadBlocks :=
+    sameCoreCompatible_lookaheadCertificateHolds_of_core_remainderKPow_lt_modulus_add
+      (base := base) (n := n) (stride := stride) (s := s)
+      (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+      (hn := hn) hgood hcompat hfactor hpow
+  exact actual.stateAlignments_carryToRemainder_transition_compatible_of_functional
+    hgood hmod (requestedBlocks + s) lookaheadBlocks hfunc hcertActual i hi j hj hcarry hcoeff
 
 section Examples
 
@@ -1352,6 +2437,93 @@ example :
     composite996Stride3.remainderToCarryFunctional composite996Stride3_goodMode 8 1 := by
   rw [composite996Stride3.remainderToCarryFunctional_iff_functionalOnFst_pairs]
   native_decide
+
+example :
+    (actualCoordinate 10 996 3 (by native_decide)).remainderToCarryFunctional
+      composite996Stride3_goodMode 4 0 := by
+  have hcoreGood :
+      (strippedCoordinate 10 996 3 (by native_decide)).goodMode :=
+    sameCoreCompatible_goodMode_of_actual_goodMode
+      (base := 10) (n := 996) (stride := 3) (hn := by native_decide)
+      composite996Stride3_goodMode
+  have hcoreFunc :
+      (strippedCoordinate 10 996 3 (by native_decide)).remainderToCarryFunctional
+        (sameCoreCompatible_goodMode_of_actual_goodMode
+          (base := 10) (n := 996) (stride := 3) (hn := by native_decide)
+          composite996Stride3_goodMode) 3 0 := by
+    refine
+      (BlockCoordinate.remainderToCarryFunctional_iff_functionalOnFst_pairs
+        (strippedCoordinate 10 996 3 (by native_decide))
+        (sameCoreCompatible_goodMode_of_actual_goodMode
+          (base := 10) (n := 996) (stride := 3) (hn := by native_decide)
+          composite996Stride3_goodMode) 3 0).2 ?_
+    native_decide
+  exact actualCoordinate_stateAlignments_remainderToCarryFunctional_of_core_add_exact
+    (base := 10) (n := 996) (stride := 3) (s := 1)
+    (requestedBlocks := 3) (lookaheadBlocks := 0) (hn := by native_decide)
+    composite996Stride3_goodMode
+    (by native_decide)
+    (by
+      unfold sameCoreCompatible actualCoordinate
+      native_decide)
+    (by native_decide)
+    hcoreGood
+    hcoreFunc
+
+example :
+    let actual := actualCoordinate 10 996 3 (by native_decide)
+    ((actual.stateAlignments composite996Stride3_goodMode 4 0)[2]'(by native_decide)).carryIn =
+        ((actual.stateAlignments composite996Stride3_goodMode 4 0)[2]'(by native_decide)).carryIn ∧
+      ((actual.stateAlignments composite996Stride3_goodMode 4 0)[2]'(by native_decide)).remainderBlockValue =
+        ((actual.stateAlignments composite996Stride3_goodMode 4 0)[2]'(by native_decide)).remainderBlockValue ∧
+      ((actual.stateAlignments composite996Stride3_goodMode 4 0)[2]'(by native_decide)).carryBlockValue =
+        ((actual.stateAlignments composite996Stride3_goodMode 4 0)[2]'(by native_decide)).carryBlockValue ∧
+      ((actual.stateAlignments composite996Stride3_goodMode 4 0)[2]'(by native_decide)).remainderOut =
+        ((actual.stateAlignments composite996Stride3_goodMode 4 0)[2]'(by native_decide)).remainderOut ∧
+      ((actual.stateAlignments composite996Stride3_goodMode 4 0)[2]'(by native_decide)).carryOut =
+        ((actual.stateAlignments composite996Stride3_goodMode 4 0)[2]'(by native_decide)).carryOut := by
+  dsimp
+  exact actualCoordinate_stateAlignments_remainderToCarry_transition_compatible_of_core_remainderKPow_lt_modulus_add
+    (base := 10) (n := 996) (stride := 3) (s := 1)
+    (requestedBlocks := 3) (lookaheadBlocks := 0) (hn := by native_decide)
+    composite996Stride3_goodMode
+    (by native_decide)
+    (by
+      unfold sameCoreCompatible actualCoordinate
+      native_decide)
+    (by native_decide)
+    (by native_decide)
+    (by
+      have hcoreGood :
+          (strippedCoordinate 10 996 3 (by native_decide)).goodMode :=
+        sameCoreCompatible_goodMode_of_actual_goodMode
+          (base := 10) (n := 996) (stride := 3) (hn := by native_decide)
+          composite996Stride3_goodMode
+      have hcoreFunc :
+          (strippedCoordinate 10 996 3 (by native_decide)).remainderToCarryFunctional
+            (sameCoreCompatible_goodMode_of_actual_goodMode
+              (base := 10) (n := 996) (stride := 3) (hn := by native_decide)
+              composite996Stride3_goodMode) 3 0 := by
+        refine
+          (BlockCoordinate.remainderToCarryFunctional_iff_functionalOnFst_pairs
+            (strippedCoordinate 10 996 3 (by native_decide))
+            (sameCoreCompatible_goodMode_of_actual_goodMode
+              (base := 10) (n := 996) (stride := 3) (hn := by native_decide)
+              composite996Stride3_goodMode) 3 0).2 ?_
+        native_decide
+      exact actualCoordinate_stateAlignments_remainderToCarryFunctional_of_core_remainderKPow_lt_modulus_add
+        (base := 10) (n := 996) (stride := 3) (s := 1)
+        (requestedBlocks := 3) (lookaheadBlocks := 0) (hn := by native_decide)
+        composite996Stride3_goodMode
+        (by native_decide)
+        (by
+          unfold sameCoreCompatible actualCoordinate
+          native_decide)
+        (by native_decide)
+        (by native_decide)
+        hcoreGood
+        hcoreFunc)
+    2 (by native_decide) 2 (by native_decide) rfl rfl
 
 example :
     ¬ composite996Stride3.carryToRemainderFunctional composite996Stride3_goodMode 8 1 := by

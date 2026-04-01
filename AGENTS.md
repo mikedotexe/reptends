@@ -18,6 +18,7 @@ python -m bridge_reptends.patterns
 # Dataset and search entry points
 sweep-primes --max 500 --bases 2,7,10,12 --output data/results.csv
 search-reptends bridges --max 500 --top 20
+search-reptends theorem-witnesses --claim incoming_carry_position_formula
 search-reptends legacy-counterexamples --max 500 --bases 2,7,10,12
 search-reptends composites --max 500
 

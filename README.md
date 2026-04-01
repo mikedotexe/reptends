@@ -66,6 +66,7 @@ python -m bridge_reptends.examples.carry_transducer_demo
 search-reptends small-residue-coordinates --max 500 --top 20
 search-reptends small-residue-coordinates-q1 --max 1500 --top 10
 search-reptends prime-qr-generators --max 500 --top 10
+search-reptends theorem-witnesses --claim incoming_carry_position_formula
 search-reptends legacy-counterexamples --max 500 --bases 2,7,10,12
 search-reptends composite-profiles --max 500
 search-reptends visibility-profiles --max 500 --blocks 8
@@ -273,6 +274,16 @@ Current open claim IDs:
 - `small_k_visibility_threshold` - Exact visibility threshold for carried prefixes
 - `carry_dfa_factorization` - Canonical factorization of long division into orbit and carry
 <!-- OPEN_CLAIMS_END -->
+
+Proof-system legend for the public theorem surface:
+
+<!-- PROOF_SYSTEM_LEGEND_START -->
+- `Lean-formalized`: proved in the Lean tree and suitable for theorem-level citation in the current public surface.
+- `Agda-locally-proved`: discharged inside the Agda pedagogical companion surface without relying on Agda postulates.
+- `Agda-postulated but Lean-backed`: still explicit as an Agda postulate, but closed by Lean or an atlas-backed Lean-backed claim in this repo.
+- `empirical`: implemented and regression-tested here, but not promoted to theorem status.
+- `open`: tracked as an unresolved claim boundary or interface question, not an established result.
+<!-- PROOF_SYSTEM_LEGEND_END -->
 
 - [ROADMAP.md](/Users/mikepurvis/other/quadratic-residue-reptends/ROADMAP.md) - root Lean-first fortification roadmap
 - [docs/ROADMAP.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/ROADMAP.md) - broader working todo list and execution order

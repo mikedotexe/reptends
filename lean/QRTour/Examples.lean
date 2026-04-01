@@ -6,6 +6,7 @@ import QRTour.RemainderOrbit
 import QRTour.PrimitiveRoots
 import QRTour.Digits
 import QRTour.Bridge
+import QRTour.Visibility
 
 /-!
 # Concrete Example: p = 97
@@ -199,6 +200,56 @@ This is the bridge property in action! -/
 example : @remainder 97 _ 10 (0 + 2) = 3 * @remainder 97 _ 10 0 := by native_decide
 example : @remainder 97 _ 10 (5 + 2) = 3 * @remainder 97 _ 10 5 := by native_decide
 example : @remainder 97 _ 10 (10 + 2) = 3 * @remainder 97 _ 10 10 := by native_decide
+
+/-! ### Exact Block Coordinate Witness
+
+The same canonical tuple `(base=10, N=97, stride=2, B=100, q=1, k=3)` also
+serves as the standard Lean witness for the q-weighted series layer and the
+first incoming-carry boundary.
+-/
+
+/-- The canonical block coordinate `(base=10, N=97, stride=2)`. -/
+def coordinate : BlockCoordinate where
+  base := 10
+  modulus := 97
+  stride := 2
+  modulus_pos := by decide
+
+/-- The canonical 97 block coordinate is a good mode: `97 < 10^2`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The block base for the canonical coordinate is `100`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 100 := by
+  native_decide
+
+/-- The quotient in `100 = q*97 + k` is `q = 1`. -/
+theorem coordinate_quotientQ_eq_one : coordinate.quotientQ = 1 := by
+  native_decide
+
+/-- The remainder in `100 = q*97 + k` is `k = 3`. -/
+theorem coordinate_remainderK_eq_three : coordinate.remainderK = 3 := by
+  native_decide
+
+/-- The canonical 97 coordinate witnesses the exact q-weighted series identity. -/
+theorem coordinate_series_q_weighted_identity :
+    HasSum (fun j : ℕ => coordinate.seriesTermR j) ((1 : ℝ) / 97) := by
+  simpa [coordinate] using coordinate.series_q_weighted_identity coordinate_goodMode
+
+/-- The first incoming carry occurs at block `4` for the canonical 97 coordinate. -/
+theorem coordinate_firstIncomingCarryPosition :
+    coordinate.isFirstIncomingCarryPosition 4 := by
+  change 1 * 3 ^ 4 < 100 - 3 ∧ 100 - 3 ≤ 1 * 3 ^ (4 + 1)
+  native_decide
+
+/-- Just before that threshold, the incoming carry is still zero. -/
+theorem coordinate_incomingCarry_three_eq_zero : coordinate.incomingCarry 3 = 0 := by
+  native_decide
+
+/-- At the first incoming-carry boundary, the next raw coefficient contributes carry `2`. -/
+theorem coordinate_incomingCarry_four_eq_two : coordinate.incomingCarry 4 = 2 := by
+  native_decide
 
 /-! ### Digit Examples
 
