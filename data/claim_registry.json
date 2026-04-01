@@ -305,12 +305,14 @@
       {
         "module": "lean/QRTour/CarryComparison.lean",
         "theorems": [
-          "BlockCoordinate.visibleCarryWord_eq_emittedBlockWord_of_lookaheadCertificate",
-          "BlockCoordinate.stateAlignments_output_agreement_of_lookaheadCertificate",
-          "actualCoordinate_visibleCarryWord_eq_emittedBlockWord_of_core_lookaheadCertificate_add_exact",
-          "actualCoordinate_stateAlignments_output_agreement_of_core_tail_lt_gapModulus_add_exact"
+          "actualCoordinate_visibleCarryPairs_output_agreement_of_core_tail_lt_gapModulus_add_exact",
+          "strippedCoordinate_visibleCarryPairs_output_agreement_of_actual_tail_lt_gapModulus_add_exact",
+          "actualCoordinate_stateAlignments_output_agreement_of_core_tail_lt_gapModulus_add_exact",
+          "strippedCoordinate_stateAlignments_output_agreement_of_actual_tail_lt_gapModulus_add_exact",
+          "actualCoordinate_stateAlignments_output_agreement_pointwise_of_core_tail_lt_gapModulus_add_exact",
+          "strippedCoordinate_stateAlignments_output_agreement_pointwise_of_actual_tail_lt_gapModulus_add_exact"
         ],
-        "role": "Finite carry/remainder output agreement from the certificate and the exact tail-versus-gap inequality, including shifted same-core visible-word and state-alignment agreement."
+        "role": "Finite carry/remainder output agreement from the certificate and the exact tail-versus-gap inequality, including forward/reverse same-core pair/state packaging and pointwise wrappers on both shifted and stripped-core windows."
       },
       {
         "module": "lean/QRTour/CompositeVisibility.lean",
