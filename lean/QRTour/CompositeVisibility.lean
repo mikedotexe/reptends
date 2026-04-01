@@ -382,6 +382,69 @@ theorem sameCoreCompatible_truncatedVisiblePrefixValue_shift_exact
           rw [show Bpow = core.blockBase ^ lookaheadBlocks by rfl]
           simp [actual, core, BlockCoordinate.truncatedVisiblePrefixValue]
 
+/-- In the exact `k`-power same-core regime, the shifted actual truncated
+visible-prefix remainder agrees exactly with the stripped-core remainder. -/
+theorem sameCoreCompatible_truncatedVisiblePrefixRemainder_shift_exact
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s) :
+    (actualCoordinate base n stride hn).truncatedVisiblePrefixRemainder
+        (requestedBlocks + s) lookaheadBlocks =
+      (strippedCoordinate base n stride hn).truncatedVisiblePrefixRemainder
+        requestedBlocks lookaheadBlocks := by
+  let actual := actualCoordinate base n stride hn
+  let core := strippedCoordinate base n stride hn
+  let Bpow := actual.blockBase ^ lookaheadBlocks
+  calc
+    actual.truncatedVisiblePrefixRemainder (requestedBlocks + s) lookaheadBlocks
+      = actual.bodyTerm ((requestedBlocks + s) + lookaheadBlocks) % Bpow := by
+          simp [actual, Bpow, BlockCoordinate.truncatedVisiblePrefixRemainder]
+    _ = actual.bodyTerm (s + (requestedBlocks + lookaheadBlocks)) % Bpow := by
+          rw [show (requestedBlocks + s) + lookaheadBlocks =
+              s + (requestedBlocks + lookaheadBlocks) by omega]
+    _ = (core.bodyTerm (requestedBlocks + lookaheadBlocks) +
+          actual.bodyTerm s * actual.blockBase ^ (requestedBlocks + lookaheadBlocks)) % Bpow := by
+          rw [sameCoreCompatible_bodyTerm_shift_exact
+            (base := base) (n := n) (stride := stride) (s := s)
+            (length := requestedBlocks + lookaheadBlocks) (hn := hn) hcompat hfactor]
+    _ = (core.bodyTerm (requestedBlocks + lookaheadBlocks) +
+          (actual.bodyTerm s * actual.blockBase ^ requestedBlocks) * Bpow) % Bpow := by
+          rw [show actual.blockBase ^ (requestedBlocks + lookaheadBlocks) =
+              actual.blockBase ^ requestedBlocks * Bpow by
+                simp [Bpow, Nat.pow_add]]
+          ac_rfl
+    _ = core.bodyTerm (requestedBlocks + lookaheadBlocks) % Bpow := by
+          rw [Nat.mul_comm, Nat.add_mul_mod_self_left]
+    _ = core.truncatedVisiblePrefixRemainder requestedBlocks lookaheadBlocks := by
+          rw [show Bpow = core.blockBase ^ lookaheadBlocks by rfl]
+          simp [core, BlockCoordinate.truncatedVisiblePrefixRemainder]
+
+/-- In the exact `k`-power same-core regime, the shifted actual lookahead gap
+numerator agrees exactly with the stripped-core gap numerator. -/
+theorem sameCoreCompatible_lookaheadGapNumerator_shift_exact
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s) :
+    (actualCoordinate base n stride hn).lookaheadGapNumerator
+        (requestedBlocks + s) lookaheadBlocks =
+      (strippedCoordinate base n stride hn).lookaheadGapNumerator
+        requestedBlocks lookaheadBlocks := by
+  let actual := actualCoordinate base n stride hn
+  let core := strippedCoordinate base n stride hn
+  have hrem :
+      actual.truncatedVisiblePrefixRemainder (requestedBlocks + s) lookaheadBlocks =
+        core.truncatedVisiblePrefixRemainder requestedBlocks lookaheadBlocks := by
+    exact sameCoreCompatible_truncatedVisiblePrefixRemainder_shift_exact
+      (base := base) (n := n) (stride := stride) (s := s)
+      (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+      (hn := hn) hcompat hfactor
+  have hsharedBpow : actual.blockBase ^ lookaheadBlocks = core.blockBase ^ lookaheadBlocks := by
+    rfl
+  unfold BlockCoordinate.lookaheadGapNumerator
+  rw [hrem, hsharedBpow]
+
 /-- In the exact `k`-power same-core regime, the shifted actual emitted-prefix
 integer is the stripped-core emitted prefix with that same leading offset. -/
 theorem sameCoreCompatible_emittedPrefixValue_shift_exact
@@ -471,6 +534,96 @@ theorem sameCoreCompatible_emittedPrefixValue_eq_truncatedVisiblePrefixValue_iff
   · intro h
     exact congrArg (fun t => t + actual.bodyTerm s * actual.blockBase ^ requestedBlocks) h
 
+/-- In the exact `k`-power same-core regime, the tail-versus-gap-modulus
+inequality transports exactly between the shifted actual denominator and the
+stripped core. This exposes the finite gap arithmetic directly beneath the
+lookahead certificate. -/
+theorem sameCoreCompatible_tail_lt_gapModulus_iff_add_exact
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s) :
+    (actualCoordinate base n stride hn).remainderK ^ ((requestedBlocks + s) + lookaheadBlocks) <
+        (actualCoordinate base n stride hn).lookaheadGapNumerator
+          (requestedBlocks + s) lookaheadBlocks *
+          (actualCoordinate base n stride hn).modulus ↔
+      (strippedCoordinate base n stride hn).remainderK ^ (requestedBlocks + lookaheadBlocks) <
+        (strippedCoordinate base n stride hn).lookaheadGapNumerator
+          requestedBlocks lookaheadBlocks *
+          (strippedCoordinate base n stride hn).modulus := by
+  let actual := actualCoordinate base n stride hn
+  let core := strippedCoordinate base n stride hn
+  have hsharedK : core.remainderK = actual.remainderK := by
+    simpa [actual, core] using sameCoreCompatible_remainderK_eq (hn := hn) hcompat
+  have hmod :
+      actual.modulus = actual.remainderK ^ s * core.modulus := by
+    calc
+      actual.modulus = basePrimeSupportFactor base n * core.modulus := by
+        simpa [actual, core, strippedPeriodModulus] using
+          (basePrimeSupportFactor_mul_strippedPeriodModulus base n).symm
+      _ = actual.remainderK ^ s * core.modulus := by rw [hfactor]
+  have hpow_pos : 0 < actual.remainderK ^ s := by
+    rw [← hfactor]
+    exact basePrimeSupportFactor_pos base n
+  have hgap :
+      actual.lookaheadGapNumerator (requestedBlocks + s) lookaheadBlocks =
+        core.lookaheadGapNumerator requestedBlocks lookaheadBlocks := by
+    simpa [actual, core] using
+      sameCoreCompatible_lookaheadGapNumerator_shift_exact
+        (base := base) (n := n) (stride := stride) (s := s)
+        (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+        (hn := hn) hcompat hfactor
+  constructor
+  · intro hactual
+    have hmul :
+        actual.remainderK ^ s * actual.remainderK ^ (requestedBlocks + lookaheadBlocks) <
+          actual.remainderK ^ s *
+            (core.lookaheadGapNumerator requestedBlocks lookaheadBlocks * core.modulus) := by
+      calc
+        actual.remainderK ^ s * actual.remainderK ^ (requestedBlocks + lookaheadBlocks)
+          = actual.remainderK ^ ((requestedBlocks + s) + lookaheadBlocks) := by
+              symm
+              rw [show (requestedBlocks + s) + lookaheadBlocks =
+                  s + (requestedBlocks + lookaheadBlocks) by omega]
+              rw [Nat.pow_add]
+        _ < actual.lookaheadGapNumerator (requestedBlocks + s) lookaheadBlocks * actual.modulus :=
+              hactual
+        _ = core.lookaheadGapNumerator requestedBlocks lookaheadBlocks * actual.modulus := by
+              rw [hgap]
+        _ = actual.remainderK ^ s *
+              (core.lookaheadGapNumerator requestedBlocks lookaheadBlocks * core.modulus) := by
+              rw [hmod]
+              ac_rfl
+    have hcoreTail :
+        actual.remainderK ^ (requestedBlocks + lookaheadBlocks) <
+          core.lookaheadGapNumerator requestedBlocks lookaheadBlocks * core.modulus :=
+      Nat.lt_of_mul_lt_mul_left hmul
+    simpa [core, hsharedK] using hcoreTail
+  · intro hcore
+    have hmul :
+        actual.remainderK ^ s * core.remainderK ^ (requestedBlocks + lookaheadBlocks) <
+          actual.remainderK ^ s *
+            (core.lookaheadGapNumerator requestedBlocks lookaheadBlocks * core.modulus) :=
+      Nat.mul_lt_mul_of_pos_left hcore hpow_pos
+    have hmul' :
+        actual.remainderK ^ s * actual.remainderK ^ (requestedBlocks + lookaheadBlocks) <
+          actual.remainderK ^ s *
+            (core.lookaheadGapNumerator requestedBlocks lookaheadBlocks * core.modulus) := by
+      simpa [hsharedK] using hmul
+    calc
+      actual.remainderK ^ ((requestedBlocks + s) + lookaheadBlocks)
+        = actual.remainderK ^ s * actual.remainderK ^ (requestedBlocks + lookaheadBlocks) := by
+            rw [show (requestedBlocks + s) + lookaheadBlocks =
+                s + (requestedBlocks + lookaheadBlocks) by omega]
+            rw [Nat.pow_add]
+      _ < actual.remainderK ^ s *
+            (core.lookaheadGapNumerator requestedBlocks lookaheadBlocks * core.modulus) := hmul'
+      _ = core.lookaheadGapNumerator requestedBlocks lookaheadBlocks * actual.modulus := by
+            rw [hmod]
+            ac_rfl
+      _ = actual.lookaheadGapNumerator (requestedBlocks + s) lookaheadBlocks * actual.modulus := by
+            rw [← hgap]
+
 /-- In the exact `k`-power same-core regime, the fixed-window lookahead
 certificate transports exactly between the stripped core at `(n, L)` and the
 actual denominator at `(n + s, L)`. This is still a fixed-window theorem, not
@@ -489,14 +642,14 @@ theorem sameCoreCompatible_lookaheadCertificateHolds_iff_add_exact
   let core := strippedCoordinate base n stride hn
   have hcoreGood : core.goodMode :=
     strippedCoordinate_goodMode_of_actual_goodMode hn hgood
-  rw [← actual.emittedPrefixValue_eq_truncatedVisiblePrefixValue_iff_lookaheadCertificate
+  rw [actual.lookaheadCertificateHolds_iff_tail_lt_gapModulus
       hgood (requestedBlocks + s) lookaheadBlocks]
-  rw [← core.emittedPrefixValue_eq_truncatedVisiblePrefixValue_iff_lookaheadCertificate
+  rw [core.lookaheadCertificateHolds_iff_tail_lt_gapModulus
       hcoreGood requestedBlocks lookaheadBlocks]
-  exact sameCoreCompatible_emittedPrefixValue_eq_truncatedVisiblePrefixValue_iff_add_exact
+  exact sameCoreCompatible_tail_lt_gapModulus_iff_add_exact
     (base := base) (n := n) (stride := stride) (s := s)
     (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
-    (hn := hn) hgood hcompat hfactor
+    (hn := hn) hcompat hfactor
 
 /-- Forward transport form of the exact same-core fixed-window certificate. -/
 theorem sameCoreCompatible_lookaheadCertificateHolds_of_core_lookaheadCertificate_add_exact

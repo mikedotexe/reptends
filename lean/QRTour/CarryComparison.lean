@@ -361,6 +361,40 @@ theorem actualCoordinate_visibleCarryWord_eq_emittedBlockWord_of_core_lookaheadC
   exact actual.visibleCarryWord_eq_emittedBlockWord_of_lookaheadCertificate
     hgood hmod (requestedBlocks + s) lookaheadBlocks hcertActual
 
+/-- In the exact `k^s` same-core regime, the core tail-versus-gap-modulus
+inequality is enough to certify visible carry/output agreement for the shifted
+actual denominator. This is the gap-arithmetic form of the same finite-window
+comparison theorem. -/
+theorem actualCoordinate_visibleCarryWord_eq_emittedBlockWord_of_core_tail_lt_gapModulus_add_exact
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hmod : 1 < (actualCoordinate base n stride hn).modulus)
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s)
+    (htail :
+      (strippedCoordinate base n stride hn).remainderK ^ (requestedBlocks + lookaheadBlocks) <
+        (strippedCoordinate base n stride hn).lookaheadGapNumerator
+          requestedBlocks lookaheadBlocks *
+          (strippedCoordinate base n stride hn).modulus) :
+    (actualCoordinate base n stride hn).visibleCarryWord hgood (requestedBlocks + s) lookaheadBlocks =
+      (actualCoordinate base n stride hn).emittedBlockWord (requestedBlocks + s) := by
+  let actual := actualCoordinate base n stride hn
+  have htailActual :
+      actual.remainderK ^ ((requestedBlocks + s) + lookaheadBlocks) <
+        actual.lookaheadGapNumerator (requestedBlocks + s) lookaheadBlocks * actual.modulus :=
+    (sameCoreCompatible_tail_lt_gapModulus_iff_add_exact
+      (base := base) (n := n) (stride := stride) (s := s)
+      (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+      (hn := hn) hcompat hfactor).2 htail
+  have hcertActual :
+      actual.lookaheadCertificateHolds (requestedBlocks + s) lookaheadBlocks := by
+    rw [actual.lookaheadCertificateHolds_iff_tail_lt_gapModulus
+      hgood (requestedBlocks + s) lookaheadBlocks]
+    exact htailActual
+  exact actual.visibleCarryWord_eq_emittedBlockWord_of_lookaheadCertificate
+    hgood hmod (requestedBlocks + s) lookaheadBlocks hcertActual
+
 /-- Reverse exact same-core transport form for the finite carried visible word. -/
 theorem strippedCoordinate_visibleCarryWord_eq_emittedBlockWord_of_actual_lookaheadCertificate_add_exact
     {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
@@ -383,6 +417,41 @@ theorem strippedCoordinate_visibleCarryWord_eq_emittedBlockWord_of_actual_lookah
       (base := base) (n := n) (stride := stride) (s := s)
       (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
       (hn := hn) hgood hcompat hfactor hcert
+  exact core.visibleCarryWord_eq_emittedBlockWord_of_lookaheadCertificate
+    hcoreGood hmod requestedBlocks lookaheadBlocks hcertCore
+
+/-- Reverse exact same-core transport form in the gap-arithmetic language:
+the shifted actual tail-versus-gap-modulus inequality certifies the stripped
+core visible carry/output agreement on the unshifted window. -/
+theorem strippedCoordinate_visibleCarryWord_eq_emittedBlockWord_of_actual_tail_lt_gapModulus_add_exact
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hmod : 1 < (strippedCoordinate base n stride hn).modulus)
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s)
+    (htail :
+      (actualCoordinate base n stride hn).remainderK ^ ((requestedBlocks + s) + lookaheadBlocks) <
+        (actualCoordinate base n stride hn).lookaheadGapNumerator
+          (requestedBlocks + s) lookaheadBlocks *
+          (actualCoordinate base n stride hn).modulus) :
+    (strippedCoordinate base n stride hn).visibleCarryWord
+        (strippedCoordinate_goodMode_of_actual_goodMode hn hgood) requestedBlocks lookaheadBlocks =
+      (strippedCoordinate base n stride hn).emittedBlockWord requestedBlocks := by
+  let core := strippedCoordinate base n stride hn
+  have hcoreGood : core.goodMode := strippedCoordinate_goodMode_of_actual_goodMode hn hgood
+  have htailCore :
+      core.remainderK ^ (requestedBlocks + lookaheadBlocks) <
+        core.lookaheadGapNumerator requestedBlocks lookaheadBlocks * core.modulus :=
+    (sameCoreCompatible_tail_lt_gapModulus_iff_add_exact
+      (base := base) (n := n) (stride := stride) (s := s)
+      (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+      (hn := hn) hcompat hfactor).1 htail
+  have hcertCore :
+      core.lookaheadCertificateHolds requestedBlocks lookaheadBlocks := by
+    rw [core.lookaheadCertificateHolds_iff_tail_lt_gapModulus
+      hcoreGood requestedBlocks lookaheadBlocks]
+    exact htailCore
   exact core.visibleCarryWord_eq_emittedBlockWord_of_lookaheadCertificate
     hcoreGood hmod requestedBlocks lookaheadBlocks hcertCore
 
@@ -568,6 +637,32 @@ theorem actualCoordinate_visibleCarryPairs_output_agreement_of_core_lookaheadCer
     (base := base) (n := n) (stride := stride) (s := s)
     (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
     (hn := hn) hgood hmod hcompat hfactor hcert
+
+/-- Gap-arithmetic transport form for finite carried/remainder output
+agreement on the shifted actual denominator. This stays below the open
+global visibility boundary. -/
+theorem actualCoordinate_visibleCarryPairs_output_agreement_of_core_tail_lt_gapModulus_add_exact
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hmod : 1 < (actualCoordinate base n stride hn).modulus)
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s)
+    (htail :
+      (strippedCoordinate base n stride hn).remainderK ^ (requestedBlocks + lookaheadBlocks) <
+        (strippedCoordinate base n stride hn).lookaheadGapNumerator
+          requestedBlocks lookaheadBlocks *
+          (strippedCoordinate base n stride hn).modulus) :
+    ((actualCoordinate base n stride hn).visibleCarryPairs hgood (requestedBlocks + s) lookaheadBlocks).map
+        (fun pair => pair.1.blockValue) =
+      ((actualCoordinate base n stride hn).visibleCarryPairs hgood (requestedBlocks + s) lookaheadBlocks).map
+        (fun pair => pair.2.blockValue) := by
+  let actual := actualCoordinate base n stride hn
+  rw [actual.visibleCarryPairs_map_carryBlockValue, actual.visibleCarryPairs_map_remainderBlockValue]
+  exact actualCoordinate_visibleCarryWord_eq_emittedBlockWord_of_core_tail_lt_gapModulus_add_exact
+    (base := base) (n := n) (stride := stride) (s := s)
+    (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+    (hn := hn) hgood hmod hcompat hfactor htail
 
 theorem BlockCoordinate.visibleCarryPairs_output_agreement_pointwise_of_lookaheadCertificate
     (C : BlockCoordinate) (hgood : C.goodMode) (hmod : 1 < C.modulus)
@@ -1326,7 +1421,7 @@ theorem actualCoordinate_rawCoefficientWord_eq_prefix_append_core_add_exact
   let core := strippedCoordinate base n stride hn
   induction length with
   | zero =>
-      simp [actual, core, BlockCoordinate.rawCoefficientWord]
+      simp [BlockCoordinate.rawCoefficientWord]
   | succ length ih =>
       calc
         actual.rawCoefficientWord (s + (length + 1))
@@ -1428,11 +1523,11 @@ theorem actualCoordinate_visibleCarryTrace_map_carryIn_drop_prefix_add_exact
           CarryTraceStep.carryIn).drop s)
       = (actualCarryIns.rdrop lookaheadBlocks).drop s := by
           simp [actualCarryIns, actual, BlockCoordinate.visibleCarryTrace_map_carryIn,
-            Nat.add_assoc, Nat.add_left_comm, Nat.add_comm]
+            Nat.add_left_comm, Nat.add_comm]
     _ = (actualCarryIns.drop s).rdrop lookaheadBlocks := by
           apply List.drop_rdrop_eq_rdrop_drop_of_length_eq (n := requestedBlocks)
-          simpa [actualCarryIns, List.length_map, actual.traceRawWord_length,
-            Nat.add_assoc, Nat.add_left_comm, Nat.add_comm]
+          simp [actualCarryIns, List.length_map, actual.traceRawWord_length,
+            Nat.add_left_comm, Nat.add_comm]
     _ = coreCarryIns.rdrop lookaheadBlocks := by
           rw [htrace]
     _ = ((core.visibleCarryTrace hcoreGood requestedBlocks lookaheadBlocks).map
@@ -1561,8 +1656,16 @@ theorem actualCoordinate_stateAlignments_carryIn_shift_exact
   have hdropEq :
       (actualCarryStates.drop s)[j]'hjDrop =
         actualCarryStates[j + s]'(by simpa [actualCarryStates] using hjActual) := by
-    simpa [actualCarryStates, Nat.add_assoc, Nat.add_left_comm, Nat.add_comm] using
-      (List.getElem_drop (xs := actualCarryStates) (i := s) (j := j) (h := hjDrop))
+    have hdropEq' :
+        (actualCarryStates.drop s)[j]'hjDrop =
+          actualCarryStates[s + j]'(by simpa [actualCarryStates, Nat.add_comm] using hjActual) := by
+      exact List.getElem_drop (xs := actualCarryStates) (i := s) (j := j) (h := hjDrop)
+    have hindexEq :
+        actualCarryStates[s + j]'(by simpa [actualCarryStates, Nat.add_comm] using hjActual) =
+          actualCarryStates[j + s]'(by simpa [actualCarryStates] using hjActual) := by
+      exact getElem_congr (c := actualCarryStates) (d := actualCarryStates) rfl
+        (Nat.add_comm s j) (w := by simpa [actualCarryStates, Nat.add_comm] using hjActual)
+    exact hdropEq'.trans hindexEq
   calc
     ((actual.stateAlignments hgood (requestedBlocks + s) lookaheadBlocks)[j + s]'hjActual).carryIn
       = actualCarryStates[j + s]'(by simpa [actualCarryStates] using hjActual) := by
@@ -1654,7 +1757,7 @@ theorem actualCoordinate_stateAlignments_remainderToCarryFunctional_of_core_add_
       have hij :
           i = j := Nat.pow_right_injective (Nat.succ_le_of_lt hk) hstate
       subst hij
-      simpa
+      simp
     · exfalso
       have hs_le_j : s ≤ j := Nat.le_of_not_gt hj_lt
       rw [actual.stateAlignments_remainderIn_eq_longDivisionRemainder
@@ -1847,6 +1950,31 @@ theorem actualCoordinate_stateAlignments_output_agreement_of_core_lookaheadCerti
     (base := base) (n := n) (stride := stride) (s := s)
     (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
     (hn := hn) hgood hmod hcompat hfactor hcert
+
+/-- Gap-arithmetic transport form for finite aligned state-output agreement on
+the shifted actual denominator. This remains a finite-window theorem only. -/
+theorem actualCoordinate_stateAlignments_output_agreement_of_core_tail_lt_gapModulus_add_exact
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hmod : 1 < (actualCoordinate base n stride hn).modulus)
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s)
+    (htail :
+      (strippedCoordinate base n stride hn).remainderK ^ (requestedBlocks + lookaheadBlocks) <
+        (strippedCoordinate base n stride hn).lookaheadGapNumerator
+          requestedBlocks lookaheadBlocks *
+          (strippedCoordinate base n stride hn).modulus) :
+    ((actualCoordinate base n stride hn).stateAlignments hgood (requestedBlocks + s) lookaheadBlocks).map
+        StateAlignment.carryBlockValue =
+      ((actualCoordinate base n stride hn).stateAlignments hgood (requestedBlocks + s) lookaheadBlocks).map
+        StateAlignment.remainderBlockValue := by
+  let actual := actualCoordinate base n stride hn
+  rw [actual.stateAlignments_map_carryBlockValue, actual.stateAlignments_map_remainderBlockValue]
+  exact actualCoordinate_visibleCarryWord_eq_emittedBlockWord_of_core_tail_lt_gapModulus_add_exact
+    (base := base) (n := n) (stride := stride) (s := s)
+    (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+    (hn := hn) hgood hmod hcompat hfactor htail
 
 /-- In the exact `k^s` same-core regime, the coarse stripped-core condition
 `k^(n+L) < modulus` is already enough to upgrade an observed
