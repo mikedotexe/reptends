@@ -1,0 +1,151 @@
+[
+  {
+    "claim_id": "series_q_weighted_identity",
+    "module_paths": [
+      "lean/QRTour/OrbitWeave.lean"
+    ],
+    "theorem_names": [
+      "partialSumQ_eq_finite",
+      "one_div_modulus_eq_quotientQ_div_gap",
+      "series_q_weighted_identity"
+    ]
+  },
+  {
+    "claim_id": "positive_q_good_modes",
+    "module_paths": [
+      "lean/QRTour/OrbitWeave.lean"
+    ],
+    "theorem_names": [
+      "quotientQ_eq_gap_div_modulus",
+      "positive_q_good_modes"
+    ]
+  },
+  {
+    "claim_id": "digit_periodicity",
+    "module_paths": [
+      "lean/QRTour/Digits.lean"
+    ],
+    "theorem_names": [
+      "digit_remainder_eq",
+      "digit_periodic",
+      "reptendPeriod_dvd_pred",
+      "digit_as_overflow"
+    ]
+  },
+  {
+    "claim_id": "signed_bridge_recurrence",
+    "module_paths": [
+      "lean/QRTour/SignedBridge.lean"
+    ],
+    "theorem_names": [
+      "SignedBridge.remainder_k_step",
+      "SignedBridge.remainder_2k_step",
+      "Bridge.toSignedBridge"
+    ]
+  },
+  {
+    "claim_id": "bridge_block_value_periodicity",
+    "module_paths": [
+      "lean/QRTour/PAdicBridge.lean"
+    ],
+    "theorem_names": [
+      "blockValue",
+      "Bridge.blockValue_eq_pow",
+      "bridgeOrder",
+      "Bridge.blockValue_periodic"
+    ]
+  },
+  {
+    "claim_id": "incoming_carry_position_formula",
+    "module_paths": [
+      "lean/QRTour/Visibility.lean"
+    ],
+    "theorem_names": [
+      "incomingCarry_formula",
+      "incomingCarry_pos_iff",
+      "isFirstIncomingCarryPosition_iff",
+      "emittedPrefixValue_eq_truncatedVisiblePrefixValue_iff_lookaheadCertificate"
+    ]
+  },
+  {
+    "claim_id": "same_core_threshold_shift_interval",
+    "module_paths": [
+      "lean/QRTour/Visibility.lean",
+      "lean/QRTour/CompositeVisibility.lean"
+    ],
+    "theorem_names": [
+      "geometricThreshold_shift_interval",
+      "geometricThreshold_shift_exact",
+      "firstIncomingCarryPosition_shift_interval",
+      "localOverflowBoundary_shift_interval",
+      "sameCoreCompatible_iff_quotientQ_scaling",
+      "sameCoreCompatible_of_goodMode_and_blockBase_lt_modulus_add_stripped",
+      "sameCoreCompatible_rawCoefficient_eq",
+      "sameCoreCompatible_lookaheadCertificateHolds_iff_add_exact",
+      "classifyThresholdShiftEndpoint",
+      "sameCoreCompatible_firstIncomingCarryPosition_endpoint_exact",
+      "sameCoreCompatible_firstIncomingCarryPosition_endpoint_lower_of_scaledRawCoefficient_lt_gap",
+      "sameCoreCompatible_firstIncomingCarryPosition_endpoint_upper_of_gap_le_scaledRawCoefficient",
+      "sameCoreCompatible_localOverflowBoundary_endpoint_exact",
+      "sameCoreCompatible_localOverflowBoundary_endpoint_lower_of_scaledRawCoefficient_lt_blockBase",
+      "sameCoreCompatible_localOverflowBoundary_endpoint_upper_of_blockBase_le_scaledRawCoefficient",
+      "sameCoreCompatible_firstVisibleMismatchPosition_shift_exact",
+      "sameCoreCompatible_firstVisibleMismatchPosition_shift_interval",
+      "sameCoreCompatible_firstVisibleMismatchPosition_endpoint_exact",
+      "sameCoreCompatible_firstVisibleMismatchPosition_endpoint_lower_of_scaledRawCoefficient_lt_gap_and_lt_blockBase",
+      "sameCoreCompatible_firstVisibleMismatchPosition_endpoint_upper_of_gap_le_scaledRawCoefficient_and_blockBase_le_scaledRawCoefficient",
+      "strippedCoordinate_firstIncomingCarryPosition_shift_interval",
+      "strippedCoordinate_localOverflowBoundary_shift_interval"
+    ]
+  },
+  {
+    "claim_id": "qr_stride_classification",
+    "module_paths": [
+      "lean/QRTour/QuadraticResidues.lean"
+    ],
+    "theorem_names": [
+      "pow_isQRGenerator_iff",
+      "qrGenerator_pow_count_eq_totient",
+      "base_qrGenerator_pow_count_eq_totient"
+    ]
+  },
+  {
+    "claim_id": "crt_period_lcm",
+    "module_paths": [
+      "lean/QRTour/CompositePeriod.lean"
+    ],
+    "theorem_names": [
+      "orderOf_unitsChineseRemainder",
+      "orderOf_unitsEquivPrimePowers",
+      "orderOf_pi"
+    ]
+  },
+  {
+    "claim_id": "preperiod_from_base_factors",
+    "module_paths": [
+      "lean/QRTour/Preperiod.lean",
+      "lean/QRTour/CompositeVisibility.lean"
+    ],
+    "theorem_names": [
+      "preperiodPrimeSteps_le_iff",
+      "preperiodSteps_le_of_local_bounds",
+      "basePrimeSupportFactor_dvd_base_pow_preperiodSteps",
+      "basePrimeSupportFactor_dvd",
+      "basePrimeSupportFactor_mul_strippedPeriodModulus"
+    ]
+  },
+  {
+    "claim_id": "carry_window_transducer",
+    "module_paths": [
+      "lean/QRTour/CarryTransducer.lean",
+      "lean/QRTour/CarryComparison.lean"
+    ],
+    "theorem_names": [
+      "CarryTransducer.normalizes_deterministic",
+      "BlockCoordinate.carryRemainderPairs_output_agreement_of_remainderK_pow_lt_modulus",
+      "BlockCoordinate.visibleCarryWord_eq_emittedBlockWord_of_lookaheadCertificate",
+      "BlockCoordinate.stateAlignments_output_agreement_of_lookaheadCertificate",
+      "actualCoordinate_stateAlignments_remainderToCarryFunctional_of_core_remainderKPow_lt_modulus_add"
+    ]
+  }
+]

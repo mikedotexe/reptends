@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from bridge_reptends import load_claim_registry
+from bridge_reptends import load_claim_registry, render_proof_system_legend_lines
 from bridge_reptends.build_expository_note import render_expository_note_lines
 
 
@@ -17,6 +17,9 @@ def test_expository_note_matches_generator() -> None:
 def test_expository_note_traces_claims_to_ids_and_evidence() -> None:
     note = NOTE_PATH.read_text()
     assert "THEOREM_WITNESS_ATLAS.md" in note
+    assert "PROOF_STATUS_ATLAS.md" in note
+    for line in render_proof_system_legend_lines():
+        assert line in note
     for witness_id in [
         "series_q_weighted_identity_prime97_stride2",
         "same_core_threshold_shift_interval_996_over_249",

@@ -24,20 +24,72 @@ import QRTour.Examples
 /-!
 # Quadratic Residue Tour
 
-This library formalizes the connection between decimal expansions and quadratic
-residues modulo primes. It is a port of the Agda formalization at
-https://github.com/mikepurvis/quadratic-residue-reptends
+This umbrella module re-exports the current Lean 4 formal surface for the
+repository. The public theorem-level status lives in
+`docs/PROOF_STATUS_ATLAS.md`, and the Lean-facing carrier/index view lives in
+`lean/THEOREM_GUIDE.md`.
 
-## Overview
+The library is no longer only a prime QR tour. It now packages:
 
-For a prime p and base B coprime to p, the decimal expansion of 1/p in base B
-has remainders r[0], r[1], r[2], ... satisfying r[n] = B^n (mod p).
+- prime remainder-orbit, digit, and quadratic-residue structure
+- bridge and signed-bridge recurrence layers
+- bridge block-value periodicity
+- composite CRT period and preperiod arithmetic
+- q-weighted block-coordinate algebra
+- exact finite-window visibility and carry-normalization interfaces
+- same-core composite visibility transport
 
-When we sample at stride m, we get r[0], r[m], r[2m], ... which equals
-k^0, k^1, k^2, ... where k = B^m mod p.
+## Proof-System Framing
 
-If k happens to be a "QR generator" (a quadratic residue with order (p-1)/2),
-then this stride-m sequence visits every quadratic residue exactly once.
+Use the same public proof-system legend here as in the theorem guide:
+
+- `Lean-formalized`: proved in the Lean tree and suitable for theorem-level
+  citation in the current public surface
+- `Agda-locally-proved`: discharged inside the Agda pedagogical companion
+  surface without relying on Agda postulates
+- `Agda-postulated but Lean-backed`: still explicit as an Agda postulate, but
+  closed by Lean or an atlas-backed Lean-backed claim in this repo
+- `empirical`: implemented and regression-tested here, but not promoted to
+  theorem status
+- `open`: tracked as an unresolved claim boundary or interface question, not an
+  established result
+
+Lean is the theorem-complete formal backend for the current atlas-backed exact
+claims. Agda remains a pedagogical companion surface rather than a theorem-parity
+target.
+
+## Current Theorem Surface
+
+The main atlas-backed Lean carriers are:
+
+- `QRTour.QuadraticResidues` for `qr_stride_classification`
+- `QRTour.Digits` for `digit_periodicity`
+- `QRTour.SignedBridge` for `signed_bridge_recurrence`
+- `QRTour.PAdicBridge` for `bridge_block_value_periodicity`
+- `QRTour.CompositePeriod` for the Lean-backed CRT period surface
+- `QRTour.Preperiod` for the Lean-backed base-factor preperiod surface
+- `QRTour.OrbitWeave` for `series_q_weighted_identity` and
+  `positive_q_good_modes`
+- `QRTour.Visibility` for `incoming_carry_position_formula`
+- `QRTour.Visibility` together with `QRTour.CompositeVisibility` for
+  `same_core_threshold_shift_interval`
+
+Support modules such as `QRTour.RemainderOrbit`, `QRTour.Bridge`,
+`QRTour.CosetStructure`, `QRTour.CarryTransducer`,
+`QRTour.CarryComparison`, and `QRTour.CompositeVisibility` package the exact
+infrastructure beneath those public statements.
+
+## Exact/Open Boundary
+
+The current Lean surface deliberately stops short of promoting two tracked
+claims:
+
+- `small_k_visibility_threshold` remains `open`; Lean currently proves the
+  exact fixed-window certificate, same-core transport, and certified finite
+  visible-word agreement beneath that boundary
+- `carry_dfa_factorization` remains `open`; Lean currently proves finite carry
+  normalization, traced comparison, and finite state-alignment criteria beneath
+  that boundary
 
 ## Example: p = 97, B = 10, m = 2
 
@@ -67,17 +119,11 @@ then this stride-m sequence visits every quadratic residue exactly once.
 - `QRTour.CompositeVisibility` - same-core family packaging for stripped periodic cores
 - `QRTour.Examples` - Concrete examples with p = 97
 
-## Porting from Agda
+## Notes On Agda Correspondence
 
-The original Agda code used many postulates for facts about modular arithmetic
-and group theory. In Lean with Mathlib, most of these become actual theorems:
-
-| Agda Postulate | Lean/Mathlib Equivalent |
-|----------------|------------------------|
-| `IsPrime` | `Nat.Prime` + `Fact` |
-| `_≡ₚ_` | Equality in `ZMod p` |
-| `powMod` | `^` in `ZMod p` |
-| `order` | `orderOf` on `(ZMod p)ˣ` |
-| `order-divides-p-1` | `orderOf_dvd_card` |
+The original repository narrative started from an Agda development, but the
+Lean tree is now the exact formal backend. For the current Agda-local versus
+Lean-backed boundary, use `docs/AGDA_CORRESPONDENCE.md` rather than reading this
+module as a simple porting note.
 
 -/

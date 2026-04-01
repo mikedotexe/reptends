@@ -274,6 +274,16 @@ Current open claim IDs:
 - `carry_dfa_factorization` - Canonical factorization of long division into orbit and carry
 <!-- OPEN_CLAIMS_END -->
 
+Proof-system legend for the public theorem surface:
+
+<!-- PROOF_SYSTEM_LEGEND_START -->
+- `Lean-formalized`: proved in the Lean tree and suitable for theorem-level citation in the current public surface.
+- `Agda-locally-proved`: discharged inside the Agda pedagogical companion surface without relying on Agda postulates.
+- `Agda-postulated but Lean-backed`: still explicit as an Agda postulate, but closed by Lean or an atlas-backed Lean-backed claim in this repo.
+- `empirical`: implemented and regression-tested here, but not promoted to theorem status.
+- `open`: tracked as an unresolved claim boundary or interface question, not an established result.
+<!-- PROOF_SYSTEM_LEGEND_END -->
+
 - [ROADMAP.md](/Users/mikepurvis/other/quadratic-residue-reptends/ROADMAP.md) - root Lean-first fortification roadmap
 - [docs/ROADMAP.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/ROADMAP.md) - broader working todo list and execution order
 - [AGENT_TRACK_PLAYBOOK.md](/Users/mikepurvis/other/quadratic-residue-reptends/AGENT_TRACK_PLAYBOOK.md) - repository-agnostic guide for creating track-based hardening agents

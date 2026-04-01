@@ -196,11 +196,14 @@ def test_same_core_selector_family_rows_capture_disagreement_beyond_249_996() ->
     assert by_core[249]["members"] == [249, 498, 996]
     assert by_core[249]["selected_members"] == [249]
     assert by_core[249]["has_relabeling_disagreement"] is True
+    assert by_core[249]["related_open_claim_ids"] == ["carry_dfa_factorization"]
+    assert "carry_dfa_factorization_target_249_498_996_same_core" in by_core[249]["matching_witness_ids"]
 
     assert 17 in by_core
     assert by_core[17]["members"][:3] == [17, 34, 68]
     assert by_core[17]["selected_members"][:2] == [17, 34]
     assert by_core[17]["has_signature_disagreement"] is True
+    assert by_core[17]["matching_witness_ids"] == []
 
 
 def test_canonical_carry_selector_studies_capture_systematic_track_17_signal() -> None:
@@ -259,6 +262,7 @@ def test_carry_factorization_rows_surface_canonical_track_17_regimes() -> None:
     assert "carry_dfa_factorization_target_21_97_996" in by_n[97]["matching_witness_ids"]
     assert by_n[996]["factorization_regime"] == "quotient_candidate_only"
     assert by_n[996]["remainder_to_carry_quotient_candidate"] is True
+    assert "carry_window_transducer_same_core_996_window4" in by_n[996]["matching_witness_ids"]
     assert "carry_dfa_factorization_target_21_97_996" in by_n[996]["matching_witness_ids"]
     assert by_n[249]["factorization_regime"] == "state_relabeling"
     assert by_n[249]["transition_signature"] == [

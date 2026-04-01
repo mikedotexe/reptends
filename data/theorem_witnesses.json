@@ -16,6 +16,7 @@
     "summary": "Canonical q = 1 coordinate where the visible coefficients are literal powers of k.",
     "evidence": [
       "lean/QRTour/OrbitWeave.lean",
+      "lean/QRTour/Examples.lean",
       "bridge_reptends/orbit_weave.py",
       "tests/test_geometric_series.py"
     ]
@@ -247,6 +248,7 @@
     "summary": "The standard 1/97 window shows the exact incoming-carry boundary before the first local overflow.",
     "evidence": [
       "lean/QRTour/Visibility.lean",
+      "lean/QRTour/Examples.lean",
       "docs/CARRIED_PREFIX_VISIBILITY.md",
       "tests/test_visibility.py"
     ]
@@ -311,6 +313,49 @@
     "summary": "The canonical carry trio still separates finite output agreement from the open global factorization question.",
     "evidence": [
       "lean/QRTour/CarryTransducer.lean",
+      "lean/QRTour/CarryComparison.lean",
+      "tests/test_carry_transducer.py"
+    ]
+  },
+  {
+    "id": "carry_dfa_factorization_target_249_498_996_same_core",
+    "claim_id": "carry_dfa_factorization",
+    "kind": "open-target",
+    "label": "Same-core selector boundary family",
+    "tuple_display": "(base=10, core=249, members in {249, 498, 996}, requestedBlocks=8)",
+    "parameters": {
+      "base": 10,
+      "core": 249,
+      "requestedBlocks": 8,
+      "family_N": [
+        249,
+        498,
+        996
+      ]
+    },
+    "summary": "This same-core family shows that short exact same-core transport does not yet extend to carry-to-remainder functionality: 249 has an isolated relabeling window, while 498 and 996 stay quotient-only.",
+    "evidence": [
+      "lean/QRTour/CarryComparison.lean",
+      "bridge_reptends/transducer.py",
+      "tests/test_carry_transducer.py"
+    ]
+  },
+  {
+    "id": "carry_window_transducer_same_core_996_window4",
+    "claim_id": "carry_window_transducer",
+    "kind": "theorem-witness",
+    "label": "Shifted same-core 996 window",
+    "tuple_display": "(base=10, N=996, core=249, stride=3, requestedBlocks=4, lookahead=0)",
+    "parameters": {
+      "base": 10,
+      "N": 996,
+      "core": 249,
+      "stride": 3,
+      "requestedBlocks": 4,
+      "lookahead": 0
+    },
+    "summary": "The short 996 over 249 same-core shift is the canonical witness for transported remainder-to-carry functionality on the actual window.",
+    "evidence": [
       "lean/QRTour/CarryComparison.lean",
       "tests/test_carry_transducer.py"
     ]

@@ -14,8 +14,18 @@ from pathlib import Path
 from .registry import (
     render_claim_table_lines,
     render_lean_module_index_lines,
+    render_open_claim_lean_support_lines,
     render_open_claim_lines,
+    render_proof_status_footer_lines,
+    render_proof_status_track_five_notes_lines,
+    render_proof_system_legend_lines,
     render_registry_summary_lines,
+    render_same_core_boundary_note_lines,
+    render_theorem_guide_claim_carrier_lines,
+    render_theorem_guide_module_index_source_lines,
+    render_theorem_guide_next_frontier_lines,
+    render_theorem_guide_open_boundary_lines,
+    render_theorem_guide_status_source_lines,
     render_theorem_witness_summary_lines,
     render_theorem_witness_table_lines,
     render_vocabulary_table_lines,
@@ -38,20 +48,79 @@ def sync_registry_docs() -> tuple[Path, ...]:
         ROOT / "README.md": (
             ("<!-- REGISTRY_SUMMARY_START -->", "<!-- REGISTRY_SUMMARY_END -->", render_registry_summary_lines()),
             ("<!-- OPEN_CLAIMS_START -->", "<!-- OPEN_CLAIMS_END -->", render_open_claim_lines()),
+            (
+                "<!-- PROOF_SYSTEM_LEGEND_START -->",
+                "<!-- PROOF_SYSTEM_LEGEND_END -->",
+                render_proof_system_legend_lines(),
+            ),
         ),
         ROOT / "docs" / "PROOF_STATUS_ATLAS.md": (
+            (
+                "<!-- PROOF_SYSTEM_LEGEND_START -->",
+                "<!-- PROOF_SYSTEM_LEGEND_END -->",
+                render_proof_system_legend_lines(),
+            ),
             ("<!-- REGISTRY_SUMMARY_START -->", "<!-- REGISTRY_SUMMARY_END -->", render_registry_summary_lines()),
             ("<!-- CLAIM_TABLE_START -->", "<!-- CLAIM_TABLE_END -->", render_claim_table_lines()),
             ("<!-- OPEN_CLAIMS_START -->", "<!-- OPEN_CLAIMS_END -->", render_open_claim_lines()),
+            ("<!-- PROOF_STATUS_FOOTER_START -->", "<!-- PROOF_STATUS_FOOTER_END -->", render_proof_status_footer_lines()),
+            (
+                "<!-- PROOF_STATUS_TRACK_FIVE_NOTES_START -->",
+                "<!-- PROOF_STATUS_TRACK_FIVE_NOTES_END -->",
+                render_proof_status_track_five_notes_lines(),
+            ),
         ),
         ROOT / "docs" / "VOCABULARY.md": (
             ("<!-- VOCABULARY_TABLE_START -->", "<!-- VOCABULARY_TABLE_END -->", render_vocabulary_table_lines()),
         ),
         ROOT / "lean" / "THEOREM_GUIDE.md": (
+            (
+                "<!-- THEOREM_GUIDE_STATUS_SOURCE_START -->",
+                "<!-- THEOREM_GUIDE_STATUS_SOURCE_END -->",
+                render_theorem_guide_status_source_lines(),
+            ),
+            (
+                "<!-- PROOF_SYSTEM_LEGEND_START -->",
+                "<!-- PROOF_SYSTEM_LEGEND_END -->",
+                render_proof_system_legend_lines(),
+            ),
+            (
+                "<!-- THEOREM_GUIDE_CLAIM_CARRIERS_START -->",
+                "<!-- THEOREM_GUIDE_CLAIM_CARRIERS_END -->",
+                render_theorem_guide_claim_carrier_lines(),
+            ),
+            (
+                "<!-- THEOREM_GUIDE_OPEN_BOUNDARY_START -->",
+                "<!-- THEOREM_GUIDE_OPEN_BOUNDARY_END -->",
+                render_theorem_guide_open_boundary_lines(),
+            ),
+            (
+                "<!-- OPEN_CLAIM_LEAN_SUPPORT_START -->",
+                "<!-- OPEN_CLAIM_LEAN_SUPPORT_END -->",
+                render_open_claim_lean_support_lines(),
+            ),
+            (
+                "<!-- THEOREM_GUIDE_MODULE_INDEX_SOURCE_START -->",
+                "<!-- THEOREM_GUIDE_MODULE_INDEX_SOURCE_END -->",
+                render_theorem_guide_module_index_source_lines(),
+            ),
             ("<!-- LEAN_MODULE_INDEX_START -->", "<!-- LEAN_MODULE_INDEX_END -->", render_lean_module_index_lines()),
+            (
+                "<!-- THEOREM_GUIDE_NEXT_FRONTIER_START -->",
+                "<!-- THEOREM_GUIDE_NEXT_FRONTIER_END -->",
+                render_theorem_guide_next_frontier_lines(),
+            ),
         ),
         ROOT / "docs" / "THEOREM_WITNESS_ATLAS.md": (
+            (
+                "<!-- PROOF_SYSTEM_LEGEND_START -->",
+                "<!-- PROOF_SYSTEM_LEGEND_END -->",
+                render_proof_system_legend_lines(),
+            ),
+            ("<!-- REGISTRY_SUMMARY_START -->", "<!-- REGISTRY_SUMMARY_END -->", render_registry_summary_lines()),
+            ("<!-- OPEN_CLAIMS_START -->", "<!-- OPEN_CLAIMS_END -->", render_open_claim_lines()),
             ("<!-- THEOREM_WITNESS_SUMMARY_START -->", "<!-- THEOREM_WITNESS_SUMMARY_END -->", render_theorem_witness_summary_lines()),
+            ("<!-- SAME_CORE_BOUNDARY_NOTE_START -->", "<!-- SAME_CORE_BOUNDARY_NOTE_END -->", render_same_core_boundary_note_lines()),
             ("<!-- THEOREM_WITNESS_TABLE_START -->", "<!-- THEOREM_WITNESS_TABLE_END -->", render_theorem_witness_table_lines()),
         ),
     }

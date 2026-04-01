@@ -18,7 +18,12 @@ from typing import Any
 
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+REPO_ROOT = DATA_DIR.parent
 STATUS_ORDER = ("classical", "reproved-here", "implemented-here", "empirical", "open")
+SAME_CORE_BOUNDARY_CONTRAST_WITNESS_IDS = (
+    "same_core_threshold_shift_interval_996_over_249",
+    "carry_dfa_factorization_target_249_498_996_same_core",
+)
 
 
 @dataclass(frozen=True)
@@ -61,6 +66,7 @@ class ClaimRecord:
     vocabulary_ids: tuple[str, ...]
     source_ids: tuple[str, ...]
     counterexample_ids: tuple[str, ...]
+    lean_support_items: tuple["LeanSupportItem", ...]
 
 
 @dataclass(frozen=True)
@@ -71,6 +77,39 @@ class LeanModuleRecord:
     promotion_decision: str
     claim_ids: tuple[str, ...]
     rationale: str
+
+
+@dataclass(frozen=True)
+class LeanSupportItem:
+    module: str
+    theorems: tuple[str, ...]
+    role: str
+
+
+@dataclass(frozen=True)
+class LeanClaimCarrierRecord:
+    claim_id: str
+    module_paths: tuple[str, ...]
+    theorem_names: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class LeanOpenClaimBoundarySegment:
+    module_paths: tuple[str, ...]
+    summary: str
+    joiner: str = ", "
+
+
+@dataclass(frozen=True)
+class LeanOpenClaimBoundaryRecord:
+    claim_id: str
+    segments: tuple[LeanOpenClaimBoundarySegment, ...]
+
+
+@dataclass(frozen=True)
+class LeanFrontierLaneRecord:
+    label: str
+    summary: str
 
 
 @dataclass(frozen=True)
@@ -147,6 +186,14 @@ def load_claim_registry() -> list[ClaimRecord]:
             vocabulary_ids=tuple(entry["vocabulary_ids"]),
             source_ids=tuple(entry["source_ids"]),
             counterexample_ids=tuple(entry["counterexample_ids"]),
+            lean_support_items=tuple(
+                LeanSupportItem(
+                    module=item["module"],
+                    theorems=tuple(item["theorems"]),
+                    role=item["role"],
+                )
+                for item in entry.get("lean_support_items", [])
+            ),
         )
         for entry in _load_json("claim_registry.json")
     ]
@@ -164,6 +211,47 @@ def load_lean_module_index() -> list[LeanModuleRecord]:
             rationale=entry["rationale"],
         )
         for entry in _load_json("lean_module_index.json")
+    ]
+
+
+def load_lean_claim_carriers() -> list[LeanClaimCarrierRecord]:
+    """Load the atlas-backed Lean claim-carrier table metadata."""
+    return [
+        LeanClaimCarrierRecord(
+            claim_id=entry["claim_id"],
+            module_paths=tuple(entry["module_paths"]),
+            theorem_names=tuple(entry["theorem_names"]),
+        )
+        for entry in _load_json("lean_claim_carriers.json")
+    ]
+
+
+def load_lean_open_claim_boundaries() -> list[LeanOpenClaimBoundaryRecord]:
+    """Load the theorem-guide open-claim boundary metadata."""
+    return [
+        LeanOpenClaimBoundaryRecord(
+            claim_id=entry["claim_id"],
+            segments=tuple(
+                LeanOpenClaimBoundarySegment(
+                    module_paths=tuple(segment["module_paths"]),
+                    summary=segment["summary"],
+                    joiner=segment.get("joiner", ", "),
+                )
+                for segment in entry["segments"]
+            ),
+        )
+        for entry in _load_json("lean_open_claim_boundaries.json")
+    ]
+
+
+def load_lean_frontier_lanes() -> list[LeanFrontierLaneRecord]:
+    """Load the theorem-guide Lean frontier lane scaffold."""
+    return [
+        LeanFrontierLaneRecord(
+            label=entry["label"],
+            summary=entry["summary"],
+        )
+        for entry in _load_json("lean_frontier_lanes.json")
     ]
 
 
@@ -316,9 +404,45 @@ def render_open_claim_lines(claims: list[ClaimRecord] | None = None) -> tuple[st
     )
 
 
+def render_proof_system_legend_lines() -> tuple[str, ...]:
+    """Render the public proof-system legend used by theorem-facing docs."""
+    return (
+        "- `Lean-formalized`: proved in the Lean tree and suitable for theorem-level citation in the current public surface.",
+        "- `Agda-locally-proved`: discharged inside the Agda pedagogical companion surface without relying on Agda postulates.",
+        "- `Agda-postulated but Lean-backed`: still explicit as an Agda postulate, but closed by Lean or an atlas-backed Lean-backed claim in this repo.",
+        "- `empirical`: implemented and regression-tested here, but not promoted to theorem status.",
+        "- `open`: tracked as an unresolved claim boundary or interface question, not an established result.",
+    )
+
+
+def render_theorem_guide_status_source_lines() -> tuple[str, ...]:
+    """Render the theorem-guide status-source intro block."""
+    atlas = _repo_link("docs/PROOF_STATUS_ATLAS.md", "docs/PROOF_STATUS_ATLAS.md")
+    return (
+        f"Use {atlas} as the public status source of truth. This note is the Lean-facing module and theorem index for the current formal surface.",
+    )
+
+
 def _doc_link(path: str) -> str:
     """Render a Markdown doc link using the repo's absolute-path convention."""
     return f"[{Path(path).name}]({DATA_DIR.parent / path})"
+
+
+def _repo_link(path: str, label: str | None = None) -> str:
+    """Render a Markdown link using the repo's absolute-path convention."""
+    return f"[{label or path}]({REPO_ROOT / path})"
+
+
+def _lean_doc_link(path: str) -> str:
+    """Render a Lean module link using theorem-guide path labels."""
+    return f"[{path.removeprefix('lean/')}]({DATA_DIR.parent / path})"
+
+
+def _theorem_guide_status_label(status: str) -> str:
+    """Render the theorem-guide carrier status label."""
+    if status == "classical":
+        return "`classical` with Lean backing in repo evidence"
+    return f"`{status}`"
 
 
 def render_claim_table_lines(claims: list[ClaimRecord] | None = None) -> tuple[str, ...]:
@@ -334,6 +458,108 @@ def render_claim_table_lines(claims: list[ClaimRecord] | None = None) -> tuple[s
             f"| `{record.id}` | `{record.status}` | {record.statement} | {evidence_links} |"
         )
     return tuple(lines)
+
+
+def render_open_claim_lean_support_lines(
+    claims: list[ClaimRecord] | None = None,
+) -> tuple[str, ...]:
+    """Render a short open-claim Lean-support crosswalk for the theorem guide."""
+    records = claims or load_claim_registry()
+    lines = [
+        "| Claim ID | Lean module | Representative finite lemmas | Boundary role |",
+        "|----------|-------------|------------------------------|---------------|",
+    ]
+    for record in records:
+        if record.status != "open":
+            continue
+        for item in record.lean_support_items:
+            theorem_names = ", ".join(f"`{name}`" for name in item.theorems)
+            lines.append(
+                f"| `{record.id}` | {_doc_link(item.module)} | {theorem_names} | {item.role} |"
+            )
+    return tuple(lines)
+
+
+def render_lean_claim_carrier_lines(
+    carriers: list[LeanClaimCarrierRecord] | None = None,
+    claims: dict[str, ClaimRecord] | None = None,
+) -> tuple[str, ...]:
+    """Render the theorem-guide atlas-backed claim-carrier table."""
+    records = carriers or load_lean_claim_carriers()
+    claim_records = claims or claim_lookup()
+    lines = [
+        "| Claim ID | Atlas Status | Lean module(s) | Main theorem names |",
+        "|----------|--------------|----------------|--------------------|",
+    ]
+    for record in records:
+        claim = claim_records[record.claim_id]
+        if claim.status == "open":
+            raise ValueError(f"open claim {record.claim_id} cannot appear in the atlas-backed carrier table")
+        module_links = ", ".join(_lean_doc_link(path) for path in record.module_paths)
+        theorem_names = ", ".join(f"`{name}`" for name in record.theorem_names)
+        lines.append(
+            f"| `{record.claim_id}` | {_theorem_guide_status_label(claim.status)} | {module_links} | {theorem_names} |"
+        )
+    return tuple(lines)
+
+
+def render_theorem_guide_claim_carrier_lines() -> tuple[str, ...]:
+    """Backward-compatible theorem-guide claim-carrier wrapper."""
+    return render_lean_claim_carrier_lines()
+
+
+def render_lean_open_claim_boundary_lines(
+    boundaries: list[LeanOpenClaimBoundaryRecord] | None = None,
+    claims: dict[str, ClaimRecord] | None = None,
+) -> tuple[str, ...]:
+    """Render the theorem-guide open-claim boundary table."""
+    records = boundaries or load_lean_open_claim_boundaries()
+    claim_records = claims or claim_lookup()
+    lines = [
+        "| Claim ID | Current Lean boundary |",
+        "|----------|-----------------------|",
+    ]
+    for record in records:
+        claim = claim_records[record.claim_id]
+        if claim.status != "open":
+            raise ValueError(
+                f"non-open claim {record.claim_id} cannot appear in the open-claim boundary table"
+            )
+        boundary_text = "; ".join(
+            f"{segment.joiner.join(_lean_doc_link(path) for path in segment.module_paths)} {segment.summary}"
+            for segment in record.segments
+        )
+        lines.append(f"| `{record.claim_id}` | {boundary_text} |")
+    return tuple(lines)
+
+
+def render_theorem_guide_open_boundary_lines() -> tuple[str, ...]:
+    """Backward-compatible theorem-guide open-boundary wrapper."""
+    return render_lean_open_claim_boundary_lines()
+
+
+def render_lean_frontier_lane_lines(
+    lanes: list[LeanFrontierLaneRecord] | None = None,
+) -> tuple[str, ...]:
+    """Render the bounded Lean-frontier scaffold for the theorem guide."""
+    records = lanes or load_lean_frontier_lanes()
+    return tuple(f"- `{record.label}`: {record.summary}" for record in records)
+
+
+def render_theorem_guide_module_index_source_lines() -> tuple[str, ...]:
+    """Render the theorem-guide module-index backing note."""
+    backing = _repo_link("data/lean_module_index.json", "lean_module_index.json")
+    return (f"This audit table is generated from {backing}.",)
+
+
+def render_theorem_guide_next_frontier_lines() -> tuple[str, ...]:
+    """Render the theorem-guide next-frontier bullet list."""
+    witness_atlas = _repo_link("docs/THEOREM_WITNESS_ATLAS.md", "THEOREM_WITNESS_ATLAS.md")
+    return (
+        "- theorem frontier: strengthen same-core visibility and fixed-window carry/visibility arithmetic beyond the current quotient-scaling, scaled-raw-coefficient endpoint criteria, and exact certificate layer, while keeping `small_k_visibility_threshold` and `carry_dfa_factorization` explicitly `open`",
+        "- promotion audit: decide whether any of `PrimitiveRoots`, `BridgeQuality`, or the remaining bridge-specialized support modules deserve their own atlas claim IDs, and classify the rest explicitly as public support or infrastructure",
+        f"- theorem-witness tooling: extend the now-generated {witness_atlas} into search outputs, site-facing data, and targeted research exports so the formal surface and the open-claim surface are easier to inspect and publish without hand-maintained drift",
+    )
 
 
 def render_vocabulary_table_lines(entries: list[VocabularyEntry] | None = None) -> tuple[str, ...]:
@@ -362,11 +588,49 @@ def render_lean_module_index_lines(
     ]
     for record in records:
         claim_ids = ", ".join(f"`{claim_id}`" for claim_id in record.claim_ids) or "none"
-        module_link = f"[{record.path.removeprefix('lean/')}]({DATA_DIR.parent / record.path})"
+        module_link = _lean_doc_link(record.path)
         lines.append(
             f"| {module_link} | {record.current_role} | {record.promotion_decision} | {claim_ids} |"
         )
     return tuple(lines)
+
+
+def render_proof_status_footer_lines() -> tuple[str, ...]:
+    """Render the proof-atlas footer/reference note."""
+    discoveries = _repo_link("DISCOVERIES.md", "DISCOVERIES.md")
+    roadmap = _repo_link("docs/ROADMAP.md", "docs/ROADMAP.md")
+    registry = _repo_link("data/claim_registry.json", "claim_registry.json")
+    return (
+        f"Use {discoveries} for exploratory context and {roadmap} for implementation follow-through on these open items.",
+        "",
+        f"Machine-readable backing lives in {registry}.",
+    )
+
+
+def render_proof_status_track_five_notes_lines() -> tuple[str, ...]:
+    """Render the proof-atlas Track 5 notes block."""
+    quadratic_residues = _lean_doc_link("lean/QRTour/QuadraticResidues.lean")
+    digits = _lean_doc_link("lean/QRTour/Digits.lean")
+    signed_bridge = _lean_doc_link("lean/QRTour/SignedBridge.lean")
+    p_adic_bridge = _lean_doc_link("lean/QRTour/PAdicBridge.lean")
+    composite_period = _lean_doc_link("lean/QRTour/CompositePeriod.lean")
+    preperiod = _lean_doc_link("lean/QRTour/Preperiod.lean")
+    visibility = _lean_doc_link("lean/QRTour/Visibility.lean")
+    carry_comparison = _lean_doc_link("lean/QRTour/CarryComparison.lean")
+    composite_visibility = _lean_doc_link("lean/QRTour/CompositeVisibility.lean")
+    return (
+        f"- {quadratic_residues} now formalizes the QR-generator power-count theorem `qrGenerator_pow_count_eq_totient`, which proves the `φ((p-1)/2)` count for powers of a fixed QR generator.",
+        "- The same Lean module now closes the base-level stride-count reduction via the full-order reduction lemmas and `base_qrGenerator_pow_count_eq_totient`, so the `ord_p(B) ∈ {h, 2h}` classification is now fully formalized at the theorem level.",
+        f"- {digits} now carries the digit/remainder Euclidean equation and the exact digit periodicity theorem, so digit periodicity is no longer just implicit Lean support.",
+        f"- {signed_bridge} now carries the signed bridge recurrence theorem, so the plus/minus bridge package and the `2k` sign-cancellation law are part of the public Lean claim surface.",
+        f"- {p_adic_bridge} now carries the bridge block-value periodicity claim, so the block-value geometric sequence and its `ord_p(d)` periodicity are no longer just analogy-level support.",
+        f"- {composite_period} now formalizes the finite-product order theorem `orderOf_pi`, the pairwise CRT theorem `orderOf_unitsChineseRemainder`, and the finite prime-power CRT theorem `orderOf_unitsEquivPrimePowers`.",
+        f"- {preperiod} now formalizes both the local valuation theorem `preperiodPrimeSteps_le_iff` and the global base-prime-support maximum `preperiodSteps`, including `preperiodSteps_le_of_local_bounds` and `basePrimeSupportFactor_dvd_base_pow_preperiodSteps`.",
+        f"- {visibility} now formalizes the exact fixed-window gap certificate, proves it is equivalent to visible-prefix agreement at fixed `(requestedBlocks, lookaheadBlocks)`, derives the necessary tail-mass lower bound beneath that certificate, and transports the certificate to larger lookahead windows once a visible prefix has stabilized.",
+        f"- {carry_comparison} now packages aligned finite carry/remainder traces, proves certified finite output agreement under the exact fixed-window certificate, lifts the generic certificate-transport layer to larger visible windows, consumes the exact same-core `k^s` transport theorem to reprove shifted visible-word/output agreement from stripped-core certificates, and now also extracts exact finite state-alignment records with observed state-pair projections, local carry-balance and remainder-balance equations at each aligned position, exact finite-window functional criteria for the observed remainder-to-carry and carry-to-remainder state-pair lists, finite transition-compatibility theorems under those criteria, and explicit finite conflict lemmas refuting them when the observed pair list disagrees.",
+        f"- {composite_visibility} now packages same-core families for actual denominators versus stripped periodic cores using the preperiod factor layer, including exact quotient-scaling, exact/lower/upper endpoint labels, scaled-raw-coefficient sufficient criteria for the non-power interval endpoints, near-denominator coordinate-selection criteria, exact same-core transport of the first visible mismatch boundary in the `k`-power regime, and exact same-core transport of the raw tail-mass lower-bound inequality, the shifted coarse `k^(n+L) < modulus` sufficient condition, and the exact fixed-window lookahead certificate itself between the stripped core at `(n, L)` and the actual denominator at `(n + s, L)`.",
+        "- The stripped-periodic-modulus statement in the composite pipeline remains classical/computational in the repo; Lean now covers the finite prime-power CRT order theorem, the max-over-base-primes preperiod step count, the stripping-factor divisibility layer, and the same-core family packaging built on top of that exact arithmetic.",
+    )
 
 
 def render_theorem_witness_summary_lines(
@@ -383,6 +647,22 @@ def render_theorem_witness_summary_lines(
     extra_kinds = sorted(kind for kind in counts if kind not in kind_order)
     lines.extend(f"- {kind}: {counts[kind]}" for kind in extra_kinds)
     return tuple(lines)
+
+
+def render_same_core_boundary_note_lines(
+    witnesses: list[TheoremWitnessRecord] | None = None,
+) -> tuple[str, ...]:
+    """Render a short atlas-backed contrast note for the same-core frontier."""
+    records = witnesses or load_theorem_witnesses()
+    witness_map = {record.id: record for record in records}
+    visibility = witness_map[SAME_CORE_BOUNDARY_CONTRAST_WITNESS_IDS[0]]
+    carry = witness_map[SAME_CORE_BOUNDARY_CONTRAST_WITNESS_IDS[1]]
+    return (
+        "| Surface | Atlas witness | Current boundary signal |",
+        "|---------|---------------|-------------------------|",
+        f"| Exact same-core visibility transport | `{visibility.id}` | Claim `{visibility.claim_id}`: {visibility.summary} |",
+        f"| Same-core selector-family failure | `{carry.id}` | Claim `{carry.claim_id}`: {carry.summary} Therefore exact same-core `carryToRemainderFunctional` transport is not currently claimed. |",
+    )
 
 
 def render_theorem_witness_table_lines(

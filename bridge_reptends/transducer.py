@@ -1012,6 +1012,13 @@ def same_core_selector_family_rows(
                 "has_signature_disagreement": len(signatures) > 1,
                 "has_relabeling_disagreement": len(relabeling_modes) > 1,
                 "has_regime_disagreement": len(regimes) > 1,
+                **claim_context_for_parameters(
+                    ("carry_dfa_factorization",),
+                    base=base,
+                    actual=int(members[-1]["n"]),
+                    core=core,
+                    requested_blocks=n_blocks,
+                ),
             }
         )
     rows.sort(

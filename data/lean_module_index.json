@@ -1,5 +1,13 @@
 [
   {
+    "id": "QRTour",
+    "path": "lean/QRTour.lean",
+    "current_role": "umbrella import surface for the full QRTour theorem library",
+    "promotion_decision": "keep as public support surface",
+    "claim_ids": [],
+    "rationale": "This file is the mathematician-facing import barrel for the Lean library, but the outward claims are still better carried by the more specific theorem modules it reexports."
+  },
+  {
     "id": "QRTour.Basic",
     "path": "lean/QRTour/Basic.lean",
     "current_role": "foundational arithmetic and divisibility helper layer",
@@ -188,5 +196,57 @@
     "promotion_decision": "keep as specialized companion infrastructure",
     "claim_ids": [],
     "rationale": "The GeometricStack family underpins some digit and overflow viewpoints, but it remains a companion library rather than a direct atlas-backed theorem surface."
+  },
+  {
+    "id": "GeometricStack.Family",
+    "path": "lean/GeometricStack/Family.lean",
+    "current_role": "base-invariant family definitions for capacities and geometric powers",
+    "promotion_decision": "keep as foundational companion infrastructure",
+    "claim_ids": [],
+    "rationale": "This module defines the shared objects used by the rest of the GeometricStack family and is better treated as reusable infrastructure than as a standalone outward theorem surface."
+  },
+  {
+    "id": "GeometricStack.Capacity",
+    "path": "lean/GeometricStack/Capacity.lean",
+    "current_role": "capacity-index packaging and threshold-bound layer",
+    "promotion_decision": "keep as specialized companion infrastructure",
+    "claim_ids": [],
+    "rationale": "Its logarithmic threshold package supports the companion stack story, but the repo does not currently expose it as a separate atlas-sized theorem family."
+  },
+  {
+    "id": "GeometricStack.Scale",
+    "path": "lean/GeometricStack/Scale.lean",
+    "current_role": "fixed-scale direct and overflow decomposition layer",
+    "promotion_decision": "keep as specialized companion infrastructure",
+    "claim_ids": [],
+    "rationale": "This module packages the clean decomposition interface used by the companion digit and overflow story, but it remains infrastructure rather than a promoted claim carrier."
+  },
+  {
+    "id": "GeometricStack.Valuation",
+    "path": "lean/GeometricStack/Valuation.lean",
+    "current_role": "capacity-as-valuation and digit-count companion layer",
+    "promotion_decision": "keep as specialized companion infrastructure",
+    "claim_ids": [],
+    "rationale": "The valuation-style lemmas are useful connective tissue for the companion library, not an outward claim family on the current atlas boundary."
+  },
+  {
+    "id": "GeometricStack.Positional",
+    "path": "lean/GeometricStack/Positional.lean",
+    "current_role": "positional-digit view of the scale decomposition",
+    "promotion_decision": "keep as public support surface for the digit companion layer",
+    "claim_ids": [
+      "digit_periodicity"
+    ],
+    "rationale": "It makes the positional-number interpretation of the companion stack layer legible, but the atlas-level digit theorem is still better carried by QRTour.Digits."
+  },
+  {
+    "id": "GeometricStack.OrbitBufferDuality",
+    "path": "lean/GeometricStack/OrbitBufferDuality.lean",
+    "current_role": "repunit remainder-orbit conjugacy and periodicity companion layer",
+    "promotion_decision": "keep as public support surface for digit periodicity",
+    "claim_ids": [
+      "digit_periodicity"
+    ],
+    "rationale": "This module proves a meaningful companion conjugacy and periodicity package, but the atlas-level digit claim remains more cleanly carried by QRTour.Digits."
   }
 ]

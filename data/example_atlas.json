@@ -1129,6 +1129,7 @@
         "claim_title": "Exact q-weighted geometric series",
         "evidence": [
           "lean/QRTour/OrbitWeave.lean",
+          "lean/QRTour/Examples.lean",
           "bridge_reptends/orbit_weave.py",
           "tests/test_geometric_series.py"
         ],
@@ -1381,6 +1382,7 @@
         "claim_title": "Exact incoming-carry boundary from the geometric tail",
         "evidence": [
           "lean/QRTour/Visibility.lean",
+          "lean/QRTour/Examples.lean",
           "docs/CARRIED_PREFIX_VISIBILITY.md",
           "tests/test_visibility.py"
         ],
