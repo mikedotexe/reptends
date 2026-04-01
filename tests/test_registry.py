@@ -89,6 +89,7 @@ def test_lean_module_index_and_theorem_witnesses_cross_references_are_valid() ->
     witnesses = load_theorem_witnesses()
     assert witnesses
     assert len({witness.id for witness in witnesses}) == len(witnesses)
+    theorem_witness_ids_by_claim: dict[str, list[str]] = {}
     for witness in witnesses:
         assert witness.claim_id in claim_ids
         assert witness.kind
@@ -96,8 +97,15 @@ def test_lean_module_index_and_theorem_witnesses_cross_references_are_valid() ->
         assert witness.tuple_display
         assert witness.summary
         assert witness.parameters
+        if witness.kind == "theorem-witness":
+            theorem_witness_ids_by_claim.setdefault(witness.claim_id, []).append(witness.id)
         for evidence_path in witness.evidence:
             assert (ROOT / evidence_path).exists()
+
+    for record in carriers:
+        assert theorem_witness_ids_by_claim.get(record.claim_id), (
+            f"claim carrier {record.claim_id} should have at least one theorem witness"
+        )
 
 
 def test_lean_module_index_covers_tracked_lean_sources() -> None:

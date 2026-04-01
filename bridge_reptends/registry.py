@@ -483,13 +483,16 @@ def render_open_claim_lean_support_lines(
 def render_lean_claim_carrier_lines(
     carriers: list[LeanClaimCarrierRecord] | None = None,
     claims: dict[str, ClaimRecord] | None = None,
+    witnesses: list[TheoremWitnessRecord] | None = None,
 ) -> tuple[str, ...]:
     """Render the theorem-guide atlas-backed claim-carrier table."""
     records = carriers or load_lean_claim_carriers()
     claim_records = claims or claim_lookup()
+    witness_records = witnesses or load_theorem_witnesses()
+    witnesses_by_claim = theorem_witnesses_by_claim(witness_records)
     lines = [
-        "| Claim ID | Atlas Status | Lean module(s) | Main theorem names |",
-        "|----------|--------------|----------------|--------------------|",
+        "| Claim ID | Atlas Status | Lean module(s) | Main theorem names | Canonical witness ID(s) |",
+        "|----------|--------------|----------------|--------------------|-------------------------|",
     ]
     for record in records:
         claim = claim_records[record.claim_id]
@@ -497,8 +500,16 @@ def render_lean_claim_carrier_lines(
             raise ValueError(f"open claim {record.claim_id} cannot appear in the atlas-backed carrier table")
         module_links = ", ".join(_lean_doc_link(path) for path in record.module_paths)
         theorem_names = ", ".join(f"`{name}`" for name in record.theorem_names)
+        witness_ids = tuple(
+            witness.id
+            for witness in witnesses_by_claim.get(record.claim_id, ())
+            if witness.kind == "theorem-witness"
+        )
+        if not witness_ids:
+            raise ValueError(f"claim carrier {record.claim_id} is missing a theorem witness")
+        witness_cell = ", ".join(f"`{witness_id}`" for witness_id in witness_ids)
         lines.append(
-            f"| `{record.claim_id}` | {_theorem_guide_status_label(claim.status)} | {module_links} | {theorem_names} |"
+            f"| `{record.claim_id}` | {_theorem_guide_status_label(claim.status)} | {module_links} | {theorem_names} | {witness_cell} |"
         )
     return tuple(lines)
 

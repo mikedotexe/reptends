@@ -20,6 +20,7 @@ from bridge_reptends import (
     render_theorem_guide_status_source_lines,
     render_theorem_witness_summary_lines,
     render_theorem_witness_table_lines,
+    theorem_witnesses_by_claim,
     render_vocabulary_table_lines,
 )
 
@@ -179,6 +180,10 @@ def _extract_markdown_link_targets(cell: str) -> list[str]:
     return re.findall(r"\]\(([^)]+)\)", cell)
 
 
+def _extract_code_ids(cell: str) -> list[str]:
+    return re.findall(r"`([^`]+)`", cell)
+
+
 def _resolve_theorem_guide_lean_path(target: str) -> Path:
     repo_marker = "quadratic-residue-reptends/"
     relative = target.split(repo_marker, 1)[1] if repo_marker in target else target.lstrip("/")
@@ -332,14 +337,35 @@ def test_theorem_guide_claim_tables_cover_the_lean_backed_claim_boundary() -> No
 
 def test_theorem_guide_theorem_names_resolve_in_listed_lean_modules() -> None:
     theorem_guide_text = LEAN_GUIDE.read_text()
+    witnesses = theorem_witnesses_by_claim()
     for row in _extract_markdown_table_rows(theorem_guide_text, "## Atlas-Backed Claim Carriers"):
-        claim_id, _status, module_cell, theorem_cell = row
+        claim_id_cell, _status, module_cell, theorem_cell, witness_cell = row
+        claim_id = claim_id_cell.strip("`")
         module_paths = [_resolve_theorem_guide_lean_path(target) for target in _extract_markdown_link_targets(module_cell)]
         declarations = set().union(*(_lean_declaration_names(path) for path in module_paths))
         theorem_names = [name.strip().strip("`") for name in theorem_cell.split(",")]
         unresolved = [name for name in theorem_names if not _lean_name_resolves(name, declarations)]
         assert not unresolved, (
             f"{claim_id} lists theorem names not found in the referenced Lean modules: {unresolved}"
+        )
+        expected_witness_ids = [
+            witness.id for witness in witnesses[claim_id] if witness.kind == "theorem-witness"
+        ]
+        assert _extract_code_ids(witness_cell) == expected_witness_ids
+
+
+def test_theorem_guide_open_claim_support_theorem_names_resolve() -> None:
+    theorem_guide_text = LEAN_GUIDE.read_text()
+    for row in _extract_markdown_table_rows(theorem_guide_text, "## Open-Claim Lean Support Crosswalk"):
+        claim_id, module_cell, theorem_cell, _role = row
+        module_targets = _extract_markdown_link_targets(module_cell)
+        assert module_targets, f"{claim_id} should reference a Lean module in the support crosswalk"
+        module_path = _resolve_theorem_guide_lean_path(module_targets[0])
+        declarations = _lean_declaration_names(module_path)
+        theorem_names = [name.strip().strip("`") for name in theorem_cell.split(",")]
+        unresolved = [name for name in theorem_names if not _lean_name_resolves(name, declarations)]
+        assert not unresolved, (
+            f"{claim_id} lists open-boundary theorem names not found in {module_path}: {unresolved}"
         )
 
 
