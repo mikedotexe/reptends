@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
 
+import pytest
+
 from bridge_reptends import (
     build_claim_witness_rows,
     build_example_atlas,
@@ -132,6 +134,38 @@ def test_claim_witness_rows_surface_all_registry_witnesses() -> None:
     assert by_id["same_core_threshold_shift_interval_996_over_249"]["claim_id"] == "same_core_threshold_shift_interval"
     assert by_id["small_k_visibility_threshold_target_97_249_996"]["claim_status"] == "open"
     assert by_id["small_k_visibility_heuristic_family_21_37_97_249_996"]["kind"] == "empirical-witness"
+
+
+def test_claim_witness_rows_support_claim_kind_and_status_filters() -> None:
+    carry_rows = build_claim_witness_rows(claim_id="carry_window_transducer")
+    carry_ids = {row["witness_id"] for row in carry_rows}
+
+    assert carry_ids == {
+        "carry_window_transducer_prime97_window6",
+        "carry_window_transducer_same_core_996_window4",
+    }
+    assert all(row["claim_status"] == "implemented-here" for row in carry_rows)
+
+    open_rows = build_claim_witness_rows(status="open", kind="open-target")
+    open_ids = {row["witness_id"] for row in open_rows}
+
+    assert open_ids == {
+        "small_k_visibility_threshold_target_97_249_996",
+        "carry_dfa_factorization_target_21_97_996",
+        "carry_dfa_factorization_target_249_498_996_same_core",
+    }
+    assert all(row["kind"] == "open-target" for row in open_rows)
+
+
+def test_claim_witness_rows_reject_unknown_filters() -> None:
+    with pytest.raises(ValueError, match="unknown claim_id"):
+        build_claim_witness_rows(claim_id="not_a_claim")
+
+    with pytest.raises(ValueError, match="unknown claim status"):
+        build_claim_witness_rows(status="lean-formalized")
+
+    with pytest.raises(ValueError, match="unknown witness kind"):
+        build_claim_witness_rows(kind="witness")
 
 
 def test_example_atlas_snapshot_matches_checked_in_data() -> None:

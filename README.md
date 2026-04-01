@@ -66,6 +66,7 @@ python -m bridge_reptends.examples.carry_transducer_demo
 search-reptends small-residue-coordinates --max 500 --top 20
 search-reptends small-residue-coordinates-q1 --max 1500 --top 10
 search-reptends prime-qr-generators --max 500 --top 10
+search-reptends theorem-witnesses --claim incoming_carry_position_formula
 search-reptends legacy-counterexamples --max 500 --bases 2,7,10,12
 search-reptends composite-profiles --max 500
 search-reptends visibility-profiles --max 500 --blocks 8
