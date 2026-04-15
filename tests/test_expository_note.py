@@ -18,6 +18,10 @@ def test_expository_note_traces_claims_to_ids_and_evidence() -> None:
     note = NOTE_PATH.read_text()
     assert "THEOREM_WITNESS_ATLAS.md" in note
     assert "PROOF_STATUS_ATLAS.md" in note
+    assert "## Research Thesis" in note
+    assert "research-thesis" in note
+    assert "carry_dfa_factorization" in note
+    assert "orbit-carry-frontier" in note
     for line in render_proof_system_legend_lines():
         assert line in note
     for witness_id in [

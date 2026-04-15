@@ -1,4 +1,11 @@
-import { claimRegistry, featuredClaims, featuredCounterexamples, openClaims, searchPreview } from '../lib/atlas';
+import {
+  claimById,
+  claimRegistry,
+  featuredClaims,
+  featuredCounterexamples,
+  openClaims,
+  searchPreview,
+} from '../lib/atlas';
 
 const statusStyles: Record<string, string> = {
   classical: 'bg-stone-200 text-stone-700',
@@ -82,12 +89,40 @@ const ProofAtlasPanel = () => {
               Counterexamples
             </h3>
             <div className="space-y-3">
-              {featuredCounterexamples.map(counterexample => (
-                <article key={counterexample.id} className="rounded-lg border border-rose-100 bg-rose-50 p-3">
-                  <div className="text-sm font-semibold text-rose-900">{counterexample.legacy_claim}</div>
-                  <p className="mt-2 text-sm leading-relaxed text-rose-800">{counterexample.observed}</p>
-                </article>
-              ))}
+              {featuredCounterexamples.map(counterexample => {
+                const correctedClaim = claimById.get(counterexample.claim_id);
+                return (
+                  <article key={counterexample.id} className="rounded-lg border border-rose-100 bg-rose-50 p-3">
+                    <div className="text-[10px] font-bold uppercase tracking-wide text-rose-700">
+                      Legacy claim
+                    </div>
+                    <div className="mt-2 text-sm font-semibold text-rose-900">
+                      {counterexample.legacy_claim}
+                    </div>
+                    <p className="mt-2 text-sm leading-relaxed text-rose-800">
+                      {counterexample.observed}
+                    </p>
+                    <div className="mt-3 rounded-lg border border-emerald-100 bg-emerald-50 p-3">
+                      <div className="text-[10px] font-bold uppercase tracking-wide text-emerald-700">
+                        Replacement
+                      </div>
+                      <p className="mt-2 text-sm leading-relaxed text-emerald-900">
+                        {counterexample.replacement}
+                      </p>
+                    </div>
+                    {correctedClaim ? (
+                      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-stone-500">
+                        <code className="rounded bg-white/80 px-2 py-1 text-stone-700">
+                          {correctedClaim.id}
+                        </code>
+                        <span className={`rounded-full px-2.5 py-1 font-bold uppercase tracking-wide ${statusStyles[correctedClaim.status]}`}>
+                          {statusLabel[correctedClaim.status]}
+                        </span>
+                      </div>
+                    ) : null}
+                  </article>
+                );
+              })}
             </div>
           </aside>
 

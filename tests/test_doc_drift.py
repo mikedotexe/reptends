@@ -3,25 +3,40 @@ from pathlib import Path
 
 from bridge_reptends import (
     load_claim_registry,
+    load_lean_claim_carriers,
     load_lean_module_index,
+    load_lean_open_claim_boundaries,
+    load_lean_worked_examples,
     render_claim_table_lines,
+    render_examples_open_boundary_note_lines,
     render_lean_claim_carrier_lines,
     render_lean_open_claim_boundary_lines,
     render_lean_module_index_lines,
+    render_lean_worked_example_lines,
+    render_geometric_stack_import_lines,
     render_open_claim_lines,
     render_open_claim_lean_support_lines,
     render_proof_status_footer_lines,
     render_proof_status_track_five_notes_lines,
     render_proof_system_legend_lines,
+    render_qr_tour_import_lines,
+    render_readme_lean_claim_surface_lines,
     render_registry_summary_lines,
     render_same_core_boundary_note_lines,
+    render_theorem_guide_throughline_layer_lines,
     render_theorem_guide_module_index_source_lines,
     render_theorem_guide_next_frontier_lines,
     render_theorem_guide_status_source_lines,
     render_theorem_witness_summary_lines,
     render_theorem_witness_table_lines,
+    render_throughline_research_thesis_lines,
+    render_throughline_witness_ladder_lines,
     theorem_witnesses_by_claim,
     render_vocabulary_table_lines,
+)
+from bridge_reptends.registry import (
+    render_carried_prefix_visibility_status_anchor_lines,
+    render_carry_transducer_status_anchor_lines,
 )
 
 
@@ -32,9 +47,15 @@ AGENTS = ROOT / "AGENTS.md"
 CLAUDE = ROOT / "CLAUDE.md"
 DISCOVERIES = ROOT / "DISCOVERIES.md"
 DOCS_DIR = ROOT / "docs"
+HARDENING_ROADMAP = DOCS_DIR / "ROADMAP.md"
 LEAN_GUIDE = ROOT / "lean" / "THEOREM_GUIDE.md"
+QRT_SURFACE = ROOT / "lean" / "QRTour.lean"
+GEOMETRIC_STACK_SURFACE = ROOT / "lean" / "GeometricStack.lean"
+EXAMPLES_SURFACE = ROOT / "lean" / "QRTour" / "Examples.lean"
 WITNESS_ATLAS = DOCS_DIR / "THEOREM_WITNESS_ATLAS.md"
 AGDA_CORRESPONDENCE = DOCS_DIR / "AGDA_CORRESPONDENCE.md"
+CARRY_TRANSDUCER = DOCS_DIR / "CARRY_TRANSDUCER.md"
+CARRIED_PREFIX_VISIBILITY = DOCS_DIR / "CARRIED_PREFIX_VISIBILITY.md"
 PUBLIC_DOCS = [README, AGENTS, CLAUDE, DISCOVERIES, *sorted(DOCS_DIR.glob("*.md"))]
 
 BANNED_LEGACY_STRINGS = [
@@ -139,6 +160,92 @@ def test_theorem_surfaces_do_not_hardcode_codex_worktree_roots() -> None:
         assert "/Users/mikepurvis/.codex/worktrees/" not in path.read_text()
 
 
+def test_carry_transducer_doc_records_exact_flagship_candidates() -> None:
+    text = CARRY_TRANSDUCER.read_text()
+
+    assert "## Flagship Candidate Statements" in text
+    assert "preimage-fiber profile (state-merging atlas)" in text
+    assert "`Positive candidate (restricted remainder-to-carry factorization)`" in text
+    assert "`Obstruction candidate (core/output insufficiency)`" in text
+    assert "`remainderToCarryFunctional`" in text
+    assert "remainder-to-carry transition compatibility" in text
+    assert "same-core family" in text
+    assert "`249`" in text and "`498`" in text and "`996`" in text
+    assert "`17 -> 34` selector-family shift" in text
+
+
+def test_carry_and_visibility_status_anchor_blocks_match_registry_data() -> None:
+    assert _normalize_repo_link_targets(
+        _extract_block(
+            CARRY_TRANSDUCER.read_text(),
+            "<!-- CARRY_TRANSDUCER_STATUS_ANCHOR_START -->",
+            "<!-- CARRY_TRANSDUCER_STATUS_ANCHOR_END -->",
+        )
+    ) == _normalize_repo_link_targets(list(render_carry_transducer_status_anchor_lines()))
+
+    assert _normalize_repo_link_targets(
+        _extract_block(
+            CARRIED_PREFIX_VISIBILITY.read_text(),
+            "<!-- CARRIED_PREFIX_VISIBILITY_STATUS_ANCHOR_START -->",
+            "<!-- CARRIED_PREFIX_VISIBILITY_STATUS_ANCHOR_END -->",
+        )
+    ) == _normalize_repo_link_targets(list(render_carried_prefix_visibility_status_anchor_lines()))
+    assert _normalize_repo_link_targets(
+        _extract_block(
+            CARRY_TRANSDUCER.read_text(),
+            "<!-- CARRY_TRANSDUCER_THROUGHLINE_START -->",
+            "<!-- CARRY_TRANSDUCER_THROUGHLINE_END -->",
+        )
+    ) == _normalize_repo_link_targets(list(render_throughline_witness_ladder_lines()))
+
+
+def test_throughline_blocks_keep_carry_factorization_open_and_thesis_framed() -> None:
+    readme_text = README.read_text()
+    witness_text = WITNESS_ATLAS.read_text()
+
+    for text in (readme_text, witness_text):
+        assert "`carry_dfa_factorization`" in text
+        assert "`open`" in text
+        assert "research-thesis" in text
+        assert "`orbit_plus_carry_factorization`" in text
+        assert "preimage-fiber profile" in text
+        assert "Claim ID `orbit_plus_carry_factorization`" not in text
+
+    thesis_block = _extract_block(
+        readme_text,
+        "<!-- THROUGHLINE_RESEARCH_THESIS_START -->",
+        "<!-- THROUGHLINE_RESEARCH_THESIS_END -->",
+    )
+    assert any("research-thesis" in line for line in thesis_block)
+    assert any("remains `open` under `carry_dfa_factorization`" in line for line in thesis_block)
+
+
+def test_theorem_guide_mentions_factorization_frontier_support_honestly() -> None:
+    text = LEAN_GUIDE.read_text()
+
+    assert "factorization-frontier support" in text
+    assert "QRTour/Factorization.lean" in text
+    assert "preimage-fiber profile (state-merging atlas)" in text
+
+
+def test_track_18_roadmap_marks_release_snapshot_as_landed() -> None:
+    text = HARDENING_ROADMAP.read_text()
+    track_18 = text.split("## Track 18: Formal-Systems Integration and Release Snapshot", 1)[1].split(
+        "## Track 19: Post-Exact Visibility and Finite-Carry Theorem Frontier", 1
+    )[0]
+    current_state = text.split("## Current State", 1)[1]
+
+    assert "Status: `implemented`" in track_18
+    assert "- [x] Add a proof-system legend across the main public surfaces:" in track_18
+    assert "- [x] Add a release-snapshot task that packages:" in track_18
+    assert "build_release_snapshot.py" in track_18
+    assert "docs/RELEASE_SNAPSHOT.md" in track_18
+    assert "data/release_snapshot.json" in track_18
+    assert "Tracks 1 through 18 are now implemented." in current_state
+    assert "release-facing snapshot" in current_state
+    assert "finish the release-facing snapshot now that the proof-system legend is" not in current_state
+
+
 def _extract_block(text: str, start_marker: str, end_marker: str) -> list[str]:
     start = text.index(start_marker) + len(start_marker)
     end = text.index(end_marker)
@@ -184,6 +291,34 @@ def _extract_code_ids(cell: str) -> list[str]:
     return re.findall(r"`([^`]+)`", cell)
 
 
+def _normalize_theorem_guide_lean_targets(targets: list[str]) -> list[str]:
+    return [_resolve_theorem_guide_lean_path(target).relative_to(ROOT).as_posix() for target in targets]
+
+
+def _theorem_guide_open_claim_boundary_modules_by_claim() -> dict[str, set[str]]:
+    theorem_guide_text = LEAN_GUIDE.read_text()
+    return {
+        claim_id_cell.strip("`"): set(
+            _normalize_theorem_guide_lean_targets(_extract_markdown_link_targets(boundary_cell))
+        )
+        for claim_id_cell, boundary_cell in _extract_markdown_table_rows(
+            theorem_guide_text, "## Open Claims With Lean Boundary Work"
+        )
+    }
+
+
+def _theorem_guide_open_claim_support_modules_by_claim() -> dict[str, set[str]]:
+    theorem_guide_text = LEAN_GUIDE.read_text()
+    modules_by_claim: dict[str, set[str]] = {}
+    for claim_id_cell, module_cell, _theorem_cell, _role in _extract_markdown_table_rows(
+        theorem_guide_text, "## Open-Claim Lean Support Crosswalk"
+    ):
+        modules_by_claim.setdefault(claim_id_cell.strip("`"), set()).update(
+            _normalize_theorem_guide_lean_targets(_extract_markdown_link_targets(module_cell))
+        )
+    return modules_by_claim
+
+
 def _resolve_theorem_guide_lean_path(target: str) -> Path:
     repo_marker = "quadratic-residue-reptends/"
     relative = target.split(repo_marker, 1)[1] if repo_marker in target else target.lstrip("/")
@@ -213,25 +348,45 @@ def test_registry_summary_blocks_match_registry_data() -> None:
     expected_summary = list(render_registry_summary_lines())
     expected_open = list(render_open_claim_lines())
     expected_proof_system_legend = list(render_proof_system_legend_lines())
+    expected_readme_lean_claim_surface = list(render_readme_lean_claim_surface_lines())
+    expected_throughline_thesis = list(render_throughline_research_thesis_lines())
+    expected_throughline_ladder = list(render_throughline_witness_ladder_lines())
     expected_claim_table = list(render_claim_table_lines())
     expected_claim_carrier_table = list(render_lean_claim_carrier_lines())
     expected_open_claim_boundary_table = list(render_lean_open_claim_boundary_lines())
     expected_open_claim_support = list(render_open_claim_lean_support_lines())
+    expected_throughline_layers = list(render_theorem_guide_throughline_layer_lines())
     expected_proof_status_footer = list(render_proof_status_footer_lines())
     expected_proof_track_five_notes = list(render_proof_status_track_five_notes_lines())
     expected_vocabulary_table = list(render_vocabulary_table_lines())
     expected_status_source = list(render_theorem_guide_status_source_lines())
     expected_module_index_source = list(render_theorem_guide_module_index_source_lines())
     expected_module_index = list(render_lean_module_index_lines())
+    expected_worked_examples = list(render_lean_worked_example_lines())
+    expected_examples_open_boundary_note = list(render_examples_open_boundary_note_lines())
     expected_next_frontier = list(render_theorem_guide_next_frontier_lines())
     expected_witness_summary = list(render_theorem_witness_summary_lines())
     expected_same_core_boundary_note = list(render_same_core_boundary_note_lines())
     expected_witness_table = list(render_theorem_witness_table_lines())
+    expected_qr_tour_imports = list(render_qr_tour_import_lines())
+    expected_geometric_stack_imports = list(render_geometric_stack_import_lines())
 
     readme_text = README.read_text()
+    assert _extract_block(
+        readme_text,
+        "<!-- THROUGHLINE_RESEARCH_THESIS_START -->",
+        "<!-- THROUGHLINE_RESEARCH_THESIS_END -->",
+    ) == expected_throughline_thesis
     assert _extract_block(readme_text, "<!-- REGISTRY_SUMMARY_START -->", "<!-- REGISTRY_SUMMARY_END -->") == expected_summary
     assert _extract_block(readme_text, "<!-- OPEN_CLAIMS_START -->", "<!-- OPEN_CLAIMS_END -->") == expected_open
     assert _extract_block(readme_text, "<!-- PROOF_SYSTEM_LEGEND_START -->", "<!-- PROOF_SYSTEM_LEGEND_END -->") == expected_proof_system_legend
+    assert _normalize_repo_link_targets(
+        _extract_block(
+            readme_text,
+            "<!-- README_LEAN_CLAIM_SURFACE_START -->",
+            "<!-- README_LEAN_CLAIM_SURFACE_END -->",
+        )
+    ) == _normalize_repo_link_targets(expected_readme_lean_claim_surface)
 
     atlas_text = (DOCS_DIR / "PROOF_STATUS_ATLAS.md").read_text()
     assert _extract_block(atlas_text, "<!-- PROOF_SYSTEM_LEGEND_START -->", "<!-- PROOF_SYSTEM_LEGEND_END -->") == expected_proof_system_legend
@@ -262,6 +417,13 @@ def test_registry_summary_blocks_match_registry_data() -> None:
             "<!-- THEOREM_GUIDE_STATUS_SOURCE_END -->",
         )
     ) == _normalize_repo_link_targets(expected_status_source)
+    assert _normalize_repo_link_targets(
+        _extract_block(
+            theorem_guide_text,
+            "<!-- THEOREM_GUIDE_THROUGHLINE_LAYERS_START -->",
+            "<!-- THEOREM_GUIDE_THROUGHLINE_LAYERS_END -->",
+        )
+    ) == _normalize_repo_link_targets(expected_throughline_layers)
     assert _extract_block(theorem_guide_text, "<!-- PROOF_SYSTEM_LEGEND_START -->", "<!-- PROOF_SYSTEM_LEGEND_END -->") == expected_proof_system_legend
     assert _normalize_repo_link_targets(
         _extract_block(
@@ -277,6 +439,13 @@ def test_registry_summary_blocks_match_registry_data() -> None:
             "<!-- THEOREM_GUIDE_OPEN_BOUNDARY_END -->",
         )
     ) == _normalize_repo_link_targets(expected_open_claim_boundary_table)
+    assert _normalize_repo_link_targets(
+        _extract_block(
+            theorem_guide_text,
+            "<!-- THEOREM_GUIDE_WORKED_EXAMPLES_START -->",
+            "<!-- THEOREM_GUIDE_WORKED_EXAMPLES_END -->",
+        )
+    ) == _normalize_repo_link_targets(expected_worked_examples)
     assert _normalize_repo_link_targets(
         _extract_block(
             theorem_guide_text,
@@ -302,10 +471,52 @@ def test_registry_summary_blocks_match_registry_data() -> None:
         )
     ) == _normalize_repo_link_targets(expected_next_frontier)
 
+    examples_text = EXAMPLES_SURFACE.read_text()
+    assert _normalize_repo_link_targets(
+        _extract_block(
+            examples_text,
+            "<!-- EXAMPLES_WORKED_EXAMPLE_INDEX_START -->",
+            "<!-- EXAMPLES_WORKED_EXAMPLE_INDEX_END -->",
+        )
+    ) == _normalize_repo_link_targets(expected_worked_examples)
+    assert _normalize_repo_link_targets(
+        _extract_block(
+            examples_text,
+            "<!-- EXAMPLES_OPEN_BOUNDARY_NOTE_START -->",
+            "<!-- EXAMPLES_OPEN_BOUNDARY_NOTE_END -->",
+        )
+    ) == _normalize_repo_link_targets(expected_examples_open_boundary_note)
+
+    qrt_surface_text = QRT_SURFACE.read_text()
+    assert _extract_block(
+        qrt_surface_text,
+        "-- QRT_SURFACE_IMPORTS_START",
+        "-- QRT_SURFACE_IMPORTS_END",
+    ) == expected_qr_tour_imports
+
+    geometric_stack_text = GEOMETRIC_STACK_SURFACE.read_text()
+    assert _extract_block(
+        geometric_stack_text,
+        "-- GEOMETRIC_STACK_IMPORTS_START",
+        "-- GEOMETRIC_STACK_IMPORTS_END",
+    ) == expected_geometric_stack_imports
+
     witness_text = WITNESS_ATLAS.read_text()
     assert _extract_block(witness_text, "<!-- PROOF_SYSTEM_LEGEND_START -->", "<!-- PROOF_SYSTEM_LEGEND_END -->") == expected_proof_system_legend
+    assert _extract_block(
+        witness_text,
+        "<!-- THROUGHLINE_RESEARCH_THESIS_START -->",
+        "<!-- THROUGHLINE_RESEARCH_THESIS_END -->",
+    ) == expected_throughline_thesis
     assert _extract_block(witness_text, "<!-- REGISTRY_SUMMARY_START -->", "<!-- REGISTRY_SUMMARY_END -->") == expected_summary
     assert _extract_block(witness_text, "<!-- OPEN_CLAIMS_START -->", "<!-- OPEN_CLAIMS_END -->") == expected_open
+    assert _normalize_repo_link_targets(
+        _extract_block(
+            witness_text,
+            "<!-- THROUGHLINE_WITNESS_LADDER_START -->",
+            "<!-- THROUGHLINE_WITNESS_LADDER_END -->",
+        )
+    ) == _normalize_repo_link_targets(expected_throughline_ladder)
     assert _extract_block(witness_text, "<!-- THEOREM_WITNESS_SUMMARY_START -->", "<!-- THEOREM_WITNESS_SUMMARY_END -->") == expected_witness_summary
     assert _normalize_repo_link_targets(
         _extract_block(witness_text, "<!-- SAME_CORE_BOUNDARY_NOTE_START -->", "<!-- SAME_CORE_BOUNDARY_NOTE_END -->")
@@ -335,6 +546,23 @@ def test_theorem_guide_claim_tables_cover_the_lean_backed_claim_boundary() -> No
     assert _extract_table_claim_ids(theorem_guide_text, "## Open Claims With Lean Boundary Work") == expected_open_boundary
 
 
+def test_readme_lean_claim_surface_covers_non_open_claim_carriers() -> None:
+    expected_claim_ids = [record.claim_id for record in load_lean_claim_carriers()]
+    claim_surface_lines = _extract_block(
+        README.read_text(),
+        "<!-- README_LEAN_CLAIM_SURFACE_START -->",
+        "<!-- README_LEAN_CLAIM_SURFACE_END -->",
+    )
+    claim_ids = [
+        claim_id
+        for line in claim_surface_lines
+        for claim_id in re.findall(r"`([^`]+)`", line)
+        if not claim_id.startswith("QRTour.")
+    ]
+
+    assert claim_ids == expected_claim_ids
+
+
 def test_theorem_guide_theorem_names_resolve_in_listed_lean_modules() -> None:
     theorem_guide_text = LEAN_GUIDE.read_text()
     witnesses = theorem_witnesses_by_claim()
@@ -352,6 +580,46 @@ def test_theorem_guide_theorem_names_resolve_in_listed_lean_modules() -> None:
             witness.id for witness in witnesses[claim_id] if witness.kind == "theorem-witness"
         ]
         assert _extract_code_ids(witness_cell) == expected_witness_ids
+
+
+def test_theorem_guide_worked_example_hook_points_to_existing_witnesses() -> None:
+    theorem_guide_text = LEAN_GUIDE.read_text()
+    witness_atlas_text = WITNESS_ATLAS.read_text()
+    section = theorem_guide_text.split("## Worked Example Entry Points", 1)[1].split(
+        "## Open Claims With Lean Boundary Work", 1
+    )[0]
+
+    assert "[THEOREM_WITNESS_ATLAS.md]" in section
+
+    rows = _extract_markdown_table_rows(theorem_guide_text, "## Worked Example Entry Points")
+    expected_rows = {
+        record.namespace: (list(record.claim_ids), list(record.theorem_names), list(record.witness_ids))
+        for record in load_lean_worked_examples()
+    }
+    assert len(rows) == len(expected_rows)
+
+    for namespace, claim_cell, theorem_cell, _role, witness_cell in rows:
+        assert "[QRTour/Examples.lean]" in namespace
+        module_path = _resolve_theorem_guide_lean_path(_extract_markdown_link_targets(namespace)[0])
+        declarations = _lean_declaration_names(module_path)
+        claim_ids = _extract_code_ids(claim_cell)
+        code_ids = _extract_code_ids(witness_cell)
+        matching_namespaces = [name for name in expected_rows if f"`{name}`" in namespace]
+        assert len(matching_namespaces) == 1, f"unexpected theorem-guide example namespace row: {namespace}"
+        expected_claim_ids, expected_theorem_names, expected_witness_ids = expected_rows[matching_namespaces[0]]
+        theorem_names = [name.strip().strip("`") for name in theorem_cell.split(",")]
+        assert claim_ids == expected_claim_ids
+        assert theorem_names == expected_theorem_names
+        unresolved = [name for name in theorem_names if not _lean_name_resolves(name, declarations)]
+        assert not unresolved, (
+            f"worked-example row {matching_namespaces[0]} lists theorem names not found in "
+            f"{module_path}: {unresolved}"
+        )
+        assert code_ids == expected_witness_ids
+        for witness_id in code_ids:
+            assert f"`{witness_id}`" in witness_atlas_text, (
+                f"theorem-guide worked-example hook references missing witness atlas id {witness_id}"
+            )
 
 
 def test_theorem_guide_open_claim_support_theorem_names_resolve() -> None:
@@ -379,6 +647,48 @@ def test_theorem_guide_open_claim_boundary_modules_resolve() -> None:
             _resolve_theorem_guide_lean_path(target)
 
 
+def test_theorem_guide_open_claim_boundary_rows_match_registry_segments() -> None:
+    theorem_guide_text = LEAN_GUIDE.read_text()
+    boundary_rows = {
+        claim_id_cell.strip("`"): boundary_cell
+        for claim_id_cell, boundary_cell in _extract_markdown_table_rows(
+            theorem_guide_text, "## Open Claims With Lean Boundary Work"
+        )
+    }
+
+    for record in load_lean_open_claim_boundaries():
+        assert record.claim_id in boundary_rows, (
+            f"missing theorem-guide open-boundary row for {record.claim_id}"
+        )
+        rendered_segments = boundary_rows[record.claim_id].split("; ")
+        assert len(rendered_segments) == len(record.segments), (
+            f"{record.claim_id} should render exactly one theorem-guide segment per "
+            "lean_open_claim_boundaries.json segment"
+        )
+        for rendered_segment, expected_segment in zip(rendered_segments, record.segments, strict=True):
+            assert rendered_segment.endswith(expected_segment.summary), (
+                f"{record.claim_id} theorem-guide segment lost or changed summary text from "
+                "lean_open_claim_boundaries.json"
+            )
+            rendered_targets = _normalize_theorem_guide_lean_targets(
+                _extract_markdown_link_targets(rendered_segment)
+            )
+            assert rendered_targets == list(expected_segment.module_paths), (
+                f"{record.claim_id} theorem-guide segment module coverage drifted from "
+                "lean_open_claim_boundaries.json"
+            )
+
+
+def test_theorem_guide_open_claim_boundary_and_support_modules_stay_aligned() -> None:
+    boundary_modules_by_claim = _theorem_guide_open_claim_boundary_modules_by_claim()
+    support_modules_by_claim = _theorem_guide_open_claim_support_modules_by_claim()
+
+    assert boundary_modules_by_claim == support_modules_by_claim, (
+        "theorem-guide open-boundary rows and support crosswalk should cover the same Lean "
+        "modules for each open claim"
+    )
+
+
 def test_normalized_source_and_vocabulary_ids_are_visible_in_docs() -> None:
     literature_map = (DOCS_DIR / "LITERATURE_MAP.md").read_text()
     vocabulary = (DOCS_DIR / "VOCABULARY.md").read_text()
@@ -398,6 +708,9 @@ def test_normalized_source_and_vocabulary_ids_are_visible_in_docs() -> None:
         "quotient_q",
         "skeleton",
         "carry_layer",
+        "preimage_fiber_profile",
+        "visible_preimage_compression",
+        "hidden_graph_obstruction",
         "body_term",
         "correction_term",
         "good_mode",

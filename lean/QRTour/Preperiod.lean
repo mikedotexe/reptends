@@ -116,6 +116,42 @@ theorem preperiodSteps_le_of_local_bounds {base n t : ℕ}
     preperiodPrimeSteps_minimal (p := p) hbase_pos
       (Nat.dvd_of_mem_primeFactors (n := base) hp) (hlocal p hp)
 
+/-- If the base and denominator are coprime, every local base-prime
+contribution is already zero. -/
+theorem preperiodPrimeSteps_eq_zero_of_coprime {p base n : ℕ} [hp : Fact p.Prime]
+    (hcop : Nat.Coprime base n) (hdiv : p ∣ base) :
+    preperiodPrimeSteps p base n = 0 := by
+  unfold preperiodPrimeSteps
+  have hnot : ¬ p ∣ n := hp.out.coprime_iff_not_dvd.mp (hcop.coprime_dvd_left hdiv)
+  simp [padicValNat.eq_zero_of_not_dvd hnot]
+
+/-- If the base and denominator are coprime, the preperiod is zero. -/
+theorem preperiodSteps_eq_zero_of_coprime {base n : ℕ} (hcop : Nat.Coprime base n) :
+    preperiodSteps base n = 0 := by
+  apply le_antisymm
+  · exact preperiodSteps_le_of_local_bounds (base := base) (n := n) (t := 0) (by
+      intro p hp
+      have hp_prime : Nat.Prime p := Nat.prime_of_mem_primeFactors hp
+      haveI : Fact p.Prime := ⟨hp_prime⟩
+      have hdiv : p ∣ base := Nat.dvd_of_mem_primeFactors (n := base) hp
+      have hnot : ¬ p ∣ n := hp_prime.coprime_iff_not_dvd.mp (hcop.coprime_dvd_left hdiv)
+      simp [padicValNat.eq_zero_of_not_dvd hnot])
+  · exact Nat.zero_le _
+
+/-- If the base and denominator are coprime, the base-supported prime-power
+factor is trivial. -/
+theorem basePrimeSupportFactor_eq_one_of_coprime {base n : ℕ}
+    (hcop : Nat.Coprime base n) :
+    basePrimeSupportFactor base n = 1 := by
+  unfold basePrimeSupportFactor
+  refine Finset.prod_eq_one ?_
+  intro p hp
+  have hp_prime : Nat.Prime p := Nat.prime_of_mem_primeFactors hp
+  haveI : Fact p.Prime := ⟨hp_prime⟩
+  have hdiv : p ∣ base := Nat.dvd_of_mem_primeFactors (n := base) hp
+  have hnot : ¬ p ∣ n := hp_prime.coprime_iff_not_dvd.mp (hcop.coprime_dvd_left hdiv)
+  simp [padicValNat.eq_zero_of_not_dvd hnot]
+
 private theorem basePrimeSupportFactorization_apply (base n p : ℕ) :
     basePrimeSupportFactorization base n p =
       if p ∈ base.primeFactors then padicValNat p n else 0 := by
@@ -212,7 +248,13 @@ example : preperiodPrimeSteps 5 10 125 = 3 := by native_decide
 
 example : preperiodSteps 10 996 = 2 := by native_decide
 
+example : preperiodSteps 10 249 = 0 := by
+  exact preperiodSteps_eq_zero_of_coprime (by decide : Nat.Coprime 10 249)
+
 example : basePrimeSupportFactor 10 996 = 4 := by native_decide
+
+example : basePrimeSupportFactor 10 249 = 1 := by
+  exact basePrimeSupportFactor_eq_one_of_coprime (by decide : Nat.Coprime 10 249)
 
 end Examples
 

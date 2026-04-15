@@ -28,6 +28,7 @@
     "theorem_names": [
       "digit_remainder_eq",
       "digit_periodic",
+      "digitAt_orbitRem_eq",
       "reptendPeriod_dvd_pred",
       "digit_as_overflow"
     ]

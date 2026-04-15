@@ -6,7 +6,6 @@ import {
   displayTerm,
   exampleAtlas,
   primeQRHighlights,
-  searchPreview,
 } from '../lib/atlas';
 
 interface CuratedExamplesPanelProps {
@@ -17,28 +16,28 @@ const CuratedExamplesPanel = ({ standardMode }: CuratedExamplesPanelProps) => {
   const leaderboardPreview = [
     {
       title: 'Readable bridges',
-      entries: bridgeHighlights.slice(0, 3).map(entry => ({
+      entries: bridgeHighlights.slice(0, 2).map(entry => ({
         label: `1/${entry.n}`,
         detail: `m = ${entry.m}, k = ${entry.k}, q = ${entry.q}, period = ${entry.period}`,
       })),
     },
     {
       title: 'Pure q = 1 bridges',
-      entries: bridgeQ1Highlights.slice(0, 3).map(entry => ({
+      entries: bridgeQ1Highlights.slice(0, 2).map(entry => ({
         label: `1/${entry.n}`,
         detail: `m = ${entry.m}, k = ${entry.k}, visible prefix ${entry.visible_prefix}`,
       })),
     },
     {
       title: 'Composite CRT profiles',
-      entries: compositeHighlights.slice(0, 3).map(entry => ({
+      entries: compositeHighlights.slice(0, 2).map(entry => ({
         label: `1/${entry.n}`,
         detail: `M = ${entry.stripped_modulus}, preperiod = ${entry.preperiod_digits}, ord = ${entry.global_order}`,
       })),
     },
     {
       title: 'Prime QR examples',
-      entries: primeQRHighlights.slice(0, 3).map(entry => ({
+      entries: primeQRHighlights.slice(0, 2).map(entry => ({
         label: `p = ${entry.p}`,
         detail: `stride = ${entry.preferred_stride}, k = ${entry.preferred_k}, count = ${entry.stride_count}`,
       })),
@@ -49,12 +48,12 @@ const CuratedExamplesPanel = ({ standardMode }: CuratedExamplesPanelProps) => {
     <section className="mb-8 sm:mb-10">
       <div className="mb-5">
         <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-stone-500 mb-2">
-          Curated Search Examples
+          Atlas Snapshot
         </h2>
         <p className="text-sm sm:text-base leading-relaxed text-stone-700 font-serif">
-          Track 3 turned the search layer into a curated atlas. The site now
-          points at those stable examples instead of improvising canonical cases
-          in prose.
+          This is now a compact snapshot of the published atlas rather than a
+          second command directory. For terminal entry points, use the guide
+          panel above.
         </p>
       </div>
 
@@ -62,14 +61,14 @@ const CuratedExamplesPanel = ({ standardMode }: CuratedExamplesPanelProps) => {
         <div className="rounded-sm border border-stone-200 bg-white p-4 sm:p-5 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
             <h3 className="text-base sm:text-lg font-serif font-semibold text-stone-900">
-              Canonical Atlas
+              Canonical Anchors
             </h3>
             <span className="text-xs text-stone-500">
               schema {exampleAtlas.schema_version}, base {exampleAtlas.metadata.base}, top {exampleAtlas.metadata.top}
             </span>
           </div>
           <div className="space-y-3">
-            {canonicalExamples.map(example => {
+            {canonicalExamples.slice(0, 4).map(example => {
               const term = displayTerm(example.primary_vocabulary_id, standardMode);
               return (
                 <article
@@ -100,22 +99,25 @@ const CuratedExamplesPanel = ({ standardMode }: CuratedExamplesPanelProps) => {
         <div className="space-y-4">
           <aside className="rounded-sm border border-stone-200 bg-white p-4 shadow-sm">
             <h3 className="text-sm font-bold uppercase tracking-wide text-stone-500 mb-3">
-              Search Commands
+              Published Atlas
             </h3>
-            <div className="space-y-3">
-              {searchPreview.slice(0, 4).map(entry => (
-                <article key={entry.label} className="rounded-lg border border-stone-200 bg-stone-50 p-3">
-                  <div className="text-sm font-semibold text-stone-900">{entry.label}</div>
-                  <p className="mt-2 text-sm leading-relaxed text-stone-700">{entry.summary}</p>
-                  <code className="mt-2 block text-xs text-stone-500">{entry.command}</code>
-                </article>
-              ))}
+            <div className="rounded-lg border border-stone-200 bg-stone-50 p-3">
+              <p className="text-sm leading-relaxed text-stone-700">
+                The site atlas is generated from the same published dataset that
+                drives the registry-backed examples and research rows.
+              </p>
+              <code className="mt-3 block text-xs text-stone-500">
+                search-reptends published-atlas --max 1200 --top 8 --output data/example_atlas.json
+              </code>
+              <code className="mt-2 block text-xs text-stone-500">
+                data/example_atlas.json
+              </code>
             </div>
           </aside>
 
           <aside className="rounded-sm border border-stone-200 bg-white p-4 shadow-sm">
             <h3 className="text-sm font-bold uppercase tracking-wide text-stone-500 mb-3">
-              Leaderboards
+              Leaderboard Preview
             </h3>
             <div className="space-y-3">
               {leaderboardPreview.map(group => (

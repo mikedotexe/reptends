@@ -56,5 +56,20 @@ def test_cli_help_uses_standard_names_and_mentions_legacy_aliases() -> None:
     assert "carry-selector-non-k1" in help_text
     assert "carry-selector-same-core" in help_text
     assert "carry-selector-research" in help_text
+    assert "orbit-carry-frontier" in help_text
     assert "published-atlas" in help_text
+    assert "theorem-witnesses" in help_text
     assert "legacy alias" in help_text
+
+
+def test_theorem_witness_cli_help_mentions_lean_example_filter() -> None:
+    result = subprocess.run(
+        [sys.executable, "-m", "bridge_reptends.search", "theorem-witnesses", "--help"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    help_text = result.stdout
+
+    assert "--lean-example" in help_text
+    assert "QRTour.Composite996" in help_text

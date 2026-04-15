@@ -5,7 +5,8 @@ Search and dataset generation for notable reptend examples.
 This module turns the repo's exploratory scripts into reusable outputs:
 - bridge-candidate ranking for readable q-weighted skeletons
 - distinct leaderboards for q=1 bridges, nontrivial bridges, composites, and prime QR examples
-- claim-linked theorem-witness exports for the current atlas-backed formal surface
+- claim-linked theorem-witness exports for the current atlas-backed formal surface,
+  including linked Lean worked-example metadata
 - explicit legacy counterexample search
 - composite CRT profile export
 - a curated example atlas suitable for docs and the site
@@ -31,17 +32,34 @@ from .composite import (
     crt_period_profile,
 )
 from .orbit_weave import factorize, find_good_modes, skeleton_vs_actual, strip_base_factors
-from .registry import STATUS_ORDER, claim_context_for_parameters, claim_lookup, load_theorem_witnesses
+from .registry import (
+    STATUS_ORDER,
+    claim_context_for_parameters,
+    claim_lookup,
+    load_counterexamples,
+    load_lean_worked_examples,
+    load_theorem_witnesses,
+    load_throughlines,
+)
 from .transducer import (
     canonical_carry_dfa_examples,
     canonical_carry_selector_case_studies,
     canonical_carry_selector_family_studies,
+    canonical_state_merging_case_studies,
+    canonical_state_merging_family_studies,
     carry_factorization_rows,
     carry_selector_profile_class,
     carry_selector_profile_rows,
     carry_selector_research_rows,
     non_k_one_state_relabeling_rows,
+    quotient_obstruction_census_from_rows,
+    same_core_obstruction_correlate_rows,
+    quotient_obstruction_family_rows,
+    quotient_obstruction_rows,
+    same_core_obstruction_phase_rows,
     same_core_selector_family_rows,
+    state_merging_rows,
+    state_merging_same_core_rows,
 )
 from .visibility import (
     canonical_visibility_case_studies,
@@ -53,7 +71,7 @@ from .visibility import (
 
 
 DEFAULT_MIN_SIGNAL_MODULUS = 19
-PUBLISHED_ATLAS_SCHEMA_VERSION = "2.9"
+PUBLISHED_ATLAS_SCHEMA_VERSION = "2.16"
 WITNESS_KIND_ORDER = ("theorem-witness", "empirical-witness", "open-target")
 
 
@@ -141,24 +159,56 @@ def build_claim_witness_rows(
     claim_id: str | None = None,
     status: str | None = None,
     kind: str | None = None,
+    lean_example_namespace: str | None = None,
 ) -> list[dict[str, object]]:
     """Return enriched theorem-witness rows for search/site-facing exports."""
     claims = claim_lookup()
+    worked_example_namespaces_by_witness_id: dict[str, list[str]] = {}
+    worked_examples_by_witness_id: dict[str, list[dict[str, object]]] = {}
+    for record in load_lean_worked_examples():
+        worked_example_row = {
+            "module_path": record.module_path,
+            "namespace": record.namespace,
+            "claim_ids": list(record.claim_ids),
+            "theorem_names": list(record.theorem_names),
+        }
+        for witness_id in record.witness_ids:
+            worked_example_namespaces_by_witness_id.setdefault(witness_id, []).append(record.namespace)
+            worked_examples_by_witness_id.setdefault(witness_id, []).append(worked_example_row)
+    known_worked_example_namespaces = {
+        namespace
+        for namespaces in worked_example_namespaces_by_witness_id.values()
+        for namespace in namespaces
+    }
     if claim_id is not None and claim_id not in claims:
         raise ValueError(f"unknown claim_id: {claim_id}")
     if status is not None and status not in STATUS_ORDER:
         raise ValueError(f"unknown claim status: {status}")
     if kind is not None and kind not in WITNESS_KIND_ORDER:
         raise ValueError(f"unknown witness kind: {kind}")
+    if (
+        lean_example_namespace is not None
+        and lean_example_namespace not in known_worked_example_namespaces
+    ):
+        raise ValueError(f"unknown lean example namespace: {lean_example_namespace}")
 
     rows: list[dict[str, object]] = []
     for witness in load_theorem_witnesses():
         claim = claims[witness.claim_id]
+        lean_example_namespaces = list(
+            dict.fromkeys(worked_example_namespaces_by_witness_id.get(witness.id, ()))
+        )
+        lean_examples = list(worked_examples_by_witness_id.get(witness.id, ()))
         if claim_id is not None and witness.claim_id != claim_id:
             continue
         if status is not None and claim.status != status:
             continue
         if kind is not None and witness.kind != kind:
+            continue
+        if (
+            lean_example_namespace is not None
+            and lean_example_namespace not in lean_example_namespaces
+        ):
             continue
         rows.append(
             {
@@ -171,6 +221,8 @@ def build_claim_witness_rows(
                 "tuple_display": witness.tuple_display,
                 "parameters": witness.parameters,
                 "summary": witness.summary,
+                "lean_example_namespaces": lean_example_namespaces,
+                "lean_examples": lean_examples,
                 "evidence": list(witness.evidence),
             }
         )
@@ -220,6 +272,479 @@ def _bridge_score(
         - 18 * max(m - 1, 0)
         - max(periodic_modulus - 100, 0) // 8
     )
+
+
+def _frontier_row_within_bound(
+    *,
+    max_n: int,
+    n: int | None = None,
+    members: list[int] | tuple[int, ...] | None = None,
+) -> bool:
+    """Return whether a frontier row stays inside the requested search bound."""
+    if n is not None and n > max_n:
+        return False
+    if members is not None and any(member > max_n for member in members):
+        return False
+    return True
+
+
+def build_orbit_carry_frontier_groups(
+    *,
+    max_n: int = 1200,
+    base: int = 10,
+    n_blocks: int = 8,
+) -> dict[str, list[dict[str, object]]]:
+    """
+    Group the flagship orbit/carry throughline examples for docs, search, and site use.
+
+    The groups intentionally mix exact support, implemented finite-window carry
+    evidence, and open/frontier targets without promoting the global
+    factorization claim beyond its current atlas status.
+    """
+    witness_rows = {row["witness_id"]: row for row in build_claim_witness_rows()}
+    carry_cases_by_n = {
+        case.n: case for case in canonical_carry_dfa_examples(base=base)
+    }
+    counterexamples_by_id = {
+        record.id: record for record in load_counterexamples()
+        if record.claim_id == "carry_dfa_factorization"
+    }
+    selector_families_by_label = {
+        case.label: case for case in canonical_carry_selector_family_studies(base=base)
+    }
+
+    orbit_layer_examples: list[dict[str, object]] = []
+    for n, label, claim_ids, witness_id, signal in (
+        (
+            19,
+            "Prime remainder orbit",
+            ("digit_periodicity",),
+            "digit_periodicity_prime19_base10",
+            "A compact prime witness where the Euclidean digit step and the closed remainder orbit are both easy to inspect.",
+        ),
+        (
+            97,
+            "Clean q-weighted coordinate",
+            ("series_q_weighted_identity",),
+            "series_q_weighted_identity_prime97_stride2",
+            "The raw block layer is literally powers of k in the canonical decimal q = 1 coordinate.",
+        ),
+        (
+            249,
+            "Positive-q composite coordinate",
+            ("series_q_weighted_identity", "positive_q_good_modes"),
+            "series_q_weighted_identity_n249_stride3",
+            "The raw coefficient stream stays exact outside the special q = 1 bridge case.",
+        ),
+        (
+            996,
+            "Preperiod to periodic core",
+            ("preperiod_from_base_factors",),
+            "preperiod_from_base_factors_n996_base10",
+            "Base-supported factors create only a finite preperiod before the orbit lands on the periodic core.",
+        ),
+    ):
+        if not _frontier_row_within_bound(max_n=max_n, n=n):
+            continue
+        witness = witness_rows[witness_id]
+        orbit_layer_examples.append(
+            {
+                "group": "orbit_layer_examples",
+                "label": label,
+                "n": n,
+                "members": [n],
+                "row_kind": "witness",
+                "claim_context": claim_context_for_parameters(claim_ids, base=base, n=n),
+                "witness_id": witness_id,
+                "summary": witness["summary"],
+                "signal": signal,
+            }
+        )
+
+    carry_layer_examples: list[dict[str, object]] = []
+    for n in (21, 97, 996):
+        if not _frontier_row_within_bound(max_n=max_n, n=n):
+            continue
+        case = carry_cases_by_n[n]
+        carry_layer_examples.append(
+            {
+                "group": "carry_layer_examples",
+                "label": case.label,
+                "n": case.n,
+                "members": [case.n],
+                "row_kind": "case-study",
+                "claim_context": claim_context_for_parameters(
+                    ("carry_window_transducer", "carry_dfa_factorization"),
+                    base=base,
+                    n=case.n,
+                ),
+                "distinctive_feature": case.distinctive_feature,
+                "implemented_boundary": case.factorization_status[0],
+                "open_boundary": case.factorization_status[1],
+                "summary_lines": list(case.comparison.summary_lines()),
+            }
+        )
+
+    frontier_targets: list[dict[str, object]] = []
+    for witness_id, label, signal in (
+        (
+            "small_k_visibility_threshold_target_97_249_996",
+            "Visibility threshold frontier",
+            "The exact incoming-carry layer is closed, but the sharp global visibility threshold is still open.",
+        ),
+        (
+            "carry_dfa_factorization_target_21_97_996",
+            "Canonical orbit-plus-carry trio",
+            "These canonical denominators separate trivial relabeling, quotient-only prime behavior, and quotient-only composite/preperiod behavior.",
+        ),
+        (
+            "carry_dfa_factorization_target_249_498_996_same_core",
+            "Same-core frontier family",
+            "The same-core family keeps the exact same-core visibility layer adjacent to the still-open state-level factorization question.",
+        ),
+    ):
+        witness = witness_rows[witness_id]
+        params = witness["parameters"]
+        members = (
+            list(params["N"])
+            if isinstance(params.get("N"), list)
+            else list(params["members"])
+            if isinstance(params.get("members"), list)
+            else list(params["family_N"])
+            if isinstance(params.get("family_N"), list)
+            else [int(params["actual"]), int(params["core"])]
+            if "actual" in params and "core" in params
+            else []
+        )
+        n = members[0] if members else None
+        if not _frontier_row_within_bound(max_n=max_n, n=n, members=members or None):
+            continue
+        frontier_targets.append(
+            {
+                "group": "frontier_targets",
+                "label": label,
+                "n": n,
+                "members": members,
+                "row_kind": "open-target",
+                "claim_context": claim_context_for_parameters(
+                    (str(witness["claim_id"]),),
+                    base=base,
+                    n=n,
+                    actual=int(params["actual"]) if "actual" in params else None,
+                    core=int(params["core"]) if "core" in params else None,
+                    requested_blocks=int(params["requestedBlocks"]) if "requestedBlocks" in params else None,
+                ),
+                "witness_id": witness_id,
+                "summary": witness["summary"],
+                "signal": signal,
+            }
+        )
+
+    obstruction_families: list[dict[str, object]] = []
+    for counterexample_id in (
+        "carry_state_relabeling_failure_97",
+        "carry_state_relabeling_failure_996",
+        "carry_selector_monotonicity_failure_21",
+        "carry_selector_core_invariance_failure_996",
+    ):
+        counterexample = counterexamples_by_id[counterexample_id]
+        params = counterexample.parameters
+        n = int(params["N"]) if "N" in params else int(params["actual"]) if "actual" in params else None
+        members = (
+            [int(params["core"]), int(params["actual"])]
+            if "core" in params and "actual" in params
+            else [n]
+            if n is not None
+            else None
+        )
+        if not _frontier_row_within_bound(max_n=max_n, n=n, members=members):
+            continue
+        obstruction_families.append(
+            {
+                "group": "obstruction_families",
+                "label": counterexample.legacy_claim,
+                "n": n,
+                "members": members,
+                "row_kind": "counterexample",
+                "counterexample_id": counterexample.id,
+                "observed": counterexample.observed,
+                "replacement": counterexample.replacement,
+            }
+        )
+
+    same_core_family = selector_families_by_label["Same-core relabeling loss"]
+    if _frontier_row_within_bound(max_n=max_n, members=same_core_family.members):
+        obstruction_families.append(
+            {
+                "group": "obstruction_families",
+                "label": same_core_family.label,
+                "n": None,
+                "members": list(same_core_family.members),
+                "row_kind": "family-study",
+                "summary": same_core_family.explanation,
+                "signal": "The selector profile is not determined by stripped periodic core alone.",
+            }
+        )
+
+    return {
+        "orbit_layer_examples": orbit_layer_examples,
+        "carry_layer_examples": carry_layer_examples,
+        "frontier_targets": frontier_targets,
+        "obstruction_families": obstruction_families,
+    }
+
+
+def orbit_carry_frontier_rows(
+    max_n: int,
+    *,
+    base: int = 10,
+    n_blocks: int = 8,
+) -> list[dict[str, object]]:
+    """Flatten the grouped orbit/carry frontier surface for CLI export."""
+    group_order = (
+        "orbit_layer_examples",
+        "carry_layer_examples",
+        "frontier_targets",
+        "obstruction_families",
+    )
+    grouped = build_orbit_carry_frontier_groups(
+        max_n=max_n,
+        base=base,
+        n_blocks=n_blocks,
+    )
+    rows: list[dict[str, object]] = []
+    for group in group_order:
+        rows.extend(grouped[group])
+    return rows
+
+
+def _canonical_state_merging_case_entry(case) -> dict[str, object]:
+    profile = case.profile
+    comparison = case.comparison
+    report = comparison.decision_report
+    forward = report.remainder_to_carry_map
+    reverse = report.carry_to_remainder_map
+    return {
+        "label": case.label,
+        "n": case.n,
+        "base": case.base,
+        "explanation": case.explanation,
+        "theorem_candidate": case.theorem_candidate,
+        "heuristic_note": case.heuristic_note,
+        "counterexample_target": case.counterexample_target,
+        "primary_vocabulary_id": case.primary_vocabulary_id,
+        "summary_lines": list(comparison.summary_lines()),
+        "selected_coordinate": {
+            "m": comparison.m,
+            "B": comparison.B,
+            "q": comparison.q,
+            "k": comparison.k,
+        },
+        "factorization_regime": comparison.decision_report.regime,
+        "obstruction_class": report.obstruction_class,
+        "obstruction_summary": report.obstruction_summary,
+        "observed_alignment_bijection": report.observed_alignment_bijection,
+        "carry_state_count": report.carry_state_count,
+        "remainder_state_count": report.remainder_state_count,
+        "carry_class_count": report.carry_class_count,
+        "remainder_class_count": report.remainder_class_count,
+        "graph_state_gap": report.graph_state_gap,
+        "minimized_class_gap": report.minimized_class_gap,
+        "profile_class": carry_selector_profile_class(profile),
+        "transition_signature": list(profile.transition_signature),
+        "forward_profile": forward.export(),
+        "reverse_profile": reverse.export(),
+        "compression_targets": [
+            {
+                "target_state": target,
+                "source_states": list(sources),
+                "preimage_size": len(sources),
+            }
+            for target, sources in report.compression_targets
+        ],
+        "forward_preimage_signature": forward.preimage_signature,
+        "reverse_preimage_signature": reverse.preimage_signature,
+        "forward_ambiguity_signature": forward.ambiguity_signature,
+        "reverse_ambiguity_signature": reverse.ambiguity_signature,
+        "alignment_rows": list(comparison.alignment_rows),
+        "claim_context": {
+            **claim_context_for_parameters(
+                ("carry_window_transducer", "carry_dfa_factorization"),
+                base=comparison.base,
+                n=comparison.n,
+            ),
+        },
+    }
+
+
+def _canonical_state_merging_family_entry(
+    family,
+    *,
+    base: int,
+) -> dict[str, object]:
+    def _compress_adjacent(labels: list[str]) -> list[str]:
+        compressed: list[str] = []
+        for label in labels:
+            if not compressed or compressed[-1] != label:
+                compressed.append(label)
+        return compressed
+
+    member_cases = [
+        _canonical_state_merging_case_entry(case)
+        for case in family.member_cases
+    ]
+    family_row = {
+        "core_n": strip_base_factors(family.members[0], base)[0],
+        "base": base,
+        "members": [case["n"] for case in member_cases],
+        "selected_members": [case["n"] for case in member_cases],
+        "selected_regimes": [case["factorization_regime"] for case in member_cases],
+        "selected_obstruction_classes": [case["obstruction_class"] for case in member_cases],
+        "forward_preimage_signatures": [
+            case["forward_preimage_signature"] for case in member_cases
+        ],
+        "reverse_ambiguity_signatures": [
+            case["reverse_ambiguity_signature"] for case in member_cases
+        ],
+    }
+    family_row["has_regime_disagreement"] = len(set(family_row["selected_regimes"])) > 1
+    family_row["has_obstruction_class_disagreement"] = (
+        len(set(family_row["selected_obstruction_classes"])) > 1
+    )
+    family_row["has_forward_preimage_disagreement"] = (
+        len(set(family_row["forward_preimage_signatures"])) > 1
+    )
+    family_row["has_reverse_ambiguity_disagreement"] = (
+        len(set(family_row["reverse_ambiguity_signatures"])) > 1
+    )
+    class_set = set(family_row["selected_obstruction_classes"])
+    family_row["has_hidden_graph_obstruction_member"] = "hidden_graph_obstruction" in class_set
+    family_row["has_visible_preimage_compression_member"] = "visible_preimage_compression" in class_set
+    family_row["crosses_relabeling_hidden_visible_classes"] = {
+        "state_relabeling",
+        "hidden_graph_obstruction",
+        "visible_preimage_compression",
+    }.issubset(class_set)
+    family_row["has_state_merging_disagreement"] = (
+        family_row["has_regime_disagreement"]
+        or family_row["has_obstruction_class_disagreement"]
+        or family_row["has_forward_preimage_disagreement"]
+        or family_row["has_reverse_ambiguity_disagreement"]
+    )
+    family_row["relabeling_members"] = [
+        member
+        for member, obstruction_class in zip(
+            family_row["members"],
+            family_row["selected_obstruction_classes"],
+        )
+        if obstruction_class == "state_relabeling"
+    ]
+    family_row["hidden_members"] = [
+        member
+        for member, obstruction_class in zip(
+            family_row["members"],
+            family_row["selected_obstruction_classes"],
+        )
+        if obstruction_class == "hidden_graph_obstruction"
+    ]
+    family_row["visible_members"] = [
+        member
+        for member, obstruction_class in zip(
+            family_row["members"],
+            family_row["selected_obstruction_classes"],
+        )
+        if obstruction_class == "visible_preimage_compression"
+    ]
+    family_row["compressed_class_path"] = _compress_adjacent(
+        list(family_row["selected_obstruction_classes"])
+    )
+    family_row["compressed_obstruction_path"] = _compress_adjacent(
+        [
+            obstruction_class
+            for obstruction_class in family_row["selected_obstruction_classes"]
+            if obstruction_class in {"hidden_graph_obstruction", "visible_preimage_compression"}
+        ]
+    )
+    family_row["first_relabeling_member"] = (
+        family_row["relabeling_members"][0] if family_row["relabeling_members"] else None
+    )
+    family_row["first_non_relabeling_member"] = next(
+        (
+            member
+            for member, obstruction_class in zip(
+                family_row["members"],
+                family_row["selected_obstruction_classes"],
+            )
+            if obstruction_class != "state_relabeling"
+        ),
+        None,
+    )
+    family_row["first_hidden_member"] = (
+        family_row["hidden_members"][0] if family_row["hidden_members"] else None
+    )
+    family_row["first_visible_member"] = (
+        family_row["visible_members"][0] if family_row["visible_members"] else None
+    )
+    family_row["has_visible_after_hidden"] = bool(
+        family_row["first_hidden_member"] is not None
+        and any(member > family_row["first_hidden_member"] for member in family_row["visible_members"])
+    )
+    family_row["has_rehidden_after_visible"] = bool(
+        family_row["first_visible_member"] is not None
+        and any(member > family_row["first_visible_member"] for member in family_row["hidden_members"])
+    )
+    family_row["hidden_visible_switch_count"] = max(
+        len(family_row["compressed_obstruction_path"]) - 1,
+        0,
+    )
+    family_row["has_nonmonotone_hidden_visible_switching"] = (
+        family_row["hidden_visible_switch_count"] >= 2
+    )
+    class_path_text = " -> ".join(family_row["compressed_class_path"]) or "none"
+    if family_row["has_nonmonotone_hidden_visible_switching"]:
+        family_row["phase_summary"] = (
+            f"same-core path {class_path_text} with "
+            f"{family_row['hidden_visible_switch_count']} hidden/visible switches"
+        )
+    elif family_row["has_rehidden_after_visible"]:
+        family_row["phase_summary"] = (
+            f"same-core path {class_path_text} re-hides after visible compression appears"
+        )
+    elif family_row["has_visible_after_hidden"]:
+        family_row["phase_summary"] = (
+            f"same-core path {class_path_text} becomes visible after an earlier hidden phase"
+        )
+    elif family_row["first_visible_member"] is not None:
+        family_row["phase_summary"] = (
+            f"same-core path {class_path_text} reaches visible compression without later re-hiding"
+        )
+    elif family_row["first_hidden_member"] is not None:
+        family_row["phase_summary"] = (
+            f"same-core path {class_path_text} stays hidden once the family leaves relabeling"
+        )
+    else:
+        family_row["phase_summary"] = f"same-core path {class_path_text}"
+    family_row.update(
+        claim_context_for_parameters(
+            ("carry_window_transducer", "carry_dfa_factorization"),
+            base=base,
+            actual=max(family.members),
+            core=int(family_row["core_n"]),
+            requested_blocks=8,
+        )
+    )
+    return {
+        "label": family.label,
+        "members": list(family.members),
+        "explanation": family.explanation,
+        "theorem_candidate": family.theorem_candidate,
+        "heuristic_note": family.heuristic_note,
+        "counterexample_target": family.counterexample_target,
+        "primary_vocabulary_id": family.primary_vocabulary_id,
+        "summary_lines": list(family.summary_lines),
+        "family_row": family_row,
+        "member_cases": member_cases,
+    }
 
 
 def _composite_signal_score(
@@ -736,9 +1261,47 @@ def build_example_atlas(
     carry_selector_cases = canonical_carry_selector_case_studies(base=base)
     carry_selector_families = canonical_carry_selector_family_studies(base=base)
     carry_selector_research = carry_selector_research_rows()
+    state_merging_cases = canonical_state_merging_case_studies(base=base)
+    state_merging_families = canonical_state_merging_family_studies(base=base)
+    state_merging_selected_rows = state_merging_rows(max_n, base=base, n_blocks=8, max_m=8)
+    quotient_obstruction_census = quotient_obstruction_census_from_rows(
+        state_merging_selected_rows,
+        base=base,
+        max_n=max_n,
+        n_blocks=8,
+    )
+    state_merging_case_entries = [
+        _canonical_state_merging_case_entry(case)
+        for case in state_merging_cases
+    ]
+    state_merging_family_entries = [
+        _canonical_state_merging_family_entry(
+            family,
+            base=base,
+        )
+        for family in state_merging_families
+    ]
+    state_merging_research_rows = [
+        *state_merging_case_entries,
+        *[
+            member
+            for family in state_merging_family_entries
+            for member in family["member_cases"]
+            if member["n"] not in {entry["n"] for entry in state_merging_case_entries}
+        ],
+    ]
+    state_merging_research_rows.sort(key=lambda row: int(row["n"]))
+    quotient_obstruction_family_research = quotient_obstruction_family_rows(
+        max_n,
+        base=base,
+        n_blocks=8,
+        max_m=8,
+    )
     visibility_cases = canonical_visibility_case_studies(base=base)
     visibility_families = canonical_visibility_family_studies(base=base)
     claim_witness_rows = build_claim_witness_rows()
+    frontier_groups = build_orbit_carry_frontier_groups(max_n=max_n, base=base, n_blocks=8)
+    throughlines = load_throughlines()
 
     canonical_examples = [
         CanonicalExample(
@@ -792,7 +1355,9 @@ def build_example_atlas(
                 "bridge_reptends/transducer.py",
                 "bridge_reptends/visibility.py",
                 "data/claim_registry.json",
+                "data/lean_worked_examples.json",
                 "data/theorem_witnesses.json",
+                "data/throughlines.json",
                 "data/vocabulary.json",
             ],
         },
@@ -819,6 +1384,44 @@ def build_example_atlas(
             "prime_qr": [asdict(candidate) for candidate in prime_qr],
         },
         "canonical_examples": [asdict(example) for example in canonical_examples],
+        "throughlines": {
+            "featured_ids": [record.id for record in throughlines],
+            "rows": [
+                {
+                    "id": record.id,
+                    "kind": record.kind,
+                    "title": record.title,
+                    "headline": record.headline,
+                    "status_note": record.status_note,
+                    "claim_ids": list(record.claim_ids),
+                    "open_claim_ids": list(record.open_claim_ids),
+                    "witness_ids": list(record.witness_ids),
+                    "counterexample_ids": list(record.counterexample_ids),
+                    "featured_searches": [
+                        {
+                            "id": entry.id,
+                            "label": entry.label,
+                            "summary": entry.summary,
+                            "command": entry.command,
+                            "atlas_section_id": entry.atlas_section_id,
+                        }
+                        for entry in record.featured_searches
+                    ],
+                    "ladder": [
+                        {
+                            "id": entry.id,
+                            "label": entry.label,
+                            "claim_ids": list(entry.claim_ids),
+                            "witness_ids": list(entry.witness_ids),
+                            "counterexample_ids": list(entry.counterexample_ids),
+                            "summary": entry.summary,
+                        }
+                        for entry in record.ladder
+                    ],
+                }
+                for record in throughlines
+            ],
+        },
         "claim_witnesses": {
             "featured_ids": [
                 "series_q_weighted_identity_prime97_stride2",
@@ -829,6 +1432,7 @@ def build_example_atlas(
             "rows": claim_witness_rows,
         },
         "case_studies": {
+            "orbit_carry_frontier": frontier_groups,
             "composite_examples": [asdict(case) for case in composite_case_studies],
             "composite_families": [asdict(case) for case in composite_family_studies],
             "carry_dfa": [
@@ -877,6 +1481,14 @@ def build_example_atlas(
             "carry_selector_families": [
                 asdict(case)
                 for case in carry_selector_families
+            ],
+            "state_merging": [
+                entry
+                for entry in state_merging_case_entries
+            ],
+            "state_merging_families": [
+                entry
+                for entry in state_merging_family_entries
             ],
             "visibility": [
                 {
@@ -939,6 +1551,45 @@ def build_example_atlas(
                 ),
                 "classification_bound": 120,
                 "bases": carry_selector_research,
+            },
+            "state_merging": {
+                "publication_status": "published_research_layer",
+                "decision": (
+                    "The preimage-fiber profile (state-merging atlas) now makes finite-window "
+                    "collapse/compression visible directly on the selected Track 17 coordinate, "
+                    "and the quotient-only cases now split into visible preimage compression "
+                    "versus hidden graph obstruction without promoting `carry_dfa_factorization` "
+                    "beyond its current open status."
+                ),
+                "base": base,
+                "classification_bound": max_n,
+                "quotient_candidate_only_count": quotient_obstruction_census["quotient_candidate_only_count"],
+                "visible_preimage_compression_count": quotient_obstruction_census["visible_preimage_compression_count"],
+                "hidden_graph_obstruction_count": quotient_obstruction_census["hidden_graph_obstruction_count"],
+                "representative_visible_ns": quotient_obstruction_census["representative_visible_ns"],
+                "representative_hidden_ns": quotient_obstruction_census["representative_hidden_ns"],
+                "summary_lines": quotient_obstruction_census["summary_lines"],
+                "rows": [
+                    row
+                    for row in state_merging_research_rows
+                    if int(row["n"]) in {17, 21, 34, 68, 85, 89, 97, 249, 498, 996}
+                ],
+            },
+            "state_merging_same_core": {
+                "publication_status": "published_research_layer",
+                "decision": (
+                    "Same-core state-merging families separate stripped-core orbit data from the "
+                    "actual finite-window compression profile, and now keep the relabeling / hidden "
+                    "/ visible obstruction split, including non-monotone re-hiding after visibility, "
+                    "explicit beneath the open "
+                    "`carry_dfa_factorization` boundary."
+                ),
+                "base": base,
+                "rows": [
+                    row
+                    for row in quotient_obstruction_family_research
+                    if int(row["core_n"]) in {17, 249}
+                ],
             }
         },
     }
@@ -948,7 +1599,11 @@ def build_example_atlas(
 def _write_csv(filename: str | Path, rows: list[dict[str, object]]) -> None:
     if not rows:
         return
-    fieldnames = list(rows[0].keys())
+    fieldnames: list[str] = []
+    for row in rows:
+        for field in row.keys():
+            if field not in fieldnames:
+                fieldnames.append(field)
     with Path(filename).open("w", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=fieldnames)
         writer.writeheader()
@@ -1080,6 +1735,69 @@ def main() -> None:
     factorization_research_parser.add_argument("--blocks", type=int, default=8)
     factorization_research_parser.add_argument("--output", type=str, default=None)
 
+    orbit_carry_frontier_parser = subparsers.add_parser(
+        "orbit-carry-frontier",
+        help="Export the flagship orbit-layer, carry-layer, frontier-target, and obstruction-family grouping for the repo's research thesis",
+    )
+    orbit_carry_frontier_parser.add_argument("--max", type=int, default=1200)
+    orbit_carry_frontier_parser.add_argument("--base", type=int, default=10)
+    orbit_carry_frontier_parser.add_argument("--blocks", type=int, default=8)
+    orbit_carry_frontier_parser.add_argument("--output", type=str, default=None)
+
+    state_merging_parser = subparsers.add_parser(
+        "state-merging",
+        help="Export selected-coordinate preimage-fiber profiles (public alias: state-merging atlas)",
+    )
+    state_merging_parser.add_argument("--max", type=int, default=500)
+    state_merging_parser.add_argument("--base", type=int, default=10)
+    state_merging_parser.add_argument("--blocks", type=int, default=8)
+    state_merging_parser.add_argument("--output", type=str, default=None)
+
+    state_merging_same_core_parser = subparsers.add_parser(
+        "state-merging-same-core",
+        help="Export same-core family disagreement rows for selected-coordinate preimage-fiber profiles",
+    )
+    state_merging_same_core_parser.add_argument("--max", type=int, default=500)
+    state_merging_same_core_parser.add_argument("--base", type=int, default=10)
+    state_merging_same_core_parser.add_argument("--blocks", type=int, default=8)
+    state_merging_same_core_parser.add_argument("--output", type=str, default=None)
+
+    quotient_obstructions_parser = subparsers.add_parser(
+        "quotient-obstructions",
+        help="Export visible preimage compression and hidden graph obstruction rows for quotient-only selected coordinates",
+    )
+    quotient_obstructions_parser.add_argument("--max", type=int, default=500)
+    quotient_obstructions_parser.add_argument("--base", type=int, default=10)
+    quotient_obstructions_parser.add_argument("--blocks", type=int, default=8)
+    quotient_obstructions_parser.add_argument("--output", type=str, default=None)
+
+    quotient_obstruction_families_parser = subparsers.add_parser(
+        "quotient-obstruction-families",
+        help="Export same-core family rows spanning relabeling, hidden, and visible quotient-only obstruction classes",
+    )
+    quotient_obstruction_families_parser.add_argument("--max", type=int, default=500)
+    quotient_obstruction_families_parser.add_argument("--base", type=int, default=10)
+    quotient_obstruction_families_parser.add_argument("--blocks", type=int, default=8)
+    quotient_obstruction_families_parser.add_argument("--output", type=str, default=None)
+
+    same_core_obstruction_phases_parser = subparsers.add_parser(
+        "same-core-obstruction-phases",
+        help="Export same-core family phase paths showing when selected-coordinate obstructions turn visible, stay hidden, or re-hide",
+    )
+    same_core_obstruction_phases_parser.add_argument("--max", type=int, default=1200)
+    same_core_obstruction_phases_parser.add_argument("--base", type=int, default=10)
+    same_core_obstruction_phases_parser.add_argument("--blocks", type=int, default=8)
+    same_core_obstruction_phases_parser.add_argument("--output", type=str, default=None)
+
+    same_core_obstruction_correlates_parser = subparsers.add_parser(
+        "same-core-obstruction-correlates",
+        help="Export empirical correlates separating same-core re-hiding families from one-way-visible families at the selected bound",
+    )
+    same_core_obstruction_correlates_parser.add_argument("--max", type=int, default=2000)
+    same_core_obstruction_correlates_parser.add_argument("--base", type=int, default=10)
+    same_core_obstruction_correlates_parser.add_argument("--blocks", type=int, default=8)
+    same_core_obstruction_correlates_parser.add_argument("--output", type=str, default=None)
+
     prime_qr_parser = subparsers.add_parser(
         "prime-qr-generators",
         aliases=["prime-qr"],
@@ -1112,6 +1830,12 @@ def main() -> None:
         choices=WITNESS_KIND_ORDER,
         default=None,
         help="Restrict by witness kind",
+    )
+    witness_parser.add_argument(
+        "--lean-example",
+        type=str,
+        default=None,
+        help="Restrict to a Lean worked-example namespace such as QRTour.Composite996",
     )
     witness_parser.add_argument("--output", type=str, default=None)
 
@@ -1218,6 +1942,7 @@ def main() -> None:
             claim_id=args.claim,
             status=args.status,
             kind=args.kind,
+            lean_example_namespace=args.lean_example,
         )
     elif args.command in {"visibility-profiles", "visibility"}:
         rows = visibility_profile_rows(
@@ -1266,6 +1991,54 @@ def main() -> None:
             args.max,
             bases=tuple(int(piece) for piece in args.bases.split(",") if piece.strip()),
             n_blocks=args.blocks,
+        )
+    elif args.command == "orbit-carry-frontier":
+        rows = orbit_carry_frontier_rows(
+            args.max,
+            base=args.base,
+            n_blocks=args.blocks,
+        )
+    elif args.command == "state-merging":
+        rows = state_merging_rows(
+            args.max,
+            base=args.base,
+            n_blocks=args.blocks,
+            max_m=8,
+        )
+    elif args.command == "state-merging-same-core":
+        rows = state_merging_same_core_rows(
+            args.max,
+            base=args.base,
+            n_blocks=args.blocks,
+            max_m=8,
+        )
+    elif args.command == "quotient-obstructions":
+        rows = quotient_obstruction_rows(
+            args.max,
+            base=args.base,
+            n_blocks=args.blocks,
+            max_m=8,
+        )
+    elif args.command == "quotient-obstruction-families":
+        rows = quotient_obstruction_family_rows(
+            args.max,
+            base=args.base,
+            n_blocks=args.blocks,
+            max_m=8,
+        )
+    elif args.command == "same-core-obstruction-phases":
+        rows = same_core_obstruction_phase_rows(
+            args.max,
+            base=args.base,
+            n_blocks=args.blocks,
+            max_m=8,
+        )
+    elif args.command == "same-core-obstruction-correlates":
+        rows = same_core_obstruction_correlate_rows(
+            args.max,
+            base=args.base,
+            n_blocks=args.blocks,
+            max_m=8,
         )
     else:
         rows = composite_profile_rows(args.max, base=args.base)

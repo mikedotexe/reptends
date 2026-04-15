@@ -1,12 +1,13 @@
-import { type ReactNode, useState } from 'react';
+import BridgeCarryExplorer97 from './BridgeCarryExplorer97';
+import CoreSurfaceGuidePanel from './CoreSurfaceGuidePanel';
+import { Suspense, lazy, type ReactNode, useState } from 'react';
 import { Block, M } from './shared';
-import CircleWalkPlayground from './CircleWalkPlayground';
-import CounterexampleRegistryPanel from './CounterexampleRegistryPanel';
-import CuratedExamplesPanel from './CuratedExamplesPanel';
-import GoodCoordinatesExplorer from './GoodCoordinatesExplorer';
-import OrbitCoreExplorer from './OrbitCoreExplorer';
+import LinkedViews97 from './LinkedViews97';
+import PrimeFamilySweep100 from './PrimeFamilySweep100';
 import ProofAtlasPanel from './ProofAtlasPanel';
-import StandardTerminologyPanel from './StandardTerminologyPanel';
+import RootsOfUnityProjection from './RootsOfUnityProjection';
+import StateMergingExplorer from './StateMergingExplorer';
+import ThroughlineThesisPanel from './ThroughlineThesisPanel';
 import {
   canonicalExamples,
   claimById,
@@ -28,6 +29,12 @@ const statusLabel: Record<string, string> = {
   empirical: 'Empirical',
   open: 'Open',
 };
+
+const CuratedExamplesPanel = lazy(() => import('./CuratedExamplesPanel'));
+const GoodCoordinatesExplorer = lazy(() => import('./GoodCoordinatesExplorer'));
+const LawfulOrbitExplorer = lazy(() => import('./LawfulOrbitExplorer'));
+const OrbitCoreExplorer = lazy(() => import('./OrbitCoreExplorer'));
+const StandardTerminologyPanel = lazy(() => import('./StandardTerminologyPanel'));
 
 interface ClaimCardProps {
   claimId: string;
@@ -89,6 +96,22 @@ const VocabularyCallout = ({ vocabularyId, standardMode }: VocabularyCalloutProp
   );
 };
 
+interface SurfaceFallbackProps {
+  title: string;
+}
+
+const SurfaceFallback = ({ title }: SurfaceFallbackProps) => (
+  <div className="rounded-sm border border-stone-200 bg-white p-4 shadow-sm sm:p-6">
+    <div className="text-xs font-bold uppercase tracking-[0.18em] text-stone-500">
+      Loading Surface
+    </div>
+    <div className="mt-2 text-sm font-semibold text-stone-900">{title}</div>
+    <p className="mt-2 text-sm leading-relaxed text-stone-700">
+      This section is code-split so the main document can load the core surfaces first.
+    </p>
+  </div>
+);
+
 const FiniteReptendDocument = () => {
   const [standardMode, setStandardMode] = useState(true);
   const exampleByN = new Map(canonicalExamples.map(example => [example.n, example]));
@@ -146,6 +169,40 @@ const FiniteReptendDocument = () => {
           </aside>
         </section>
 
+        <section className="mb-8 sm:mb-10">
+          <div className="mb-5">
+            <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-stone-500 mb-2">
+              Core Surfaces
+            </h2>
+            <p className="text-sm sm:text-base leading-relaxed text-stone-700 font-serif">
+              These are the sections carrying the most signal right now: the
+              repo thesis, the proof-status anchor, the state-compression
+              frontier, and the linked/geometric views that make the orbit-plus-carry
+              seam legible.
+            </p>
+          </div>
+
+          <ThroughlineThesisPanel />
+
+          <ProofAtlasPanel />
+
+          <StateMergingExplorer />
+
+          <LinkedViews97 />
+
+          <div className="mb-6">
+            <BridgeCarryExplorer97 />
+          </div>
+
+          <PrimeFamilySweep100 />
+
+          <div className="mb-6">
+            <RootsOfUnityProjection />
+          </div>
+        </section>
+
+        <CoreSurfaceGuidePanel />
+
         <section className="mb-8 rounded-sm border border-stone-200 bg-white p-4 shadow-sm sm:mb-10 sm:p-6">
           <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-stone-500 mb-3">
             Core Coordinate Story
@@ -178,14 +235,12 @@ const FiniteReptendDocument = () => {
           </div>
         </section>
 
-        <StandardTerminologyPanel
-          standardMode={standardMode}
-          onToggle={() => setStandardMode(value => !value)}
-        />
-
-        <ProofAtlasPanel />
-
-        <CounterexampleRegistryPanel />
+        <Suspense fallback={<SurfaceFallback title="Terminology Surface" />}>
+          <StandardTerminologyPanel
+            standardMode={standardMode}
+            onToggle={() => setStandardMode(value => !value)}
+          />
+        </Suspense>
 
         <section className="mb-8 sm:mb-10">
           <div className="mb-5">
@@ -243,53 +298,66 @@ const FiniteReptendDocument = () => {
           </div>
         </section>
 
-        <CuratedExamplesPanel standardMode={standardMode} />
+        <Suspense fallback={<SurfaceFallback title="Atlas Snapshot" />}>
+          <CuratedExamplesPanel standardMode={standardMode} />
+        </Suspense>
 
         <section className="mb-8 sm:mb-10">
           <div className="mb-5">
             <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-stone-500 mb-2">
-              Interactive Explorers
+              Supporting Explorers
             </h2>
             <p className="text-sm sm:text-base leading-relaxed text-stone-700 font-serif">
-              The interactives remain here as exploratory tools, not as theorem
-              sources. Read them through the atlas and vocabulary tables above.
+              These remain useful, but they now sit behind the core thesis-bearing
+              surfaces above. Read them as supporting views rather than the main
+              path through the site.
             </p>
           </div>
 
-          <div className="mb-6 rounded-sm border border-stone-200 bg-white p-4 shadow-sm sm:p-6">
+          <Suspense fallback={<SurfaceFallback title="Orbit Outcome Primer" />}>
+            <div className="mb-6">
+              <LawfulOrbitExplorer />
+            </div>
+          </Suspense>
+
+          <div className="rounded-sm border border-stone-200 bg-white p-4 shadow-sm sm:p-6">
             <h3 className="text-base sm:text-lg font-serif font-semibold text-stone-900 mb-3">
-              {displayTerm('remainder_orbit', standardMode).primary}
+              {displayTerm('good_mode', standardMode).primary}
             </h3>
             <p className="text-sm leading-relaxed text-stone-700 mb-4">
-              The long-division remainder sequence can be read as a walk under
-              multiplication by the base. This is the standard group-theoretic
-              object behind the older “circle walk” language.
+              This explorer shows where the coordinate choice <M>B = base^m</M>
+              makes the residue <M>k = B mod M</M> small enough to read.
             </p>
-            <CircleWalkPlayground />
+            <Suspense fallback={<SurfaceFallback title="Good Coordinate Explorer" />}>
+              <GoodCoordinatesExplorer />
+            </Suspense>
+          </div>
+        </section>
+
+        <section className="mb-8 sm:mb-10">
+          <div className="mb-5">
+            <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-stone-500 mb-2">
+              Lab Surface
+            </h2>
+            <p className="text-sm sm:text-base leading-relaxed text-stone-700 font-serif">
+              This sandbox stays in the repo because it is useful for experimentation,
+              but it is not a canonical or dataset-backed surface. Read it as an
+              open-ended lab tool rather than part of the main narrative.
+            </p>
           </div>
 
-          <div className="grid gap-6 xl:grid-cols-2">
-            <div className="rounded-sm border border-stone-200 bg-white p-4 shadow-sm sm:p-6">
-              <h3 className="text-base sm:text-lg font-serif font-semibold text-stone-900 mb-3">
-                {displayTerm('good_mode', standardMode).primary}
-              </h3>
-              <p className="text-sm leading-relaxed text-stone-700 mb-4">
-                This explorer shows where the coordinate choice <M>B = base^m</M>
-                makes the residue <M>k = B mod M</M> small enough to read.
-              </p>
-              <GoodCoordinatesExplorer />
-            </div>
-
-            <div className="rounded-sm border border-stone-200 bg-white p-4 shadow-sm sm:p-6">
-              <h3 className="text-base sm:text-lg font-serif font-semibold text-stone-900 mb-3">
-                Composite Core and Carry Overlay
-              </h3>
-              <p className="text-sm leading-relaxed text-stone-700 mb-4">
-                This view ties together stripped moduli, preperiod, orbit length,
-                and carry-normalized block output for composite denominators.
-              </p>
+          <div className="rounded-sm border border-stone-200 bg-white p-4 shadow-sm sm:p-6">
+            <h3 className="text-base sm:text-lg font-serif font-semibold text-stone-900 mb-3">
+              Composite Core And Carry Overlay Lab
+            </h3>
+            <p className="text-sm leading-relaxed text-stone-700 mb-4">
+              This sandbox ties together stripped moduli, preperiod, orbit length,
+              and carry-normalized block output for composite denominators. It is
+              intentionally exploratory rather than registry-driven.
+            </p>
+            <Suspense fallback={<SurfaceFallback title="Composite Core And Carry Overlay Lab" />}>
               <OrbitCoreExplorer />
-            </div>
+            </Suspense>
           </div>
         </section>
       </div>

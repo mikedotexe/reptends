@@ -253,6 +253,90 @@ theorem CarryTransducer.traceBlocks_map_isLeftmost_of_ne_nil
     T.traceReversed_map_isLeftmost_of_ne_nil coefficients.reverse hrev
   simpa [CarryTransducer.traceBlocks] using congrArg List.reverse hmap
 
+/-- In a nonempty least-significant-first traced run, the outgoing carries are
+the incoming carries shifted one step to the left and terminated by `0` at the
+final leftmost block. -/
+theorem CarryTransducer.traceReversedAux_map_carryOut_eq_tail_map_carryIn_append_zero
+    (T : CarryTransducer) (coefficients : List ℕ) (carryIn : ℕ)
+    (hcoeff : coefficients ≠ []) :
+    (T.traceReversedAux coefficients carryIn).map CarryTraceStep.carryOut =
+      ((T.traceReversedAux coefficients carryIn).tail.map CarryTraceStep.carryIn) ++ [0] := by
+  induction coefficients generalizing carryIn with
+  | nil =>
+      contradiction
+  | cons coefficient tail ih =>
+      cases tail with
+      | nil =>
+          simp [CarryTransducer.traceReversedAux, CarryTransducer.mkTraceStep,
+            CarryTransducer.step]
+      | cons next rest =>
+          cases rest with
+          | nil =>
+              simp [CarryTransducer.traceReversedAux, CarryTransducer.mkTraceStep,
+                CarryTransducer.step]
+          | cons next' rest' =>
+              have htail : next :: next' :: rest' ≠ [] := by simp
+              specialize ih ((coefficient + carryIn) / T.blockBase) htail
+              simpa [CarryTransducer.traceReversedAux, CarryTransducer.mkTraceStep,
+                CarryTransducer.step] using ih
+
+theorem CarryTransducer.traceReversed_map_carryOut_eq_tail_map_carryIn_append_zero
+    (T : CarryTransducer) (coefficients : List ℕ) (hcoeff : coefficients ≠ []) :
+    (T.traceReversed coefficients).map CarryTraceStep.carryOut =
+      ((T.traceReversed coefficients).tail.map CarryTraceStep.carryIn) ++ [0] := by
+  simpa [CarryTransducer.traceReversed] using
+    T.traceReversedAux_map_carryOut_eq_tail_map_carryIn_append_zero coefficients 0 hcoeff
+
+/-- In a nonempty least-significant-first traced run, the incoming carries
+start with the supplied initial carry and then record the previous step's
+outgoing carry. -/
+theorem CarryTransducer.traceReversedAux_map_carryIn_eq_cons_dropLast_map_carryOut
+    (T : CarryTransducer) (coefficients : List ℕ) (carryIn : ℕ)
+    (hcoeff : coefficients ≠ []) :
+    (T.traceReversedAux coefficients carryIn).map CarryTraceStep.carryIn =
+      carryIn :: ((T.traceReversedAux coefficients carryIn).map CarryTraceStep.carryOut).dropLast := by
+  induction coefficients generalizing carryIn with
+  | nil =>
+      contradiction
+  | cons coefficient tail ih =>
+      cases tail with
+      | nil =>
+          simp [CarryTransducer.traceReversedAux, CarryTransducer.mkTraceStep,
+            CarryTransducer.step]
+      | cons next rest =>
+          cases rest with
+          | nil =>
+              simp [CarryTransducer.traceReversedAux, CarryTransducer.mkTraceStep,
+                CarryTransducer.step]
+          | cons next' rest' =>
+              have htail : next :: next' :: rest' ≠ [] := by simp
+              specialize ih ((coefficient + carryIn) / T.blockBase) htail
+              simpa [CarryTransducer.traceReversedAux, CarryTransducer.mkTraceStep,
+                CarryTransducer.step] using ih
+
+theorem CarryTransducer.traceReversed_map_carryIn_eq_zero_cons_dropLast_map_carryOut
+    (T : CarryTransducer) (coefficients : List ℕ) (hcoeff : coefficients ≠ []) :
+    (T.traceReversed coefficients).map CarryTraceStep.carryIn =
+      0 :: ((T.traceReversed coefficients).map CarryTraceStep.carryOut).dropLast := by
+  simpa [CarryTransducer.traceReversed] using
+    T.traceReversedAux_map_carryIn_eq_cons_dropLast_map_carryOut coefficients 0 hcoeff
+
+/-- In a nonempty most-significant-first traced run, the incoming carries are
+the outgoing carries shifted one step to the left and terminated by `0` at the
+final rightmost block. -/
+theorem CarryTransducer.traceBlocks_map_carryIn_eq_tail_map_carryOut_append_zero
+    (T : CarryTransducer) (coefficients : List ℕ) (hcoeff : coefficients ≠ []) :
+    (T.traceBlocks coefficients).map CarryTraceStep.carryIn =
+      ((T.traceBlocks coefficients).tail.map CarryTraceStep.carryOut) ++ [0] := by
+  have hrev : coefficients.reverse ≠ [] := by
+    intro hnil
+    apply hcoeff
+    simpa using congrArg List.reverse hnil
+  have hmap :=
+    T.traceReversed_map_carryIn_eq_zero_cons_dropLast_map_carryOut coefficients.reverse hrev
+  simpa [CarryTransducer.traceBlocks, List.map_reverse, List.tail_reverse] using
+    congrArg List.reverse hmap
+
 theorem CarryTransducer.mem_traceReversedAux_value
     (T : CarryTransducer) {coefficients : List ℕ} {carryIn : ℕ} {step : CarryTraceStep}
     (hstep : step ∈ T.traceReversedAux coefficients carryIn) :
@@ -759,6 +843,16 @@ theorem BlockCoordinate.traceRawWord_map_blockValue
     (C.traceRawWord hgood length).map CarryTraceStep.blockValue = C.normalizedRawWord hgood length := by
   simpa [BlockCoordinate.traceRawWord, BlockCoordinate.normalizedRawWord] using
     (C.carryTransducer hgood).traceBlocks_map_blockValue (C.rawCoefficientWord length)
+
+theorem BlockCoordinate.traceRawWord_map_carryIn_eq_tail_map_carryOut_append_zero_of_pos
+    (C : BlockCoordinate) (hgood : C.goodMode) (length : ℕ) :
+    (C.traceRawWord hgood (length + 1)).map CarryTraceStep.carryIn =
+      ((C.traceRawWord hgood (length + 1)).tail.map CarryTraceStep.carryOut) ++ [0] := by
+  have hcoeff : C.rawCoefficientWord (length + 1) ≠ [] := by
+    simp [BlockCoordinate.rawCoefficientWord]
+  simpa [BlockCoordinate.traceRawWord] using
+    (C.carryTransducer hgood).traceBlocks_map_carryIn_eq_tail_map_carryOut_append_zero
+      (C.rawCoefficientWord (length + 1)) hcoeff
 
 theorem BlockCoordinate.mem_traceRawWord_value
     (C : BlockCoordinate) (hgood : C.goodMode) {length : ℕ} {step : CarryTraceStep}

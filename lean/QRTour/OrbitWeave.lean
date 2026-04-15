@@ -10,14 +10,19 @@ import Mathlib.Tactic
 /-!
 # Orbit-Weave Coordinate Arithmetic
 
-This module begins the Lean surface for the exact `B = qM + k` layer tracked in
-the proof atlas. Its current scope is deliberately finite:
+This module is the atlas-backed Lean carrier for the exact `B = qM + k` layer,
+including claim IDs `series_q_weighted_identity` and `positive_q_good_modes`.
 
 - package the Euclidean-division data behind a block coordinate,
-- expose the raw coefficient stream `q * k^j`,
-- keep the standard labels (`quotient q`, `remainder k`) at the API boundary.
+- expose the raw coefficient stream `q * k^j` together with finite partial sums,
+- prove the exact rational `1/M = q/(B-k)` identity and the corresponding real
+  `HasSum` q-weighted series theorem on good block coordinates, and
+- package the finite `R = W + F` decomposition via the body term `W` and
+  correction term `F`, with recurrence and finite-sum formulas.
 
-The heavier rational-series and carry-facing theorems belong in later passes.
+The standard labels `quotient q`, `remainder k`, body term `W`, and correction
+term `F` stay at the API boundary here so the visibility and carry layers can
+cite this module without reverting to stale bridge-only prose.
 -/
 
 namespace QRTour
@@ -315,6 +320,80 @@ theorem BlockCoordinate.bodyTerm_mul_modulus_eq
   unfold BlockCoordinate.bodyTerm
   rw [Nat.mul_comm]
   exact Nat.mul_div_cancel' (C.modulus_dvd_blockBase_pow_sub_remainderK_pow period)
+
+/-- The finite body term starts with the quotient `q` at length `1`. -/
+@[simp] theorem BlockCoordinate.bodyTerm_one (C : BlockCoordinate) :
+    C.bodyTerm 1 = C.quotientQ := by
+  apply Nat.eq_of_mul_eq_mul_right C.modulus_pos
+  rw [C.bodyTerm_mul_modulus_eq 1, pow_one, pow_one,
+    C.quotientQ_mul_modulus_eq_blockBase_sub_remainderK]
+
+/-- Extending the finite body term by one block shifts by `B` and appends the
+next raw coefficient. -/
+theorem BlockCoordinate.bodyTerm_recurrence
+    (C : BlockCoordinate) (length : ℕ) :
+    C.bodyTerm (length + 1) = C.blockBase * C.bodyTerm length + C.rawCoefficient length := by
+  have hk : C.remainderK ≤ C.blockBase := Nat.mod_le _ _
+  have hpow : C.remainderK ^ length ≤ C.blockBase ^ length := Nat.pow_le_pow_left hk length
+  have hmul : C.remainderK ^ length * C.remainderK ≤ C.blockBase ^ length * C.blockBase := by
+    exact Nat.mul_le_mul hpow hk
+  apply Nat.eq_of_mul_eq_mul_right C.modulus_pos
+  rw [Nat.add_mul, C.bodyTerm_mul_modulus_eq (length + 1), Nat.mul_assoc,
+    C.bodyTerm_mul_modulus_eq length]
+  unfold BlockCoordinate.rawCoefficient
+  rw [Nat.mul_right_comm, Nat.mul_assoc, ← Nat.mul_assoc,
+    C.quotientQ_mul_modulus_eq_blockBase_sub_remainderK]
+  rw [pow_succ, pow_succ]
+  rw [Nat.sub_eq_iff_eq_add hmul]
+  symm
+  calc
+    C.blockBase * (C.blockBase ^ length - C.remainderK ^ length) +
+        (C.blockBase - C.remainderK) * C.remainderK ^ length +
+        C.remainderK ^ length * C.remainderK
+        = C.blockBase * (C.blockBase ^ length - C.remainderK ^ length) +
+            ((C.blockBase - C.remainderK) * C.remainderK ^ length +
+              C.remainderK * C.remainderK ^ length) := by
+            rw [Nat.mul_comm (C.remainderK ^ length) C.remainderK]
+            ac_rfl
+    _ = C.blockBase * (C.blockBase ^ length - C.remainderK ^ length) +
+          ((C.blockBase - C.remainderK) + C.remainderK) * C.remainderK ^ length := by
+            rw [← Nat.add_mul]
+    _ = C.blockBase * (C.blockBase ^ length - C.remainderK ^ length) +
+          C.blockBase * C.remainderK ^ length := by
+            rw [Nat.sub_add_cancel hk]
+    _ = C.blockBase * ((C.blockBase ^ length - C.remainderK ^ length) +
+          C.remainderK ^ length) := by
+            rw [← Nat.mul_add]
+    _ = C.blockBase * C.blockBase ^ length := by
+            rw [Nat.sub_add_cancel hpow]
+    _ = C.blockBase ^ length * C.blockBase := by rw [Nat.mul_comm]
+
+/-- The finite body term is the polynomial with coefficients `q * k^j`. -/
+theorem BlockCoordinate.bodyTerm_eq_sum_rawCoefficients
+    (C : BlockCoordinate) (length : ℕ) :
+    C.bodyTerm length =
+      ∑ j ∈ range length, C.rawCoefficient j * C.blockBase ^ (length - 1 - j) := by
+  induction length with
+  | zero =>
+      simp [BlockCoordinate.bodyTerm]
+  | succ length ih =>
+      rw [C.bodyTerm_recurrence, Finset.sum_range_succ, ih]
+      have hshift :
+          C.blockBase *
+              ∑ j ∈ range length,
+                C.rawCoefficient j * C.blockBase ^ (length - 1 - j)
+            = ∑ j ∈ range length,
+                C.rawCoefficient j * C.blockBase ^ (length - j) := by
+        rw [Finset.mul_sum]
+        refine Finset.sum_congr rfl ?_
+        intro j hj
+        have hjlt : j < length := Finset.mem_range.mp hj
+        have hexp : length - j = (length - 1 - j) + 1 := by
+          omega
+        rw [hexp, pow_succ]
+        ac_rfl
+      rw [hshift]
+      simp
 
 /-- The correction term clears the modulus exactly when `k^L - 1` is divisible by `M`. -/
 theorem BlockCoordinate.correctionTerm_mul_modulus_eq

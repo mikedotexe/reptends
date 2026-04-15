@@ -1,0 +1,196 @@
+[
+  {
+    "id": "orbit_plus_carry_factorization",
+    "kind": "research-thesis",
+    "title": "Long Division as Orbit + Carry",
+    "headline": "Long division is best understood as a remainder-orbit system plus carry-propagated block normalization.",
+    "status_note": "Exact finite-window interfaces are implemented; the global canonical factorization remains `open` under `carry_dfa_factorization`.",
+    "claim_ids": [
+      "digit_periodicity",
+      "preperiod_from_base_factors",
+      "series_q_weighted_identity",
+      "positive_q_good_modes",
+      "carry_window_transducer",
+      "incoming_carry_position_formula",
+      "same_core_threshold_shift_interval",
+      "small_k_visibility_threshold",
+      "carry_dfa_factorization"
+    ],
+    "open_claim_ids": [
+      "small_k_visibility_threshold",
+      "carry_dfa_factorization"
+    ],
+    "witness_ids": [
+      "digit_periodicity_prime19_base10",
+      "series_q_weighted_identity_prime97_stride2",
+      "series_q_weighted_identity_n249_stride3",
+      "carry_window_transducer_prime97_window6",
+      "preperiod_from_base_factors_n996_base10",
+      "carry_dfa_factorization_target_21_97_996",
+      "same_core_threshold_shift_interval_996_over_249",
+      "carry_dfa_factorization_target_249_498_996_same_core"
+    ],
+    "counterexample_ids": [
+      "carry_state_relabeling_failure_97",
+      "carry_state_relabeling_failure_996",
+      "carry_selector_monotonicity_failure_21",
+      "carry_selector_core_invariance_failure_996"
+    ],
+    "featured_searches": [
+      {
+        "id": "orbit_carry_frontier",
+        "label": "Orbit/carry frontier",
+        "summary": "Groups the exact orbit layer, implemented carry layer, open factorization targets, and obstruction families under one exported surface.",
+        "command": "search-reptends orbit-carry-frontier --max 1200 --base 10 --blocks 8",
+        "atlas_section_id": "orbit_carry_frontier"
+      },
+      {
+        "id": "carry_factorization",
+        "label": "Carry factorization cases",
+        "summary": "Keeps the canonical 21 / 97 / 996 carry-DFA comparisons visible as bounded evidence beneath the open factorization claim.",
+        "command": "search-reptends carry-factorization --max 500 --blocks 8",
+        "atlas_section_id": "carry_dfa"
+      },
+      {
+        "id": "state_merging",
+        "label": "Preimage-fiber profile",
+        "summary": "Makes the finite-window collapse/compression pattern explicit on the selected Track 17 coordinate for canonical cases like 21, 97, and 996.",
+        "command": "search-reptends state-merging --max 500 --base 10 --blocks 8",
+        "atlas_section_id": "state_merging"
+      },
+      {
+        "id": "quotient_obstructions",
+        "label": "Visible vs hidden quotient obstruction",
+        "summary": "Splits selected-coordinate quotient-only cases into visible preimage compression versus hidden graph obstruction on the base-10 Track 17 surface.",
+        "command": "search-reptends quotient-obstructions --max 500 --base 10 --blocks 8",
+        "atlas_section_id": "state_merging_research"
+      },
+      {
+        "id": "state_merging_same_core",
+        "label": "Same-core state-merging families",
+        "summary": "Tracks same-core disagreement families such as 249 / 498 / 996 and 17 / 34 / 68 / 85 through their selected preimage-fiber profiles.",
+        "command": "search-reptends state-merging-same-core --max 1200 --base 10 --blocks 8",
+        "atlas_section_id": "state_merging_same_core"
+      },
+      {
+        "id": "quotient_obstruction_families",
+        "label": "Visible/hidden obstruction families",
+        "summary": "Groups same-core families by whether they span relabeling, hidden graph obstruction, and visible preimage compression on the selected coordinate.",
+        "command": "search-reptends quotient-obstruction-families --max 1200 --base 10 --blocks 8",
+        "atlas_section_id": "state_merging_same_core"
+      },
+      {
+        "id": "same_core_obstruction_correlates",
+        "label": "Same-core obstruction correlates",
+        "summary": "Summarizes empirical correlates separating re-hiding same-core families from one-way visible families at the selected bound.",
+        "command": "search-reptends same-core-obstruction-correlates --max 2000 --base 10 --blocks 8",
+        "atlas_section_id": "state_merging_same_core"
+      },
+      {
+        "id": "carry_selector_same_core",
+        "label": "Same-core selector families",
+        "summary": "Tracks same-core selector-profile disagreement families such as 249 / 498 / 996.",
+        "command": "search-reptends carry-selector-same-core --max 400 --blocks 8",
+        "atlas_section_id": "carry_selector_families"
+      },
+      {
+        "id": "same_core_visibility",
+        "label": "Same-core visibility",
+        "summary": "Compares actual denominators to stripped periodic cores so the exact same-core shift layer stays connected to the frontier.",
+        "command": "search-reptends same-core-visibility --max 500 --base 10 --blocks 8",
+        "atlas_section_id": "visibility_families"
+      }
+    ],
+    "ladder": [
+      {
+        "id": "exact_orbit_support",
+        "label": "Exact orbit support",
+        "claim_ids": [
+          "digit_periodicity",
+          "preperiod_from_base_factors"
+        ],
+        "witness_ids": [
+          "digit_periodicity_prime19_base10",
+          "preperiod_from_base_factors_n996_base10"
+        ],
+        "counterexample_ids": [],
+        "summary": "Remainder periodicity and stripping of base-supported factors fix the exact orbit surface before any carry-normalization claim enters."
+      },
+      {
+        "id": "exact_block_coordinate_support",
+        "label": "Exact block-coordinate support",
+        "claim_ids": [
+          "series_q_weighted_identity",
+          "positive_q_good_modes"
+        ],
+        "witness_ids": [
+          "series_q_weighted_identity_prime97_stride2",
+          "series_q_weighted_identity_n249_stride3",
+          "positive_q_good_modes_n249_stride3"
+        ],
+        "counterexample_ids": [
+          "legacy_unweighted_series_37",
+          "legacy_zero_quotient_mode"
+        ],
+        "summary": "The raw coefficient stream is exactly `qk^j`, and the repo only promotes positive-q coordinates once `B > M`."
+      },
+      {
+        "id": "implemented_finite_window_carry_support",
+        "label": "Implemented finite-window carry support",
+        "claim_ids": [
+          "incoming_carry_position_formula",
+          "same_core_threshold_shift_interval",
+          "carry_window_transducer"
+        ],
+        "witness_ids": [
+          "incoming_carry_position_formula_prime97_stride2",
+          "incoming_carry_position_formula_n249_stride3",
+          "same_core_threshold_shift_interval_996_over_249",
+          "carry_window_transducer_prime97_window6",
+          "carry_window_transducer_n249_window3",
+          "carry_window_transducer_same_core_996_window4"
+        ],
+        "counterexample_ids": [
+          "legacy_visibility_local_overflow_97",
+          "legacy_visibility_local_overflow_249"
+        ],
+        "summary": "Finite-window carry-normalized output, exact incoming-carry boundaries, and same-core shift transport are already exact on named windows."
+      },
+      {
+        "id": "obstruction_counterexample_surface",
+        "label": "Obstruction / counterexample surface",
+        "claim_ids": [
+          "carry_dfa_factorization"
+        ],
+        "witness_ids": [
+          "carry_dfa_factorization_target_21_97_996",
+          "carry_dfa_factorization_target_249_498_996_same_core"
+        ],
+        "counterexample_ids": [
+          "carry_state_relabeling_failure_97",
+          "carry_state_relabeling_failure_996",
+          "carry_selector_monotonicity_failure_21",
+          "carry_selector_core_invariance_failure_996"
+        ],
+        "summary": "Observed state-map failures now split into visible preimage compression, hidden graph obstruction, and selector-profile disagreement, showing why finite output agreement does not by itself promote to a state-level theorem."
+      },
+      {
+        "id": "open_factorization_targets",
+        "label": "Open factorization targets",
+        "claim_ids": [
+          "small_k_visibility_threshold",
+          "carry_dfa_factorization"
+        ],
+        "witness_ids": [
+          "small_k_visibility_threshold_target_97_249_996",
+          "carry_dfa_factorization_target_21_97_996",
+          "carry_dfa_factorization_target_249_498_996_same_core"
+        ],
+        "counterexample_ids": [
+          "carry_selector_core_invariance_failure_996"
+        ],
+        "summary": "The remaining frontier is an exact visibility threshold and a canonical orbit-plus-carry factorization, both kept explicitly open."
+      }
+    ]
+  }
+]

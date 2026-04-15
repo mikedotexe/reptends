@@ -88,6 +88,31 @@ theorem remainder_eq_pow (B : ℕ) (n : ℕ) : remainder B n = (B : ZMod p) ^ n 
   | zero => simp [remainder]
   | succ n ih => simp [remainder, ih, pow_succ, mul_comm]
 
+/-- Shifting the remainder sequence by `t` multiplies by the base power `B^t`. -/
+theorem remainder_add_eq_pow_mul (B : ℕ) (n t : ℕ) :
+    remainder B (n + t) = (B : ZMod p) ^ t * remainder B n := by
+  calc
+    remainder B (n + t) = (B : ZMod p) ^ (n + t) := remainder_eq_pow B (n + t)
+    _ = (B : ZMod p) ^ n * (B : ZMod p) ^ t := by rw [pow_add]
+    _ = (B : ZMod p) ^ t * remainder B n := by rw [remainder_eq_pow, mul_comm]
+
+/-- If `B^t` equals `c` modulo `p`, the shifted remainder advances by that multiplier. -/
+theorem remainder_add_eq_mul_of_pow_eq (B : ℕ) (n t : ℕ) {c : ZMod p}
+    (hc : (B : ZMod p) ^ t = c) :
+    remainder B (n + t) = c * remainder B n := by
+  rw [remainder_add_eq_pow_mul (p := p) B n t, hc]
+
+/-- Sampling the remainder sequence at multiples of `t` produces powers of `B^t`. -/
+theorem remainder_add_mul_eq_pow_mul (B : ℕ) (n j t : ℕ) :
+    remainder B (n + j * t) = ((B : ZMod p) ^ t) ^ j * remainder B n := by
+  rw [remainder_add_eq_pow_mul (p := p) B n (j * t), Nat.mul_comm j t, pow_mul]
+
+/-- If `B^t = c`, then sampling at multiples of `t` produces powers of `c`. -/
+theorem remainder_add_mul_eq_pow_mul_of_pow_eq (B : ℕ) (n j t : ℕ) {c : ZMod p}
+    (hc : (B : ZMod p) ^ t = c) :
+    remainder B (n + j * t) = c ^ j * remainder B n := by
+  rw [remainder_add_mul_eq_pow_mul (p := p) B n j t, hc]
+
 /-! ### Stride Orbit
 
 Sampling the remainder sequence at stride m gives powers of k.

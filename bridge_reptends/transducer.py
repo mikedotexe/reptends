@@ -30,6 +30,35 @@ def _fiber_map(pairs: tuple[tuple[int, int], ...]) -> tuple[tuple[int, tuple[int
     return tuple((source, tuple(sorted(targets))) for source, targets in sorted(mapping.items()))
 
 
+def _preimage_fiber_map(
+    fibers: tuple[tuple[int, tuple[int, ...]], ...],
+) -> tuple[tuple[int, tuple[int, ...]], ...]:
+    mapping: dict[int, set[int]] = {}
+    for source, targets in fibers:
+        for target in targets:
+            mapping.setdefault(target, set()).add(source)
+    return tuple((target, tuple(sorted(sources))) for target, sources in sorted(mapping.items()))
+
+
+def _state_map_signature(
+    entries: tuple[tuple[int, tuple[int, ...]], ...],
+    *,
+    arrow: str,
+    empty: str,
+) -> str:
+    if not entries:
+        return empty
+    parts = [
+        f"{state}{arrow}{','.join(str(value) for value in values)}"
+        for state, values in entries
+    ]
+    return " | ".join(parts)
+
+
+def _format_signed_gap(value: int) -> str:
+    return f"{value:+d}"
+
+
 @dataclass(frozen=True)
 class CarryTransition:
     """One transducer transition for a single block."""
@@ -392,7 +421,7 @@ class ObservedStateMap:
 
     @property
     def image_state_count(self) -> int:
-        return len({target for _, targets in self.fibers for target in targets})
+        return len(self.preimage_fibers)
 
     @property
     def max_fiber_size(self) -> int:
@@ -401,17 +430,92 @@ class ObservedStateMap:
         return max(len(targets) for _, targets in self.fibers)
 
     @property
+    def preimage_fibers(self) -> tuple[tuple[int, tuple[int, ...]], ...]:
+        return _preimage_fiber_map(self.fibers)
+
+    @property
+    def max_preimage_size(self) -> int:
+        if not self.preimage_fibers:
+            return 0
+        return max(len(sources) for _, sources in self.preimage_fibers)
+
+    @property
+    def ambiguous_sources(self) -> tuple[tuple[int, tuple[int, ...]], ...]:
+        return tuple((source, targets) for source, targets in self.fibers if len(targets) > 1)
+
+    @property
+    def compression_targets(self) -> tuple[tuple[int, tuple[int, ...]], ...]:
+        return tuple((target, sources) for target, sources in self.preimage_fibers if len(sources) > 1)
+
+    @property
     def is_functional(self) -> bool:
         return all(len(targets) <= 1 for _, targets in self.fibers)
 
     @property
     def is_injective(self) -> bool:
-        return self.is_functional and self.image_state_count == self.source_state_count
+        return self.is_functional and self.max_preimage_size <= 1
+
+    @property
+    def fiber_signature(self) -> str:
+        return _state_map_signature(self.fibers, arrow="->", empty="empty")
+
+    @property
+    def preimage_signature(self) -> str:
+        return _state_map_signature(self.preimage_fibers, arrow="<-", empty="empty")
+
+    @property
+    def ambiguity_signature(self) -> str:
+        return _state_map_signature(self.ambiguous_sources, arrow="->", empty="functional")
+
+    def export(self) -> dict[str, object]:
+        return {
+            "source_kind": self.source_kind,
+            "target_kind": self.target_kind,
+            "source_state_count": self.source_state_count,
+            "image_state_count": self.image_state_count,
+            "is_functional": self.is_functional,
+            "is_injective": self.is_injective,
+            "max_fiber_size": self.max_fiber_size,
+            "max_preimage_size": self.max_preimage_size,
+            "fiber_signature": self.fiber_signature,
+            "preimage_signature": self.preimage_signature,
+            "ambiguity_signature": self.ambiguity_signature,
+            "fibers": [
+                {
+                    "source_state": source,
+                    "target_states": list(targets),
+                }
+                for source, targets in self.fibers
+            ],
+            "preimage_fibers": [
+                {
+                    "target_state": target,
+                    "source_states": list(sources),
+                }
+                for target, sources in self.preimage_fibers
+            ],
+            "compression_targets": [
+                {
+                    "target_state": target,
+                    "source_states": list(sources),
+                    "preimage_size": len(sources),
+                }
+                for target, sources in self.compression_targets
+            ],
+            "ambiguous_sources": [
+                {
+                    "source_state": source,
+                    "target_states": list(targets),
+                }
+                for source, targets in self.ambiguous_sources
+            ],
+        }
 
     def summary_line(self) -> str:
         return (
             f"{self.source_kind} -> {self.target_kind}: finite-window functional criterion={self.is_functional}, "
-            f"injective={self.is_injective}, max fiber size={self.max_fiber_size}"
+            f"injective={self.is_injective}, max fiber size={self.max_fiber_size}, "
+            f"max preimage size={self.max_preimage_size}"
         )
 
 
@@ -420,10 +524,36 @@ class FactorizationDecisionReport:
     """Decision-complete local framework for the open carry/DFA claim."""
 
     outputs_match: bool
-    graph_state_count_match: bool
-    minimized_class_count_match: bool
+    carry_state_count: int
+    remainder_state_count: int
+    carry_class_count: int
+    remainder_class_count: int
     remainder_to_carry_map: ObservedStateMap
     carry_to_remainder_map: ObservedStateMap
+
+    @property
+    def graph_state_count_match(self) -> bool:
+        return self.carry_state_count == self.remainder_state_count
+
+    @property
+    def minimized_class_count_match(self) -> bool:
+        return self.carry_class_count == self.remainder_class_count
+
+    @property
+    def graph_state_gap(self) -> int:
+        return self.carry_state_count - self.remainder_state_count
+
+    @property
+    def minimized_class_gap(self) -> int:
+        return self.carry_class_count - self.remainder_class_count
+
+    @property
+    def observed_alignment_bijection(self) -> bool:
+        return self.remainder_to_carry_map.is_injective and self.carry_to_remainder_map.is_injective
+
+    @property
+    def compression_targets(self) -> tuple[tuple[int, tuple[int, ...]], ...]:
+        return self.remainder_to_carry_map.compression_targets
 
     @property
     def state_relabeling_candidate(self) -> bool:
@@ -456,6 +586,44 @@ class FactorizationDecisionReport:
         return "finite_word_only"
 
     @property
+    def obstruction_class(self) -> str:
+        if self.regime == "state_relabeling":
+            return "state_relabeling"
+        if self.regime == "finite_word_only":
+            return "finite_word_only"
+        if self.remainder_to_carry_map.max_preimage_size > 1:
+            return "visible_preimage_compression"
+        if self.observed_alignment_bijection:
+            return "hidden_graph_obstruction"
+        return "visible_preimage_compression"
+
+    @property
+    def obstruction_summary(self) -> str:
+        if self.obstruction_class == "state_relabeling":
+            return (
+                "The aligned window stays bijective in both directions, so the selected coordinate "
+                "still looks like a genuine finite-window relabeling."
+            )
+        if self.obstruction_class == "finite_word_only":
+            return (
+                "The selected window already fails the forward remainder-to-carry functional criterion, "
+                "so the obstruction appears before any quotient candidate."
+            )
+        if self.obstruction_class == "visible_preimage_compression":
+            targets = ", ".join(str(target) for target, _ in self.compression_targets)
+            return (
+                "The selected window visibly compresses multiple remainder states onto carry state"
+                f"{'' if len(self.compression_targets) == 1 else 's'} {targets}, so relabeling already "
+                "fails at the preimage-fiber level."
+            )
+        return (
+            "The aligned window is bijective, but the observed carry/remainder graph gaps "
+            f"({_format_signed_gap(self.graph_state_gap)} states, "
+            f"{_format_signed_gap(self.minimized_class_gap)} minimized classes) keep the obstruction "
+            "in graph structure rather than visible compression."
+        )
+
+    @property
     def theorem_target(self) -> str:
         return (
             "Promote finite-window agreement to a canonical state-level factorization, ideally by a "
@@ -481,11 +649,15 @@ class FactorizationDecisionReport:
     def summary_lines(self) -> tuple[str, ...]:
         return (
             f"finite-window word agreement = {self.outputs_match}",
+            f"carry/remainder state counts = {self.carry_state_count}/{self.remainder_state_count}",
             f"state-count match = {self.graph_state_count_match}",
+            f"carry/remainder class counts = {self.carry_class_count}/{self.remainder_class_count}",
             f"minimized-class-count match = {self.minimized_class_count_match}",
             self.remainder_to_carry_map.summary_line(),
             self.carry_to_remainder_map.summary_line(),
+            f"observed alignment bijection = {self.observed_alignment_bijection}",
             f"factorization regime = {self.regime}",
+            f"obstruction class = {self.obstruction_class}",
             f"state-relabeling candidate holds = {self.state_relabeling_candidate}",
             f"remainder-to-carry quotient candidate holds = {self.remainder_to_carry_quotient_candidate}",
             f"carry-to-remainder lift candidate holds = {self.carry_to_remainder_lift_candidate}",
@@ -660,6 +832,37 @@ class CarrySelectorFamilyStudy:
     heuristic_note: str
     counterexample_target: str
     primary_vocabulary_id: str
+    summary_lines: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class StateMergingCaseStudy:
+    """Named preimage-fiber profile case study on the selected Track 17 coordinate."""
+
+    label: str
+    n: int
+    base: int
+    explanation: str
+    theorem_candidate: str
+    heuristic_note: str
+    counterexample_target: str
+    primary_vocabulary_id: str
+    profile: CarryFactorizationSelectorProfile
+    comparison: CarryRemainderComparison
+
+
+@dataclass(frozen=True)
+class StateMergingFamilyStudy:
+    """Named preimage-fiber profile family study for the selected coordinates."""
+
+    label: str
+    members: tuple[int, ...]
+    explanation: str
+    theorem_candidate: str
+    heuristic_note: str
+    counterexample_target: str
+    primary_vocabulary_id: str
+    member_cases: tuple[StateMergingCaseStudy, ...]
     summary_lines: tuple[str, ...] = ()
 
 
@@ -1088,12 +1291,25 @@ class CarryRemainderComparison:
     def decision_report(self) -> FactorizationDecisionReport:
         return FactorizationDecisionReport(
             outputs_match=self.outputs_match,
-            graph_state_count_match=len(self.carry_graph.states) == len(self.remainder_graph.states),
-            minimized_class_count_match=(
-                self.minimized_carry_graph.class_count == self.minimized_remainder_graph.class_count
-            ),
+            carry_state_count=len(self.carry_graph.states),
+            remainder_state_count=len(self.remainder_graph.states),
+            carry_class_count=self.minimized_carry_graph.class_count,
+            remainder_class_count=self.minimized_remainder_graph.class_count,
             remainder_to_carry_map=self.remainder_to_carry_map,
             carry_to_remainder_map=self.carry_to_remainder_map,
+        )
+
+    @property
+    def alignment_rows(self) -> tuple[dict[str, int], ...]:
+        return tuple(
+            {
+                "position": alignment.position,
+                "coefficient": alignment.coefficient,
+                "carry_state": alignment.carry_state,
+                "remainder_state": alignment.remainder_state,
+                "block_value": alignment.block_value,
+            }
+            for alignment in self.alignments
         )
 
     @property
@@ -1490,6 +1706,861 @@ def canonical_carry_selector_family_studies(base: int = 10) -> tuple[CarrySelect
             + carry_factorization_selector_profile(68, base=base, n_blocks=8, max_m=8).selector_summary_lines,
         ),
     )
+
+
+def _selected_factorization_comparison(
+    n: int,
+    *,
+    base: int = 10,
+    n_blocks: int = 8,
+    max_m: int = 12,
+    max_block_base: int = 10_000_000,
+) -> tuple[CarryFactorizationSelectorProfile, CarryRemainderComparison]:
+    """Return the selected Track 17 profile step together with its comparison."""
+    profile = carry_factorization_selector_profile(
+        n,
+        base=base,
+        n_blocks=n_blocks,
+        max_m=max_m,
+        max_block_base=max_block_base,
+    )
+    prefer_m = profile.selected_m
+    if prefer_m is None:
+        raise ValueError(f"no selected factorization coordinate for 1/{n} in base {base}")
+    comparison = carry_remainder_comparison(
+        n,
+        base=base,
+        n_blocks=n_blocks,
+        prefer_m=prefer_m,
+    )
+    return profile, comparison
+
+
+def _state_merging_row(
+    comparison: CarryRemainderComparison,
+    *,
+    profile: CarryFactorizationSelectorProfile,
+) -> dict[str, object]:
+    report = comparison.decision_report
+    forward = report.remainder_to_carry_map
+    reverse = report.carry_to_remainder_map
+    return {
+        "n": comparison.n,
+        "base": comparison.base,
+        "m": comparison.m,
+        "B": comparison.B,
+        "q": comparison.q,
+        "k": comparison.k,
+        "factorization_regime": report.regime,
+        "obstruction_class": report.obstruction_class,
+        "obstruction_summary": report.obstruction_summary,
+        "profile_class": carry_selector_profile_class(profile),
+        "transition_signature": list(profile.transition_signature),
+        "relabeling_modes": list(profile.relabeling_modes),
+        "quotient_modes": list(profile.quotient_modes),
+        "finite_word_only_modes": list(profile.finite_word_only_modes),
+        "has_isolated_relabeling_window": profile.has_isolated_relabeling_window,
+        "carry_state_count": report.carry_state_count,
+        "remainder_state_count": report.remainder_state_count,
+        "carry_class_count": report.carry_class_count,
+        "remainder_class_count": report.remainder_class_count,
+        "graph_state_gap": report.graph_state_gap,
+        "minimized_class_gap": report.minimized_class_gap,
+        "observed_alignment_bijection": report.observed_alignment_bijection,
+        "state_relabeling_candidate": report.state_relabeling_candidate,
+        "remainder_to_carry_quotient_candidate": report.remainder_to_carry_quotient_candidate,
+        "carry_to_remainder_lift_candidate": report.carry_to_remainder_lift_candidate,
+        "forward_profile": forward.export(),
+        "reverse_profile": reverse.export(),
+        "compression_targets": [
+            {
+                "target_state": target,
+                "source_states": list(sources),
+                "preimage_size": len(sources),
+            }
+            for target, sources in report.compression_targets
+        ],
+        "forward_preimage_signature": forward.preimage_signature,
+        "reverse_preimage_signature": reverse.preimage_signature,
+        "forward_ambiguity_signature": forward.ambiguity_signature,
+        "reverse_ambiguity_signature": reverse.ambiguity_signature,
+        "alignment_rows": list(comparison.alignment_rows),
+        **claim_context_for_parameters(
+            ("carry_window_transducer", "carry_dfa_factorization"),
+            base=comparison.base,
+            n=comparison.n,
+        ),
+    }
+
+
+def canonical_state_merging_case_studies(base: int = 10) -> tuple[StateMergingCaseStudy, ...]:
+    """Canonical preimage-fiber profile case studies on the selected Track 17 coordinate."""
+    if base != 10:
+        return ()
+    cases = [
+        (
+            "One-state relabeling",
+            21,
+            "The carry layer collapses completely here: the selected window is a genuine one-state relabeling, so the preimage-fiber profile is bijective in both directions.",
+            "Describe when the selected coordinate gives a true finite-window relabeling rather than a one-way quotient.",
+            "This is the degenerate baseline where no state compression remains after normalization.",
+            "Use `21` to keep the fully symmetric case visible before reading quotient-only examples as the default.",
+            "carry_layer",
+        ),
+        (
+            "Visible prime compression",
+            97,
+            "The selected decimal window keeps a functional remainder-to-carry map, but several remainder states collapse onto carry state `0`, so the reverse direction already fails.",
+            "Measure how much orbit information survives the projection from remainder states to carry states on selected prime windows.",
+            "This is the cleanest prime example where visible output agreement coexists with genuine state compression.",
+            "Use `97` to reject any naive claim that output agreement plus prime periodicity forces a state relabeling.",
+            "remainder_orbit",
+        ),
+        (
+            "Hidden prime obstruction",
+            89,
+            "The aligned window is bijective in both directions, but the carry graph and the remainder graph still have different observed sizes, so the obstruction hides in graph structure rather than visible compression.",
+            "Describe which quotient-only cases remain collision-free on the aligned window and only fail at the graph layer.",
+            "This is the cleanest prime example where the finite preimage-fiber surface stays bijective even though relabeling still fails.",
+            "Use `89` to keep the hidden graph obstruction visible beside the more obvious compression cases.",
+            "remainder_orbit",
+        ),
+        (
+            "Visible composite compression",
+            996,
+            "The same forward-only compression persists in a composite example with preperiod and same-core structure, so quotient-only behavior is not a prime-specific accident.",
+            "Characterize which preperiod/composite deformations preserve quotient-only state compression on the selected window.",
+            "This keeps the same-core frontier adjacent to the canonical quotient-only profile.",
+            "Use `996` to reject any theorem candidate that attributes quotient-only collapse solely to prime or purely periodic structure.",
+            "remainder_orbit",
+        ),
+    ]
+    studies: list[StateMergingCaseStudy] = []
+    for label, n, explanation, theorem_candidate, heuristic_note, counterexample_target, vocabulary_id in cases:
+        profile, comparison = _selected_factorization_comparison(
+            n,
+            base=base,
+            n_blocks=8,
+            max_m=8,
+        )
+        studies.append(
+            StateMergingCaseStudy(
+                label=label,
+                n=n,
+                base=base,
+                explanation=explanation,
+                theorem_candidate=theorem_candidate,
+                heuristic_note=heuristic_note,
+                counterexample_target=counterexample_target,
+                primary_vocabulary_id=vocabulary_id,
+                profile=profile,
+                comparison=comparison,
+            )
+        )
+    return tuple(studies)
+
+
+def canonical_state_merging_family_studies(base: int = 10) -> tuple[StateMergingFamilyStudy, ...]:
+    """Canonical family studies for the preimage-fiber profile surface."""
+    if base != 10:
+        return ()
+    family_specs = [
+        (
+            "Same-core visible compression",
+            (249, 498, 996),
+            "The stripped periodic core does not determine the finite-window compression pattern: `249` reaches a bijective selected window, while same-core `498` and `996` stay quotient-only with visible reverse collapse.",
+            "Classify which same-core deformations preserve, shift, or destroy finite-window state compression signatures.",
+            "The preimage-fiber profile depends on the actual denominator, not only on the periodic core or the emitted blocks.",
+            "Use this family to reject any factorization frontier that treats same-core data as sufficient for the state-compression story.",
+            "remainder_orbit",
+        ),
+        (
+            "Mixed obstruction family",
+            (17, 34, 68, 85),
+            "This same-core family spans all three selected-coordinate outcomes in one place: `17` and `34` keep relabeling windows, `68` becomes a hidden graph obstruction, and `85` shows visible compression.",
+            "Describe how multiplying by base-supported factors changes the selected preimage-fiber profile and can move a family from relabeling to hidden obstruction to visible compression.",
+            "This family shows that quotient-only behavior is not one thing: some failures are visible in the fibers, while others only appear at the graph layer.",
+            "Use `17 / 34 / 68 / 85` to reject any classifier that treats every quotient-only case as the same kind of obstruction.",
+            "carry_layer",
+        ),
+    ]
+    studies: list[StateMergingFamilyStudy] = []
+    for label, members, explanation, theorem_candidate, heuristic_note, counterexample_target, vocabulary_id in family_specs:
+        member_cases_list: list[StateMergingCaseStudy] = []
+        for n in members:
+            profile, comparison = _selected_factorization_comparison(
+                n,
+                base=base,
+                n_blocks=8,
+                max_m=8,
+            )
+            member_cases_list.append(
+                StateMergingCaseStudy(
+                    label=f"1/{n}",
+                    n=n,
+                    base=base,
+                    explanation="Selected-coordinate preimage-fiber profile inside the canonical family study.",
+                    theorem_candidate=theorem_candidate,
+                    heuristic_note=heuristic_note,
+                    counterexample_target=counterexample_target,
+                    primary_vocabulary_id=vocabulary_id,
+                    profile=profile,
+                    comparison=comparison,
+                )
+            )
+        member_cases = tuple(member_cases_list)
+        studies.append(
+            StateMergingFamilyStudy(
+                label=label,
+                members=members,
+                explanation=explanation,
+                theorem_candidate=theorem_candidate,
+                heuristic_note=heuristic_note,
+                counterexample_target=counterexample_target,
+                primary_vocabulary_id=vocabulary_id,
+                member_cases=member_cases,
+                summary_lines=tuple(
+                    line
+                    for case in member_cases
+                    for line in (
+                        (
+                            f"N = {case.n}, regime = {case.comparison.decision_report.regime}, "
+                            f"obstruction = {case.comparison.decision_report.obstruction_class}, "
+                            f"selected m = {case.profile.selected_m}"
+                        ),
+                        f"forward preimage signature = {case.comparison.remainder_to_carry_map.preimage_signature}",
+                        f"reverse ambiguity signature = {case.comparison.carry_to_remainder_map.ambiguity_signature}",
+                        "---",
+                    )
+                )[:-1],
+            )
+        )
+    return tuple(studies)
+
+
+def state_merging_rows(
+    max_n: int,
+    *,
+    base: int = 10,
+    n_blocks: int = 8,
+    max_block_base: int = 10_000_000,
+    max_m: int = 12,
+) -> list[dict[str, object]]:
+    """Export selected-coordinate preimage-fiber profiles for bounded search."""
+    rows: list[dict[str, object]] = []
+    for n in range(2, max_n + 1):
+        try:
+            profile, comparison = _selected_factorization_comparison(
+                n,
+                base=base,
+                n_blocks=n_blocks,
+                max_m=max_m,
+                max_block_base=max_block_base,
+            )
+        except Exception:
+            continue
+        if comparison.B > max_block_base or comparison.q <= 0:
+            continue
+        rows.append(_state_merging_row(comparison, profile=profile))
+    regime_priority = {
+        "state_relabeling": 0,
+        "quotient_candidate_only": 1,
+        "finite_word_only": 2,
+    }
+    rows.sort(
+        key=lambda row: (
+            regime_priority[str(row["factorization_regime"])],
+            {
+                "state_relabeling": 0,
+                "visible_preimage_compression": 1,
+                "hidden_graph_obstruction": 2,
+                "finite_word_only": 3,
+            }[str(row["obstruction_class"])],
+            -int(row["forward_profile"]["max_preimage_size"]),
+            int(row["k"]),
+            int(row["n"]),
+        )
+    )
+    return rows
+
+
+def _compress_adjacent_labels(labels: list[str]) -> list[str]:
+    """Compress a label path by removing consecutive duplicates."""
+    compressed: list[str] = []
+    for label in labels:
+        if not compressed or compressed[-1] != label:
+            compressed.append(label)
+    return compressed
+
+
+def _same_core_obstruction_phase_fields(
+    member_ids: list[int],
+    selected_obstruction_classes: list[str],
+) -> dict[str, object]:
+    """Derive phase and switching data for a same-core selected-coordinate family."""
+    relabeling_members = [
+        member
+        for member, obstruction_class in zip(member_ids, selected_obstruction_classes)
+        if obstruction_class == "state_relabeling"
+    ]
+    hidden_members = [
+        member
+        for member, obstruction_class in zip(member_ids, selected_obstruction_classes)
+        if obstruction_class == "hidden_graph_obstruction"
+    ]
+    visible_members = [
+        member
+        for member, obstruction_class in zip(member_ids, selected_obstruction_classes)
+        if obstruction_class == "visible_preimage_compression"
+    ]
+    def _multiplier_v2_v5(member: int | None) -> tuple[int | None, int | None]:
+        if member is None:
+            return (None, None)
+        multiplier = member // member_ids[0]
+        v2 = 0
+        while multiplier % 2 == 0:
+            multiplier //= 2
+            v2 += 1
+        v5 = 0
+        while multiplier % 5 == 0:
+            multiplier //= 5
+            v5 += 1
+        return (v2, v5)
+
+    compressed_class_path = _compress_adjacent_labels(selected_obstruction_classes)
+    obstruction_only_path = [
+        obstruction_class
+        for obstruction_class in selected_obstruction_classes
+        if obstruction_class in {"hidden_graph_obstruction", "visible_preimage_compression"}
+    ]
+    compressed_obstruction_path = _compress_adjacent_labels(obstruction_only_path)
+    hidden_visible_switch_count = max(len(compressed_obstruction_path) - 1, 0)
+    first_relabeling_member = relabeling_members[0] if relabeling_members else None
+    first_non_relabeling_member = next(
+        (member for member, obstruction_class in zip(member_ids, selected_obstruction_classes) if obstruction_class != "state_relabeling"),
+        None,
+    )
+    first_hidden_member = hidden_members[0] if hidden_members else None
+    first_visible_member = visible_members[0] if visible_members else None
+    has_visible_after_hidden = bool(
+        first_hidden_member is not None
+        and any(member > first_hidden_member for member in visible_members)
+    )
+    has_rehidden_after_visible = bool(
+        first_visible_member is not None
+        and any(member > first_visible_member for member in hidden_members)
+    )
+    has_nonmonotone_hidden_visible_switching = hidden_visible_switch_count >= 2
+    if first_visible_member is None:
+        visibility_behavior = "hidden_only"
+        onset_kind = "hidden_only"
+    elif first_hidden_member is None:
+        visibility_behavior = "one_way_visible"
+        onset_kind = "visible_without_hidden"
+    elif first_visible_member < first_hidden_member:
+        visibility_behavior = "rehiding_visible" if has_rehidden_after_visible else "one_way_visible"
+        onset_kind = "visible_first"
+    elif first_hidden_member < first_visible_member:
+        visibility_behavior = "rehiding_visible" if has_rehidden_after_visible else "one_way_visible"
+        onset_kind = "hidden_first"
+    else:
+        visibility_behavior = "rehiding_visible" if has_rehidden_after_visible else "one_way_visible"
+        onset_kind = "same_step"
+    first_visible_multiplier_v2, first_visible_multiplier_v5 = _multiplier_v2_v5(first_visible_member)
+    first_hidden_multiplier_v2, first_hidden_multiplier_v5 = _multiplier_v2_v5(first_hidden_member)
+    class_path_text = " -> ".join(compressed_class_path) if compressed_class_path else "none"
+    if has_nonmonotone_hidden_visible_switching:
+        phase_summary = (
+            f"same-core path {class_path_text} with {hidden_visible_switch_count} hidden/visible switches"
+        )
+    elif has_rehidden_after_visible:
+        phase_summary = f"same-core path {class_path_text} re-hides after visible compression appears"
+    elif has_visible_after_hidden:
+        phase_summary = f"same-core path {class_path_text} becomes visible after an earlier hidden phase"
+    elif first_visible_member is not None:
+        phase_summary = f"same-core path {class_path_text} reaches visible compression without later re-hiding"
+    elif first_hidden_member is not None:
+        phase_summary = f"same-core path {class_path_text} stays hidden once the family leaves relabeling"
+    else:
+        phase_summary = f"same-core path {class_path_text}"
+    return {
+        "relabeling_members": relabeling_members,
+        "hidden_members": hidden_members,
+        "visible_members": visible_members,
+        "compressed_class_path": compressed_class_path,
+        "compressed_obstruction_path": compressed_obstruction_path,
+        "first_relabeling_member": first_relabeling_member,
+        "first_non_relabeling_member": first_non_relabeling_member,
+        "first_hidden_member": first_hidden_member,
+        "first_visible_member": first_visible_member,
+        "first_visible_multiplier_v2": first_visible_multiplier_v2,
+        "first_visible_multiplier_v5": first_visible_multiplier_v5,
+        "first_hidden_multiplier_v2": first_hidden_multiplier_v2,
+        "first_hidden_multiplier_v5": first_hidden_multiplier_v5,
+        "visibility_behavior": visibility_behavior,
+        "onset_kind": onset_kind,
+        "has_visible_after_hidden": has_visible_after_hidden,
+        "has_rehidden_after_visible": has_rehidden_after_visible,
+        "has_nonmonotone_hidden_visible_switching": has_nonmonotone_hidden_visible_switching,
+        "hidden_visible_switch_count": hidden_visible_switch_count,
+        "phase_summary": phase_summary,
+    }
+
+
+def state_merging_same_core_rows(
+    max_n: int,
+    *,
+    base: int = 10,
+    n_blocks: int = 8,
+    max_block_base: int = 10_000_000,
+    max_m: int = 12,
+    require_disagreement: bool = True,
+) -> list[dict[str, object]]:
+    """Group selected-coordinate preimage-fiber profiles by stripped periodic core."""
+    grouped: dict[int, list[dict[str, object]]] = {}
+    for row in state_merging_rows(
+        max_n,
+        base=base,
+        n_blocks=n_blocks,
+        max_block_base=max_block_base,
+        max_m=max_m,
+    ):
+        core, _ = strip_base_factors(int(row["n"]), base)
+        if core == 1:
+            continue
+        grouped.setdefault(core, []).append(row)
+
+    rows: list[dict[str, object]] = []
+    for core, members in grouped.items():
+        if len(members) < 2:
+            continue
+        members.sort(key=lambda row: int(row["n"]))
+        member_ids = [int(row["n"]) for row in members]
+        selected_regimes = [str(row["factorization_regime"]) for row in members]
+        selected_obstruction_classes = [str(row["obstruction_class"]) for row in members]
+        forward_signatures = [str(row["forward_preimage_signature"]) for row in members]
+        reverse_ambiguity_signatures = [str(row["reverse_ambiguity_signature"]) for row in members]
+        has_disagreement = (
+            len(set(selected_regimes)) > 1
+            or len(set(selected_obstruction_classes)) > 1
+            or len(set(forward_signatures)) > 1
+            or len(set(reverse_ambiguity_signatures)) > 1
+        )
+        if require_disagreement and not has_disagreement:
+            continue
+        class_set = set(selected_obstruction_classes)
+        row = {
+            "core_n": core,
+            "base": base,
+            "members": member_ids,
+            "selected_members": member_ids,
+            "selected_regimes": selected_regimes,
+            "selected_obstruction_classes": selected_obstruction_classes,
+            "forward_preimage_signatures": forward_signatures,
+            "reverse_ambiguity_signatures": reverse_ambiguity_signatures,
+            "has_regime_disagreement": len(set(selected_regimes)) > 1,
+            "has_obstruction_class_disagreement": len(class_set) > 1,
+            "has_forward_preimage_disagreement": len(set(forward_signatures)) > 1,
+            "has_reverse_ambiguity_disagreement": len(set(reverse_ambiguity_signatures)) > 1,
+            "has_hidden_graph_obstruction_member": "hidden_graph_obstruction" in class_set,
+            "has_visible_preimage_compression_member": "visible_preimage_compression" in class_set,
+            "crosses_relabeling_hidden_visible_classes": {
+                "state_relabeling",
+                "hidden_graph_obstruction",
+                "visible_preimage_compression",
+            }.issubset(class_set),
+            "has_state_merging_disagreement": has_disagreement,
+            **_same_core_obstruction_phase_fields(member_ids, selected_obstruction_classes),
+            **claim_context_for_parameters(
+                ("carry_window_transducer", "carry_dfa_factorization"),
+                base=base,
+                actual=member_ids[-1],
+                core=core,
+                requested_blocks=n_blocks,
+            ),
+        }
+        rows.append(row)
+    rows.sort(
+        key=lambda row: (
+            not bool(row["has_nonmonotone_hidden_visible_switching"]),
+            not bool(row["crosses_relabeling_hidden_visible_classes"]),
+            not bool(row["has_state_merging_disagreement"]),
+            int(row["core_n"]),
+        )
+    )
+    return rows
+
+
+def quotient_obstruction_census_from_rows(
+    rows: list[dict[str, object]],
+    *,
+    base: int,
+    max_n: int,
+    n_blocks: int,
+) -> dict[str, object]:
+    """Summarize visible vs hidden quotient-only obstructions from selected-coordinate rows."""
+    quotient_rows = [row for row in rows if str(row["factorization_regime"]) == "quotient_candidate_only"]
+    visible_rows = [
+        row for row in quotient_rows
+        if str(row["obstruction_class"]) == "visible_preimage_compression"
+    ]
+    hidden_rows = [
+        row for row in quotient_rows
+        if str(row["obstruction_class"]) == "hidden_graph_obstruction"
+    ]
+    return {
+        "group": "census_summary",
+        "base": base,
+        "max_n": max_n,
+        "n_blocks": n_blocks,
+        "quotient_candidate_only_count": len(quotient_rows),
+        "visible_preimage_compression_count": len(visible_rows),
+        "hidden_graph_obstruction_count": len(hidden_rows),
+        "representative_visible_ns": [int(row["n"]) for row in visible_rows[:5]],
+        "representative_hidden_ns": [int(row["n"]) for row in hidden_rows[:5]],
+        "decision": (
+            "Selected-coordinate quotient-only cases separate into visible preimage compression "
+            "and hidden graph obstruction beneath the open `carry_dfa_factorization` boundary."
+        ),
+        "summary_lines": [
+            f"quotient-only count = {len(quotient_rows)}",
+            f"visible preimage compression count = {len(visible_rows)}",
+            f"hidden graph obstruction count = {len(hidden_rows)}",
+        ],
+        **claim_context_for_parameters(
+            ("carry_window_transducer", "carry_dfa_factorization"),
+            base=base,
+            requested_blocks=n_blocks,
+        ),
+    }
+
+
+def quotient_obstruction_rows(
+    max_n: int,
+    *,
+    base: int = 10,
+    n_blocks: int = 8,
+    max_block_base: int = 10_000_000,
+    max_m: int = 12,
+) -> list[dict[str, object]]:
+    """Group visible and hidden quotient-only cases on the selected Track 17 coordinate."""
+    visible_priority = {97: 0, 996: 1}
+    hidden_priority = {89: 0, 68: 1, 34: 2}
+
+    rows = state_merging_rows(
+        max_n,
+        base=base,
+        n_blocks=n_blocks,
+        max_block_base=max_block_base,
+        max_m=max_m,
+    )
+    quotient_rows = [
+        row for row in rows
+        if str(row["factorization_regime"]) == "quotient_candidate_only"
+    ]
+    visible_rows = [
+        {"group": "visible_preimage_compression", **row}
+        for row in quotient_rows
+        if str(row["obstruction_class"]) == "visible_preimage_compression"
+    ]
+    hidden_rows = [
+        {"group": "hidden_graph_obstruction", **row}
+        for row in quotient_rows
+        if str(row["obstruction_class"]) == "hidden_graph_obstruction"
+    ]
+    visible_rows.sort(
+        key=lambda row: (
+            visible_priority.get(int(row["n"]), len(visible_priority)),
+            -int(row["forward_profile"]["max_preimage_size"]),
+            int(row["k"]),
+            int(row["n"]),
+        )
+    )
+    hidden_rows.sort(
+        key=lambda row: (
+            hidden_priority.get(int(row["n"]), len(hidden_priority)),
+            -abs(int(row["graph_state_gap"])),
+            -abs(int(row["minimized_class_gap"])),
+            int(row["k"]),
+            int(row["n"]),
+        )
+    )
+    featured_visible_rows = visible_rows[:5]
+    featured_hidden_rows = hidden_rows[:5]
+    remaining_visible_rows = visible_rows[5:]
+    remaining_hidden_rows = hidden_rows[5:]
+    return [
+        quotient_obstruction_census_from_rows(
+            rows,
+            base=base,
+            max_n=max_n,
+            n_blocks=n_blocks,
+        ),
+        *featured_visible_rows,
+        *featured_hidden_rows,
+        *remaining_visible_rows,
+        *remaining_hidden_rows,
+    ]
+
+
+def quotient_obstruction_family_rows(
+    max_n: int,
+    *,
+    base: int = 10,
+    n_blocks: int = 8,
+    max_block_base: int = 10_000_000,
+    max_m: int = 12,
+    require_disagreement: bool = True,
+) -> list[dict[str, object]]:
+    """Group same-core families by visible/hidden obstruction class on selected coordinates."""
+    family_priority = {17: 0, 249: 1}
+    rows = state_merging_same_core_rows(
+        max_n,
+        base=base,
+        n_blocks=n_blocks,
+        max_block_base=max_block_base,
+        max_m=max_m,
+        require_disagreement=require_disagreement,
+    )
+    filtered = [
+        row
+        for row in rows
+        if {"visible_preimage_compression", "hidden_graph_obstruction"} & set(row["selected_obstruction_classes"])
+    ]
+    filtered.sort(
+        key=lambda row: (
+            family_priority.get(int(row["core_n"]), len(family_priority)),
+            not bool(row["crosses_relabeling_hidden_visible_classes"]),
+            not bool(row["has_obstruction_class_disagreement"]),
+            int(row["core_n"]),
+        )
+    )
+    return filtered
+
+
+def same_core_obstruction_phase_rows(
+    max_n: int,
+    *,
+    base: int = 10,
+    n_blocks: int = 8,
+    max_block_base: int = 10_000_000,
+    max_m: int = 12,
+    require_obstruction_members: bool = True,
+) -> list[dict[str, object]]:
+    """Export same-core family rows ordered by visible/hidden obstruction-phase signal."""
+    family_priority = {17: 0, 29: 1, 49: 2, 249: 3}
+    rows = state_merging_same_core_rows(
+        max_n,
+        base=base,
+        n_blocks=n_blocks,
+        max_block_base=max_block_base,
+        max_m=max_m,
+        require_disagreement=False,
+    )
+    if require_obstruction_members:
+        rows = [
+            row
+            for row in rows
+            if bool(row["has_hidden_graph_obstruction_member"]) or bool(row["has_visible_preimage_compression_member"])
+        ]
+    rows.sort(
+        key=lambda row: (
+            family_priority.get(int(row["core_n"]), len(family_priority)),
+            not bool(row["has_nonmonotone_hidden_visible_switching"]),
+            -int(row["hidden_visible_switch_count"]),
+            not bool(row["has_rehidden_after_visible"]),
+            not bool(row["crosses_relabeling_hidden_visible_classes"]),
+            int(row["first_visible_member"] or 10**9),
+            int(row["core_n"]),
+        )
+    )
+    return rows
+
+
+def same_core_obstruction_correlate_rows(
+    max_n: int,
+    *,
+    base: int = 10,
+    n_blocks: int = 8,
+    max_block_base: int = 10_000_000,
+    max_m: int = 12,
+) -> list[dict[str, object]]:
+    """Summarize empirical correlates of re-hiding versus one-way visible same-core families."""
+    families = same_core_obstruction_phase_rows(
+        max_n,
+        base=base,
+        n_blocks=n_blocks,
+        max_block_base=max_block_base,
+        max_m=max_m,
+        require_obstruction_members=True,
+    )
+    visible_families = [row for row in families if row["first_visible_member"] is not None]
+    rehiding_families = [row for row in visible_families if row["has_rehidden_after_visible"]]
+    one_way_visible_families = [
+        row for row in visible_families if not row["has_rehidden_after_visible"]
+    ]
+    hidden_only_families = [
+        row for row in families
+        if row["first_visible_member"] is None and row["first_hidden_member"] is not None
+    ]
+
+    def _ratio(numerator: int, denominator: int) -> float | None:
+        if denominator == 0:
+            return None
+        return round(numerator / denominator, 3)
+
+    def _onset_kind(row: dict[str, object]) -> str:
+        first_visible = row["first_visible_member"]
+        first_hidden = row["first_hidden_member"]
+        if first_visible is None:
+            return "hidden_only"
+        if first_hidden is None:
+            return "visible_without_hidden"
+        if int(first_visible) < int(first_hidden):
+            return "visible_first"
+        if int(first_hidden) < int(first_visible):
+            return "hidden_first"
+        return "same_step"
+
+    def _valuation_bucket(v2: int | None, v5: int | None) -> str:
+        if v2 is None or v5 is None:
+            return "none"
+        return f"v2={v2},v5={v5}"
+
+    rows: list[dict[str, object]] = [
+        {
+            "group": "behavior_census",
+            "base": base,
+            "max_n": max_n,
+            "n_blocks": n_blocks,
+            "visible_family_count": len(visible_families),
+            "rehiding_visible_count": len(rehiding_families),
+            "one_way_visible_count": len(one_way_visible_families),
+            "hidden_only_count": len(hidden_only_families),
+            "decision": (
+                "At the selected bound, same-core visible families split empirically into "
+                "one-way visible paths and re-hiding paths; this is a dataset classification, "
+                "not a theorem beneath `carry_dfa_factorization`."
+            ),
+            "summary_lines": [
+                f"visible-family count = {len(visible_families)}",
+                f"rehiding-visible count = {len(rehiding_families)}",
+                f"one-way-visible count = {len(one_way_visible_families)}",
+                f"hidden-only count = {len(hidden_only_families)}",
+            ],
+            **claim_context_for_parameters(
+                ("carry_window_transducer", "carry_dfa_factorization"),
+                base=base,
+                requested_blocks=n_blocks,
+            ),
+        }
+    ]
+
+    onset_priority = {
+        "visible_without_hidden": 0,
+        "visible_first": 1,
+        "hidden_first": 2,
+        "same_step": 3,
+    }
+    onset_groups: dict[str, list[dict[str, object]]] = {}
+    for row in visible_families:
+        onset_groups.setdefault(_onset_kind(row), []).append(row)
+    for onset_kind, bucket_rows in sorted(
+        onset_groups.items(),
+        key=lambda item: (
+            onset_priority.get(item[0], 99),
+            -len(item[1]),
+            item[0],
+        ),
+    ):
+        rehiding_count = sum(bool(row["has_rehidden_after_visible"]) for row in bucket_rows)
+        one_way_count = len(bucket_rows) - rehiding_count
+        rows.append(
+            {
+                "group": "onset_correlation",
+                "onset_kind": onset_kind,
+                "family_count": len(bucket_rows),
+                "rehiding_count": rehiding_count,
+                "one_way_visible_count": one_way_count,
+                "rehiding_share": _ratio(rehiding_count, len(bucket_rows)),
+                "representative_rehiding_cores": [
+                    int(row["core_n"]) for row in bucket_rows if row["has_rehidden_after_visible"]
+                ][:5],
+                "representative_one_way_visible_cores": [
+                    int(row["core_n"]) for row in bucket_rows if not row["has_rehidden_after_visible"]
+                ][:5],
+                "summary": (
+                    f"{onset_kind.replace('_', ' ')} families: {rehiding_count} rehiding vs "
+                    f"{one_way_count} one-way visible at N <= {max_n}"
+                ),
+            }
+        )
+
+    def _append_multiplier_group(
+        *,
+        group_name: str,
+        v2_key: str,
+        v5_key: str,
+    ) -> None:
+        buckets: dict[str, list[dict[str, object]]] = {}
+        for row in visible_families:
+            bucket = _valuation_bucket(row[v2_key], row[v5_key])
+            buckets.setdefault(bucket, []).append(row)
+        for bucket, bucket_rows in sorted(
+            buckets.items(),
+            key=lambda item: (
+                item[0] == "none",
+                -len(item[1]),
+                item[0],
+            ),
+        ):
+            rehiding_count = sum(bool(row["has_rehidden_after_visible"]) for row in bucket_rows)
+            one_way_count = len(bucket_rows) - rehiding_count
+            rows.append(
+                {
+                    "group": group_name,
+                    "valuation_bucket": bucket,
+                    "family_count": len(bucket_rows),
+                    "rehiding_count": rehiding_count,
+                    "one_way_visible_count": one_way_count,
+                    "rehiding_share": _ratio(rehiding_count, len(bucket_rows)),
+                    "representative_rehiding_cores": [
+                        int(row["core_n"]) for row in bucket_rows if row["has_rehidden_after_visible"]
+                    ][:5],
+                    "representative_one_way_visible_cores": [
+                        int(row["core_n"]) for row in bucket_rows if not row["has_rehidden_after_visible"]
+                    ][:5],
+                }
+            )
+
+    _append_multiplier_group(
+        group_name="first_hidden_multiplier_correlation",
+        v2_key="first_hidden_multiplier_v2",
+        v5_key="first_hidden_multiplier_v5",
+    )
+    _append_multiplier_group(
+        group_name="first_visible_multiplier_correlation",
+        v2_key="first_visible_multiplier_v2",
+        v5_key="first_visible_multiplier_v5",
+    )
+
+    feature_priority = {17: 0, 29: 1, 49: 2, 167: 3, 249: 4, 523: 5}
+    representative_families = sorted(
+        visible_families,
+        key=lambda row: (
+            feature_priority.get(int(row["core_n"]), len(feature_priority)),
+            not bool(row["has_rehidden_after_visible"]),
+            int(row["core_n"]),
+        ),
+    )
+    rows.extend(
+        {
+            "group": "family_examples",
+            **row,
+        }
+        for row in representative_families[:8]
+    )
+    return rows
 
 
 def carry_factorization_rows(

@@ -2,10 +2,12 @@
 
 Status anchor:
 
+<!-- CARRY_TRANSDUCER_STATUS_ANCHOR_START -->
 - Claim ID `carry_window_transducer` is `implemented-here`.
-- Claim ID `small_k_visibility_threshold` remains `open` and is now split into exact observables in [docs/CARRIED_PREFIX_VISIBILITY.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/CARRIED_PREFIX_VISIBILITY.md).
+- Claim ID `small_k_visibility_threshold` remains `open` and is now split into exact observables in [CARRIED_PREFIX_VISIBILITY.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/CARRIED_PREFIX_VISIBILITY.md).
 - Claim ID `carry_dfa_factorization` remains `open`.
 - Preferred standard label: `carry-propagated block normalization`.
+<!-- CARRY_TRANSDUCER_STATUS_ANCHOR_END -->
 
 This layer is the clean standard language for what the repo used to describe informally as “carry correction.”
 
@@ -33,6 +35,23 @@ The long-division DFA and the carry transducer are not the same machine.
 
 That is the implemented bridge, not yet a full canonical factorization theorem.
 
+## Throughline Ladder
+
+Read this note as the carry-facing slice of the repo's orbit-plus-carry
+research thesis. The ladder below keeps the exact orbit layer, the exact
+block-coordinate layer, the implemented finite-window carry layer, and the
+remaining open frontier explicit in one place.
+
+<!-- CARRY_TRANSDUCER_THROUGHLINE_START -->
+| Ladder rung | Registry support |
+|-------------|------------------|
+| Exact orbit support | Claims `digit_periodicity` and `preperiod_from_base_factors`; witnesses `digit_periodicity_prime19_base10` and `preperiod_from_base_factors_n996_base10`. Remainder periodicity and stripping of base-supported factors fix the exact orbit surface before any carry-normalization claim enters. |
+| Exact block-coordinate support | Claims `series_q_weighted_identity` and `positive_q_good_modes`; witnesses `series_q_weighted_identity_prime97_stride2`, `series_q_weighted_identity_n249_stride3`, and `positive_q_good_modes_n249_stride3`. The raw coefficient stream is exactly `qk^j`, and the repo only promotes positive-q coordinates once `B > M`. Counterexamples: `legacy_unweighted_series_37` and `legacy_zero_quotient_mode`. |
+| Implemented finite-window carry support | Claims `incoming_carry_position_formula`, `same_core_threshold_shift_interval`, and `carry_window_transducer`; witnesses `incoming_carry_position_formula_prime97_stride2`, `incoming_carry_position_formula_n249_stride3`, `same_core_threshold_shift_interval_996_over_249`, `carry_window_transducer_prime97_window6`, `carry_window_transducer_n249_window3`, and `carry_window_transducer_same_core_996_window4`. Finite-window carry-normalized output, exact incoming-carry boundaries, and same-core shift transport are already exact on named windows. Counterexamples: `legacy_visibility_local_overflow_97` and `legacy_visibility_local_overflow_249`. |
+| Obstruction / counterexample surface | Claims `carry_dfa_factorization`; witnesses `carry_dfa_factorization_target_21_97_996` and `carry_dfa_factorization_target_249_498_996_same_core`. Observed state-map failures now split into visible preimage compression, hidden graph obstruction, and selector-profile disagreement, showing why finite output agreement does not by itself promote to a state-level theorem. Counterexamples: `carry_state_relabeling_failure_97`, `carry_state_relabeling_failure_996`, `carry_selector_monotonicity_failure_21`, and `carry_selector_core_invariance_failure_996`. |
+| Open factorization targets | Claims `small_k_visibility_threshold` and `carry_dfa_factorization`; witnesses `small_k_visibility_threshold_target_97_249_996`, `carry_dfa_factorization_target_21_97_996`, and `carry_dfa_factorization_target_249_498_996_same_core`. The remaining frontier is an exact visibility threshold and a canonical orbit-plus-carry factorization, both kept explicitly open. Counterexamples: `carry_selector_core_invariance_failure_996`. |
+<!-- CARRY_TRANSDUCER_THROUGHLINE_END -->
+
 ## API Surface
 
 In [transducer.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/transducer.py):
@@ -44,14 +63,21 @@ In [transducer.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_rep
 - `CarryRun.state_summary().graph()` builds the carry-state graph, while `CarryRun.state_summary().minimize()` gives the coarse observed minimization used by the repo.
 - `remainder_dfa_run(N, block_base, steps)` builds the long-division DFA run in the same block coordinates.
 - `carry_remainder_comparison(N, ...)` packages the finite-window agreement statement, the two graph objects, and the explicit open-boundary wording.
-- `ObservedStateMap` records whether the observed carry-state and remainder-state alignments define functional or injective state-map candidates.
+- `ObservedStateMap` now exports the full preimage-fiber profile (state-merging atlas): source fibers, target preimage fibers, visible compression targets, ambiguity records, and compact signature strings in both directions.
 - `FactorizationDecisionReport` turns one comparison into a Track 17 decision object: state relabeling candidate, quotient candidate, lift candidate, theorem target, refutation target, and weaker replacement claim.
 - `carry_factorization_selector_profile(...)` records how the Track 17 regime changes as the block width `m` varies.
+- `state_merging_rows(...)` exports the selected-coordinate preimage-fiber profile directly, together with the visible-vs-hidden obstruction classifier, graph gaps, and short obstruction summaries.
+- `state_merging_same_core_rows(...)` groups those selected profiles by stripped periodic core and records where same-core families span relabeling, hidden graph obstruction, and visible compression.
+- `same_core_obstruction_phase_rows(...)` turns those same-core families into phase paths, recording first hidden and visible members, re-hiding after visibility, and hidden/visible switch counts.
+- `same_core_obstruction_correlate_rows(...)` summarizes bounded empirical correlates of re-hiding versus one-way visibility, including onset kind and first hidden/visible multiplier valuations on the base-10 same-core surface.
+- `quotient_obstruction_rows(...)` exports the quotient-only split directly as visible preimage compression versus hidden graph obstruction.
+- `quotient_obstruction_family_rows(...)` groups same-core families by whether that visible/hidden split changes across members.
 - `carry_selector_profile_rows(...)` exports the selector classification surface directly.
 - `non_k_one_state_relabeling_rows(...)` isolates the selected non-`k = 1` relabeling windows.
 - `same_core_selector_family_rows(...)` groups selector profiles by stripped periodic core and records where families disagree.
 - `canonical_carry_dfa_examples()` returns the named `21`, `97`, `996` comparison suite used across docs, tests, and the published atlas.
 - `canonical_carry_selector_case_studies()` and `canonical_carry_selector_family_studies()` promote the strongest selector findings into the published atlas as a research layer.
+- `canonical_state_merging_case_studies()` and `canonical_state_merging_family_studies()` promote the canonical `21 / 97 / 89 / 996` and `249 / 498 / 996`, `17 / 34 / 68 / 85` obstruction studies into the published atlas.
 - `carry_factorization_rows(...)` performs bounded Track 17 sweeps so candidate notions can be tested on concrete examples before theorem promotion.
 - `carry_window_example(N, ...)` builds the combined view:
   raw coefficients, carry-normalized blocks, and long-division blocks.
@@ -99,6 +125,17 @@ This is the best small example where the carry-state view adds real information.
 
 The key point is that the raw coefficient `81` is still below `100`, but that block becomes `83` because a carry of `2` arrives from the less significant side. A raw block table alone does not make that dependency explicit; the carry-state graph does.
 
+### `N = 89`
+
+This is the clean hidden-obstruction case.
+
+- the aligned finite window is bijective in both directions
+- the selected profile shows no visible compression targets
+- the observed carry graph and remainder graph still have different sizes
+
+So the failure is real, but it does not live in the preimage fibers. It only
+appears once the graph layer is compared to the aligned window.
+
 ### `N = 996`
 
 This is the best example where the carry model and the composite model meet.
@@ -130,14 +167,85 @@ The repo now makes these distinctions explicitly through
   the observed remainder-to-carry map is functional, but the carry-to-remainder
   map is not, so a simple state relabeling already fails on the canonical window.
 
+The new preimage-fiber profile (state-merging atlas) is the finite-window view
+of that asymmetry. It does not claim a theorem. It now separates two exact
+finite-window obstruction types:
+
+- visible preimage compression: the collapse is already visible in the target fibers
+- hidden graph obstruction: the aligned window stays bijective, but the graph layer still blocks relabeling
+
+The newest same-core family rows add a further empirical signal: those hidden
+and visible phases need not be monotone under base-supported deformation. In
+families like `17 / 34 / 68 / 85 / 136`, visible compression can appear and
+then re-hide back into hidden graph obstruction on later same-core members.
+
+At the larger bounded search surface `N <= 2000`, the current classifier shows
+two especially sharp empirical correlates:
+
+- `visible_without_hidden` families are one-way visible on the selected window
+- `visible_first` families re-hide later in the same-core path
+
+That is still a dataset statement, not a theorem, but it is now exported
+directly by `same_core_obstruction_correlate_rows(...)`.
+
 ## Decision Criteria
 
 Track 17 is now decision-complete in the following sense.
 
+## Flagship Candidate Statements
+
+Before further search or Lean promotion, Track 17 now commits to one exact
+positive candidate and one exact obstruction candidate.
+
+`Positive candidate (restricted remainder-to-carry factorization)`:
+
+For a fixed coprime block coordinate `C`, assume that every finite aligned
+carry/remainder window for `C` satisfies all three of the currently exposed
+finite criteria:
+
+- finite-word output agreement,
+- `remainderToCarryFunctional`,
+- remainder-to-carry transition compatibility.
+
+Then there exists a unique orbit-level map `φ_C` from the reachable remainder
+states of the long-division DFA to the reachable carry states of the carry
+transducer such that:
+
+- `φ_C` sends each observed `remainderIn` state to the corresponding
+  `carryIn` state,
+- `φ_C` intertwines the remainder update with the carry update driven by the
+  raw coefficient stream `qk^j`,
+- the carry transducer started from `φ_C(r_0)` emits exactly the long-division
+  block word on the full orbit.
+
+This is the first positive theorem candidate for `carry_dfa_factorization`.
+It is intentionally coordinate-level; it does not yet assert a base- and
+modulus-uniform global factorization theorem.
+
+Lean packages this modest surface in
+[QRTour/Factorization.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/Factorization.lean)
+as factorization-frontier support: restricted finite-window morphisms for `21`
+and `97`, plus the `996` same-core reverse obstruction, without promoting a
+global factorization theorem.
+
+`Obstruction candidate (core/output insufficiency)`:
+
+No canonical factorization theorem for all coprime moduli can depend only on
+stripped periodic core, visible output agreement, and the exact same-core shift
+data already proved in Lean. In particular, in base `10` the same-core family
+with core `249` has a member `249` with an observed `state_relabeling` window
+at `m = 6`, while the same-core members `498` and `996` remain
+`quotient_candidate_only` on the tested selector surface. Therefore any valid
+global theorem must use finer arithmetic than periodic core plus visible-word
+data.
+
+The `17 -> 34` selector-family shift is the secondary obstruction family: small
+multiple moves can preserve and enlarge relabeling windows rather than merely
+shifting them monotonically.
+
 What would count as a theorem:
 
-- a proof that the finite-window quotient candidate extends to a canonical
-  remainder-to-carry morphism on full orbits, or
+- a proof of the positive candidate above, or
 - a stronger proof that the machines are actually state-relabelings in a
   uniform class of examples.
 
@@ -145,6 +253,7 @@ What would count as a refutation:
 
 - a bounded example where finite-window word agreement holds but even the
   observed remainder-to-carry quotient candidate fails, or
+- a proof of the obstruction candidate above, or
 - a family where any proposed state-level factorization notion changes form
   unpredictably under harmless coordinate changes.
 

@@ -668,6 +668,29 @@ theorem sameCoreCompatible_lookaheadCertificateHolds_of_core_lookaheadCertificat
     (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
     (hn := hn) hgood hcompat hfactor).2 hcert
 
+/-- Forward exact same-core certificate transport also packages any explicitly
+larger lookahead window on the shifted actual denominator. -/
+theorem sameCoreCompatible_lookaheadCertificateHolds_of_core_lookaheadCertificate_add_exact_add
+    {base n stride s requestedBlocks lookaheadBlocks extraLookahead : ℕ} {hn : 0 < n}
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s)
+    (hcert :
+      (strippedCoordinate base n stride hn).lookaheadCertificateHolds
+        requestedBlocks lookaheadBlocks) :
+    (actualCoordinate base n stride hn).lookaheadCertificateHolds
+      (requestedBlocks + s) (lookaheadBlocks + extraLookahead) := by
+  let actual := actualCoordinate base n stride hn
+  have hcertActual :
+      actual.lookaheadCertificateHolds (requestedBlocks + s) lookaheadBlocks :=
+    sameCoreCompatible_lookaheadCertificateHolds_of_core_lookaheadCertificate_add_exact
+      (base := base) (n := n) (stride := stride) (s := s)
+      (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+      (hn := hn) hgood hcompat hfactor hcert
+  exact actual.lookaheadCertificateHolds_of_lookaheadCertificate_add
+    hgood (requestedBlocks + s) lookaheadBlocks extraLookahead hcertActual
+
 /-- Reverse transport form of the same exact fixed-window certificate. -/
 theorem sameCoreCompatible_core_lookaheadCertificateHolds_of_actual_lookaheadCertificate_add_exact
     {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
@@ -684,6 +707,31 @@ theorem sameCoreCompatible_core_lookaheadCertificateHolds_of_actual_lookaheadCer
     (base := base) (n := n) (stride := stride) (s := s)
     (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
     (hn := hn) hgood hcompat hfactor).1 hcert
+
+/-- Reverse exact same-core certificate transport also packages any explicitly
+larger lookahead window on the stripped core. -/
+theorem sameCoreCompatible_core_lookaheadCertificateHolds_of_actual_lookaheadCertificate_add_exact_add
+    {base n stride s requestedBlocks lookaheadBlocks extraLookahead : ℕ} {hn : 0 < n}
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s)
+    (hcert :
+      (actualCoordinate base n stride hn).lookaheadCertificateHolds
+        (requestedBlocks + s) lookaheadBlocks) :
+    (strippedCoordinate base n stride hn).lookaheadCertificateHolds
+      requestedBlocks (lookaheadBlocks + extraLookahead) := by
+  let core := strippedCoordinate base n stride hn
+  have hcoreGood : core.goodMode :=
+    strippedCoordinate_goodMode_of_actual_goodMode hn hgood
+  have hcertCore :
+      core.lookaheadCertificateHolds requestedBlocks lookaheadBlocks :=
+    sameCoreCompatible_core_lookaheadCertificateHolds_of_actual_lookaheadCertificate_add_exact
+      (base := base) (n := n) (stride := stride) (s := s)
+      (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+      (hn := hn) hgood hcompat hfactor hcert
+  exact core.lookaheadCertificateHolds_of_lookaheadCertificate_add
+    hcoreGood requestedBlocks lookaheadBlocks extraLookahead hcertCore
 
 /-- Same-core compatibility is equivalent to quotient scaling by the stripped
 base-supported factor in the shared block base. This packages the exact
@@ -821,6 +869,25 @@ theorem sameCoreCompatible_tailMassLowerBound_iff_add
     rw [hraw] at hcore'
     simpa [actual, core, hsharedK] using hcore'
 
+/-- Exact-named same-core tail-mass transport theorem in the `k^s` regime. -/
+theorem sameCoreCompatible_tailMassLowerBound_iff_add_exact
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s) :
+    (actualCoordinate base n stride hn).rawCoefficient ((requestedBlocks + s) + lookaheadBlocks) <
+        (actualCoordinate base n stride hn).blockBase ^ lookaheadBlocks *
+          ((actualCoordinate base n stride hn).blockBase -
+            (actualCoordinate base n stride hn).remainderK) ↔
+      (strippedCoordinate base n stride hn).rawCoefficient (requestedBlocks + lookaheadBlocks) <
+        (strippedCoordinate base n stride hn).blockBase ^ lookaheadBlocks *
+          ((strippedCoordinate base n stride hn).blockBase -
+            (strippedCoordinate base n stride hn).remainderK) := by
+  exact sameCoreCompatible_tailMassLowerBound_iff_add
+    (base := base) (n := n) (stride := stride) (s := s)
+    (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+    (hn := hn) hcompat hfactor
+
 /-- Any exact lookahead certificate on the shifted actual denominator forces
 the stripped core to satisfy the same raw tail-mass lower-bound inequality. -/
 theorem sameCoreCompatible_tailMassLowerBound_of_actual_lookaheadCertificate_add
@@ -841,10 +908,28 @@ theorem sameCoreCompatible_tailMassLowerBound_of_actual_lookaheadCertificate_add
         actual.blockBase ^ lookaheadBlocks * (actual.blockBase - actual.remainderK) :=
     actual.lookaheadCertificateHolds_implies_tailMassLowerBound
       (requestedBlocks := requestedBlocks + s) (lookaheadBlocks := lookaheadBlocks) hcert
-  exact (sameCoreCompatible_tailMassLowerBound_iff_add
+  exact (sameCoreCompatible_tailMassLowerBound_iff_add_exact
     (base := base) (n := n) (stride := stride) (s := s)
     (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
     (hn := hn) hcompat hfactor).mp htail
+
+/-- Exact-named reverse same-core tail-mass implication in the `k^s` regime. -/
+theorem sameCoreCompatible_tailMassLowerBound_of_actual_lookaheadCertificate_add_exact
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s)
+    (hcert :
+      (actualCoordinate base n stride hn).lookaheadCertificateHolds
+        (requestedBlocks + s) lookaheadBlocks) :
+    (strippedCoordinate base n stride hn).rawCoefficient (requestedBlocks + lookaheadBlocks) <
+      (strippedCoordinate base n stride hn).blockBase ^ lookaheadBlocks *
+        ((strippedCoordinate base n stride hn).blockBase -
+          (strippedCoordinate base n stride hn).remainderK) := by
+  exact sameCoreCompatible_tailMassLowerBound_of_actual_lookaheadCertificate_add
+    (base := base) (n := n) (stride := stride) (s := s)
+    (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+    (hn := hn) hcompat hfactor hcert
 
 /-- Any exact lookahead certificate on the stripped core forces the shifted
 actual denominator to satisfy the same raw tail-mass lower-bound inequality. -/
@@ -866,10 +951,28 @@ theorem sameCoreCompatible_tailMassLowerBound_of_core_lookaheadCertificate_add
         core.blockBase ^ lookaheadBlocks * (core.blockBase - core.remainderK) :=
     core.lookaheadCertificateHolds_implies_tailMassLowerBound
       (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks) hcert
-  exact (sameCoreCompatible_tailMassLowerBound_iff_add
+  exact (sameCoreCompatible_tailMassLowerBound_iff_add_exact
     (base := base) (n := n) (stride := stride) (s := s)
     (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
     (hn := hn) hcompat hfactor).mpr htail
+
+/-- Exact-named forward same-core tail-mass implication in the `k^s` regime. -/
+theorem sameCoreCompatible_tailMassLowerBound_of_core_lookaheadCertificate_add_exact
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s)
+    (hcert :
+      (strippedCoordinate base n stride hn).lookaheadCertificateHolds
+        requestedBlocks lookaheadBlocks) :
+    (actualCoordinate base n stride hn).rawCoefficient ((requestedBlocks + s) + lookaheadBlocks) <
+      (actualCoordinate base n stride hn).blockBase ^ lookaheadBlocks *
+        ((actualCoordinate base n stride hn).blockBase -
+          (actualCoordinate base n stride hn).remainderK) := by
+  exact sameCoreCompatible_tailMassLowerBound_of_core_lookaheadCertificate_add
+    (base := base) (n := n) (stride := stride) (s := s)
+    (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+    (hn := hn) hcompat hfactor hcert
 
 /-- In the exact `k`-power same-core regime, the coarse sufficient condition
 `k^(n+L) < modulus` for the stripped core is equivalent to the shifted
@@ -1188,6 +1291,30 @@ theorem sameCoreCompatible_localOverflowBoundary_shift_exact
 local-overflow boundaries. -/
 def firstVisibleMismatchPosition (incomingCarryPosition localOverflowBoundary : ℕ) : ℕ :=
   min incomingCarryPosition localOverflowBoundary
+
+/-- If the incoming-carry boundary is no later than the local-overflow
+boundary, then it is already the first visible mismatch position. -/
+theorem firstVisibleMismatchPosition_eq_incomingCarryPosition_of_le
+    {incomingCarryPosition localOverflowBoundary : ℕ}
+    (h : incomingCarryPosition ≤ localOverflowBoundary) :
+    firstVisibleMismatchPosition incomingCarryPosition localOverflowBoundary =
+      incomingCarryPosition := by
+  unfold firstVisibleMismatchPosition
+  exact min_eq_left h
+
+/-- If the local-overflow boundary is no later than the incoming-carry
+boundary, then it is already the first visible mismatch position. -/
+theorem firstVisibleMismatchPosition_eq_localOverflowBoundary_of_le
+    {incomingCarryPosition localOverflowBoundary : ℕ}
+    (h : localOverflowBoundary ≤ incomingCarryPosition) :
+    firstVisibleMismatchPosition incomingCarryPosition localOverflowBoundary =
+      localOverflowBoundary := by
+  unfold firstVisibleMismatchPosition
+  exact min_eq_right h
+
+@[simp] theorem firstVisibleMismatchPosition_self (boundary : ℕ) :
+    firstVisibleMismatchPosition boundary boundary = boundary := by
+  exact firstVisibleMismatchPosition_eq_incomingCarryPosition_of_le le_rfl
 
 /-- If both threshold boundaries shift by either `s` or `s + 1`, then the first
 visible mismatch position obeys the same interval law. -/

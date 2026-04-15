@@ -2,10 +2,12 @@
 
 Status anchor:
 
+<!-- CARRIED_PREFIX_VISIBILITY_STATUS_ANCHOR_START -->
 - Claim ID `small_k_visibility_heuristic` is `empirical`.
-- Claim ID `incoming_carry_position_formula` is `classical` and implemented in the repo.
+- Claim ID `incoming_carry_position_formula` is `reproved-here`.
 - Claim ID `small_k_visibility_threshold` remains `open`.
 - Preferred standard labels: `raw coefficient stream`, `carry-propagated block normalization`, `raw-prefix agreement length`.
+<!-- CARRIED_PREFIX_VISIBILITY_STATUS_ANCHOR_END -->
 
 Track 16 replaces the vague phrase "visibility threshold" with exact finite-window observables.
 The current repo state now closes three subproblems exactly:

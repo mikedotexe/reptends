@@ -170,6 +170,16 @@
     "rationale": "This module packages certified finite-word and finite-trace agreement without overstating the still-open global DFA statement."
   },
   {
+    "id": "QRTour.Factorization",
+    "path": "lean/QRTour/Factorization.lean",
+    "current_role": "restricted finite-window orbit-to-carry morphism layer",
+    "promotion_decision": "keep as public support surface in the factorization-frontier under the open carry boundary",
+    "claim_ids": [
+      "carry_dfa_factorization"
+    ],
+    "rationale": "This module packages the modest coordinate-level morphism surface and the canonical 21 / 97 / 996 witnesses without promoting a global factorization theorem."
+  },
+  {
     "id": "QRTour.CompositeVisibility",
     "path": "lean/QRTour/CompositeVisibility.lean",
     "current_role": "same-core family packaging, endpoint labels, and coordinate-selection layer",
@@ -184,10 +194,10 @@
   {
     "id": "QRTour.Examples",
     "path": "lean/QRTour/Examples.lean",
-    "current_role": "worked Lean acceptance examples and theorem smoke tests",
+    "current_role": "registry-backed worked examples and theorem-witness entry surface",
     "promotion_decision": "keep as public example surface, not atlas-backed",
     "claim_ids": [],
-    "rationale": "The file is valuable as a compact acceptance layer, but its purpose is validation and exposition rather than new outward claim transport."
+    "rationale": "This module packages canonical prime, small composite, positive-q composite, and same-core witness namespaces keyed to the theorem-witness registry, so it should stay public as an example and exposition surface without being promoted to a direct claim carrier."
   },
   {
     "id": "GeometricStack",

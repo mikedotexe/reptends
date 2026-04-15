@@ -22,6 +22,28 @@
     ]
   },
   {
+    "id": "series_q_weighted_identity_n249_stride3",
+    "claim_id": "series_q_weighted_identity",
+    "kind": "theorem-witness",
+    "label": "Positive q composite q-weighted series",
+    "tuple_display": "(base=10, N=249, stride=3, B=1000, q=4, k=4)",
+    "parameters": {
+      "base": 10,
+      "N": 249,
+      "stride": 3,
+      "B": 1000,
+      "q": 4,
+      "k": 4
+    },
+    "summary": "This positive-q composite coordinate makes the exact q*k^j / B^(j+1) identity explicit outside the special q = 1 bridge case.",
+    "evidence": [
+      "lean/QRTour/OrbitWeave.lean",
+      "lean/QRTour/Examples.lean",
+      "bridge_reptends/orbit_weave.py",
+      "tests/test_geometric_series.py"
+    ]
+  },
+  {
     "id": "power_order_formula_prime19_stride2",
     "claim_id": "power_order_formula",
     "kind": "theorem-witness",
@@ -56,6 +78,7 @@
     "summary": "This is the canonical decimal example where the stride order drops exactly to the QR subgroup size.",
     "evidence": [
       "lean/QRTour/QuadraticResidues.lean",
+      "lean/QRTour/Examples.lean",
       "tests/test_stride_classification.py"
     ]
   },
@@ -73,6 +96,7 @@
     "summary": "A small prime witness where the Euclidean digit step and full repeating period are both easy to inspect.",
     "evidence": [
       "lean/QRTour/Digits.lean",
+      "lean/QRTour/Examples.lean",
       "docs/AGDA_CORRESPONDENCE.md",
       "bridge_reptends/ci_checks.py"
     ]
@@ -81,7 +105,7 @@
     "id": "signed_bridge_recurrence_prime97_stride2",
     "claim_id": "signed_bridge_recurrence",
     "kind": "theorem-witness",
-    "label": "Signed bridge plus branch",
+    "label": "Signed bridge minus branch",
     "tuple_display": "(base=10, p=97, stride=2, d=3, 10^2 ≡ +3 mod 97)",
     "parameters": {
       "base": 10,
@@ -90,8 +114,9 @@
       "d": 3,
       "sign": 1
     },
-    "summary": "The standard 97 example witnesses the signed recurrence package even before using a minus-branch example.",
+    "summary": "The standard 97 example witnesses the signed recurrence package in the clean decimal minus-bridge case.",
     "evidence": [
+      "lean/QRTour/Examples.lean",
       "lean/QRTour/SignedBridge.lean",
       "lean/QRTour/PAdicBridge.lean",
       "bridge_reptends/ci_checks.py"
@@ -111,6 +136,7 @@
     },
     "summary": "This witnesses the block-value geometric law and its period in the cleanest decimal bridge case.",
     "evidence": [
+      "lean/QRTour/Examples.lean",
       "lean/QRTour/PAdicBridge.lean",
       "lean/QRTour/Bridge.lean",
       "bridge_reptends/ci_checks.py"
@@ -138,6 +164,7 @@
     "summary": "A tiny composite witness where the CRT least-common-multiple law is completely transparent.",
     "evidence": [
       "lean/QRTour/CompositePeriod.lean",
+      "lean/QRTour/Examples.lean",
       "bridge_reptends/composite.py",
       "tests/test_composite_crt.py"
     ]
@@ -161,6 +188,7 @@
     },
     "summary": "The canonical decimal composite where the preperiod is entirely explained by the base-supported factor 2^2.",
     "evidence": [
+      "lean/QRTour/Examples.lean",
       "lean/QRTour/Preperiod.lean",
       "lean/QRTour/CompositeVisibility.lean",
       "tests/test_composite_crt.py"
@@ -183,6 +211,7 @@
     "evidence": [
       "lean/QRTour/CarryTransducer.lean",
       "lean/QRTour/CarryComparison.lean",
+      "lean/QRTour/Examples.lean",
       "tests/test_carry_transducer.py"
     ]
   },
@@ -210,6 +239,30 @@
     ]
   },
   {
+    "id": "carry_window_transducer_n249_window3",
+    "claim_id": "carry_window_transducer",
+    "kind": "theorem-witness",
+    "label": "Positive q three-block carry window",
+    "tuple_display": "(base=10, N=249, stride=3, B=1000, q=4, k=4, requestedBlocks=3, lookahead=0)",
+    "parameters": {
+      "base": 10,
+      "N": 249,
+      "stride": 3,
+      "B": 1000,
+      "q": 4,
+      "k": 4,
+      "requestedBlocks": 3,
+      "lookahead": 0
+    },
+    "summary": "The first three blocks of the positive-q 249 coordinate stay carry-free, so zero lookahead already certifies deterministic normalization and emitted-word agreement outside the special q = 1 case.",
+    "evidence": [
+      "lean/QRTour/Examples.lean",
+      "lean/QRTour/CarryTransducer.lean",
+      "lean/QRTour/CarryComparison.lean",
+      "tests/test_carry_transducer.py"
+    ]
+  },
+  {
     "id": "positive_q_good_modes_n249_stride3",
     "claim_id": "positive_q_good_modes",
     "kind": "theorem-witness",
@@ -226,6 +279,7 @@
     "summary": "This composite coordinate is the standard positive-q witness showing why good modes require B > N.",
     "evidence": [
       "lean/QRTour/OrbitWeave.lean",
+      "lean/QRTour/Examples.lean",
       "bridge_reptends/orbit_weave.py",
       "tests/test_geometric_series.py"
     ]
@@ -254,6 +308,29 @@
     ]
   },
   {
+    "id": "incoming_carry_position_formula_n249_stride3",
+    "claim_id": "incoming_carry_position_formula",
+    "kind": "theorem-witness",
+    "label": "Positive q incoming-carry boundary",
+    "tuple_display": "(base=10, N=249, stride=3, B=1000, q=4, k=4, first incoming carry=3)",
+    "parameters": {
+      "base": 10,
+      "N": 249,
+      "stride": 3,
+      "B": 1000,
+      "q": 4,
+      "k": 4,
+      "firstIncomingCarryPosition": 3,
+      "incomingCarryAtBoundary": 1
+    },
+    "summary": "This positive-q composite coordinate shows the exact incoming-carry boundary outside the special q = 1 bridge case.",
+    "evidence": [
+      "lean/QRTour/Visibility.lean",
+      "lean/QRTour/Examples.lean",
+      "tests/test_visibility.py"
+    ]
+  },
+  {
     "id": "same_core_threshold_shift_interval_996_over_249",
     "claim_id": "same_core_threshold_shift_interval",
     "kind": "theorem-witness",
@@ -269,6 +346,7 @@
     },
     "summary": "The 996 over 249 family is the canonical same-core witness for the exact k-power shift law.",
     "evidence": [
+      "lean/QRTour/Examples.lean",
       "lean/QRTour/CompositeVisibility.lean",
       "lean/QRTour/Visibility.lean",
       "tests/test_visibility.py"
@@ -333,7 +411,7 @@
         996
       ]
     },
-    "summary": "This same-core family shows that short exact same-core transport does not yet extend to carry-to-remainder functionality: 249 has an isolated relabeling window, while 498 and 996 stay quotient-only.",
+    "summary": "This same-core family shows that forward exact same-core carry-to-remainder transport fails even on the small `249 -> 996` shifted pair: `249` is functional on the one-block `1/0` window, `996` already fails on the corresponding `2/0` window, and the larger selector-family windows for `498` and `996` stay quotient-only.",
     "evidence": [
       "lean/QRTour/CarryComparison.lean",
       "bridge_reptends/transducer.py",
@@ -356,6 +434,7 @@
     },
     "summary": "The short 996 over 249 same-core shift is the canonical witness for transported remainder-to-carry functionality on the actual window.",
     "evidence": [
+      "lean/QRTour/Examples.lean",
       "lean/QRTour/CarryComparison.lean",
       "tests/test_carry_transducer.py"
     ]

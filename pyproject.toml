@@ -40,6 +40,7 @@ sweep-primes = "bridge_reptends.sweep:main"
 search-reptends = "bridge_reptends.search:main"
 sync-registry-docs = "bridge_reptends.sync_registry_docs:main"
 build-expository-note = "bridge_reptends.build_expository_note:main"
+build-release-snapshot = "bridge_reptends.build_release_snapshot:main"
 ci-checks = "bridge_reptends.ci_checks:main"
 
 [project.urls]

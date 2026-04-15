@@ -3,6 +3,7 @@ Copyright (c) 2024 Mike Purvis. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import QRTour.RemainderOrbit
+import GeometricStack.OrbitBufferDuality
 import GeometricStack.Scale
 
 /-!
@@ -26,6 +27,7 @@ remainders by the base.
 * `QRTour.digit_remainder_eq` - B × r[n] = d[n] × p + r[n+1]
 * `QRTour.digit_lt_base` - Each digit is less than B (when B < p)
 * `QRTour.digit_periodic` - The digit sequence has period = orderOf B
+* `QRTour.digitAt_orbitRem_eq` - The executable orbit-buffer tape satisfies the same Euclidean digit/remainder law
 * `QRTour.digit_eq_illegal` - Connection to GeometricStack's illegal/direct decomposition
 
 ## Connection to GeometricStack
@@ -152,6 +154,36 @@ theorem reptendPeriod_dvd_pred (B : ℕ) (hB : Nat.Coprime B p) :
   have hcard : Fintype.card (ZMod p)ˣ = p - 1 := ZMod.card_units p
   rw [← hcard]
   exact orderOf_dvd_card
+
+/-! ### Connection to Orbit-Buffer Duality
+
+The executable companion definitions in `GeometricStack.OrbitBufferDuality`
+are intended to match the public `QRTour` remainder and digit surfaces exactly.
+-/
+
+/-- The executable orbit-buffer remainder agrees with the QRTour remainder value. -/
+theorem orbitRem_eq_remainder_val (B : ℕ) (n : ℕ) :
+    GeometricStack.OrbitBufferDuality.orbitRem (M := p) B n =
+      (remainder (p := p) B n).val := by
+  letI : NeZero p := ⟨hp.out.ne_zero⟩
+  rw [remainder_val_eq]
+  simp only [GeometricStack.OrbitBufferDuality.orbitRem, ← Nat.cast_pow, ZMod.val_natCast]
+
+/-- The executable orbit-buffer digit agrees with the public QRTour digit. -/
+theorem digitAt_eq_digit (B : ℕ) (n : ℕ) :
+    GeometricStack.OrbitBufferDuality.digitAt (M := p) B n = digit p B n := by
+  letI : NeZero p := ⟨hp.out.ne_zero⟩
+  simp only [GeometricStack.OrbitBufferDuality.digitAt, digit, orbitRem_eq_remainder_val]
+
+/-- The executable orbit-buffer tape satisfies the same Euclidean
+digit/remainder equation as the public `QRTour` digit surface. -/
+theorem digitAt_orbitRem_eq (B : ℕ) (n : ℕ) :
+    B * GeometricStack.OrbitBufferDuality.orbitRem (M := p) B n =
+      GeometricStack.OrbitBufferDuality.digitAt (M := p) B n * p +
+        GeometricStack.OrbitBufferDuality.orbitRem (M := p) B (n + 1) := by
+  letI : NeZero p := ⟨hp.out.ne_zero⟩
+  simpa [scaledRemainder, digitAt_eq_digit, orbitRem_eq_remainder_val] using
+    digit_remainder_eq (p := p) B n
 
 /-! ### Connection to GeometricStack
 

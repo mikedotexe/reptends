@@ -21,6 +21,9 @@ to the linear update `g(x) = b·x` (multiplication) via the shift `T(x) = x + 1`
 
 * `shift_conj` - The conjugacy: `shift (affineStep x) = linearStep (shift x)`
 * `shift_affineOrbit_eq_linearOrbit` - Duality: `shift (affineOrbit n) = linearOrbit n`
+* `affineOrbit_periodic` - Periodicity of the affine remainder orbit
+* `orbitRem_succ_eq_mod` - The executable remainder tape satisfies the Euclidean mod-step recursion
+* `digitAt_orbitRem_eq` - The executable digit tape is the corresponding Euclidean quotient
 * `orbitRem_periodic` - Periodicity of remainder sequence
 * `digitAt_periodic` - Periodicity of digit sequence
 
@@ -108,6 +111,7 @@ theorem affineOrbit_eq_pow_sub_one (b : ℕ) :
       ring
 
 -- The orbit-buffer duality: shifting the affine orbit gives the linear orbit
+omit [NeZero M] in
 theorem shift_affineOrbit_eq_linearOrbit (b : ℕ) :
     ∀ n, shift (M := M) (affineOrbit (M := M) b n) = linearOrbit (M := M) b n := by
   intro n
@@ -121,6 +125,25 @@ def orbitRem (b : ℕ) (t : ℕ) : ℕ :=
 -- Executable: digit d_t = floor(b * r_t / M)
 def digitAt (b : ℕ) (t : ℕ) : ℕ :=
   (b * orbitRem (M := M) b t) / M
+
+-- The executable remainder tape satisfies the Euclidean mod-step recursion.
+theorem orbitRem_succ_eq_mod (b : ℕ) (t : ℕ) :
+    orbitRem (M := M) b (t + 1) = (b * orbitRem (M := M) b t) % M := by
+  rw [orbitRem, pow_succ, mul_comm]
+  conv_lhs => rw [← ZMod.natCast_zmod_val ((b : ZMod M) ^ t)]
+  rw [← Nat.cast_mul, ZMod.val_natCast, orbitRem]
+
+-- The executable digit tape is the corresponding Euclidean quotient.
+omit [NeZero M] in
+theorem digitAt_eq_div (b : ℕ) (t : ℕ) :
+    digitAt (M := M) b t = (b * orbitRem (M := M) b t) / M := rfl
+
+-- The executable digit/remainder pair satisfies the Euclidean division law.
+theorem digitAt_orbitRem_eq (b : ℕ) (t : ℕ) :
+    b * orbitRem (M := M) b t =
+      digitAt (M := M) b t * M + orbitRem (M := M) b (t + 1) := by
+  rw [orbitRem_succ_eq_mod, digitAt_eq_div]
+  exact (Nat.div_add_mod' (b * orbitRem (M := M) b t) M).symm
 
 -- If b is coprime to M, we can package the period using units and orderOf.
 -- This is the canonical `L = ord_M(b)` definition in mathlib.
@@ -142,7 +165,20 @@ theorem pow_period_eq_one (b : ℕ) (hb : b.Coprime M) :
     congrArg (fun u : (ZMod M)ˣ => (u : ZMod M)) hu
   simpa [baseUnit] using hz
 
+omit [NeZero M] in
+theorem affineOrbit_periodic (b : ℕ) (hb : b.Coprime M) (t : ℕ) :
+    affineOrbit (M := M) b (t + period (M := M) b hb) = affineOrbit (M := M) b t := by
+  rw [affineOrbit_eq_pow_sub_one (M := M) b (t + period (M := M) b hb)]
+  rw [affineOrbit_eq_pow_sub_one (M := M) b t]
+  calc
+    (b : ZMod M) ^ (t + period (M := M) b hb) - 1
+        = ((b : ZMod M) ^ t) * ((b : ZMod M) ^ period (M := M) b hb) - 1 := by
+            rw [pow_add]
+    _ = ((b : ZMod M) ^ t) * 1 - 1 := by rw [pow_period_eq_one (M := M) b hb]
+    _ = (b : ZMod M) ^ t - 1 := by simp
+
 -- Periodicity of the remainder tape (and hence digits) under coprimality
+omit [NeZero M] in
 theorem orbitRem_periodic (b : ℕ) (hb : b.Coprime M) (t : ℕ) :
     orbitRem (M := M) b (t + period (M := M) b hb) = orbitRem (M := M) b t := by
   have : ((b : ZMod M) ^ (t + period (M := M) b hb)) = ((b : ZMod M) ^ t) := by
@@ -150,26 +186,35 @@ theorem orbitRem_periodic (b : ℕ) (hb : b.Coprime M) (t : ℕ) :
     simp [pow_add, pow_period_eq_one (M := M) b hb, mul_one]
   exact congrArg ZMod.val this
 
+omit [NeZero M] in
 theorem digitAt_periodic (b : ℕ) (hb : b.Coprime M) (t : ℕ) :
     digitAt (M := M) b (t + period (M := M) b hb) = digitAt (M := M) b t := by
   simp [digitAt, orbitRem_periodic (M := M) b hb t]
 
 /-! ## Examples
 
-Small sanity checks (Lean can execute these).
+Small sanity checks recorded as silent executable examples so public Lean builds
+do not emit `#eval` output.
 -/
 section Examples
 
 -- 1/19 = 0.\overline{052631578947368421} in base 10
 -- The digits are: 0,5,2,6,3,1,5,7,8,9,4,7,3,6,8,4,2,1
-#eval List.map (digitAt (M := 19) 10) (List.range 18)
+example :
+    List.map (digitAt (M := 19) 10) (List.range 18) =
+      [0, 5, 2, 6, 3, 1, 5, 7, 8, 9, 4, 7, 3, 6, 8, 4, 2, 1] := by
+  native_decide
 
 -- 1/7 = 0.\overline{142857} in base 10
-#eval List.map (digitAt (M := 7) 10) (List.range 6)
+example :
+    List.map (digitAt (M := 7) 10) (List.range 6) = [1, 4, 2, 8, 5, 7] := by
+  native_decide
 
 -- 1/97 = 0.\overline{...96 digits...} in base 10
 -- Period is 96, showing 10 is a primitive root mod 97
-#eval List.map (digitAt (M := 97) 10) (List.range 10)
+example :
+    List.map (digitAt (M := 97) 10) (List.range 10) = [0, 1, 0, 3, 0, 9, 2, 7, 8, 3] := by
+  native_decide
 
 end Examples
 
