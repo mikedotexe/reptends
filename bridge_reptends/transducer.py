@@ -18,9 +18,17 @@ from __future__ import annotations
 from collections import Counter
 from dataclasses import dataclass
 
+from .analysis import multiplicative_order
 from .orbit_weave import apply_carry, raw_series_blocks, skeleton_vs_actual
 from .orbit_weave import strip_base_factors
 from .registry import claim_context_for_parameters
+
+
+CANONICAL_ORBIT_CARRY_TRACE_MODES = {
+    21: 6,
+    97: 2,
+    996: 3,
+}
 
 
 def _fiber_map(pairs: tuple[tuple[int, int], ...]) -> tuple[tuple[int, tuple[int, ...]], ...]:
@@ -2632,4 +2640,138 @@ def carry_factorization_rows(
         "state_relabeling": 2,
     }
     rows.sort(key=lambda row: (priority[str(row["factorization_regime"])], int(row["k"]), int(row["n"])))
+    return rows
+
+
+def _trace_visibility_event(coefficient: int, block_base: int, carry_in: int) -> str:
+    if coefficient >= block_base:
+        return "local_overflow"
+    if carry_in > 0:
+        return "incoming_carry_before_overflow"
+    return "carry_free_raw"
+
+
+def orbit_carry_trace_rows(
+    members: tuple[int, ...] = (21, 97, 996),
+    *,
+    base: int = 10,
+    n_blocks: int = 8,
+    max_block_base: int = 10_000_000,
+    max_m: int = 12,
+) -> list[dict[str, object]]:
+    """
+    Experimental trace lens for the orbit-plus-carry thesis.
+
+    This reports aligned finite-window data only: remainder orbit states, raw
+    coefficients, carry states, and displayed blocks. It is not a theorem-level
+    promotion of the open global `carry_dfa_factorization` claim.
+    """
+    rows: list[dict[str, object]] = []
+    for n in members:
+        prefer_m = CANONICAL_ORBIT_CARRY_TRACE_MODES.get(n)
+        if prefer_m is None:
+            prefer_m = select_carry_factorization_prefer_m(
+                n,
+                base=base,
+                n_blocks=n_blocks,
+                max_m=max_m,
+                max_block_base=max_block_base,
+            )
+        if prefer_m is None:
+            continue
+        try:
+            comparison = carry_remainder_comparison(
+                n,
+                base=base,
+                n_blocks=n_blocks,
+                prefer_m=prefer_m,
+            )
+        except Exception:
+            continue
+        if comparison.B > max_block_base or comparison.q <= 0:
+            continue
+
+        periodic_modulus, _ = strip_base_factors(n, base)
+        period = (
+            multiplicative_order(comparison.B, periodic_modulus)
+            if periodic_modulus > 1
+            else None
+        )
+        report = comparison.decision_report
+        carry_transitions = comparison.carry_example.run.transitions[:n_blocks]
+        remainder_transitions = comparison.remainder_run.transitions[:n_blocks]
+
+        rows.append(
+            {
+                "group": "case_summary",
+                "n": comparison.n,
+                "periodic_modulus": periodic_modulus,
+                "base": comparison.base,
+                "m": comparison.m,
+                "B": comparison.B,
+                "q": comparison.q,
+                "k": comparison.k,
+                "period": period,
+                "lookahead_blocks": comparison.lookahead_blocks,
+                "outputs_match": report.outputs_match,
+                "factorization_regime": report.regime,
+                "obstruction_class": report.obstruction_class,
+                "carry_state_count": len(comparison.carry_graph.states),
+                "remainder_state_count": len(comparison.remainder_graph.states),
+                "carry_class_count": comparison.minimized_carry_graph.class_count,
+                "remainder_class_count": comparison.minimized_remainder_graph.class_count,
+                "open_claim_boundary": comparison.open_claim_boundary,
+            }
+        )
+
+        for carry_transition, remainder_transition, carried_block, actual_block in zip(
+            carry_transitions,
+            remainder_transitions,
+            comparison.carry_example.carried_blocks,
+            comparison.carry_example.actual_blocks,
+        ):
+            cycle_index = carry_transition.position % period if period else None
+            coefficient_fits_block = carry_transition.coefficient < comparison.B
+            rows.append(
+                {
+                    "group": "trace_step",
+                    "n": comparison.n,
+                    "base": comparison.base,
+                    "m": comparison.m,
+                    "position": carry_transition.position,
+                    "cycle_index": cycle_index,
+                    "coefficient": carry_transition.coefficient,
+                    "coefficient_fits_block": coefficient_fits_block,
+                    "carry_in": carry_transition.carry_in,
+                    "carry_out": carry_transition.carry_out,
+                    "carry_block_value": carry_transition.block_value,
+                    "carried_block": carried_block,
+                    "remainder_in": remainder_transition.remainder_in,
+                    "remainder_out": remainder_transition.remainder_out,
+                    "long_division_block": actual_block,
+                    "output_matches": carried_block == actual_block,
+                    "visibility_event": _trace_visibility_event(
+                        carry_transition.coefficient,
+                        comparison.B,
+                        carry_transition.carry_in,
+                    ),
+                }
+            )
+
+        rows.append(
+            {
+                "group": "state_map_summary",
+                "n": comparison.n,
+                "base": comparison.base,
+                "m": comparison.m,
+                "remainder_to_carry_functional": comparison.remainder_to_carry_map.is_functional,
+                "remainder_to_carry_injective": comparison.remainder_to_carry_map.is_injective,
+                "remainder_to_carry_fiber_signature": comparison.remainder_to_carry_map.fiber_signature,
+                "remainder_to_carry_preimage_signature": comparison.remainder_to_carry_map.preimage_signature,
+                "carry_to_remainder_functional": comparison.carry_to_remainder_map.is_functional,
+                "carry_to_remainder_injective": comparison.carry_to_remainder_map.is_injective,
+                "carry_to_remainder_fiber_signature": comparison.carry_to_remainder_map.fiber_signature,
+                "carry_to_remainder_preimage_signature": comparison.carry_to_remainder_map.preimage_signature,
+            }
+        )
     return rows

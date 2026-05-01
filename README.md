@@ -15,6 +15,11 @@
 - Canonical witness anchors: `digit_periodicity_prime19_base10`, `series_q_weighted_identity_prime97_stride2`, `series_q_weighted_identity_n249_stride3`, `carry_window_transducer_prime97_window6`, `preperiod_from_base_factors_n996_base10`, `carry_dfa_factorization_target_21_97_996`, `same_core_threshold_shift_interval_996_over_249`, and `carry_dfa_factorization_target_249_498_996_same_core`
 - Obstruction records: `carry_state_relabeling_failure_97`, `carry_state_relabeling_failure_996`, `carry_selector_monotonicity_failure_21`, and `carry_selector_core_invariance_failure_996`
 - Search surface `orbit_carry_frontier`: Groups the exact orbit layer, implemented carry layer, open factorization targets, and obstruction families under one exported surface. Command: `search-reptends orbit-carry-frontier --max 1200 --base 10 --blocks 8`
+- Search surface `orbit_carry_trace`: Experimental finite trace lens for the canonical 21 / 97 / 996 trio, aligning remainder orbit states, raw coefficients, finite carry-window states, and displayed blocks. Command: `search-reptends orbit-carry-trace --base 10 --blocks 8 --members 21,97,996`
+- Search surface `visibility_optics_workbench`: Ranks finite-window evidence for how readable the source remainder orbit is through the carry-propagated block normalization instrument. Command: `search-reptends visibility-optics --max 1200 --base 10 --blocks 8 --top 20`
+- Search surface `visibility_base_compare`: Compares Visibility Optics signal classes across base instruments such as 10, 12, and 30 so base choice becomes data rather than a default. Command: `search-reptends visibility-base-compare --max 1200 --bases 10,12,30 --blocks 8 --top 20`
+- Search surface `instrument_atlas`: Compares base instruments by what they reveal, absorb, distort, or obstruct so working axioms can be revised against finite-window evidence. Command: `search-reptends instrument-atlas --max 1200 --bases 7,10,12,30 --blocks 8 --top 20`
+- Search surface `chart_invariance`: Compares base-chart pairs for finite-window invariant candidates and clean distortion witnesses. Command: `search-reptends chart-invariance --max 1200 --bases 7,10,12,30 --blocks 8 --top 20`
 - Search surface `carry_factorization`: Keeps the canonical 21 / 97 / 996 carry-DFA comparisons visible as bounded evidence beneath the open factorization claim. Command: `search-reptends carry-factorization --max 500 --blocks 8`
 - Search surface `state_merging`: Makes the finite-window collapse/compression pattern explicit on the selected Track 17 coordinate for canonical cases like 21, 97, and 996. Command: `search-reptends state-merging --max 500 --base 10 --blocks 8`
 - Search surface `quotient_obstructions`: Splits selected-coordinate quotient-only cases into visible preimage compression versus hidden graph obstruction on the base-10 Track 17 surface. Command: `search-reptends quotient-obstructions --max 500 --base 10 --blocks 8`
@@ -24,6 +29,62 @@
 - Search surface `carry_selector_same_core`: Tracks same-core selector-profile disagreement families such as 249 / 498 / 996. Command: `search-reptends carry-selector-same-core --max 400 --blocks 8`
 - Search surface `same_core_visibility`: Compares actual denominators to stripped periodic cores so the exact same-core shift layer stays connected to the frontier. Command: `search-reptends same-core-visibility --max 500 --base 10 --blocks 8`
 <!-- THROUGHLINE_RESEARCH_THESIS_END -->
+
+## Orbit, Instrument, Visibility
+
+The reptend is the observed trace; the remainder orbit is the source; the
+finite carry window is the instrument.
+
+The displayed decimal string is not the primary object in this lens. It is an
+observation of an intrinsic remainder orbit through positional notation. The
+raw coefficient stream `qk^j` carries the arithmetic signal, and
+carry-propagated block normalization is the finite window that makes that
+signal visible as base-`B` blocks.
+
+Read [docs/ORBIT_INSTRUMENT_VISIBILITY.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/ORBIT_INSTRUMENT_VISIBILITY.md)
+for the campfire-to-math version, or inspect the canonical finite-window trace:
+
+New readers can start with
+[docs/OUTSIDE_READER_DOORWAY.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/OUTSIDE_READER_DOORWAY.md),
+a short front porch for the observation/readout idea.
+
+```bash
+search-reptends orbit-carry-trace --base 10 --blocks 8 --members 21,97,996
+```
+
+For a broader ranked probe, use the experimental **Visibility Optics workbench**:
+
+```bash
+search-reptends visibility-optics --max 1200 --base 10 --blocks 8 --top 20
+```
+
+Read [docs/VISIBILITY_OPTICS_WORKBENCH.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/VISIBILITY_OPTICS_WORKBENCH.md)
+for the field guide to the row groups, signal classes, and follow-up commands.
+
+To compare bases as different observation instruments, run:
+
+```bash
+search-reptends visibility-base-compare --max 1200 --bases 10,12,30 --blocks 8 --top 20
+```
+
+For the broader **Instrument Atlas**, which compares bases by what they reveal,
+absorb, distort, or obstruct, read
+[docs/INSTRUMENT_ATLAS.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/INSTRUMENT_ATLAS.md)
+and run:
+
+```bash
+search-reptends instrument-atlas --max 1200 --bases 7,10,12,30 --blocks 8 --top 20
+```
+
+The geometric bridge from `GeometricStack` to these finite-window traces lives
+in [docs/VISIBILITY_GEOMETRY.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/VISIBILITY_GEOMETRY.md).
+To compare base charts for invariant candidates and clean distortion witnesses,
+read [docs/CHART_INVARIANCE.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/CHART_INVARIANCE.md)
+and run:
+
+```bash
+search-reptends chart-invariance --max 1200 --bases 7,10,12,30 --blocks 8 --top 20
+```
 
 ## The Throughline
 
@@ -123,6 +184,7 @@ search-reptends carry-selector-non-k1 --max 400 --blocks 8
 search-reptends carry-selector-same-core --max 400 --blocks 8
 search-reptends carry-selector-research --max 120 --bases 7,10,12 --blocks 8
 search-reptends orbit-carry-frontier --max 1200 --base 10 --blocks 8
+search-reptends orbit-carry-trace --base 10 --blocks 8 --members 21,97,996
 search-reptends state-merging --max 500 --base 10 --blocks 8
 search-reptends state-merging-same-core --max 1200 --base 10 --blocks 8
 search-reptends quotient-obstructions --max 500 --base 10 --blocks 8
@@ -135,7 +197,7 @@ ci-checks
 
 ## Core Site Section Companion Map
 
-- Throughline thesis: read `README.md`, `docs/EXPOSITORY_NOTE.md`, and `docs/THEOREM_WITNESS_ATLAS.md`; then run `python -m bridge_reptends.examples.orbit_plus_carry_tour` and `search-reptends orbit-carry-frontier --max 1200 --base 10 --blocks 8`.
+- Throughline thesis: read `README.md`, `docs/EXPOSITORY_NOTE.md`, and `docs/THEOREM_WITNESS_ATLAS.md`; then run `python -m bridge_reptends.examples.orbit_plus_carry_tour`, `search-reptends orbit-carry-frontier --max 1200 --base 10 --blocks 8`, and the experimental trace lens `search-reptends orbit-carry-trace --base 10 --blocks 8 --members 21,97,996`.
 - Claim atlas: read `docs/PROOF_STATUS_ATLAS.md` and `data/claim_registry.json`; then run `search-reptends theorem-witnesses --claim incoming_carry_position_formula` or `python -m bridge_reptends.sync_registry_docs --check`.
 - Preimage-fiber profile (state-merging atlas): read `docs/CARRY_TRANSDUCER.md`, `bridge_reptends/transducer.py`, and `lean/QRTour/Factorization.lean`; then run `python -m bridge_reptends.examples.state_merging_tour`, `python -m bridge_reptends.examples.quotient_obstruction_tour`, and `search-reptends state-merging --max 500 --base 10 --blocks 8`.
 - Linked `1/97` views and carry panel: read `bridge_reptends/examples/carry_transducer_demo.py` and `bridge_reptends/examples/orbit_plus_carry_tour.py`; then run `python -m bridge_reptends.examples.carry_transducer_demo` or `python -c "from bridge_reptends import print_skeleton_analysis; print_skeleton_analysis(97)"`.

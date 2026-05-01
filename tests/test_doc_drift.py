@@ -56,6 +56,14 @@ WITNESS_ATLAS = DOCS_DIR / "THEOREM_WITNESS_ATLAS.md"
 AGDA_CORRESPONDENCE = DOCS_DIR / "AGDA_CORRESPONDENCE.md"
 CARRY_TRANSDUCER = DOCS_DIR / "CARRY_TRANSDUCER.md"
 CARRIED_PREFIX_VISIBILITY = DOCS_DIR / "CARRIED_PREFIX_VISIBILITY.md"
+ORBIT_INSTRUMENT_VISIBILITY = DOCS_DIR / "ORBIT_INSTRUMENT_VISIBILITY.md"
+OUTSIDE_READER_DOORWAY = DOCS_DIR / "OUTSIDE_READER_DOORWAY.md"
+VISIBILITY_OPTICS_WORKBENCH = DOCS_DIR / "VISIBILITY_OPTICS_WORKBENCH.md"
+INSTRUMENT_ATLAS = DOCS_DIR / "INSTRUMENT_ATLAS.md"
+VISIBILITY_GEOMETRY = DOCS_DIR / "VISIBILITY_GEOMETRY.md"
+CHART_INVARIANCE = DOCS_DIR / "CHART_INVARIANCE.md"
+SITE_DOCUMENT = ROOT / "site" / "src" / "components" / "FiniteReptendDocument.tsx"
+SITE_ORBIT_GALLERY = ROOT / "site" / "src" / "components" / "OrbitInstrumentVisibilityGallery.tsx"
 PUBLIC_DOCS = [README, AGENTS, CLAUDE, DISCOVERIES, *sorted(DOCS_DIR.glob("*.md"))]
 
 BANNED_LEGACY_STRINGS = [
@@ -172,6 +180,216 @@ def test_carry_transducer_doc_records_exact_flagship_candidates() -> None:
     assert "same-core family" in text
     assert "`249`" in text and "`498`" in text and "`996`" in text
     assert "`17 -> 34` selector-family shift" in text
+
+
+def test_orbit_instrument_visibility_lens_stays_prominent_and_status_honest() -> None:
+    readme = README.read_text()
+    note = ORBIT_INSTRUMENT_VISIBILITY.read_text()
+    carry_doc = CARRY_TRANSDUCER.read_text()
+    roadmap = HARDENING_ROADMAP.read_text()
+    site_document = SITE_DOCUMENT.read_text()
+    gallery = SITE_ORBIT_GALLERY.read_text()
+
+    assert "## Orbit, Instrument, Visibility" in readme
+    assert "The reptend is the observed trace; the remainder orbit is the source; the" in readme
+    assert "docs/ORBIT_INSTRUMENT_VISIBILITY.md" in readme
+    assert "search-reptends orbit-carry-trace --base 10 --blocks 8 --members 21,97,996" in readme
+    assert "Visibility Optics workbench" in readme
+    assert "search-reptends visibility-optics --max 1200 --base 10 --blocks 8 --top 20" in readme
+    assert "search-reptends visibility-base-compare --max 1200 --bases 10,12,30 --blocks 8 --top 20" in readme
+    assert "Instrument Atlas" in readme
+    assert "docs/INSTRUMENT_ATLAS.md" in readme
+    assert "search-reptends instrument-atlas --max 1200 --bases 7,10,12,30 --blocks 8 --top 20" in readme
+    assert "docs/VISIBILITY_GEOMETRY.md" in readme
+    assert "docs/CHART_INVARIANCE.md" in readme
+    assert "search-reptends chart-invariance --max 1200 --bases 7,10,12,30 --blocks 8 --top 20" in readme
+    assert "docs/OUTSIDE_READER_DOORWAY.md" in readme
+    assert "docs/VISIBILITY_OPTICS_WORKBENCH.md" in readme
+
+    assert OUTSIDE_READER_DOORWAY.exists()
+    doorway = OUTSIDE_READER_DOORWAY.read_text()
+    assert doorway.startswith("# Outside Reader Doorway")
+    assert "The decimal is a readout, not the object." in doorway
+    assert "`1/97`" in doorway
+    assert "`B = 100`" in doorway
+    assert "`qk^j`" in doorway
+    assert "remainder orbit" in doorway
+    assert "finite carry window" in doorway
+    assert "small_k_visibility_threshold" in doorway
+    assert "carry_dfa_factorization" in doorway
+    assert "search-reptends visibility-base-compare --max 1200 --bases 10,12,30 --blocks 8 --top 20" in doorway
+    assert "search-reptends instrument-atlas --max 1200 --bases 7,10,12,30 --blocks 8 --top 20" in doorway
+    assert "INSTRUMENT_ATLAS.md" in doorway
+    assert "VISIBILITY_GEOMETRY.md" in doorway
+    assert "CHART_INVARIANCE.md" in doorway
+    assert "not the proof-status source of truth" in doorway
+
+    assert ORBIT_INSTRUMENT_VISIBILITY.exists()
+    assert note.startswith("# Orbit, Instrument, Visibility")
+    assert "reader-facing research lens, not a new theorem claim" in note
+    assert "`carry_dfa_factorization` claim remains `open`" in note
+    assert "minimal/global" in note
+    assert "`small_k_visibility_threshold` also remains `open`" in note
+    assert "Source: the remainder orbit" in note
+    assert "Signal: the raw coefficient stream `qk^j`" in note
+    assert "Instrument: the finite carry window" in note
+    assert "Observation: the displayed reptend blocks" in note
+    assert "Visibility Optics workbench" in note
+    assert "search-reptends visibility-optics --max 1200 --base 10 --blocks 8 --top 20" in note
+    assert "search-reptends visibility-base-compare --max 1200 --bases 10,12,30 --blocks 8 --top 20" in note
+    assert "search-reptends instrument-atlas --max 1200 --bases 7,10,12,30 --blocks 8 --top 20" in note
+    assert "INSTRUMENT_ATLAS.md" in note
+    assert "VISIBILITY_GEOMETRY.md" in note
+    assert "CHART_INVARIANCE.md" in note
+    assert "phase space" in note
+    assert "capacity thresholds" in note
+    assert "VISIBILITY_OPTICS_WORKBENCH.md" in note
+
+    assert VISIBILITY_OPTICS_WORKBENCH.exists()
+    workbench = VISIBILITY_OPTICS_WORKBENCH.read_text()
+    assert workbench.startswith("# Visibility Optics Workbench")
+    assert "Status: experimental finite-window workbench" in workbench
+    assert "`small_k_visibility_threshold` and `carry_dfa_factorization` remain `open`" in workbench
+    assert "`workbench_summary`" in workbench
+    assert "`canonical_anchor`" in workbench
+    assert "`ranked_case`" in workbench
+    assert "`same_core_signal`" in workbench
+    assert "`transparent_window`" in workbench
+    assert "`early_carry_intrusion`" in workbench
+    assert "`visible_state_compression`" in workbench
+    assert "`hidden_graph_obstruction`" in workbench
+    assert "`same_core_drift`" in workbench
+    assert "Base-Instrument Comparison" in workbench
+    assert "Base `30`" in workbench
+    assert "search-reptends visibility-base-compare --max 1200 --bases 10,12,30 --blocks 8 --top 20" in workbench
+    assert "Instrument Atlas" in workbench
+    assert "working_axiom_signal" in workbench
+    assert "search-reptends instrument-atlas --max 1200 --bases 7,10,12,30 --blocks 8 --top 20" in workbench
+
+    assert INSTRUMENT_ATLAS.exists()
+    atlas = INSTRUMENT_ATLAS.read_text()
+    assert atlas.startswith("# Instrument Atlas")
+    assert "empirical finite-window research surface, not a theorem source" in atlas
+    assert "reveal" in atlas and "absorb" in atlas and "distort" in atlas and "obstruct" in atlas
+    assert "`small_k_visibility_threshold` and" in atlas
+    assert "`carry_dfa_factorization` are still `open`" in atlas
+    assert "search-reptends instrument-atlas --max 1200 --bases 7,10,12,30 --blocks 8 --top 20" in atlas
+    assert "10:visible_state_compression -> 12:early_carry_intrusion -> 30:hidden_graph_obstruction" in atlas
+    assert "recoverability_is_instrument_relative" in atlas
+    assert "visible_trace_can_hide_state_obstruction" in atlas
+    assert "VISIBILITY_GEOMETRY.md" in atlas
+    assert "CHART_INVARIANCE.md" in atlas
+    assert "search-reptends chart-invariance --max 1200 --bases 7,10,12,30 --blocks 8 --top 20" in atlas
+
+    assert VISIBILITY_GEOMETRY.exists()
+    geometry = VISIBILITY_GEOMETRY.read_text()
+    assert geometry.startswith("# Visibility Geometry")
+    assert "conceptual research lens, not a theorem source" in geometry
+    assert "GeometricStack" in geometry
+    assert "phase space" in geometry
+    assert "capacity geometry" in geometry
+    assert "Fiber Geometry" in geometry
+    assert "Chart Geometry" in geometry
+    assert "`small_k_visibility_threshold`" in geometry
+    assert "`carry_dfa_factorization`" in geometry
+    assert "10:visible_state_compression -> 12:early_carry_intrusion -> 30:hidden_graph_obstruction" in geometry
+    assert "CHART_INVARIANCE.md" in geometry
+    assert "search-reptends chart-invariance --max 1200 --bases 7,10,12,30 --blocks 8 --top 20" in geometry
+    assert "QRTour/ChartInvariance.lean" in geometry
+    assert "finite `ChartObservation` rows" in geometry
+    assert "`ChartPairWitness` classifications" in geometry
+    assert "`transparentWindow` and" in geometry
+    assert "`hiddenGraphObstruction` as annotated state-map" in geometry
+
+    assert CHART_INVARIANCE.exists()
+    chart_doc = CHART_INVARIANCE.read_text()
+    assert chart_doc.startswith("# Chart Invariance")
+    assert "empirical finite-window chart comparison, not a theorem source" in chart_doc
+    assert "QRTour/ChartInvariance.lean" in chart_doc
+    assert "VisibilitySignalClass" in chart_doc
+    assert "ChartObservation" in chart_doc
+    assert "ChartObservation.derivedSignalClass?" in chart_doc
+    assert "ChartSignature.ofDenominator" in chart_doc
+    assert "compactObservations" in chart_doc
+    assert "transparentWindow" in chart_doc
+    assert "earlyCarryIntrusion" in chart_doc
+    assert "visibleStateCompression" in chart_doc
+    assert "hiddenGraphObstruction" in chart_doc
+    assert "partial classifier returns `none`" in chart_doc
+    assert "compactObservations_derivedSignalAgreement_count = 10" in chart_doc
+    assert "B`, `q`, `k`, raw-prefix, and carry-position data" in chart_doc
+    assert "a decimal or block expansion is a readout" in chart_doc
+    assert "raw finite evidence from the smaller signature" in chart_doc
+    assert "ChartPairWitness" in chart_doc
+    assert "ChartInvarianceExamples" in chart_doc
+    assert "compactBasePairWitnesses" in chart_doc
+    assert "countWitnessesForBasePair" in chart_doc
+    assert "countInvariantWitnessesForBasePair" in chart_doc
+    assert "10/12` has `2` invariant and `2` distortion witnesses" in chart_doc
+    assert "CleanChartDistortion" in chart_doc
+    assert "claim-free in the Lean module index" in chart_doc
+    assert "clean chart distortion" in chart_doc
+    assert "absorption-stable signal" in chart_doc
+    assert "chart_pair_summary" in chart_doc
+    assert "chart_distortion_witness" in chart_doc
+    assert "`small_k_visibility_threshold`" in chart_doc
+    assert "`carry_dfa_factorization`" in chart_doc
+    assert "10:visible_state_compression -> 12:early_carry_intrusion -> 30:hidden_graph_obstruction" in chart_doc
+
+    assert "observed trace; the remainder orbit is" in carry_doc
+    assert "finite carry window is the instrument" in carry_doc
+    assert "carry-propagated block normalization" in carry_doc
+    assert "visibility_optics_workbench_rows" in carry_doc
+    assert "Visibility Optics workbench" in carry_doc
+    assert "VISIBILITY_OPTICS_WORKBENCH.md" in carry_doc
+    assert "base `30` as data" in carry_doc
+    assert "search-reptends visibility-base-compare --max 1200 --bases 10,12,30 --blocks 8 --top 20" in carry_doc
+    assert "Instrument Atlas" in carry_doc
+    assert "search-reptends instrument-atlas --max 1200 --bases 7,10,12,30 --blocks 8 --top 20" in carry_doc
+
+    assert "Visibility Optics" in roadmap
+    assert "source remainder orbit" in roadmap
+    assert "finite carry window" in roadmap
+    assert "Instrument Atlas" in roadmap
+    assert "working-axiom pressure" in roadmap
+    assert "VISIBILITY_GEOMETRY.md" in roadmap
+    assert "GeometricStack" in roadmap
+    assert "CHART_INVARIANCE.md" in roadmap
+    assert "clean chart distortion witnesses" in roadmap.replace("\n  ", " ")
+    assert "ChartObservation` rows project to `ChartSignature`s" in roadmap
+    assert "compact witness counts are" in roadmap
+    assert "state-map labels remain annotated beneath" in roadmap
+
+    assert "OrbitInstrumentVisibilityGallery" in site_document
+    assert "Orbit, Instrument, Visibility" in gallery
+    assert "The reptend is the observed trace; the remainder orbit is the source;" in gallery
+    assert "finite carry window is the instrument" in gallery
+    assert "Visibility Optics" in gallery
+    assert "remainder orbit" in gallery
+    assert "raw coefficient stream" in gallery
+    assert "carry-propagated block normalization" in gallery
+    assert "finite-window trace" in gallery
+    assert "search-reptends orbit-carry-trace --base 10 --blocks 8 --members 21,97,996" in gallery
+    assert "Visibility Optics workbench" in gallery
+    assert "search-reptends visibility-optics --max 1200 --base 10 --blocks 8 --top 20" in gallery
+    assert "search-reptends visibility-base-compare --max 1200 --bases 10,12,30 --blocks 8 --top 20" in gallery
+    assert "search-reptends instrument-atlas --max 1200 --bases 7,10,12,30 --blocks 8 --top 20" in gallery
+    assert "base-instrument comparison" in gallery
+    assert "Instrument Atlas" in gallery
+    assert "docs/INSTRUMENT_ATLAS.md" in gallery
+    assert "Visibility Geometry" in gallery
+    assert "docs/VISIBILITY_GEOMETRY.md" in gallery
+    assert "Chart Invariance" in gallery
+    assert "docs/CHART_INVARIANCE.md" in gallery
+    assert "search-reptends chart-invariance --max 1200 --bases 7,10,12,30 --blocks 8 --top 20" in gallery
+    assert "phase space" in gallery
+    assert "capacity thresholds" in gallery
+    assert "docs/OUTSIDE_READER_DOORWAY.md" in gallery
+    assert "docs/ORBIT_INSTRUMENT_VISIBILITY.md" in gallery
+    assert "docs/CARRY_TRANSDUCER.md" in gallery
+    assert "docs/VISIBILITY_OPTICS_WORKBENCH.md" in gallery
+    assert "carry_dfa_factorization" in gallery
+    assert "small_k_visibility_threshold" in gallery
 
 
 def test_carry_and_visibility_status_anchor_blocks_match_registry_data() -> None:

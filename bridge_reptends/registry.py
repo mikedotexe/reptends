@@ -38,6 +38,10 @@ KNOWN_SEARCH_SURFACE_IDS = frozenset(
         "composite-profiles",
         "visibility-profiles",
         "visibility-counterexamples",
+        "visibility-optics",
+        "visibility-base-compare",
+        "instrument-atlas",
+        "chart-invariance",
         "same-core-visibility",
         "carry-factorization",
         "carry-factorization-selector",
@@ -45,6 +49,7 @@ KNOWN_SEARCH_SURFACE_IDS = frozenset(
         "carry-selector-same-core",
         "carry-selector-research",
         "orbit-carry-frontier",
+        "orbit-carry-trace",
         "state-merging",
         "state-merging-same-core",
         "quotient-obstructions",
@@ -2099,6 +2104,7 @@ _QR_TOUR_MODULE_DESCRIPTIONS = {
     "QRTour.CarryComparison": "exact finite-window carry/remainder trace alignment",
     "QRTour.Factorization": "restricted finite-window remainder-to-carry morphism layer",
     "QRTour.CompositeVisibility": "same-core family packaging for stripped periodic cores",
+    "QRTour.ChartInvariance": "finite chart-observation and witness surface for visibility geometry",
     "QRTour.Examples": (
         "Worked prime, small composite, positive-q composite, and same-core "
         "composite examples"

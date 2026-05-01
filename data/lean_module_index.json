@@ -192,6 +192,14 @@
     "rationale": "It turns the preperiod arithmetic into exact same-core shift theorems and selection criteria, but it does not yet close the minimal-lookahead frontier."
   },
   {
+    "id": "QRTour.ChartInvariance",
+    "path": "lean/QRTour/ChartInvariance.lean",
+    "current_role": "finite chart-observation, signature, witness, and count surface for Visibility Geometry and Instrument Atlas classifications",
+    "promotion_decision": "keep as public support surface, claim-free for now",
+    "claim_ids": [],
+    "rationale": "This module defines finite chart observations, signature projections, pair witnesses, compact count audits, and conservative derived signal labels without promoting the empirical chart-invariance surface to a theorem claim."
+  },
+  {
     "id": "QRTour.Examples",
     "path": "lean/QRTour/Examples.lean",
     "current_role": "registry-backed worked examples and theorem-witness entry surface",

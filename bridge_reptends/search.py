@@ -52,6 +52,7 @@ from .transducer import (
     carry_selector_profile_rows,
     carry_selector_research_rows,
     non_k_one_state_relabeling_rows,
+    orbit_carry_trace_rows,
     quotient_obstruction_census_from_rows,
     same_core_obstruction_correlate_rows,
     quotient_obstruction_family_rows,
@@ -64,9 +65,13 @@ from .transducer import (
 from .visibility import (
     canonical_visibility_case_studies,
     canonical_visibility_family_studies,
+    chart_invariance_rows,
     incoming_carry_counterexample_rows,
+    instrument_atlas_rows,
     same_core_visibility_rows,
     visibility_profile_rows,
+    visibility_base_instrument_rows,
+    visibility_optics_workbench_rows,
 )
 
 
@@ -1681,6 +1686,46 @@ def main() -> None:
     visibility_counterexample_parser.add_argument("--blocks", type=int, default=8)
     visibility_counterexample_parser.add_argument("--output", type=str, default=None)
 
+    visibility_optics_parser = subparsers.add_parser(
+        "visibility-optics",
+        help="Rank finite-window Visibility Optics evidence across visibility, carry, and state-map observables",
+    )
+    visibility_optics_parser.add_argument("--max", type=int, default=1200)
+    visibility_optics_parser.add_argument("--base", type=int, default=10)
+    visibility_optics_parser.add_argument("--blocks", type=int, default=8)
+    visibility_optics_parser.add_argument("--top", type=int, default=20)
+    visibility_optics_parser.add_argument("--output", type=str, default=None)
+
+    visibility_base_compare_parser = subparsers.add_parser(
+        "visibility-base-compare",
+        help="Compare Visibility Optics signal classes across base instruments such as 10, 12, and 30",
+    )
+    visibility_base_compare_parser.add_argument("--max", type=int, default=1200)
+    visibility_base_compare_parser.add_argument("--bases", type=str, default="10,12,30")
+    visibility_base_compare_parser.add_argument("--blocks", type=int, default=8)
+    visibility_base_compare_parser.add_argument("--top", type=int, default=20)
+    visibility_base_compare_parser.add_argument("--output", type=str, default=None)
+
+    instrument_atlas_parser = subparsers.add_parser(
+        "instrument-atlas",
+        help="Compare base instruments by what they reveal, absorb, distort, or obstruct",
+    )
+    instrument_atlas_parser.add_argument("--max", type=int, default=1200)
+    instrument_atlas_parser.add_argument("--bases", type=str, default="7,10,12,30")
+    instrument_atlas_parser.add_argument("--blocks", type=int, default=8)
+    instrument_atlas_parser.add_argument("--top", type=int, default=20)
+    instrument_atlas_parser.add_argument("--output", type=str, default=None)
+
+    chart_invariance_parser = subparsers.add_parser(
+        "chart-invariance",
+        help="Compare base-chart pairs for finite-window invariant and distortion witnesses",
+    )
+    chart_invariance_parser.add_argument("--max", type=int, default=1200)
+    chart_invariance_parser.add_argument("--bases", type=str, default="7,10,12,30")
+    chart_invariance_parser.add_argument("--blocks", type=int, default=8)
+    chart_invariance_parser.add_argument("--top", type=int, default=20)
+    chart_invariance_parser.add_argument("--output", type=str, default=None)
+
     same_core_parser = subparsers.add_parser(
         "same-core-visibility",
         help="Export same-core family comparisons for interval and exact shift laws",
@@ -1743,6 +1788,15 @@ def main() -> None:
     orbit_carry_frontier_parser.add_argument("--base", type=int, default=10)
     orbit_carry_frontier_parser.add_argument("--blocks", type=int, default=8)
     orbit_carry_frontier_parser.add_argument("--output", type=str, default=None)
+
+    orbit_carry_trace_parser = subparsers.add_parser(
+        "orbit-carry-trace",
+        help="Export an experimental finite trace lens aligning remainder orbit states, raw coefficients, carry states, and displayed blocks",
+    )
+    orbit_carry_trace_parser.add_argument("--base", type=int, default=10)
+    orbit_carry_trace_parser.add_argument("--blocks", type=int, default=8)
+    orbit_carry_trace_parser.add_argument("--members", type=str, default="21,97,996")
+    orbit_carry_trace_parser.add_argument("--output", type=str, default=None)
 
     state_merging_parser = subparsers.add_parser(
         "state-merging",
@@ -1956,6 +2010,34 @@ def main() -> None:
             base=args.base,
             n_blocks=args.blocks,
         )
+    elif args.command == "visibility-optics":
+        rows = visibility_optics_workbench_rows(
+            args.max,
+            base=args.base,
+            n_blocks=args.blocks,
+            top=args.top,
+        )
+    elif args.command == "visibility-base-compare":
+        rows = visibility_base_instrument_rows(
+            args.max,
+            bases=tuple(int(piece) for piece in args.bases.split(",") if piece.strip()),
+            n_blocks=args.blocks,
+            top=args.top,
+        )
+    elif args.command == "instrument-atlas":
+        rows = instrument_atlas_rows(
+            args.max,
+            bases=tuple(int(piece) for piece in args.bases.split(",") if piece.strip()),
+            n_blocks=args.blocks,
+            top=args.top,
+        )
+    elif args.command == "chart-invariance":
+        rows = chart_invariance_rows(
+            args.max,
+            bases=tuple(int(piece) for piece in args.bases.split(",") if piece.strip()),
+            n_blocks=args.blocks,
+            top=args.top,
+        )
     elif args.command == "same-core-visibility":
         rows = same_core_visibility_rows(
             args.max,
@@ -1995,6 +2077,12 @@ def main() -> None:
     elif args.command == "orbit-carry-frontier":
         rows = orbit_carry_frontier_rows(
             args.max,
+            base=args.base,
+            n_blocks=args.blocks,
+        )
+    elif args.command == "orbit-carry-trace":
+        rows = orbit_carry_trace_rows(
+            members=tuple(int(piece) for piece in args.members.split(",") if piece.strip()),
             base=args.base,
             n_blocks=args.blocks,
         )
@@ -2043,8 +2131,19 @@ def main() -> None:
     else:
         rows = composite_profile_rows(args.max, base=args.base)
 
-    if args.output:
+    if args.command == "orbit-carry-trace" and args.output:
+        _write_json(
+            args.output,
+            {
+                "schema": "orbit-carry-trace-v1",
+                "rows": rows,
+            },
+        )
+    elif args.output:
         _write_csv(args.output, rows)
+    elif args.command == "orbit-carry-trace":
+        for row in rows:
+            print(row)
     else:
         for row in rows[:20]:
             print(row)

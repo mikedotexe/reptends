@@ -3,8 +3,10 @@ from bridge_reptends import (
     canonical_visibility_family_studies,
     carried_prefix_visibility_profile,
     certified_lookahead_blocks,
+    chart_invariance_rows,
     incoming_carry_counterexample_rows,
     incoming_carry_value,
+    instrument_atlas_rows,
     lookahead_certificate_holds,
     lookahead_gap_numerator,
     lookahead_tail_mass_lower_bound,
@@ -13,6 +15,8 @@ from bridge_reptends import (
     select_same_core_prefer_m,
     same_core_visibility_comparison,
     same_core_visibility_rows,
+    visibility_base_instrument_rows,
+    visibility_optics_workbench_rows,
     visibility_profile_rows,
 )
 
@@ -35,6 +39,116 @@ def test_visibility_profile_distinguishes_carry_intrusion_from_local_overflow() 
     assert profile.incoming_carry_formula_holds is True
     assert profile.agreement_identity_holds is True
     assert profile.lookahead_certificate_matches is True
+
+
+def test_visibility_optics_workbench_surfaces_ranked_signal_classes() -> None:
+    rows = visibility_optics_workbench_rows(max_n=500, n_blocks=8, top=10)
+    by_group: dict[str, list[dict[str, object]]] = {}
+    for row in rows:
+        by_group.setdefault(str(row["group"]), []).append(row)
+
+    assert by_group["workbench_summary"][0]["open_claim_boundary"] == [
+        "small_k_visibility_threshold",
+        "carry_dfa_factorization",
+    ]
+    anchors = {row["n"]: row for row in by_group["canonical_anchor"]}
+    assert {21, 97, 249, 996}.issubset(anchors)
+    assert anchors[21]["signal_class"] == "transparent_window"
+    assert {
+        anchors[97]["signal_class"],
+        anchors[996]["signal_class"],
+    } & {"early_carry_intrusion"}
+    assert any(
+        row["signal_class"] in {
+            "visible_state_compression",
+            "hidden_graph_obstruction",
+        }
+        for row in by_group["ranked_case"]
+    )
+    assert any(
+        "carry_dfa_factorization" in row["related_open_claim_ids"]
+        for row in by_group["ranked_case"]
+    )
+    assert any(row["signal_class"] == "same_core_drift" for row in by_group["same_core_signal"])
+
+
+def test_visibility_base_instrument_rows_compare_bases() -> None:
+    rows = visibility_base_instrument_rows(max_n=120, bases=(10, 12, 30), n_blocks=8, top=5)
+    by_group: dict[str, list[dict[str, object]]] = {}
+    for row in rows:
+        by_group.setdefault(str(row["group"]), []).append(row)
+
+    summary = by_group["base_instrument_summary"][0]
+    assert summary["bases"] == [10, 12, 30]
+    assert summary["open_claim_boundary"] == [
+        "small_k_visibility_threshold",
+        "carry_dfa_factorization",
+    ]
+    assert {row["base"] for row in by_group["base_summary"]} == {10, 12, 30}
+
+    cross_by_n = {row["n"]: row for row in by_group["cross_base_case"]}
+    assert 97 in cross_by_n
+    assert cross_by_n[97]["base_instrument_behavior"] in {
+        "instrument_shift",
+        "base30_absorption_shift",
+    }
+    assert "10:" in cross_by_n[97]["signal_class_path"]
+    assert any(row["base"] == 30 for row in by_group["base_ranked_case"])
+
+
+def test_instrument_atlas_rows_pressure_working_axioms() -> None:
+    rows = instrument_atlas_rows(max_n=120, bases=(10, 12, 30), n_blocks=8, top=5)
+    by_group: dict[str, list[dict[str, object]]] = {}
+    for row in rows:
+        by_group.setdefault(str(row["group"]), []).append(row)
+
+    summary = by_group["instrument_atlas_summary"][0]
+    assert summary["bases"] == [10, 12, 30]
+    assert summary["open_claim_boundary"] == [
+        "small_k_visibility_threshold",
+        "carry_dfa_factorization",
+    ]
+    assert {row["base"] for row in by_group["instrument_profile"]} == {10, 12, 30}
+    assert any(row["instrument_personality"] == "obstruction_revealer" for row in by_group["instrument_profile"])
+
+    case_97 = next(row for row in by_group["instrument_case"] if row["n"] == 97)
+    assert "10:visible_state_compression" in case_97["instrument_signature"]
+    assert "30:hidden_graph_obstruction" in case_97["instrument_signature"]
+    assert case_97["revealed_by_bases"] == [10]
+    assert case_97["obstructed_by_bases"] == [30]
+    assert "visible_trace_can_hide_state_obstruction" in case_97["working_axiom_pressure"]
+
+    axiom_ids = {row["signal_id"] for row in by_group["working_axiom_signal"]}
+    assert "recoverability_is_instrument_relative" in axiom_ids
+    assert "factor_absorption_changes_periodic_core" in axiom_ids
+
+
+def test_chart_invariance_rows_split_clean_distortion_from_absorption() -> None:
+    rows = chart_invariance_rows(max_n=120, bases=(10, 12, 30), n_blocks=8, top=5)
+    by_group: dict[str, list[dict[str, object]]] = {}
+    for row in rows:
+        by_group.setdefault(str(row["group"]), []).append(row)
+
+    summary = by_group["chart_invariance_summary"][0]
+    assert summary["bases"] == [10, 12, 30]
+    assert summary["clean_chart_distortion_count"] >= 1
+    assert summary["open_claim_boundary"] == [
+        "small_k_visibility_threshold",
+        "carry_dfa_factorization",
+    ]
+
+    pair_by_name = {row["base_pair"]: row for row in by_group["chart_pair_summary"]}
+    assert pair_by_name["10/30"]["chart_relation_class"] == "clean_chart_distortion_pair"
+    assert 97 in pair_by_name["10/30"]["clean_distortion_example_ns"]
+    assert pair_by_name["10/30"]["reveal_hide_flip_count"] >= 1
+
+    case_97 = next(row for row in by_group["chart_distortion_witness"] if row["n"] == 97)
+    assert case_97["chart_invariance_class"] == "clean_chart_distortion"
+    assert case_97["periodic_moduli_by_base"] == {"10": 97, "12": 97, "30": 97}
+    assert "30:hidden_graph_obstruction" in case_97["chart_signature"]
+
+    invariant_ns = {row["n"] for row in by_group["chart_invariant_case"]}
+    assert {249, 996} <= invariant_ns
 
 
 def test_visibility_profile_handles_fully_visible_positive_q_case() -> None:

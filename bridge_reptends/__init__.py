@@ -183,6 +183,7 @@ from .transducer import (
     state_merging_rows,
     state_merging_same_core_rows,
     carry_factorization_rows,
+    orbit_carry_trace_rows,
 )
 
 from .visibility import (
@@ -200,11 +201,15 @@ from .visibility import (
     carried_prefix_visibility_profile,
     canonical_visibility_case_studies,
     canonical_visibility_family_studies,
+    chart_invariance_rows,
+    instrument_atlas_rows,
     select_same_core_prefer_m,
     same_core_visibility_comparison,
     visibility_profile_rows,
     incoming_carry_counterexample_rows,
     same_core_visibility_rows,
+    visibility_base_instrument_rows,
+    visibility_optics_workbench_rows,
 )
 
 from .registry import (
@@ -420,6 +425,7 @@ __all__ = [
     "state_merging_rows",
     "state_merging_same_core_rows",
     "carry_factorization_rows",
+    "orbit_carry_trace_rows",
     # visibility.py
     "VisibilityProfile",
     "VisibilityCaseStudy",
@@ -435,11 +441,15 @@ __all__ = [
     "carried_prefix_visibility_profile",
     "canonical_visibility_case_studies",
     "canonical_visibility_family_studies",
+    "chart_invariance_rows",
+    "instrument_atlas_rows",
     "select_same_core_prefer_m",
     "same_core_visibility_comparison",
     "visibility_profile_rows",
     "incoming_carry_counterexample_rows",
     "same_core_visibility_rows",
+    "visibility_base_instrument_rows",
+    "visibility_optics_workbench_rows",
     # registry.py
     "LiteratureSource",
     "VocabularyEntry",

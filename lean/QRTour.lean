@@ -21,6 +21,7 @@ import QRTour.CarryTransducer
 import QRTour.CarryComparison
 import QRTour.Factorization
 import QRTour.CompositeVisibility
+import QRTour.ChartInvariance
 import QRTour.Examples
 -- QRT_SURFACE_IMPORTS_END
 
@@ -42,6 +43,7 @@ The library is no longer only a prime QR tour. It now packages:
 - exact finite-window visibility and carry-transducer interfaces
 - same-core composite visibility transport
 - restricted finite-window orbit/carry factorization witnesses and obstructions
+- finite chart-observation and chart-invariance support for Visibility Geometry classifications
 
 ## Proof-System Framing
 
@@ -124,6 +126,7 @@ claims:
 - `QRTour.CarryComparison` - exact finite-window carry/remainder trace alignment
 - `QRTour.Factorization` - restricted finite-window remainder-to-carry morphism layer
 - `QRTour.CompositeVisibility` - same-core family packaging for stripped periodic cores
+- `QRTour.ChartInvariance` - finite chart-observation and witness surface for visibility geometry
 - `QRTour.Examples` - Worked prime, small composite, positive-q composite, and same-core composite examples
 <!-- QRT_SURFACE_MODULES_END -->
 

@@ -29,20 +29,20 @@ Current open claim IDs:
 ## Lean Public Surface
 
 Use [THEOREM_GUIDE.md](/Users/mikepurvis/other/quadratic-residue-reptends/lean/THEOREM_GUIDE.md) and [lean_module_index.json](/Users/mikepurvis/other/quadratic-residue-reptends/data/lean_module_index.json) for the full module audit.
-- total indexed Lean modules: `27`
+- total indexed Lean modules: `28`
 - umbrella surfaces: `QRTour, GeometricStack`
 - public theorem surfaces: `8`
 - public theorem module ids: `QRTour.QuadraticResidues, QRTour.OrbitWeave, QRTour.Digits, QRTour.SignedBridge, QRTour.PAdicBridge, QRTour.CompositePeriod, QRTour.Preperiod, QRTour.Visibility`
-- public support surfaces: `10`
-- public support module ids: `QRTour, QRTour.RemainderOrbit, QRTour.Bridge, QRTour.CosetStructure, QRTour.CarryTransducer, QRTour.CarryComparison, QRTour.Factorization, QRTour.CompositeVisibility, GeometricStack.Positional, GeometricStack.OrbitBufferDuality`
+- public support surfaces: `11`
+- public support module ids: `QRTour, QRTour.RemainderOrbit, QRTour.Bridge, QRTour.CosetStructure, QRTour.CarryTransducer, QRTour.CarryComparison, QRTour.Factorization, QRTour.CompositeVisibility, QRTour.ChartInvariance, GeometricStack.Positional, GeometricStack.OrbitBufferDuality`
 - public example surfaces: `1`
 - public example module ids: `QRTour.Examples`
 - infrastructure-only modules: `8`
 - infrastructure module ids: `QRTour.Basic, QRTour.PrimitiveRoots, QRTour.BridgeQuality, GeometricStack, GeometricStack.Family, GeometricStack.Capacity, GeometricStack.Scale, GeometricStack.Valuation`
 - claim-tagged modules: `17`
 - claim-tagged module ids: `QRTour.RemainderOrbit, QRTour.Bridge, QRTour.CosetStructure, QRTour.QuadraticResidues, QRTour.OrbitWeave, QRTour.Digits, QRTour.SignedBridge, QRTour.PAdicBridge, QRTour.CompositePeriod, QRTour.Preperiod, QRTour.Visibility, QRTour.CarryTransducer, QRTour.CarryComparison, QRTour.Factorization, QRTour.CompositeVisibility, GeometricStack.Positional, GeometricStack.OrbitBufferDuality`
-- claim-free modules: `10`
-- claim-free module ids: `QRTour, QRTour.Basic, QRTour.PrimitiveRoots, QRTour.BridgeQuality, QRTour.Examples, GeometricStack, GeometricStack.Family, GeometricStack.Capacity, GeometricStack.Scale, GeometricStack.Valuation`
+- claim-free modules: `11`
+- claim-free module ids: `QRTour, QRTour.Basic, QRTour.PrimitiveRoots, QRTour.BridgeQuality, QRTour.ChartInvariance, QRTour.Examples, GeometricStack, GeometricStack.Family, GeometricStack.Capacity, GeometricStack.Scale, GeometricStack.Valuation`
 
 ## Lean Hygiene
 
@@ -50,8 +50,8 @@ Use [ci_checks.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_rep
 - CI entrypoint: `ci-checks` via `python -m bridge_reptends.ci_checks`
 - no-`sorry` status on `lean`: `clean`
 - no-`#eval` status on focused public Lean targets: `clean`
-- focused public Lean build targets: `20`
-- focused public Lean build target ids: `QRTour.RemainderOrbit, QRTour.Bridge, QRTour.CosetStructure, QRTour.QuadraticResidues, QRTour.OrbitWeave, QRTour.Digits, QRTour.SignedBridge, QRTour.PAdicBridge, QRTour.CompositePeriod, QRTour.Preperiod, QRTour.Visibility, QRTour.CarryTransducer, QRTour.CarryComparison, QRTour.Factorization, QRTour.CompositeVisibility, QRTour.Examples, QRTour, GeometricStack.Positional, GeometricStack.OrbitBufferDuality, GeometricStack`
+- focused public Lean build targets: `21`
+- focused public Lean build target ids: `QRTour.RemainderOrbit, QRTour.Bridge, QRTour.CosetStructure, QRTour.QuadraticResidues, QRTour.OrbitWeave, QRTour.Digits, QRTour.SignedBridge, QRTour.PAdicBridge, QRTour.CompositePeriod, QRTour.Preperiod, QRTour.Visibility, QRTour.CarryTransducer, QRTour.CarryComparison, QRTour.Factorization, QRTour.CompositeVisibility, QRTour.ChartInvariance, QRTour.Examples, QRTour, GeometricStack.Positional, GeometricStack.OrbitBufferDuality, GeometricStack`
 
 ## Registry-Backed Docs
 

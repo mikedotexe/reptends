@@ -3,6 +3,7 @@ import CoreSurfaceGuidePanel from './CoreSurfaceGuidePanel';
 import { Suspense, lazy, type ReactNode, useState } from 'react';
 import { Block, M } from './shared';
 import LinkedViews97 from './LinkedViews97';
+import OrbitInstrumentVisibilityGallery from './OrbitInstrumentVisibilityGallery';
 import PrimeFamilySweep100 from './PrimeFamilySweep100';
 import ProofAtlasPanel from './ProofAtlasPanel';
 import RootsOfUnityProjection from './RootsOfUnityProjection';
@@ -148,6 +149,8 @@ const FiniteReptendDocument = () => {
             </div>
           </div>
         </header>
+
+        <OrbitInstrumentVisibilityGallery />
 
         <section className="mb-8 grid gap-4 lg:grid-cols-[1.35fr_1fr]">
           <ClaimCard claimId="series_q_weighted_identity">

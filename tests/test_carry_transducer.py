@@ -14,6 +14,7 @@ from bridge_reptends import (
     carry_window_example,
     compare_carry_selector_profiles,
     non_k_one_state_relabeling_rows,
+    orbit_carry_trace_rows,
     quotient_obstruction_family_rows,
     quotient_obstruction_rows,
     same_core_obstruction_correlate_rows,
@@ -469,3 +470,36 @@ def test_carry_factorization_rows_surface_canonical_track_17_regimes() -> None:
         "quotient_candidate_only",
     ]
     assert "carry_window_transducer_n249_window3" in by_n[249]["matching_witness_ids"]
+
+
+def test_orbit_carry_trace_rows_align_canonical_trio() -> None:
+    rows = orbit_carry_trace_rows(base=10, n_blocks=8)
+    summaries = {row["n"]: row for row in rows if row["group"] == "case_summary"}
+    state_maps = {row["n"]: row for row in rows if row["group"] == "state_map_summary"}
+    trace = {
+        (row["n"], row["position"]): row
+        for row in rows
+        if row["group"] == "trace_step"
+    }
+
+    assert set(summaries) == {21, 97, 996}
+    assert summaries[21]["period"] == 1
+    assert summaries[21]["factorization_regime"] == "state_relabeling"
+    assert summaries[97]["factorization_regime"] == "quotient_candidate_only"
+    assert summaries[996]["periodic_modulus"] == 249
+    assert summaries[996]["factorization_regime"] == "quotient_candidate_only"
+
+    assert {trace[(21, position)]["visibility_event"] for position in range(8)} == {
+        "carry_free_raw",
+    }
+    assert trace[(97, 4)]["visibility_event"] == "incoming_carry_before_overflow"
+    assert trace[(97, 4)]["coefficient_fits_block"] is True
+    assert trace[(97, 5)]["visibility_event"] == "local_overflow"
+    assert trace[(996, 4)]["visibility_event"] == "incoming_carry_before_overflow"
+    assert trace[(996, 5)]["visibility_event"] == "local_overflow"
+    assert all(row["output_matches"] is True for row in trace.values())
+
+    assert state_maps[21]["remainder_to_carry_functional"] is True
+    assert state_maps[21]["carry_to_remainder_functional"] is True
+    assert state_maps[97]["remainder_to_carry_functional"] is True
+    assert state_maps[97]["carry_to_remainder_functional"] is False

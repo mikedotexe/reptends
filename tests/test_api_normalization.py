@@ -50,6 +50,10 @@ def test_cli_help_uses_standard_names_and_mentions_legacy_aliases() -> None:
     assert "composite-profiles" in help_text
     assert "visibility-profiles" in help_text
     assert "visibility-counterexamples" in help_text
+    assert "visibility-optics" in help_text
+    assert "visibility-base-compare" in help_text
+    assert "instrument-atlas" in help_text
+    assert "chart-invariance" in help_text
     assert "same-core-visibility" in help_text
     assert "carry-factorization" in help_text
     assert "carry-factorization-selector" in help_text
@@ -57,6 +61,7 @@ def test_cli_help_uses_standard_names_and_mentions_legacy_aliases() -> None:
     assert "carry-selector-same-core" in help_text
     assert "carry-selector-research" in help_text
     assert "orbit-carry-frontier" in help_text
+    assert "orbit-carry-trace" in help_text
     assert "published-atlas" in help_text
     assert "theorem-witnesses" in help_text
     assert "legacy alias" in help_text

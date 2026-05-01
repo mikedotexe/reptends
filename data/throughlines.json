@@ -45,6 +45,41 @@
         "atlas_section_id": "orbit_carry_frontier"
       },
       {
+        "id": "orbit_carry_trace",
+        "label": "Orbit/carry trace lens",
+        "summary": "Experimental finite trace lens for the canonical 21 / 97 / 996 trio, aligning remainder orbit states, raw coefficients, finite carry-window states, and displayed blocks.",
+        "command": "search-reptends orbit-carry-trace --base 10 --blocks 8 --members 21,97,996",
+        "atlas_section_id": "carry_dfa"
+      },
+      {
+        "id": "visibility_optics_workbench",
+        "label": "Visibility Optics workbench",
+        "summary": "Ranks finite-window evidence for how readable the source remainder orbit is through the carry-propagated block normalization instrument.",
+        "command": "search-reptends visibility-optics --max 1200 --base 10 --blocks 8 --top 20",
+        "atlas_section_id": "visibility"
+      },
+      {
+        "id": "visibility_base_compare",
+        "label": "Base-instrument comparison",
+        "summary": "Compares Visibility Optics signal classes across base instruments such as 10, 12, and 30 so base choice becomes data rather than a default.",
+        "command": "search-reptends visibility-base-compare --max 1200 --bases 10,12,30 --blocks 8 --top 20",
+        "atlas_section_id": "visibility"
+      },
+      {
+        "id": "instrument_atlas",
+        "label": "Instrument Atlas",
+        "summary": "Compares base instruments by what they reveal, absorb, distort, or obstruct so working axioms can be revised against finite-window evidence.",
+        "command": "search-reptends instrument-atlas --max 1200 --bases 7,10,12,30 --blocks 8 --top 20",
+        "atlas_section_id": "visibility"
+      },
+      {
+        "id": "chart_invariance",
+        "label": "Chart invariance",
+        "summary": "Compares base-chart pairs for finite-window invariant candidates and clean distortion witnesses.",
+        "command": "search-reptends chart-invariance --max 1200 --bases 7,10,12,30 --blocks 8 --top 20",
+        "atlas_section_id": "visibility"
+      },
+      {
         "id": "carry_factorization",
         "label": "Carry factorization cases",
         "summary": "Keeps the canonical 21 / 97 / 996 carry-DFA comparisons visible as bounded evidence beneath the open factorization claim.",

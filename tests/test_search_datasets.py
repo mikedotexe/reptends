@@ -10,11 +10,14 @@ from bridge_reptends import (
     build_claim_witness_rows,
     build_example_atlas,
     build_orbit_carry_frontier_groups,
+    chart_invariance_rows,
     composite_profile_rows,
     find_legacy_counterexamples,
+    instrument_atlas_rows,
     load_lean_worked_examples,
     load_throughlines,
     orbit_carry_frontier_rows,
+    orbit_carry_trace_rows,
     quotient_obstruction_family_rows,
     quotient_obstruction_rows,
     rank_bridge_candidates,
@@ -25,6 +28,8 @@ from bridge_reptends import (
     same_core_obstruction_phase_rows,
     state_merging_rows,
     state_merging_same_core_rows,
+    visibility_base_instrument_rows,
+    visibility_optics_workbench_rows,
 )
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -422,6 +427,9 @@ def test_orbit_carry_frontier_groups_align_with_throughline_search_surface() -> 
     grouped = build_orbit_carry_frontier_groups(max_n=1200, base=10, n_blocks=8)
 
     assert "orbit_carry_frontier" in surface_ids
+    assert "orbit_carry_trace" in surface_ids
+    assert "visibility_optics_workbench" in surface_ids
+    assert "visibility_base_compare" in surface_ids
     assert "quotient_obstructions" in surface_ids
     assert "quotient_obstruction_families" in surface_ids
     assert "same_core_obstruction_correlates" in surface_ids
@@ -461,6 +469,201 @@ def test_orbit_carry_frontier_cli_contains_canonical_rows() -> None:
     assert any(row.get("n") == 97 for row in by_group["carry_layer_examples"])
     assert any(row.get("n") == 996 for row in by_group["carry_layer_examples"])
     assert any(row.get("members") == [249, 498, 996] for row in by_group["frontier_targets"])
+
+
+def test_orbit_carry_trace_rows_and_cli_contain_canonical_trace() -> None:
+    rows = orbit_carry_trace_rows(base=10, n_blocks=8)
+    assert any(
+        row["group"] == "trace_step"
+        and row["n"] == 97
+        and row["position"] == 4
+        and row["visibility_event"] == "incoming_carry_before_overflow"
+        for row in rows
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bridge_reptends.search",
+            "orbit-carry-trace",
+            "--base",
+            "10",
+            "--blocks",
+            "8",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    cli_rows = [ast.literal_eval(line) for line in result.stdout.splitlines() if line.strip()]
+    by_group: dict[str, list[dict[str, object]]] = {}
+    for row in cli_rows:
+        by_group.setdefault(str(row["group"]), []).append(row)
+
+    assert {row["n"] for row in by_group["case_summary"]} == {21, 97, 996}
+    assert any(row["n"] == 996 and row["periodic_modulus"] == 249 for row in by_group["case_summary"])
+    assert any(
+        row["n"] == 996
+        and row["position"] == 4
+        and row["visibility_event"] == "incoming_carry_before_overflow"
+        for row in by_group["trace_step"]
+    )
+
+
+def test_visibility_optics_workbench_rows_and_cli_rank_signal() -> None:
+    rows = visibility_optics_workbench_rows(max_n=500, base=10, n_blocks=8, top=10)
+    assert rows[0]["group"] == "workbench_summary"
+    assert any(
+        row["group"] == "canonical_anchor"
+        and row["n"] == 21
+        and row["signal_class"] == "transparent_window"
+        for row in rows
+    )
+    assert any(
+        row["group"] == "ranked_case"
+        and row["signal_class"] == "hidden_graph_obstruction"
+        for row in rows
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bridge_reptends.search",
+            "visibility-optics",
+            "--max",
+            "500",
+            "--base",
+            "10",
+            "--blocks",
+            "8",
+            "--top",
+            "10",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    cli_rows = [ast.literal_eval(line) for line in result.stdout.splitlines() if line.strip()]
+    assert cli_rows[0]["group"] == "workbench_summary"
+    assert any(row.get("signal_class") == "same_core_drift" for row in cli_rows)
+
+
+def test_visibility_base_compare_rows_and_cli_compare_instruments() -> None:
+    rows = visibility_base_instrument_rows(max_n=120, bases=(10, 12, 30), n_blocks=8, top=5)
+    assert rows[0]["group"] == "base_instrument_summary"
+    assert rows[0]["bases"] == [10, 12, 30]
+    assert any(
+        row["group"] == "cross_base_case"
+        and row["n"] == 97
+        and row["base_instrument_behavior"] in {"instrument_shift", "base30_absorption_shift"}
+        for row in rows
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bridge_reptends.search",
+            "visibility-base-compare",
+            "--max",
+            "120",
+            "--bases",
+            "10,12,30",
+            "--blocks",
+            "8",
+            "--top",
+            "5",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    cli_rows = [ast.literal_eval(line) for line in result.stdout.splitlines() if line.strip()]
+    assert cli_rows[0]["group"] == "base_instrument_summary"
+    assert any(row.get("group") == "base_summary" and row.get("base") == 30 for row in cli_rows)
+
+
+def test_instrument_atlas_rows_and_cli_surface_axiom_pressure() -> None:
+    rows = instrument_atlas_rows(max_n=120, bases=(10, 12, 30), n_blocks=8, top=5)
+    assert rows[0]["group"] == "instrument_atlas_summary"
+    assert rows[0]["source_surface"] == "visibility-base-compare"
+    assert any(
+        row["group"] == "instrument_case"
+        and row["n"] == 97
+        and row["obstructed_by_bases"] == [30]
+        for row in rows
+    )
+    assert any(
+        row["group"] == "working_axiom_signal"
+        and row["signal_id"] == "visible_trace_can_hide_state_obstruction"
+        and row["evidence_count"] >= 1
+        for row in rows
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bridge_reptends.search",
+            "instrument-atlas",
+            "--max",
+            "120",
+            "--bases",
+            "10,12,30",
+            "--blocks",
+            "8",
+            "--top",
+            "5",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    cli_rows = [ast.literal_eval(line) for line in result.stdout.splitlines() if line.strip()]
+    assert cli_rows[0]["group"] == "instrument_atlas_summary"
+    assert any(row.get("group") == "instrument_profile" and row.get("base") == 30 for row in cli_rows)
+
+
+def test_chart_invariance_rows_and_cli_find_clean_distortion() -> None:
+    rows = chart_invariance_rows(max_n=120, bases=(10, 12, 30), n_blocks=8, top=5)
+    assert rows[0]["group"] == "chart_invariance_summary"
+    assert any(
+        row["group"] == "chart_distortion_witness"
+        and row["n"] == 97
+        and row["chart_invariance_class"] == "clean_chart_distortion"
+        for row in rows
+    )
+    assert any(
+        row["group"] == "chart_pair_summary"
+        and row["base_pair"] == "10/30"
+        and 97 in row["clean_distortion_example_ns"]
+        for row in rows
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bridge_reptends.search",
+            "chart-invariance",
+            "--max",
+            "120",
+            "--bases",
+            "10,12,30",
+            "--blocks",
+            "8",
+            "--top",
+            "5",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    cli_rows = [ast.literal_eval(line) for line in result.stdout.splitlines() if line.strip()]
+    assert cli_rows[0]["group"] == "chart_invariance_summary"
+    assert any(row.get("group") == "chart_pair_summary" for row in cli_rows)
 
 
 def test_quotient_obstruction_cli_contains_visible_hidden_and_family_rows() -> None:

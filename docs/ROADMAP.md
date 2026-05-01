@@ -559,9 +559,36 @@ Todo:
 - [ ] Require every theorem-level upgrade on this track to restate the atlas
   boundary so `small_k_visibility_threshold` and `carry_dfa_factorization`
   remain explicitly `open` unless they actually move.
+- [ ] Develop **Visibility Optics** as the next research lens: characterize
+  when the source remainder orbit is readable through the finite carry window,
+  using existing finite-window observables without promoting either open claim.
+- [ ] Use the **Instrument Atlas** to pressure-test working axioms across base
+  instruments: classify when bases reveal, absorb, distort, or obstruct the
+  finite-window trace before attempting any preferred-base theorem.
 
 Implementation note:
 
+- [docs/ORBIT_INSTRUMENT_VISIBILITY.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/ORBIT_INSTRUMENT_VISIBILITY.md)
+  now gives the reader-facing version of the lens: the reptend is the observed
+  trace, the remainder orbit is the source, and the finite carry window is the
+  instrument
+- [docs/INSTRUMENT_ATLAS.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/INSTRUMENT_ATLAS.md)
+  records the base-as-instrument atlas and keeps its working-axiom pressure
+  labels empirical.
+- [docs/VISIBILITY_GEOMETRY.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/VISIBILITY_GEOMETRY.md)
+  connects Visibility Optics to the existing `GeometricStack` surface via phase
+  space, capacity thresholds, carry-state fibers, and base charts.
+- [docs/CHART_INVARIANCE.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/CHART_INVARIANCE.md)
+  records the finite chart-invariance surface: candidate invariant pairs, clean
+  chart distortion witnesses, absorption-shift witnesses, and the plain
+  observation-to-signature reading.
+- [QRTour/ChartInvariance.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/ChartInvariance.lean)
+  now gives this lens a claim-free finite formal foothold:
+  `ChartObservation` rows project to `ChartSignature`s, selected
+  `ChartPairWitness` examples certify chart classes, compact witness counts are
+  audited in Lean, and only `transparentWindow` / `earlyCarryIntrusion` are
+  derived from row evidence while state-map labels remain annotated beneath
+  `carry_dfa_factorization`.
 - tranche 19A is now started in Lean:
   [Visibility.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/Visibility.lean)
   packages the necessary tail-mass lower bound beneath the exact prefix-gap

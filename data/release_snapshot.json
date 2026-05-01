@@ -40,7 +40,7 @@
     "no_sorry_matches": [],
     "no_sorry_scan_root": "lean",
     "no_sorry_status": "clean",
-    "public_build_target_count": 20,
+    "public_build_target_count": 21,
     "public_build_targets": [
       "QRTour.RemainderOrbit",
       "QRTour.Bridge",
@@ -57,6 +57,7 @@
       "QRTour.CarryComparison",
       "QRTour.Factorization",
       "QRTour.CompositeVisibility",
+      "QRTour.ChartInvariance",
       "QRTour.Examples",
       "QRTour",
       "GeometricStack.Positional",
@@ -70,6 +71,7 @@
       "QRTour.Basic",
       "QRTour.PrimitiveRoots",
       "QRTour.BridgeQuality",
+      "QRTour.ChartInvariance",
       "QRTour.Examples",
       "GeometricStack",
       "GeometricStack.Family",
@@ -97,11 +99,11 @@
       "GeometricStack.OrbitBufferDuality"
     ],
     "counts": {
-      "claim_free": 10,
+      "claim_free": 11,
       "claim_tagged": 17,
       "infrastructure": 8,
       "public_example": 1,
-      "public_support": 10,
+      "public_support": 11,
       "public_theorem": 8
     },
     "infrastructure_modules": [
@@ -127,6 +129,7 @@
       "QRTour.CarryComparison",
       "QRTour.Factorization",
       "QRTour.CompositeVisibility",
+      "QRTour.ChartInvariance",
       "GeometricStack.Positional",
       "GeometricStack.OrbitBufferDuality"
     ],
@@ -141,7 +144,7 @@
       "QRTour.Visibility"
     ],
     "theorem_guide_path": "lean/THEOREM_GUIDE.md",
-    "total_modules": 27,
+    "total_modules": 28,
     "umbrella_modules": [
       "QRTour",
       "GeometricStack"

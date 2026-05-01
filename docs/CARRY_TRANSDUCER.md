@@ -82,6 +82,14 @@ In [transducer.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_rep
 - `carry_window_example(N, ...)` builds the combined view:
   raw coefficients, carry-normalized blocks, and long-division blocks.
   When a finite raw prefix is not enough, it automatically adds a small lookahead so the visible block window matches long division exactly.
+- `orbit_carry_trace_rows(...)` exports an experimental finite trace lens for
+  canonical examples such as `21 / 97 / 996`, aligning cycle index, remainder
+  orbit state, raw coefficient, finite carry-window state, and displayed block
+  without upgrading `carry_dfa_factorization` beyond its current open status.
+- `visibility_optics_workbench_rows(...)` ranks finite-window evidence across
+  carried-prefix visibility, orbit/carry trace anchors, state-map compression,
+  and same-core drift. It is a probe for the **Visibility Optics workbench**,
+  not a proof of global visibility or DFA factorization.
 
 Minimal example:
 
@@ -98,6 +106,58 @@ print(summary.reachable_states)
 print(summary.first_nonzero_position)
 print(summary.to_dot())
 ```
+
+## Experimental Orbit-Carry Trace Lens
+
+The command below is a campfire-friendly report surface for the current thesis:
+
+```bash
+search-reptends orbit-carry-trace --base 10 --blocks 8 --members 21,97,996
+```
+
+For a broader ranked probe, use:
+
+```bash
+search-reptends visibility-optics --max 1200 --base 10 --blocks 8 --top 20
+```
+
+Read [VISIBILITY_OPTICS_WORKBENCH.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/VISIBILITY_OPTICS_WORKBENCH.md)
+for the signal classes, row groups, and recommended drill-down commands.
+The companion base-instrument comparison keeps base `30` as data rather than
+as a new default representation:
+
+```bash
+search-reptends visibility-base-compare --max 1200 --bases 10,12,30 --blocks 8 --top 20
+```
+
+The **Instrument Atlas** broadens that probe into base-level profiles and
+working-axiom pressure rows:
+
+```bash
+search-reptends instrument-atlas --max 1200 --bases 7,10,12,30 --blocks 8 --top 20
+```
+
+The guiding lens is: the reptend is the observed trace; the remainder orbit is
+the source; the finite carry window is the instrument. In standard terms, the
+trace lens aligns the remainder orbit, raw coefficient stream, and
+carry-propagated block normalization so the displayed blocks can be read as an
+observation of the orbit through positional notation.
+
+It emits three row groups:
+
+- `case_summary`: the block coordinate, stripped periodic modulus, period,
+  lookahead, output agreement, and finite-window factorization regime.
+- `trace_step`: one row per visible block, including the cycle index,
+  remainder input/output, raw coefficient, carry input/output, displayed block,
+  and a visibility event such as `carry_free_raw`,
+  `incoming_carry_before_overflow`, or `local_overflow`.
+- `state_map_summary`: the observed finite-window functional/injective status
+  and signatures in both the remainder-to-carry and carry-to-remainder
+  directions.
+
+This lens is intentionally experimental. It is a way to inspect the finite
+carry window over the closed remainder orbit, not a new theorem claim and not a
+replacement for the open `carry_dfa_factorization` boundary.
 
 ## Small Examples
 
