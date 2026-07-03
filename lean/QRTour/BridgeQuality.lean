@@ -216,6 +216,16 @@ theorem factor_inherits_bridge {B k d p : ℕ} (_hp : Nat.Prime p) (hd_lt : d < 
   conv_lhs => rw [← ZMod.natCast_mod (B ^ k) p]
   simp only [hmod, Nat.mod_eq_of_lt hd_lt]
 
+/-- A prime factor of `B^k - d` with `0 < d < p` inherits the exact bridge structure. -/
+theorem bridge_of_dvd_pow_sub {B k d p : ℕ} (hp : Nat.Prime p) (hk_pos : 0 < k) (hd_pos : 0 < d)
+    (hd_lt : d < p) (hdiv : p ∣ B ^ k - d) (hBk_ge : d ≤ B ^ k) :
+    Bridge B p k d where
+  prime_p := hp
+  hk_pos := hk_pos
+  hd_pos := hd_pos
+  hd_lt_p := hd_lt
+  bridge_eq := factor_inherits_bridge hp hd_lt hdiv hBk_ge
+
 /-- 19 divides 95 = 10² - 5, so 10² ≡ 5 (mod 19). -/
 instance : Fact (Nat.Prime 19) := ⟨by native_decide⟩
 
@@ -223,12 +233,9 @@ example : (19 : ℕ) ∣ (10 ^ 2 - 5) := by native_decide
 example : (10 : ZMod 19) ^ 2 = 5 := by native_decide
 
 /-- 19 inherits its bridge structure from 95 = 10² - 5. -/
-theorem bridge_19_from_95 : Bridge 10 19 2 5 where
-  prime_p := by native_decide
-  hk_pos := by decide
-  hd_pos := by decide
-  hd_lt_p := by decide
-  bridge_eq := by native_decide
+theorem bridge_19_from_95 : Bridge 10 19 2 5 :=
+  bridge_of_dvd_pow_sub (B := 10) (k := 2) (d := 5) (p := 19)
+    (by native_decide) (by decide) (by decide) (by decide) (by native_decide) (by native_decide)
 
 /-- The multiplier for 1/19 is 5, giving the geometric sequence 1, 5, 6, 11, 17, 9, 7, ... -/
 example : bridgeResidue 10 19 2 = 5 := by native_decide

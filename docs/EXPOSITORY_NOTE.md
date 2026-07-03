@@ -3,7 +3,18 @@
 This note is generated from the claim registry, theorem-witness registry, vocabulary registry, and published example atlas.
 Each theorem-level item is tagged by claim ID and points back to concrete evidence.
 
-## Registry Snapshot
+## Proof-System Legend
+
+- `Lean-formalized`: proved in the Lean tree and suitable for theorem-level citation in the current public surface.
+- `Agda-locally-proved`: discharged inside the Agda pedagogical companion surface without relying on Agda postulates.
+- `Agda-postulated but Lean-backed`: still explicit as an Agda postulate, but closed by Lean or an atlas-backed Lean-backed claim in this repo.
+- `empirical`: implemented and regression-tested here, but not promoted to theorem status.
+- `open`: tracked as an unresolved claim boundary or interface question, not an established result.
+
+## Release Snapshot
+
+Use [PROOF_STATUS_ATLAS.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/PROOF_STATUS_ATLAS.md) as the theorem-level status source of truth.
+Current registry counts:
 
 - total claims: 15
 - classical: 3
@@ -12,18 +23,58 @@ Each theorem-level item is tagged by claim ID and points back to concrete eviden
 - empirical: 1
 - open: 2
 
+Current open claim IDs:
+- `small_k_visibility_threshold` - Exact visibility threshold for carried prefixes
+- `carry_dfa_factorization` - Canonical factorization of long division into orbit and carry
+
+## Research Thesis
+
+- Kind: `research-thesis`
+- Thesis ID: `orbit_plus_carry_factorization`
+- Title: Long Division as Orbit + Carry
+- Headline: Long division is best understood as a remainder-orbit system plus carry-propagated block normalization.
+- Status note: Exact finite-window interfaces are implemented; the global canonical factorization remains `open` under `carry_dfa_factorization`.
+- Exact support claims: `digit_periodicity`, `preperiod_from_base_factors`, `series_q_weighted_identity`, `positive_q_good_modes`, `carry_window_transducer`, `incoming_carry_position_formula`, and `same_core_threshold_shift_interval`
+- Open frontier claims: `small_k_visibility_threshold` and `carry_dfa_factorization`
+- Canonical witness anchors: `digit_periodicity_prime19_base10`, `series_q_weighted_identity_prime97_stride2`, `series_q_weighted_identity_n249_stride3`, `carry_window_transducer_prime97_window6`, `preperiod_from_base_factors_n996_base10`, `carry_dfa_factorization_target_21_97_996`, `same_core_threshold_shift_interval_996_over_249`, and `carry_dfa_factorization_target_249_498_996_same_core`
+- Obstruction records: `carry_state_relabeling_failure_97`, `carry_state_relabeling_failure_996`, `carry_selector_monotonicity_failure_21`, and `carry_selector_core_invariance_failure_996`
+- Search surface `orbit_carry_frontier`: Groups the exact orbit layer, implemented carry layer, open factorization targets, and obstruction families under one exported surface. Command: `search-reptends orbit-carry-frontier --max 1200 --base 10 --blocks 8`
+- Search surface `orbit_carry_trace`: Experimental finite trace lens for the canonical 21 / 97 / 996 trio, aligning remainder orbit states, raw coefficients, finite carry-window states, and displayed blocks. Command: `search-reptends orbit-carry-trace --base 10 --blocks 8 --members 21,97,996`
+- Search surface `visibility_optics_workbench`: Ranks finite-window evidence for how readable the source remainder orbit is through the carry-propagated block normalization instrument. Command: `search-reptends visibility-optics --max 1200 --base 10 --blocks 8 --top 20`
+- Search surface `visibility_base_compare`: Compares Visibility Optics signal classes across base instruments such as 10, 12, and 30 so base choice becomes data rather than a default. Command: `search-reptends visibility-base-compare --max 1200 --bases 10,12,30 --blocks 8 --top 20`
+- Search surface `instrument_atlas`: Compares base instruments by what they reveal, absorb, distort, or obstruct so working axioms can be revised against finite-window evidence. Command: `search-reptends instrument-atlas --max 1200 --bases 7,10,12,30 --blocks 8 --top 20`
+- Search surface `chart_invariance`: Compares base-chart pairs for finite-window invariant candidates and clean distortion witnesses. Command: `search-reptends chart-invariance --max 1200 --bases 7,10,12,30 --blocks 8 --top 20`
+- Search surface `carry_factorization`: Keeps the canonical 21 / 97 / 996 carry-DFA comparisons visible as bounded evidence beneath the open factorization claim. Command: `search-reptends carry-factorization --max 500 --blocks 8`
+- Search surface `state_merging`: Makes the finite-window collapse/compression pattern explicit on the selected Track 17 coordinate for canonical cases like 21, 97, and 996. Command: `search-reptends state-merging --max 500 --base 10 --blocks 8`
+- Search surface `quotient_obstructions`: Splits selected-coordinate quotient-only cases into visible preimage compression versus hidden graph obstruction on the base-10 Track 17 surface. Command: `search-reptends quotient-obstructions --max 500 --base 10 --blocks 8`
+- Search surface `state_merging_same_core`: Tracks same-core disagreement families such as 249 / 498 / 996 and 17 / 34 / 68 / 85 through their selected preimage-fiber profiles. Command: `search-reptends state-merging-same-core --max 1200 --base 10 --blocks 8`
+- Search surface `quotient_obstruction_families`: Groups same-core families by whether they span relabeling, hidden graph obstruction, and visible preimage compression on the selected coordinate. Command: `search-reptends quotient-obstruction-families --max 1200 --base 10 --blocks 8`
+- Search surface `same_core_obstruction_correlates`: Summarizes empirical correlates separating re-hiding same-core families from one-way visible families at the selected bound. Command: `search-reptends same-core-obstruction-correlates --max 2000 --base 10 --blocks 8`
+- Search surface `carry_selector_same_core`: Tracks same-core selector-profile disagreement families such as 249 / 498 / 996. Command: `search-reptends carry-selector-same-core --max 400 --blocks 8`
+- Search surface `same_core_visibility`: Compares actual denominators to stripped periodic cores so the exact same-core shift layer stays connected to the frontier. Command: `search-reptends same-core-visibility --max 500 --base 10 --blocks 8`
+
 ## Theorem-Witness Surface
 
 Use [THEOREM_WITNESS_ATLAS.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/THEOREM_WITNESS_ATLAS.md) for the claim-linked witness registry.
-- total witness records: 15
-- theorem-witness: 12
+- total witness records: 20
+- theorem-witness: 16
 - empirical-witness: 1
-- open-target: 2
+- open-target: 3
 
 - `series_q_weighted_identity_prime97_stride2` -> `series_q_weighted_identity`: (base=10, N=97, stride=2, B=100, q=1, k=3)
 - `same_core_threshold_shift_interval_996_over_249` -> `same_core_threshold_shift_interval`: (base=10, actual=996, core=249, stride=3, B=1000, k=4)
 - `small_k_visibility_threshold_target_97_249_996` -> `small_k_visibility_threshold`: (base=10, requestedBlocks=8, N in {97, 249, 996})
 - `carry_dfa_factorization_target_21_97_996` -> `carry_dfa_factorization`: (base=10, N in {21, 97, 996})
+
+Throughline witness ladder:
+
+| Ladder rung | Registry support |
+|-------------|------------------|
+| Exact orbit support | Claims `digit_periodicity` and `preperiod_from_base_factors`; witnesses `digit_periodicity_prime19_base10` and `preperiod_from_base_factors_n996_base10`. Remainder periodicity and stripping of base-supported factors fix the exact orbit surface before any carry-normalization claim enters. |
+| Exact block-coordinate support | Claims `series_q_weighted_identity` and `positive_q_good_modes`; witnesses `series_q_weighted_identity_prime97_stride2`, `series_q_weighted_identity_n249_stride3`, and `positive_q_good_modes_n249_stride3`. The raw coefficient stream is exactly `qk^j`, and the repo only promotes positive-q coordinates once `B > M`. Counterexamples: `legacy_unweighted_series_37` and `legacy_zero_quotient_mode`. |
+| Implemented finite-window carry support | Claims `incoming_carry_position_formula`, `same_core_threshold_shift_interval`, and `carry_window_transducer`; witnesses `incoming_carry_position_formula_prime97_stride2`, `incoming_carry_position_formula_n249_stride3`, `same_core_threshold_shift_interval_996_over_249`, `carry_window_transducer_prime97_window6`, `carry_window_transducer_n249_window3`, and `carry_window_transducer_same_core_996_window4`. Finite-window carry-normalized output, exact incoming-carry boundaries, and same-core shift transport are already exact on named windows. Counterexamples: `legacy_visibility_local_overflow_97` and `legacy_visibility_local_overflow_249`. |
+| Obstruction / counterexample surface | Claims `carry_dfa_factorization`; witnesses `carry_dfa_factorization_target_21_97_996` and `carry_dfa_factorization_target_249_498_996_same_core`. Observed state-map failures now split into visible preimage compression, hidden graph obstruction, and selector-profile disagreement, showing why finite output agreement does not by itself promote to a state-level theorem. Counterexamples: `carry_state_relabeling_failure_97`, `carry_state_relabeling_failure_996`, `carry_selector_monotonicity_failure_21`, and `carry_selector_core_invariance_failure_996`. |
+| Open factorization targets | Claims `small_k_visibility_threshold` and `carry_dfa_factorization`; witnesses `small_k_visibility_threshold_target_97_249_996`, `carry_dfa_factorization_target_21_97_996`, and `carry_dfa_factorization_target_249_498_996_same_core`. The remaining frontier is an exact visibility threshold and a canonical orbit-plus-carry factorization, both kept explicitly open. Counterexamples: `carry_selector_core_invariance_failure_996`. |
 
 ## Classical Background
 
@@ -43,7 +94,7 @@ Use [THEOREM_WITNESS_ATLAS.md](/Users/mikepurvis/other/quadratic-residue-reptend
   Statement: For a block coordinate B = qN + k with 0 < k < B, the incoming carry into block j of the raw coefficient stream qk^j equals floor(qk^(j+1)/(B-k)). Therefore the first incoming-carry position is the least j with qk^(j+1) >= B-k.
   Evidence: [Visibility.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/Visibility.lean), [visibility.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/visibility.py), [CARRIED_PREFIX_VISIBILITY.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/CARRIED_PREFIX_VISIBILITY.md), [test_visibility.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_visibility.py)
 - `same_core_threshold_shift_interval` (reproved-here)
-  Statement: Fix a block coordinate with shared B and k, and compare an actual denominator to its stripped periodic core. If k^s <= (q_core / q_actual) < k^(s+1), then the incoming-carry and local-overflow thresholds for the core occur earlier by either s or s+1 blocks. When q_core / q_actual = k^s exactly, the shift is exactly s blocks. In the non-power interval case, Lean also packages scaled-raw-coefficient sufficient criteria for the lower and upper endpoint labels at fixed boundary data.
+  Statement: Fix a block coordinate with shared B and k, and compare an actual denominator to its stripped periodic core. If k^s <= (q_core / q_actual) < k^(s+1), then the incoming-carry and local-overflow thresholds, and therefore the first visible mismatch boundary, for the core occur earlier by either s or s+1 blocks. When q_core / q_actual = k^s exactly, the shift is exactly s blocks. In the non-power interval case, Lean also packages scaled-raw-coefficient sufficient criteria for the lower and upper endpoint labels at fixed boundary data and propagates aligned lower/upper labels to the first visible mismatch boundary.
   Evidence: [Visibility.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/Visibility.lean), [CompositeVisibility.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CompositeVisibility.lean), [visibility.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/visibility.py), [CARRIED_PREFIX_VISIBILITY.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/CARRIED_PREFIX_VISIBILITY.md), [test_visibility.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_visibility.py)
 
 ## Formalized Results
@@ -78,7 +129,7 @@ Use [THEOREM_WITNESS_ATLAS.md](/Users/mikepurvis/other/quadratic-residue-reptend
 - Standard vocabulary anchors: `small-residue block coordinate`, `remainder orbit under multiplication by the base`, `carry-propagated block normalization`.
 - `carry_window_transducer` (implemented-here)
   Statement: For a finite coefficient word c_0, ..., c_{L-1}, carry propagation can be modeled by a deterministic transducer whose state is the incoming carry from less significant blocks.
-  Repo status: explicit Python model with state graphs, coarse minimization hooks, carry-vs-remainder comparison reports, tests, and a Lean finite-window normalization/comparison surface
+  Repo status: explicit Python model with state graphs, coarse minimization hooks, carry-vs-remainder comparison reports, tests, and a Lean finite-window normalization/comparison surface including exact same-core shifted transport for observed remainder/carry state-pair windows
   Evidence: [CarryTransducer.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CarryTransducer.lean), [CarryComparison.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CarryComparison.lean), [transducer.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/transducer.py), [test_carry_transducer.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_carry_transducer.py)
 - `positive_q_good_modes` (reproved-here)
   Statement: A mode m only gives a usable q-weighted block coordinate when B = base^m exceeds the periodic modulus M, so q = (B-k)/M is positive.
@@ -175,4 +226,4 @@ Visibility family studies:
   Evidence: [Visibility.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/Visibility.lean), [CarryComparison.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CarryComparison.lean), [CompositeVisibility.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CompositeVisibility.lean), [visibility.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/visibility.py), [CARRIED_PREFIX_VISIBILITY.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/CARRIED_PREFIX_VISIBILITY.md), [test_visibility.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_visibility.py)
 - `carry_dfa_factorization`
   Statement: The long-division DFA factors canonically into a remainder-orbit system together with a carry transducer for all coprime bases and moduli.
-  Evidence: [transducer.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/transducer.py), [CARRY_TRANSDUCER.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/CARRY_TRANSDUCER.md), [test_carry_transducer.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_carry_transducer.py)
+  Evidence: [CarryTransducer.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CarryTransducer.lean), [CarryComparison.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CarryComparison.lean), [Factorization.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/Factorization.lean), [transducer.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/transducer.py), [CARRY_TRANSDUCER.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/CARRY_TRANSDUCER.md), [test_carry_transducer.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_carry_transducer.py)

@@ -18,6 +18,7 @@ python -m bridge_reptends.patterns
 # Dataset and search entry points
 sweep-primes --max 500 --bases 2,7,10,12 --output data/results.csv
 search-reptends bridges --max 500 --top 20
+search-reptends theorem-witnesses --claim incoming_carry_position_formula
 search-reptends legacy-counterexamples --max 500 --bases 2,7,10,12
 search-reptends composites --max 500
 
@@ -38,6 +39,7 @@ agda QRTour/RemainderOrbit.agda
 ### Lean 4
 
 ```bash
+./scripts/use_external_lake_cache.sh  # optional but recommended for Dropbox/iCloud checkouts
 cd lean
 lake exe cache get
 lake build
@@ -47,6 +49,7 @@ lake build QRTour.RemainderOrbit
 ### Web Visualization
 
 ```bash
+./scripts/use_external_site_cache.sh  # optional but recommended for Dropbox/iCloud checkouts
 cd site
 yarn install
 yarn dev

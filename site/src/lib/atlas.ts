@@ -71,6 +71,186 @@ export interface SearchPreviewEntry {
   command: string;
 }
 
+export interface ThroughlineSearchEntry extends SearchPreviewEntry {
+  id: string;
+  atlas_section_id: string | null;
+}
+
+export interface ThroughlineLadderEntry {
+  id: string;
+  label: string;
+  claim_ids: string[];
+  witness_ids: string[];
+  counterexample_ids: string[];
+  summary: string;
+}
+
+export interface ThroughlineRecord {
+  id: string;
+  kind: 'research-thesis';
+  title: string;
+  headline: string;
+  status_note: string;
+  claim_ids: string[];
+  open_claim_ids: string[];
+  witness_ids: string[];
+  counterexample_ids: string[];
+  featured_searches: ThroughlineSearchEntry[];
+  ladder: ThroughlineLadderEntry[];
+}
+
+export interface OrbitCarryFrontierRow {
+  group: 'orbit_layer_examples' | 'carry_layer_examples' | 'frontier_targets' | 'obstruction_families';
+  label: string;
+  n: number | null;
+  members: number[] | null;
+  row_kind: 'witness' | 'case-study' | 'open-target' | 'counterexample' | 'family-study';
+  claim_context?: ClaimContext;
+  witness_id?: string;
+  counterexample_id?: string;
+  summary?: string;
+  signal?: string;
+  observed?: string;
+  replacement?: string;
+  distinctive_feature?: string;
+  implemented_boundary?: string;
+  open_boundary?: string;
+  summary_lines?: string[];
+}
+
+export interface StateMapFiberRecord {
+  source_state: number;
+  target_states: number[];
+}
+
+export interface StateMapPreimageFiberRecord {
+  target_state: number;
+  source_states: number[];
+}
+
+export interface StateCompressionTargetRecord {
+  target_state: number;
+  source_states: number[];
+  preimage_size: number;
+}
+
+export interface ObservedStateMapProfile {
+  source_kind: string;
+  target_kind: string;
+  source_state_count: number;
+  image_state_count: number;
+  is_functional: boolean;
+  is_injective: boolean;
+  max_fiber_size: number;
+  max_preimage_size: number;
+  fiber_signature: string;
+  preimage_signature: string;
+  ambiguity_signature: string;
+  fibers: StateMapFiberRecord[];
+  preimage_fibers: StateMapPreimageFiberRecord[];
+  compression_targets: StateCompressionTargetRecord[];
+  ambiguous_sources: StateMapFiberRecord[];
+}
+
+export interface StateAlignmentRow {
+  position: number;
+  coefficient: number;
+  carry_state: number;
+  remainder_state: number;
+  block_value: number;
+}
+
+export interface StateMergingSameCoreRow {
+  base: number;
+  core_n: number;
+  members: number[];
+  selected_members: number[];
+  selected_regimes: string[];
+  selected_obstruction_classes: string[];
+  forward_preimage_signatures: string[];
+  reverse_ambiguity_signatures: string[];
+  relabeling_members: number[];
+  hidden_members: number[];
+  visible_members: number[];
+  compressed_class_path: string[];
+  compressed_obstruction_path: string[];
+  first_relabeling_member: number | null;
+  first_non_relabeling_member: number | null;
+  first_hidden_member: number | null;
+  first_visible_member: number | null;
+  has_visible_after_hidden: boolean;
+  has_rehidden_after_visible: boolean;
+  visibility_behavior: string;
+  onset_kind: string;
+  has_nonmonotone_hidden_visible_switching: boolean;
+  hidden_visible_switch_count: number;
+  phase_summary: string;
+  has_regime_disagreement: boolean;
+  has_obstruction_class_disagreement: boolean;
+  has_forward_preimage_disagreement: boolean;
+  has_reverse_ambiguity_disagreement: boolean;
+  has_hidden_graph_obstruction_member: boolean;
+  has_visible_preimage_compression_member: boolean;
+  crosses_relabeling_hidden_visible_classes: boolean;
+  has_state_merging_disagreement: boolean;
+  related_claim_ids: string[];
+  related_open_claim_ids: string[];
+  matching_claim_ids: string[];
+  matching_witness_ids: string[];
+}
+
+export interface StateMergingCaseStudyRecord {
+  label: string;
+  n: number;
+  base: number;
+  explanation: string;
+  theorem_candidate: string;
+  heuristic_note: string;
+  counterexample_target: string;
+  primary_vocabulary_id: string;
+  summary_lines: string[];
+  selected_coordinate: {
+    m: number;
+    B: number;
+    q: number;
+    k: number;
+  };
+  factorization_regime: string;
+  obstruction_class: string;
+  obstruction_summary: string;
+  observed_alignment_bijection: boolean;
+  carry_state_count: number;
+  remainder_state_count: number;
+  carry_class_count: number;
+  remainder_class_count: number;
+  graph_state_gap: number;
+  minimized_class_gap: number;
+  profile_class: string;
+  transition_signature: string[];
+  forward_profile: ObservedStateMapProfile;
+  reverse_profile: ObservedStateMapProfile;
+  compression_targets: StateCompressionTargetRecord[];
+  forward_preimage_signature: string;
+  reverse_preimage_signature: string;
+  forward_ambiguity_signature: string;
+  reverse_ambiguity_signature: string;
+  alignment_rows: StateAlignmentRow[];
+  claim_context: ClaimContext;
+}
+
+export interface StateMergingFamilyStudyRecord {
+  label: string;
+  members: number[];
+  explanation: string;
+  theorem_candidate: string;
+  heuristic_note: string;
+  counterexample_target: string;
+  primary_vocabulary_id: string;
+  summary_lines: string[];
+  family_row: StateMergingSameCoreRow;
+  member_cases: StateMergingCaseStudyRecord[];
+}
+
 export interface CanonicalExampleRecord {
   category: string;
   explanation: string;
@@ -130,6 +310,12 @@ export interface ExampleAtlas {
     rows: ClaimWitnessRow[];
   };
   case_studies: {
+    orbit_carry_frontier: {
+      orbit_layer_examples: OrbitCarryFrontierRow[];
+      carry_layer_examples: OrbitCarryFrontierRow[];
+      frontier_targets: OrbitCarryFrontierRow[];
+      obstruction_families: OrbitCarryFrontierRow[];
+    };
     carry_dfa: Array<{
       claim_context: ClaimContext;
       distinctive_feature: string;
@@ -173,6 +359,8 @@ export interface ExampleAtlas {
       summary_lines: string[];
       theorem_candidate: string;
     }>;
+    state_merging: StateMergingCaseStudyRecord[];
+    state_merging_families: StateMergingFamilyStudyRecord[];
     visibility: Array<{
       claim_context: ClaimContext;
       counterexample_target: string;
@@ -248,6 +436,10 @@ export interface ExampleAtlas {
   };
   canonical_examples: CanonicalExampleRecord[];
   dataset_kind: string;
+  throughlines: {
+    featured_ids: string[];
+    rows: ThroughlineRecord[];
+  };
   leaderboards: {
     bridge_nontrivial: BridgeLeaderboardEntry[];
     bridge_q1: BridgeLeaderboardEntry[];
@@ -304,6 +496,25 @@ export interface ExampleAtlas {
       decision: string;
       publication_status: string;
     };
+    state_merging: {
+      base: number;
+      classification_bound: number;
+      decision: string;
+      hidden_graph_obstruction_count: number;
+      publication_status: string;
+      quotient_candidate_only_count: number;
+      representative_hidden_ns: number[];
+      representative_visible_ns: number[];
+      summary_lines: string[];
+      visible_preimage_compression_count: number;
+      rows: StateMergingCaseStudyRecord[];
+    };
+    state_merging_same_core: {
+      base: number;
+      decision: string;
+      publication_status: string;
+      rows: StateMergingSameCoreRow[];
+    };
   };
   schema_version: string;
 }
@@ -338,6 +549,10 @@ export const featuredCounterexamples = counterexamples.filter(counterexample =>
 );
 
 export const canonicalExamples = exampleAtlas.canonical_examples;
+export const researchTheses = exampleAtlas.throughlines.rows;
+export const featuredThroughline = exampleAtlas.throughlines.featured_ids
+  .map(id => researchTheses.find(record => record.id === id))
+  .find((record): record is ThroughlineRecord => record !== undefined) ?? null;
 export const claimWitnessRows = exampleAtlas.claim_witnesses.rows;
 export const featuredClaimWitnesses = exampleAtlas.claim_witnesses.featured_ids
   .map(id => claimWitnessRows.find(row => row.witness_id === id))
@@ -349,10 +564,22 @@ export const bridgeHighlights = exampleAtlas.leaderboards.bridge_nontrivial;
 export const bridgeQ1Highlights = exampleAtlas.leaderboards.bridge_q1;
 export const compositeHighlights = exampleAtlas.leaderboards.composite_crt;
 export const primeQRHighlights = exampleAtlas.leaderboards.prime_qr;
+export const orbitCarryFrontier = exampleAtlas.case_studies.orbit_carry_frontier;
+export const stateMergingCaseStudies = exampleAtlas.case_studies.state_merging;
+export const stateMergingFamilyStudies = exampleAtlas.case_studies.state_merging_families;
+export const stateMergingResearchLayer = exampleAtlas.research_layers.state_merging;
+export const stateMergingSameCoreResearchLayer = exampleAtlas.research_layers.state_merging_same_core;
 export const visibilityCaseStudies = exampleAtlas.case_studies.visibility;
 export const visibilityFamilyStudies = exampleAtlas.case_studies.visibility_families;
 
-export const searchPreview: SearchPreviewEntry[] = [
+const throughlineSearchPreview = (featuredThroughline?.featured_searches ?? []).map(entry => ({
+  label: entry.label,
+  summary: entry.summary,
+  command: entry.command,
+}));
+
+const searchPreviewRaw: SearchPreviewEntry[] = [
+  ...throughlineSearchPreview,
   {
     label: 'Readable q-weighted bridges',
     summary: 'Highlights moduli like 37 and 97 where small k makes the early coefficients easy to see.',
@@ -424,6 +651,10 @@ export const searchPreview: SearchPreviewEntry[] = [
     command: 'search-reptends published-atlas --max 1200 --top 8 --output data/example_atlas.json',
   },
 ];
+
+export const searchPreview = searchPreviewRaw.filter((entry, index, entries) =>
+  entries.findIndex(candidate => candidate.command === entry.command) === index
+);
 
 export function displayTerm(vocabularyId: string, standardMode: boolean): {
   primary: string;

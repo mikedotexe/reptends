@@ -1,6 +1,105 @@
 # Bridge Reptends
 
-> Reptends are geometric series with carry correction.
+> Long division is best understood here as a remainder orbit plus carry-propagated block normalization.
+
+## Research Thesis
+
+<!-- THROUGHLINE_RESEARCH_THESIS_START -->
+- Kind: `research-thesis`
+- Thesis ID: `orbit_plus_carry_factorization`
+- Title: Long Division as Orbit + Carry
+- Headline: Long division is best understood as a remainder-orbit system plus carry-propagated block normalization.
+- Status note: Exact finite-window interfaces are implemented; the global canonical factorization remains `open` under `carry_dfa_factorization`.
+- Exact support claims: `digit_periodicity`, `preperiod_from_base_factors`, `series_q_weighted_identity`, `positive_q_good_modes`, `carry_window_transducer`, `incoming_carry_position_formula`, and `same_core_threshold_shift_interval`
+- Open frontier claims: `small_k_visibility_threshold` and `carry_dfa_factorization`
+- Canonical witness anchors: `digit_periodicity_prime19_base10`, `series_q_weighted_identity_prime97_stride2`, `series_q_weighted_identity_n249_stride3`, `carry_window_transducer_prime97_window6`, `preperiod_from_base_factors_n996_base10`, `carry_dfa_factorization_target_21_97_996`, `same_core_threshold_shift_interval_996_over_249`, and `carry_dfa_factorization_target_249_498_996_same_core`
+- Obstruction records: `carry_state_relabeling_failure_97`, `carry_state_relabeling_failure_996`, `carry_selector_monotonicity_failure_21`, and `carry_selector_core_invariance_failure_996`
+- Search surface `orbit_carry_frontier`: Groups the exact orbit layer, implemented carry layer, open factorization targets, and obstruction families under one exported surface. Command: `search-reptends orbit-carry-frontier --max 1200 --base 10 --blocks 8`
+- Search surface `orbit_carry_trace`: Experimental finite trace lens for the canonical 21 / 97 / 996 trio, aligning remainder orbit states, raw coefficients, finite carry-window states, and displayed blocks. Command: `search-reptends orbit-carry-trace --base 10 --blocks 8 --members 21,97,996`
+- Search surface `visibility_optics_workbench`: Ranks finite-window evidence for how readable the source remainder orbit is through the carry-propagated block normalization instrument. Command: `search-reptends visibility-optics --max 1200 --base 10 --blocks 8 --top 20`
+- Search surface `visibility_base_compare`: Compares Visibility Optics signal classes across base instruments such as 10, 12, and 30 so base choice becomes data rather than a default. Command: `search-reptends visibility-base-compare --max 1200 --bases 10,12,30 --blocks 8 --top 20`
+- Search surface `instrument_atlas`: Compares base instruments by what they reveal, absorb, distort, or obstruct so working axioms can be revised against finite-window evidence. Command: `search-reptends instrument-atlas --max 1200 --bases 7,10,12,30 --blocks 8 --top 20`
+- Search surface `chart_invariance`: Compares base-chart pairs for finite-window invariant candidates and clean distortion witnesses. Command: `search-reptends chart-invariance --max 1200 --bases 7,10,12,30 --blocks 8 --top 20`
+- Search surface `carry_factorization`: Keeps the canonical 21 / 97 / 996 carry-DFA comparisons visible as bounded evidence beneath the open factorization claim. Command: `search-reptends carry-factorization --max 500 --blocks 8`
+- Search surface `state_merging`: Makes the finite-window collapse/compression pattern explicit on the selected Track 17 coordinate for canonical cases like 21, 97, and 996. Command: `search-reptends state-merging --max 500 --base 10 --blocks 8`
+- Search surface `quotient_obstructions`: Splits selected-coordinate quotient-only cases into visible preimage compression versus hidden graph obstruction on the base-10 Track 17 surface. Command: `search-reptends quotient-obstructions --max 500 --base 10 --blocks 8`
+- Search surface `state_merging_same_core`: Tracks same-core disagreement families such as 249 / 498 / 996 and 17 / 34 / 68 / 85 through their selected preimage-fiber profiles. Command: `search-reptends state-merging-same-core --max 1200 --base 10 --blocks 8`
+- Search surface `quotient_obstruction_families`: Groups same-core families by whether they span relabeling, hidden graph obstruction, and visible preimage compression on the selected coordinate. Command: `search-reptends quotient-obstruction-families --max 1200 --base 10 --blocks 8`
+- Search surface `same_core_obstruction_correlates`: Summarizes empirical correlates separating re-hiding same-core families from one-way visible families at the selected bound. Command: `search-reptends same-core-obstruction-correlates --max 2000 --base 10 --blocks 8`
+- Search surface `carry_selector_same_core`: Tracks same-core selector-profile disagreement families such as 249 / 498 / 996. Command: `search-reptends carry-selector-same-core --max 400 --blocks 8`
+- Search surface `same_core_visibility`: Compares actual denominators to stripped periodic cores so the exact same-core shift layer stays connected to the frontier. Command: `search-reptends same-core-visibility --max 500 --base 10 --blocks 8`
+<!-- THROUGHLINE_RESEARCH_THESIS_END -->
+
+## Orbit, Instrument, Visibility
+
+The reptend is the observed trace; the remainder orbit is the source; the
+finite carry window is the instrument.
+
+The displayed decimal string is not the primary object in this lens. It is an
+observation of an intrinsic remainder orbit through positional notation. The
+raw coefficient stream `qk^j` carries the arithmetic signal, and
+carry-propagated block normalization is the finite window that makes that
+signal visible as base-`B` blocks.
+
+Read [docs/ORBIT_INSTRUMENT_VISIBILITY.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/ORBIT_INSTRUMENT_VISIBILITY.md)
+for the campfire-to-math version, or inspect the canonical finite-window trace:
+
+New readers can start with
+[docs/OUTSIDE_READER_DOORWAY.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/OUTSIDE_READER_DOORWAY.md),
+a short front porch for the observation/readout idea.
+For research-mode review, start with
+[docs/RESEARCH_BRIEF.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/RESEARCH_BRIEF.md),
+a compact status-aware summary of the claims, Lean surface, open boundaries,
+and observability thesis.
+For ranked frontier selection, use
+[docs/OBSERVABILITY_PROBLEMS.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/OBSERVABILITY_PROBLEMS.md),
+which keeps the intrepid observability questions tied to Lean/export surfaces
+and explicit stop conditions.
+
+```bash
+search-reptends orbit-carry-trace --base 10 --blocks 8 --members 21,97,996
+```
+
+For a broader ranked probe, use the experimental **Visibility Optics workbench**:
+
+```bash
+search-reptends visibility-optics --max 1200 --base 10 --blocks 8 --top 20
+```
+
+Read [docs/VISIBILITY_OPTICS_WORKBENCH.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/VISIBILITY_OPTICS_WORKBENCH.md)
+for the field guide to the row groups, signal classes, and follow-up commands.
+
+To compare bases as different observation instruments, run:
+
+```bash
+search-reptends visibility-base-compare --max 1200 --bases 10,12,30 --blocks 8 --top 20
+```
+
+For the broader **Instrument Atlas**, which compares bases by what they reveal,
+absorb, distort, or obstruct, read
+[docs/INSTRUMENT_ATLAS.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/INSTRUMENT_ATLAS.md)
+and run:
+
+```bash
+search-reptends instrument-atlas --max 1200 --bases 7,10,12,30 --blocks 8 --top 20
+```
+
+The geometric bridge from `GeometricStack` to these finite-window traces lives
+in [docs/VISIBILITY_GEOMETRY.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/VISIBILITY_GEOMETRY.md).
+To compare base charts for invariant candidates and clean distortion witnesses,
+read [docs/CHART_INVARIANCE.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/CHART_INVARIANCE.md)
+and run:
+
+```bash
+search-reptends chart-invariance --max 1200 --bases 7,10,12,30 --blocks 8 --top 20
+```
+
+## The Throughline
+
+1. The repeating expansion is controlled first by the remainder orbit under multiplication by the base.
+2. In a positive-q block coordinate `B = qN + k`, the raw coefficient stream is exactly `qk^j`.
+3. The displayed blocks are then obtained by carry-propagated block normalization of that raw stream.
+4. The global canonical factorization of long division into those two machines remains an open frontier under `carry_dfa_factorization`.
 
 ## The Core Identity
 
@@ -20,12 +119,13 @@ When `B > N` (the good-mode case, equivalently `q > 0`), we have the exact ident
 The clean `1, k, k², k³, ...` pattern is the special case `q = 1`, equivalently
 `N = B - k`. This is the "bridge" case emphasized by the examples like `97 = 100 - 3`.
 
-### The Three Layers
+### Orbit + Carry Layers
 
 | Layer | What | Universal? |
 |-------|------|------------|
-| Skeleton | Raw coefficients `q k^j` (`k^j` when `q=1`) | Yes, any `N` |
-| Carry | Overflow correction when `q k^j ≥ B` | Yes, any `N` |
+| Orbit | Remainder states under multiplication by the base | Yes, after stripping base factors |
+| Raw coefficients | Exact block-coordinate stream `q k^j` (`k^j` when `q=1`) | Yes, any positive-q coordinate |
+| Carry | Carry-propagated block normalization of the raw stream | Yes, any `N` |
 | Closure | Cyclic wrap of the purely periodic part | Yes |
 
 This works for 1/96, 1/996, 1/9996 just as well as 1/97.
@@ -53,6 +153,18 @@ This explains:
 # Install the package
 pip install -e .
 
+# Shortest path into the repo thesis: orbit layer -> raw qk^j layer -> carry layer
+python -m bridge_reptends.examples.orbit_plus_carry_tour
+
+# Shortest path into the visible-vs-hidden quotient-obstruction split
+python -m bridge_reptends.examples.quotient_obstruction_tour
+
+# Broader preimage-fiber profile (state-merging atlas) tour
+python -m bridge_reptends.examples.state_merging_tour
+
+# Terminal companion for the site's B = 100 prime family sweep
+python -m bridge_reptends.examples.prime_family_sweep_100
+
 # Skeleton/carry analysis (exact q*k^j coefficients, special powers when q=1)
 python -c "from bridge_reptends import print_skeleton_analysis; print_skeleton_analysis(996)"
 
@@ -66,6 +178,8 @@ python -m bridge_reptends.examples.carry_transducer_demo
 search-reptends small-residue-coordinates --max 500 --top 20
 search-reptends small-residue-coordinates-q1 --max 1500 --top 10
 search-reptends prime-qr-generators --max 500 --top 10
+search-reptends theorem-witnesses --claim incoming_carry_position_formula
+search-reptends theorem-witnesses --lean-example QRTour.Composite996
 search-reptends legacy-counterexamples --max 500 --bases 2,7,10,12
 search-reptends composite-profiles --max 500
 search-reptends visibility-profiles --max 500 --blocks 8
@@ -77,9 +191,26 @@ search-reptends carry-factorization-selector --max 300 --blocks 8
 search-reptends carry-selector-non-k1 --max 400 --blocks 8
 search-reptends carry-selector-same-core --max 400 --blocks 8
 search-reptends carry-selector-research --max 120 --bases 7,10,12 --blocks 8
+search-reptends orbit-carry-frontier --max 1200 --base 10 --blocks 8
+search-reptends orbit-carry-trace --base 10 --blocks 8 --members 21,97,996
+search-reptends state-merging --max 500 --base 10 --blocks 8
+search-reptends state-merging-same-core --max 1200 --base 10 --blocks 8
+search-reptends quotient-obstructions --max 500 --base 10 --blocks 8
+search-reptends quotient-obstruction-families --max 1200 --base 10 --blocks 8
+search-reptends same-core-obstruction-phases --max 1200 --base 10 --blocks 8
+search-reptends same-core-obstruction-correlates --max 2000 --base 10 --blocks 8
 search-reptends published-atlas --max 1200 --top 8 --output data/example_atlas.json
 ci-checks
 ```
+
+## Core Site Section Companion Map
+
+- Throughline thesis: read `README.md`, `docs/EXPOSITORY_NOTE.md`, and `docs/THEOREM_WITNESS_ATLAS.md`; then run `python -m bridge_reptends.examples.orbit_plus_carry_tour`, `search-reptends orbit-carry-frontier --max 1200 --base 10 --blocks 8`, and the experimental trace lens `search-reptends orbit-carry-trace --base 10 --blocks 8 --members 21,97,996`.
+- Claim atlas: read `docs/PROOF_STATUS_ATLAS.md` and `data/claim_registry.json`; then run `search-reptends theorem-witnesses --claim incoming_carry_position_formula` or `python -m bridge_reptends.sync_registry_docs --check`.
+- Preimage-fiber profile (state-merging atlas): read `docs/CARRY_TRANSDUCER.md`, `bridge_reptends/transducer.py`, and `lean/QRTour/Factorization.lean`; then run `python -m bridge_reptends.examples.state_merging_tour`, `python -m bridge_reptends.examples.quotient_obstruction_tour`, and `search-reptends state-merging --max 500 --base 10 --blocks 8`.
+- Linked `1/97` views and carry panel: read `bridge_reptends/examples/carry_transducer_demo.py` and `bridge_reptends/examples/orbit_plus_carry_tour.py`; then run `python -m bridge_reptends.examples.carry_transducer_demo` or `python -c "from bridge_reptends import print_skeleton_analysis; print_skeleton_analysis(97)"`.
+- Prime family sweep: read `bridge_reptends/examples/prime_family_sweep_100.py` and `bridge_reptends/visibility.py`; then run `python -m bridge_reptends.examples.prime_family_sweep_100`.
+- Roots-of-unity geometry: read `bridge_reptends/examples/prime_19.py`, `bridge_reptends/examples/progression.py`, and `lean/QRTour/QuadraticResidues.lean`; then run `python -m bridge_reptends.examples.prime_19`, `python -m bridge_reptends.examples.progression`, or `python -c "from bridge_reptends import analyze_prime; print(analyze_prime(97))"`.
 
 ## CI Scope
 
@@ -96,7 +227,38 @@ Agda remains a deliberate manual/formal-companion surface for now rather than a 
 Run these to see the group theory in action. Each script outputs annotated proofs
 using standard terminology (Lagrange's Theorem, Euler's criterion, index-2 subgroups).
 
-### 1. Exhaustive Trace: 1/19
+### 1. Orbit + Carry Tour
+
+```bash
+python -m bridge_reptends.examples.orbit_plus_carry_tour
+```
+
+**What you'll see**: the repo's flagship ladder in one place.
+Demonstrates: `1/21` as carry collapse, `1/97` as clean orbit plus delayed carry,
+and `1/996` as preperiod/composite structure meeting the same frontier.
+
+### 2. Visible vs Hidden Obstruction Tour
+
+```bash
+python -m bridge_reptends.examples.quotient_obstruction_tour
+```
+
+**What you'll see**: the new visible-vs-hidden split inside the quotient-only Track 17 surface.
+Demonstrates: `1/21` as the relabeling baseline, `1/97` as visible prime compression,
+`1/89` as hidden graph obstruction, `1/996` as visible composite compression,
+and `17 / 34 / 68 / 85` as the mixed same-core family spanning all three outcomes.
+
+### 3. Preimage-Fiber Profile Tour
+
+```bash
+python -m bridge_reptends.examples.state_merging_tour
+```
+
+**What you'll see**: the new preimage-fiber profile (state-merging atlas) surface in one place.
+Demonstrates: `1/21` as the one-state baseline, `1/97` as quotient-only prime collapse,
+`1/996` as quotient-only composite collapse, and `249 / 498 / 996` as the same-core reverse obstruction family.
+
+### 4. Exhaustive Trace: 1/19
 
 ```bash
 python -m bridge_reptends.examples.prime_19
@@ -106,7 +268,7 @@ python -m bridge_reptends.examples.prime_19
 Demonstrates: cyclic group structure, primitive roots, Fermat's Little Theorem,
 why the reptend has exactly 18 digits.
 
-### 2. Working Backwards
+### 5. Working Backwards
 
 ```bash
 python -m bridge_reptends.examples.backwards
@@ -116,7 +278,7 @@ python -m bridge_reptends.examples.backwards
 Demonstrates: Euler's criterion for QR detection, orbit closure by Lagrange,
 the proof that "infinite" decimals encode finite information.
 
-### 3. The 2×10^m - 1 Family
+### 6. The 2×10^m - 1 Family
 
 ```bash
 python -m bridge_reptends.examples.progression
@@ -125,7 +287,9 @@ python -m bridge_reptends.examples.progression
 **What you'll see**: Why 19, 199, 1999 share structure.
 Demonstrates: QR-generators, index-2 subgroups, stride-m orbit termination.
 
-*Run these before diving into formalism—they show the mathematics in action.*
+*Run the orbit-plus-carry tour first for the main thesis, then the quotient-obstruction tour if you want the sharpest entry into the new visible-vs-hidden compression split.*
+
+The next empirical surfaces after that are `search-reptends same-core-obstruction-phases --max 1200 --base 10 --blocks 8` and `search-reptends same-core-obstruction-correlates --max 2000 --base 10 --blocks 8`, which show that same-core families can be non-monotone and summarize the bounded correlates of re-hiding versus one-way visibility.
 
 ---
 
@@ -153,6 +317,10 @@ subgroup-cardinality, and concrete-example witness layer.
 ### Lean 4 (Formal Proofs)
 
 ```bash
+# Recommended when this checkout lives in Dropbox/iCloud:
+# keep Lake's large dependency/build tree outside the synced repository.
+./scripts/use_external_lake_cache.sh
+
 cd lean
 
 # Install dependencies (requires Mathlib cache)
@@ -166,25 +334,28 @@ lake build QRTour.RemainderOrbit
 ```
 
 Lean is the theorem-complete formal backend for the current atlas-level exact
-claims. It closes the main results that Agda still leaves postulated:
-- `remainder_eq_pow` - r[n] = B^n (mod p)
-- `stride_orbit` - r[j*m] = k^j
-- `pow_isQRGenerator_iff` - `B^m` is a QR-generator exactly when the order/gcd formula gives `(p-1)/2`
-- `qrGenerator_pow_count_eq_totient` - a fixed QR generator has exactly `φ((p-1)/2)` QR-generating powers
-- `base_qrGenerator_pow_count_eq_totient` - when `ord_p(B)` is `h` or `2h`, the number of QR-generating strides for the actual base element is exactly `φ(h)`
-- `qr_tour_cover` - QR generator covers all QRs
-- `Bridge.remainder_k_step` - r[n+k] = d × r[n] for bridge primes
-- `SignedBridge.remainder_2k_step` - if `B^k ≡ ±d`, then `r[n+2k] = d² × r[n]` and the sign cancels
-- `Bridge.blockValue_periodic` - bridge block values are powers of `d` and repeat with period `ord_p(d)`
-- `orderOf_unitsChineseRemainder` - pairwise CRT sends unit order to the lcm of two component orders
-- `orderOf_unitsEquivPrimePowers` - finite prime-power CRT sends unit order to the lcm of all prime-power component orders
-- `preperiodPrimeSteps_le_iff` - the local preperiod contribution of a base prime is `ceil(v_p(N)/v_p(base))`
-- `preperiodSteps_le_of_local_bounds` - the global preperiod is the maximum of those local step counts across the base primes
-- `basePrimeSupportFactor_dvd_base_pow_preperiodSteps` - the full base-supported prime-power part of the denominator divides `base^preperiodSteps`
+claims. The current atlas-backed claim carriers are:
+
+<!-- README_LEAN_CLAIM_SURFACE_START -->
+- [QRTour/OrbitWeave.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/OrbitWeave.lean) closes `series_q_weighted_identity` and `positive_q_good_modes`
+- [QRTour/Digits.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/Digits.lean) closes `digit_periodicity`
+- [QRTour/SignedBridge.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/SignedBridge.lean) closes `signed_bridge_recurrence`
+- [QRTour/PAdicBridge.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/PAdicBridge.lean) closes `bridge_block_value_periodicity`
+- [QRTour/Visibility.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/Visibility.lean) closes `incoming_carry_position_formula`
+- [QRTour/Visibility.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/Visibility.lean) together with [QRTour/CompositeVisibility.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CompositeVisibility.lean) closes `same_core_threshold_shift_interval`
+- [QRTour/QuadraticResidues.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/QuadraticResidues.lean) closes `qr_stride_classification`
+- [QRTour/CompositePeriod.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CompositePeriod.lean) closes `crt_period_lcm`
+- [QRTour/Preperiod.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/Preperiod.lean) together with [QRTour/CompositeVisibility.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CompositeVisibility.lean) closes `preperiod_from_base_factors`
+- [QRTour/CarryTransducer.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CarryTransducer.lean) together with [QRTour/CarryComparison.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CarryComparison.lean) closes `carry_window_transducer`
+<!-- README_LEAN_CLAIM_SURFACE_END -->
+
+For theorem names, worked witnesses, and the exact Lean support beneath the
+open boundaries, use [lean/THEOREM_GUIDE.md](/Users/mikepurvis/other/quadratic-residue-reptends/lean/THEOREM_GUIDE.md).
 
 ### Web Visualization
 
 ```bash
+./scripts/use_external_site_cache.sh
 cd site
 yarn install
 yarn dev
@@ -205,6 +376,9 @@ bridge-reptends/
 │   ├── sweep.py          # Systematic prime exploration
 │   ├── patterns.py       # Exact formulas + secondary pattern study
 │   └── examples/         # Educational demonstrations
+│       ├── orbit_plus_carry_tour.py # 21 / 97 / 996 throughline tour
+│       ├── quotient_obstruction_tour.py # 21 / 97 / 89 / 996 / 17-34-68-85 obstruction tour
+│       ├── state_merging_tour.py # 21 / 97 / 996 / 249->996 compression tour
 │       ├── prime_19.py   # Deep dive on 1/19
 │       ├── backwards.py  # Proving reptends are finite
 │       ├── progression.py # The 2×10^m - 1 family
@@ -253,7 +427,9 @@ Refresh the registry-backed Markdown blocks with:
 
 ```bash
 python -m bridge_reptends.sync_registry_docs
+python -m bridge_reptends.sync_registry_docs --check
 build-expository-note
+build-release-snapshot
 ```
 
 ### Registry Snapshot
@@ -274,6 +450,16 @@ Current open claim IDs:
 - `carry_dfa_factorization` - Canonical factorization of long division into orbit and carry
 <!-- OPEN_CLAIMS_END -->
 
+Proof-system legend for the public theorem surface:
+
+<!-- PROOF_SYSTEM_LEGEND_START -->
+- `Lean-formalized`: proved in the Lean tree and suitable for theorem-level citation in the current public surface.
+- `Agda-locally-proved`: discharged inside the Agda pedagogical companion surface without relying on Agda postulates.
+- `Agda-postulated but Lean-backed`: still explicit as an Agda postulate, but closed by Lean or an atlas-backed Lean-backed claim in this repo.
+- `empirical`: implemented and regression-tested here, but not promoted to theorem status.
+- `open`: tracked as an unresolved claim boundary or interface question, not an established result.
+<!-- PROOF_SYSTEM_LEGEND_END -->
+
 - [ROADMAP.md](/Users/mikepurvis/other/quadratic-residue-reptends/ROADMAP.md) - root Lean-first fortification roadmap
 - [docs/ROADMAP.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/ROADMAP.md) - broader working todo list and execution order
 - [AGENT_TRACK_PLAYBOOK.md](/Users/mikepurvis/other/quadratic-residue-reptends/AGENT_TRACK_PLAYBOOK.md) - repository-agnostic guide for creating track-based hardening agents
@@ -289,7 +475,9 @@ Current open claim IDs:
 - [docs/CARRY_TRANSDUCER.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/CARRY_TRANSDUCER.md) - carry layer as a standard transducer with explicit graph/comparison interfaces
 - [docs/CARRIED_PREFIX_VISIBILITY.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/CARRIED_PREFIX_VISIBILITY.md) - exact Track 16 observables for raw-prefix agreement, incoming carry, and stabilization lookahead
 - [docs/EXPOSITORY_NOTE.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/EXPOSITORY_NOTE.md) - generated note built from the registry and published atlas
+- [docs/RELEASE_SNAPSHOT.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/RELEASE_SNAPSHOT.md) - generated release-facing snapshot of the current proof-status and Lean public surfaces
 - [data/example_atlas.json](/Users/mikepurvis/other/quadratic-residue-reptends/data/example_atlas.json) - curated Track 3 atlas of canonical search examples
+- [data/release_snapshot.json](/Users/mikepurvis/other/quadratic-residue-reptends/data/release_snapshot.json) - machine-readable release snapshot for branch, release, and paper handoff
 - [data/theorem_witnesses.json](/Users/mikepurvis/other/quadratic-residue-reptends/data/theorem_witnesses.json) - machine-readable canonical witnesses and open-target families
 - [data/lean_module_index.json](/Users/mikepurvis/other/quadratic-residue-reptends/data/lean_module_index.json) - machine-readable Lean module role and promotion audit
 

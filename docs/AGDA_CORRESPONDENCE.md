@@ -12,6 +12,20 @@ Future public prose must not imply Agda has full proof parity with Lean. When a
 claim depends on an Agda postulate, point here and then point to the Lean theorem
 or atlas claim that closes it, if one exists.
 
+## Proof-System Legend
+
+Use the shared public proof-system legend here too. This document still needs
+its own Agda-specific audit categories below, but the top-level proof-status
+language should stay synchronized with the rest of the public theorem surface.
+
+<!-- PROOF_SYSTEM_LEGEND_START -->
+- `Lean-formalized`: proved in the Lean tree and suitable for theorem-level citation in the current public surface.
+- `Agda-locally-proved`: discharged inside the Agda pedagogical companion surface without relying on Agda postulates.
+- `Agda-postulated but Lean-backed`: still explicit as an Agda postulate, but closed by Lean or an atlas-backed Lean-backed claim in this repo.
+- `empirical`: implemented and regression-tested here, but not promoted to theorem status.
+- `open`: tracked as an unresolved claim boundary or interface question, not an established result.
+<!-- PROOF_SYSTEM_LEGEND_END -->
+
 ## Classification Legend
 
 - `locally provable in Agda`: a shallow or structural lemma that should be
@@ -46,6 +60,10 @@ Current audit totals:
 - Track 15 also discharged the shallow orbit/buffer lemmas `repunitRem-closed`,
   `orbit-buffer-duality`, `shift-conjugacy`, and `noMod-step` in
   [agda/GeometricStack/OrbitBufferDuality.agda](/Users/mikepurvis/other/quadratic-residue-reptends/agda/GeometricStack/OrbitBufferDuality.agda).
+- The finite carry-normalization companion in
+  [agda/QRTour/CarryWindow.agda](/Users/mikepurvis/other/quadratic-residue-reptends/agda/QRTour/CarryWindow.agda)
+  is also fully local: it defines the finite carry recursion, traced runs, and
+  structural length/map lemmas without adding any new Agda postulates.
 - Some Agda items correspond to Lean theorems but do not map cleanly to a single
   public claim ID. In those rows the claim column is left as `-`.
 

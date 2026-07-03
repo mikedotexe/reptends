@@ -2,12 +2,14 @@
 Copyright (c) 2024 Mike Purvis. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
+-- GEOMETRIC_STACK_IMPORTS_START
 import GeometricStack.Family
 import GeometricStack.Capacity
 import GeometricStack.Scale
 import GeometricStack.Valuation
 import GeometricStack.Positional
 import GeometricStack.OrbitBufferDuality
+-- GEOMETRIC_STACK_IMPORTS_END
 
 /-!
 # Geometric Stack
@@ -46,12 +48,31 @@ For i ≤ T_n:
 
 This is the "clean geometric region" where no overflow occurs.
 
+## Proof-System Framing
+
+Use the shared public proof-system legend here as on the main Lean theorem
+surfaces. `GeometricStack` is a companion infrastructure surface rather than a
+direct atlas-backed theorem carrier, but its public role should still stay
+legible relative to the rest of the repo.
+
+<!-- PROOF_SYSTEM_LEGEND_START -->
+- `Lean-formalized`: proved in the Lean tree and suitable for theorem-level citation in the current public surface.
+- `Agda-locally-proved`: discharged inside the Agda pedagogical companion surface without relying on Agda postulates.
+- `Agda-postulated but Lean-backed`: still explicit as an Agda postulate, but closed by Lean or an atlas-backed Lean-backed claim in this repo.
+- `empirical`: implemented and regression-tested here, but not promoted to theorem status.
+- `open`: tracked as an unresolved claim boundary or interface question, not an established result.
+<!-- PROOF_SYSTEM_LEGEND_END -->
+
 ## Modules
 
-- `GeometricStack.Family` - Basic definitions of a and B
-- `GeometricStack.Capacity` - Capacity index T_n
-- `GeometricStack.Scale` - Decomposition at a fixed scale
-- `GeometricStack.Valuation` - Capacity as discrete valuation, Nat.digits connection
+<!-- GEOMETRIC_STACK_MODULES_START -->
+- `GeometricStack.Family` - base-invariant family definitions for capacities and geometric powers
+- `GeometricStack.Capacity` - capacity-index packaging and threshold-bound layer
+- `GeometricStack.Scale` - fixed-scale direct and overflow decomposition layer
+- `GeometricStack.Valuation` - capacity-as-valuation and digit-count companion layer
+- `GeometricStack.Positional` - positional-digit companion surface for the scale decomposition
+- `GeometricStack.OrbitBufferDuality` - repunit remainder-orbit conjugacy and periodicity companion layer
+<!-- GEOMETRIC_STACK_MODULES_END -->
 
 ## Porting from Agda
 

@@ -1,0 +1,202 @@
+[
+  {
+    "module_path": "lean/QRTour/Examples.lean",
+    "namespace": "QRTour.Prime19",
+    "claim_ids": [
+      "digit_periodicity"
+    ],
+    "theorem_names": [
+      "reptendPeriod_eq_eighteen",
+      "digit_remainder_step_zero",
+      "digit_periodic_decimal"
+    ],
+    "current_role": "Canonical small prime witness surface for the decimal tuple `(base=10, p=19, ord_p(base)=18)`, exposing both the first Euclidean digit step and the full decimal reptend period beneath the digit-periodicity public statement.",
+    "witness_ids": [
+      "digit_periodicity_prime19_base10"
+    ]
+  },
+  {
+    "module_path": "lean/QRTour/Examples.lean",
+    "namespace": "QRTour.Prime97",
+    "claim_ids": [
+      "qr_stride_classification",
+      "signed_bridge_recurrence",
+      "bridge_block_value_periodicity",
+      "series_q_weighted_identity",
+      "incoming_carry_position_formula",
+      "carry_window_transducer"
+    ],
+    "theorem_names": [
+      "k_is_qr_generator",
+      "signedBridge_remainder_k_step",
+      "signedBridge_remainder_2k_step",
+      "bridge_blockValue_eq_pow",
+      "bridgeOrder_eq_forty_eight",
+      "bridge_blockValue_periodic",
+      "coordinate_series_q_weighted_identity",
+      "coordinate_partialSumQ_four_eq_finite",
+      "coordinate_bodyTerm_four_eq_polynomial",
+      "coordinate_bodyTerm_five_recurrence",
+      "coordinate_firstIncomingCarryPosition",
+      "coordinate_isFirstIncomingCarryPosition_iff",
+      "coordinate_incomingCarry_three_eq_zero",
+      "coordinate_incomingCarry_four_eq_two",
+      "coordinate_overflowQuotient_four_eq_zero",
+      "coordinate_localOverflowBoundary",
+      "coordinate_isLocalOverflowBoundary_iff",
+      "coordinate_lookaheadCertificate_six_one",
+      "coordinate_visibleCarryWord_eq_emittedBlockWord_six_one",
+      "coordinate_lookaheadCertificate_six_three",
+      "coordinate_visibleCarryWord_six_one_eq_six_three",
+      "coordinate_visibleCarryWord_eq_emittedBlockWord_six_three",
+      "coordinate_visibleCarryWord_six_three_eq_blocks",
+      "coordinate_stateAlignments_output_agreement_six_three",
+      "coordinate_stateAlignments_output_agreement_pointwise_six_three"
+    ],
+    "current_role": "Canonical prime witness surface for the decimal tuple `(base=10, p=97, stride=2, B=100, q=1, k=3)` beneath the QR-tour, signed-bridge recurrence, block-value periodicity, q-weighted series, incoming-carry, and finite carry-window public statements, with the clean decimal minus-bridge recurrence `r[n+2] = 3*r[n]`, the sign-cancelled `r[n+4] = 3^2*r[n]` specialization, the stride-2 block-value period `48`, the exact q-weighted series specialization and four-term exact finite prefix identity both made explicit in the clean `q = 1` bridge case, the four-block body term exposing raw coefficients `1, 3, 9, 27`, the next recurrence appending the next raw coefficient `81`, the first incoming-carry boundary characterized exactly by `j = 4`, zero carry just before that boundary, carry `2` at the boundary itself, the pre-overflow quotient still vanishing at block `4`, the adjacent local-overflow boundary also characterized exactly by `j = 4`, so block `5` is the first raw overflow, one block of lookahead already certifies the six-block carried window, the larger `(requestedBlocks=6, lookahead=3)` witness preserves that same visible prefix, and the stabilized six-block carried word `[1, 3, 9, 27, 83, 50]` is made explicit on the worked-example surface, with aligned carry/remainder output agreement exposed at both the whole-window and pointwise levels.",
+    "witness_ids": [
+      "qr_stride_classification_prime97_stride2",
+      "signed_bridge_recurrence_prime97_stride2",
+      "bridge_block_value_periodicity_prime97_stride2",
+      "series_q_weighted_identity_prime97_stride2",
+      "incoming_carry_position_formula_prime97_stride2",
+      "carry_window_transducer_prime97_window6"
+    ]
+  },
+  {
+    "module_path": "lean/QRTour/Examples.lean",
+    "namespace": "QRTour.Composite21",
+    "claim_ids": [
+      "crt_period_lcm"
+    ],
+    "theorem_names": [
+      "order_of_decimalUnitMod3",
+      "order_of_decimalUnitMod7",
+      "decimalUnit_order_eq_lcm_component_orders",
+      "order_of_decimalUnitMod21"
+    ],
+    "current_role": "Canonical small composite witness surface for the tuple `(base=10, N=21=3·7, ord_3(base)=1, ord_7(base)=6)` beneath the CRT period public statement, exposing both local component orders and the exact pairwise CRT least-common-multiple equation before collapsing the global decimal order to `6`.",
+    "witness_ids": [
+      "crt_period_lcm_mod21_base10"
+    ]
+  },
+  {
+    "module_path": "lean/QRTour/Examples.lean",
+    "namespace": "QRTour.Composite249",
+    "claim_ids": [
+      "positive_q_good_modes",
+      "series_q_weighted_identity",
+      "incoming_carry_position_formula",
+      "carry_window_transducer"
+    ],
+    "theorem_names": [
+      "coordinate_goodMode",
+      "coordinate_quotientQ_eq_four",
+      "coordinate_remainderK_eq_four",
+      "coordinate_positive_q_good_modes",
+      "coordinate_series_q_weighted_identity",
+      "coordinate_partialSumQ_four_eq_finite",
+      "coordinate_bodyTerm_four_eq_polynomial",
+      "coordinate_bodyTerm_five_recurrence",
+      "coordinate_firstIncomingCarryPosition",
+      "coordinate_isFirstIncomingCarryPosition_iff",
+      "coordinate_incomingCarry_two_eq_zero",
+      "coordinate_incomingCarry_three_eq_one",
+      "coordinate_localOverflowBoundary",
+      "coordinate_isLocalOverflowBoundary_iff",
+      "coordinate_firstVisibleMismatchPosition_eq_three",
+      "coordinate_lookaheadCertificate_three_zero",
+      "coordinate_visibleCarryWord_eq_emittedBlockWord_three_zero",
+      "coordinate_visibleCarryWord_three_zero_eq_blocks",
+      "coordinate_stateAlignments_output_agreement_three_zero",
+      "coordinate_stateAlignments_output_agreement_pointwise_three_zero"
+    ],
+    "current_role": "Canonical positive-q composite witness for the tuple `(base=10, N=249, stride=3, B=1000, q=4, k=4)` beneath the good-mode positivity, q-weighted series, incoming-carry, and finite carry-window public statements, with the exact q-weighted series specialization and the four-term finite partial-sum closed form made explicit, the four-block body term exposing raw coefficients `4, 16, 64, 256`, the next recurrence appending the overflowing coefficient `1024`, the first incoming-carry boundary characterized exactly by `j = 3`, zero carry just before that boundary, carry `1` at the boundary itself, the adjacent local-overflow boundary also characterized exactly by `j = 3`, so block `4` is the first raw overflow, and the carry-free `(requestedBlocks=3, lookahead=0)` window already satisfies the exact lookahead certificate, stabilizes at `[4, 16, 64]`, and exposes aligned carry/remainder output agreement at both the whole-window and pointwise levels outside the special `q = 1` case.",
+    "witness_ids": [
+      "positive_q_good_modes_n249_stride3",
+      "series_q_weighted_identity_n249_stride3",
+      "incoming_carry_position_formula_n249_stride3",
+      "carry_window_transducer_n249_window3"
+    ]
+  },
+  {
+    "module_path": "lean/QRTour/Examples.lean",
+    "namespace": "QRTour.Composite996",
+    "claim_ids": [
+      "preperiod_from_base_factors",
+      "same_core_threshold_shift_interval",
+      "carry_window_transducer"
+    ],
+    "theorem_names": [
+      "preperiodSteps_eq_two",
+      "basePrimeSupportFactor_eq_four",
+      "strippedPeriodModulus_eq_249",
+      "sameCore_remainderK_eq",
+      "sameCore_basePrimeSupportFactor_eq_remainderK_pow_one",
+      "sameCore_denominator_eq_249_mul_remainderK_pow_one",
+      "sameCore_denominator_eq_249_mul_coreRemainderK_pow_one",
+      "sameCore_quotientQ_scaling",
+      "sameCore_quotientQ_scaling_eq_remainderK_pow_one",
+      "sameCore_firstIncomingCarryPosition_shift_exact",
+      "sameCore_localOverflowBoundary_shift_exact",
+      "sameCore_localOverflowBoundary_via_overflowQuotient",
+      "core249_firstVisibleMismatchPosition_eq_three",
+      "actual996_firstVisibleMismatchPosition_eq_four",
+      "sameCore_firstVisibleMismatchPosition_shift_exact",
+      "sameCore_lookaheadCertificateHolds_iff_add_exact",
+      "sameCore_tailMassLowerBound_iff_add_exact",
+      "actual996_tailMassLowerBound_of_core_lookaheadCertificate_exact",
+      "core249_tailMassLowerBound_of_actual_lookaheadCertificate_exact",
+      "actual996_visibleCarryWord_eq_emittedBlockWord_of_core_lookaheadCertificate",
+      "actual996_visibleCarryPairs_output_agreement_of_core_lookaheadCertificate",
+      "actual996_visibleCarryPairs_output_agreement_pointwise_of_core_lookaheadCertificate",
+      "actual996_visibleCarryPairs_carry_balance",
+      "actual996_visibleCarryPairs_remainder_balance",
+      "core249_visibleCarryWord_eq_emittedBlockWord_of_actual_lookaheadCertificate",
+      "core249_visibleCarryPairs_output_agreement_of_actual_lookaheadCertificate",
+      "core249_visibleCarryPairs_output_agreement_pointwise_of_actual_lookaheadCertificate",
+      "core249_visibleCarryPairs_carry_balance",
+      "core249_visibleCarryPairs_remainder_balance",
+      "actual996_stateAlignments_output_agreement_of_core_lookaheadCertificate",
+      "actual996_stateAlignments_output_agreement_pointwise_of_core_lookaheadCertificate",
+      "core249_stateAlignments_output_agreement_of_actual_lookaheadCertificate",
+      "core249_stateAlignments_output_agreement_pointwise_of_actual_lookaheadCertificate",
+      "actual996_visibleCarryWord_eq_emittedBlockWord",
+      "actual996_visibleCarryWord_four_zero_eq_blocks",
+      "actual996_visibleCarryPairs_output_agreement",
+      "actual996_visibleCarryPairs_output_agreement_pointwise",
+      "actual996_stateAlignments_output_agreement",
+      "actual996_stateAlignments_output_agreement_pointwise",
+      "actual996_stateAlignments_coefficient_shift_exact",
+      "actual996_stateAlignments_carryIn_shift_exact",
+      "actual996_stateAlignments_carryOut_shift_exact",
+      "actual996_stateAlignments_remainderIn_shift_exact",
+      "actual996_stateAlignments_carryBlockValue_shift_exact",
+      "actual996_stateAlignments_remainderBlockValue_shift_exact",
+      "actual996_stateAlignments_remainderOut_shift_exact",
+      "core249_visibleCarryWord_eq_emittedBlockWord",
+      "core249_visibleCarryWord_three_zero_eq_blocks",
+      "sameCore_visibleCarryWord_shift_exact",
+      "core249_visibleCarryPairs_output_agreement",
+      "core249_visibleCarryPairs_output_agreement_pointwise",
+      "core249_stateAlignments_output_agreement",
+      "core249_stateAlignments_output_agreement_pointwise",
+      "actual996_stateAlignments_remainderToCarryStepFunctional",
+      "core249_carryToRemainderFunctional_one_zero",
+      "actual996_carryToRemainder_conflict_two_zero",
+      "sameCore_carryToRemainderTransport_counterexample",
+      "actual996_not_carryToRemainderFunctional",
+      "actual996_stateAlignments_remainderToCarry_transition_compatible",
+      "actual996_quotientOnly_profile",
+      "core249_remainderToCarryFunctional",
+      "core249_stateAlignments_remainderToCarry_transition_compatible",
+      "core249_not_carryToRemainderFunctional"
+    ],
+    "current_role": "Canonical same-core composite witness surface for the tuple `(base=10, N=996, core=249, stride=3, B=1000, q=1, k=4)` beneath the preperiod, same-core visibility, and finite carry-comparison public statements, including the exact base-prime support factor identity `basePrimeSupportFactor 10 996 = 4`, the induced product decomposition `996 = 4 * 249`, the exact stripped periodic core identity `strippedPeriodModulus 10 996 = 249`, the exact shared remainder identity `k_core = k_actual = 4`, the exact `k^1` specialization `basePrimeSupportFactor 10 996 = k_actual^1 = k_core^1`, the exact same-core denominator identity `996 = 249 * k^1`, exposed as both `996 = 249 * k_actual^1` and `996 = 249 * k_core^1`, the exact quotient-scaling identities `q_core = q_actual * 4` and `q_core = q_actual * k^1`, the stripped-core and actual first visible-mismatch positions made explicit as `3` and `4`, the exact one-block shift of the first incoming-carry, local-overflow, and first visible-mismatch boundaries, the exact overflow-quotient view of the same-core local-overflow boundary on blocks `3/4` for the stripped core and `4/5` for the actual denominator, the exact fixed-window lookahead-certificate transport between the stripped-core and shifted actual windows, the exact raw tail-mass lower-bound equivalence on the canonical `3/0 -> 4/0` window pair together with paired forward and reverse exact-certificate tail-mass lower-bound implications on that same window pair, paired forward and reverse exact-certificate visible-word, pair-output, and aligned-output implications on that same window pair, with the pair-output and aligned-output layers exposed at both whole-window and pointwise levels plus pointwise pair-balance arithmetic on both canonical windows, forward visible carry, pair-output, and state-output agreement on the shifted actual `4/0` window, including the concrete stabilized visible word `[1, 4, 16, 64]`, the concrete stripped-core visible word `[4, 16, 64]`, and the exact one-block visible-word shift `[1, 4, 16, 64] = 1 :: [4, 16, 64]` on the canonical `4/0 -> 3/0` window pair, coarse whole-window and pointwise pair-output and state-alignment wrappers plus exact one-block same-core shift of aligned raw coefficients, carry states, carried block values, carry outputs, remainder inputs, remainder block values, and next-step remainder states on the canonical `3/0 -> 4/0` window pair, reverse visible, pair-output, and state-output agreement on the unshifted stripped-core `3/0` window at both whole-window and pointwise levels plus transported remainder-to-carry functionality, reverse transition compatibility, and stripped-core carry-to-remainder failure on that unshifted stripped-core window, the explicit stripped-core `1/0` carry-to-remainder functional witness, the shifted-actual `2/0` carry-to-remainder conflict, an explicit one-block `1/0 -> 2/0` counterexample to forward same-core carry-to-remainder transport, the forward-only state-map asymmetry and remainder-to-carry transition compatibility on the shifted actual window, and the larger-window quotient-only profile on the actual `8/1` selector-family window.",
+    "witness_ids": [
+      "preperiod_from_base_factors_n996_base10",
+      "same_core_threshold_shift_interval_996_over_249",
+      "carry_window_transducer_same_core_996_window4"
+    ]
+  }
+]

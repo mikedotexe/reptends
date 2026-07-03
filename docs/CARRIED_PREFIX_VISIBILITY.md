@@ -2,10 +2,12 @@
 
 Status anchor:
 
+<!-- CARRIED_PREFIX_VISIBILITY_STATUS_ANCHOR_START -->
 - Claim ID `small_k_visibility_heuristic` is `empirical`.
-- Claim ID `incoming_carry_position_formula` is `classical` and implemented in the repo.
+- Claim ID `incoming_carry_position_formula` is `reproved-here`.
 - Claim ID `small_k_visibility_threshold` remains `open`.
 - Preferred standard labels: `raw coefficient stream`, `carry-propagated block normalization`, `raw-prefix agreement length`.
+<!-- CARRIED_PREFIX_VISIBILITY_STATUS_ANCHOR_END -->
 
 Track 16 replaces the vague phrase "visibility threshold" with exact finite-window observables.
 The current repo state now closes three subproblems exactly:
@@ -193,12 +195,24 @@ The certified lookahead still varies more subtly across the family, so it
 remains tracked as a stronger family-level observable rather than a closed-form
 same-core theorem.
 
-Lean now also packages one exact same-core transport theorem directly beneath
-that open boundary: in the `q_core / q_actual = k^s` regime, once the same-core
+Lean now also packages a same-core transport law directly beneath that open
+boundary: once the incoming-carry and local-overflow same-core shifts both lie
+in `{s, s+1}`, the first visible mismatch position also lies in that same
+interval. In the exact `q_core / q_actual = k^s` regime, once the same-core
 incoming-carry and local-overflow boundaries are chosen with the core boundary
-not later than the actual one, the first visible mismatch position shifts by
-exactly `s` blocks as well. This is a transport law for the already-identified
+not later than the actual one, that visible-mismatch shift specializes to
+exactly `s` blocks. This is still a transport law for the already-identified
 boundary layer, not a closed-form theorem for minimal stabilization lookahead.
+
+Lean now also packages non-power endpoint propagation at that same boundary:
+when the incoming-carry and local-overflow same-core endpoint criteria both
+certify `lower`, the first visible mismatch boundary is `lower`, and when they
+both certify `upper`, the first visible mismatch boundary is `upper`. The base
+`12` family gives compact witnesses for all three endpoint modes:
+
+- `10 / 5` gives the non-power `lower` endpoint,
+- `70 / 35` gives the non-power `upper` endpoint,
+- `20 / 5` remains the exact `k`-power case.
 
 Lean now also packages two same-core lookahead-support laws beneath that same
 open claim in the exact `q_core / q_actual = k^s` regime:

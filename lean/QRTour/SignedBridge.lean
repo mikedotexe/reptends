@@ -287,4 +287,83 @@ theorem SignedBridge.deficit_le (sb : SignedBridge B p k sign d) :
       rw [hsub]
       exact Nat.min_le_right (p - d) d
 
+/-! ### Signed-Residue Interface -/
+
+/-- When a minus signed bridge already lies on the nonnegative side of the
+signed-residue interval, the signed residue records the bridge multiplier
+exactly. -/
+theorem SignedBridge.signedResidue_eq_of_minus
+    (sb : SignedBridge B p k .minus d) (hd_le_half : d ≤ p / 2) :
+    signedResidue B p k = d := by
+  rw [signedResidue, bridgeResidue, sb.minus_residue_eq, if_pos hd_le_half]
+
+/-- When a plus signed bridge lies on the negative side of the signed-residue
+interval, the signed residue records the negative bridge multiplier exactly. -/
+theorem SignedBridge.signedResidue_eq_neg_of_plus
+    (sb : SignedBridge B p k .plus d) (hhalf_lt : p / 2 < p - d) :
+    signedResidue B p k = -(d : ℤ) := by
+  have hnot : ¬ p - d ≤ p / 2 := by omega
+  rw [signedResidue, bridgeResidue, sb.plus_residue_eq, if_neg hnot]
+  rw [Int.ofNat_sub (Nat.le_of_lt sb.hd_lt_p)]
+  ring
+
+/-- The sign classifier returns `minus` once the minus bridge multiplier already
+occupies the nonnegative signed-residue slot. -/
+theorem SignedBridge.classifySign_eq_minus
+    (sb : SignedBridge B p k .minus d) (hd_le_half : d ≤ p / 2) :
+    classifySign B p k = .minus := by
+  rw [classifySign]
+  have hnonneg : 0 ≤ signedResidue B p k := by
+    rw [sb.signedResidue_eq_of_minus hd_le_half]
+    exact Int.natCast_nonneg d
+  exact if_pos hnonneg
+
+/-- The sign classifier returns `plus` once the plus bridge multiplier already
+occupies the negative signed-residue slot. -/
+theorem SignedBridge.classifySign_eq_plus
+    (sb : SignedBridge B p k .plus d) (hhalf_lt : p / 2 < p - d) :
+    classifySign B p k = .plus := by
+  rw [classifySign]
+  have hlt : signedResidue B p k < 0 := by
+    rw [sb.signedResidue_eq_neg_of_plus hhalf_lt]
+    have hd_pos : (0 : ℤ) < d := by exact_mod_cast sb.hd_pos
+    omega
+  exact if_neg (not_le_of_gt hlt)
+
+/-- Exact bridges inherit the minus-side signed residue when the multiplier is
+already the chosen small representative. -/
+theorem Bridge.signedResidue_eq (br : Bridge B p k d) (hd_le_half : d ≤ p / 2) :
+    signedResidue B p k = d :=
+  br.toSignedBridge.signedResidue_eq_of_minus hd_le_half
+
+/-- Exact bridges are classified as `minus` when their multiplier already lies
+in the nonnegative signed-residue interval. -/
+theorem Bridge.classifySign_eq_minus (br : Bridge B p k d) (hd_le_half : d ≤ p / 2) :
+    classifySign B p k = .minus :=
+  br.toSignedBridge.classifySign_eq_minus hd_le_half
+
+section SignedResidueExamples
+
+example : signedResidue 10 97 2 = 3 := by
+  simpa using signed_bridge_97.signedResidue_eq_of_minus (by native_decide : 3 ≤ 97 / 2)
+
+example : classifySign 10 97 2 = .minus := by
+  simpa using signed_bridge_97.classifySign_eq_minus (by native_decide : 3 ≤ 97 / 2)
+
+example : signedResidue 10 101 2 = -1 := by
+  simpa using
+    signed_bridge_101.signedResidue_eq_neg_of_plus (by native_decide : 101 / 2 < 101 - 1)
+
+example : classifySign 10 101 2 = .plus := by
+  simpa using signed_bridge_101.classifySign_eq_plus (by native_decide : 101 / 2 < 101 - 1)
+
+example : signedResidue 10 103 2 = -3 := by
+  simpa using
+    signed_bridge_103.signedResidue_eq_neg_of_plus (by native_decide : 103 / 2 < 103 - 3)
+
+example : classifySign 10 103 2 = .plus := by
+  simpa using signed_bridge_103.classifySign_eq_plus (by native_decide : 103 / 2 < 103 - 3)
+
+end SignedResidueExamples
+
 end QRTour

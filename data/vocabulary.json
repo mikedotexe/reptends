@@ -28,6 +28,27 @@
     "scope": "all coprime moduli"
   },
   {
+    "id": "preimage_fiber_profile",
+    "preferred_label": "preimage-fiber profile",
+    "repo_aliases": ["state-merging atlas"],
+    "meaning": "The ordered target-side fiber data showing how many source states collapse onto each observed target state on a selected finite window.",
+    "scope": "all coprime moduli"
+  },
+  {
+    "id": "visible_preimage_compression",
+    "preferred_label": "visible preimage compression",
+    "repo_aliases": ["visible obstruction"],
+    "meaning": "A quotient-only selected-coordinate obstruction where multiple remainder states already collapse onto one carry state on the aligned finite window.",
+    "scope": "all coprime moduli"
+  },
+  {
+    "id": "hidden_graph_obstruction",
+    "preferred_label": "hidden graph obstruction",
+    "repo_aliases": ["hidden obstruction"],
+    "meaning": "A quotient-only selected-coordinate obstruction where the aligned finite window is bijective but relabeling still fails because the carry and remainder graph layers have incompatible observed sizes.",
+    "scope": "all coprime moduli"
+  },
+  {
     "id": "body_term",
     "preferred_label": "body term W = (B^L - k^L)/M",
     "repo_aliases": ["orbit weave"],

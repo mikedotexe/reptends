@@ -54,21 +54,13 @@ This follows directly from B^k ≡ d (mod p). -/
 theorem Bridge.remainder_k_step (br : Bridge B p k d) (n : ℕ) :
     remainder (p := p) B (n + k) = d * remainder (p := p) B n := by
   haveI : Fact (Nat.Prime p) := ⟨br.prime_p⟩
-  simp only [remainder_eq_pow, pow_add, br.bridge_eq]
-  ring
+  simpa using remainder_add_eq_mul_of_pow_eq (p := p) B n k br.bridge_eq
 
 /-- Iterated k-step: r[n + j*k] = d^j × r[n]. -/
 theorem Bridge.remainder_jk_step (br : Bridge B p k d) (n j : ℕ) :
     remainder (p := p) B (n + j * k) = (d : ZMod p) ^ j * remainder (p := p) B n := by
   haveI : Fact (Nat.Prime p) := ⟨br.prime_p⟩
-  induction j with
-  | zero => simp
-  | succ j ih =>
-    calc remainder (p := p) B (n + (j + 1) * k)
-        = remainder (p := p) B ((n + j * k) + k) := by ring_nf
-      _ = d * remainder (p := p) B (n + j * k) := br.remainder_k_step (n + j * k)
-      _ = d * ((d : ZMod p) ^ j * remainder (p := p) B n) := by rw [ih]
-      _ = (d : ZMod p) ^ (j + 1) * remainder (p := p) B n := by ring
+  simpa using remainder_add_mul_eq_pow_mul_of_pow_eq (p := p) B n j k br.bridge_eq
 
 /-- Block-starting remainders form a geometric sequence in powers of d. -/
 theorem Bridge.block_start_geometric (br : Bridge B p k d) (j : ℕ) :

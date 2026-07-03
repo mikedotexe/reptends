@@ -147,6 +147,25 @@ theorem full_implies_qr_square (hp_odd : p ≠ 2) (g : (ZMod p)ˣ) (hg : FullGen
   isSquare := sq_isSquare g
   order_eq_half := sq_order_eq_half hp_odd g hg
 
+/-- Exact QR-generator classification for powers of a full generator.
+
+This repackages the full-order QR power criterion from
+`QuadraticResidues.lean` so callers can stay at the `FullGenerator` level
+instead of unpacking `orderOf g = p - 1` by hand. -/
+theorem full_generator_pow_isQRGenerator_iff
+    (hp_odd : p ≠ 2) (g : (ZMod p)ˣ) (hg : FullGenerator g) (m : ℕ) :
+    QRGenerator (g ^ m) ↔ Even m ∧ Nat.Coprime (half p) (m / 2) := by
+  exact pow_isQRGenerator_iff_even_and_coprime_half_of_full_order hp_odd g hg.order_eq m
+
+/-- A full generator has exactly `φ((p-1)/2)` QR-generating powers below its
+full order. This is the `FullGenerator`-level wrapper around the corresponding
+full-order counting theorem in `QuadraticResidues.lean`. -/
+theorem full_generator_qrGenerator_pow_count_eq_totient
+    (hp_odd : p ≠ 2) (g : (ZMod p)ˣ) (hg : FullGenerator g) :
+    Finset.card ((Finset.range (p - 1)).filter (fun m => QRGenerator (g ^ m))) =
+      Nat.totient (half p) := by
+  exact order_eq_full_qrGenerator_pow_count_eq_totient hp_odd g hg.order_eq
+
 /-! ### QR Generator as Subgroup Generator -/
 
 /-- A QR generator is a subgroup generator with d = (p-1)/2. -/

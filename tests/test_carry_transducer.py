@@ -5,6 +5,8 @@ from bridge_reptends import (
     carry_selector_profile_class,
     canonical_carry_selector_case_studies,
     canonical_carry_selector_family_studies,
+    canonical_state_merging_case_studies,
+    canonical_state_merging_family_studies,
     canonical_carry_dfa_examples,
     carry_factorization_rows,
     carry_selector_research_rows,
@@ -12,7 +14,14 @@ from bridge_reptends import (
     carry_window_example,
     compare_carry_selector_profiles,
     non_k_one_state_relabeling_rows,
+    orbit_carry_trace_rows,
+    quotient_obstruction_family_rows,
+    quotient_obstruction_rows,
+    same_core_obstruction_correlate_rows,
+    same_core_obstruction_phase_rows,
     same_core_selector_family_rows,
+    state_merging_rows,
+    state_merging_same_core_rows,
     select_carry_factorization_prefer_m,
 )
 from bridge_reptends.orbit_weave import apply_carry, skeleton_vs_actual
@@ -125,6 +134,26 @@ def test_factorization_decision_report_separates_relabeling_from_quotient_candid
     assert composite.decision_report.regime == "quotient_candidate_only"
 
 
+def test_observed_state_maps_export_preimage_fibers_and_ambiguity() -> None:
+    trivial = carry_remainder_comparison(21, prefer_m=6, n_blocks=8)
+    prime = carry_remainder_comparison(97, prefer_m=2, n_blocks=8)
+    composite = carry_remainder_comparison(996, prefer_m=3, n_blocks=8)
+
+    assert trivial.remainder_to_carry_map.preimage_fibers == ((0, (1,)),)
+    assert trivial.remainder_to_carry_map.max_preimage_size == 1
+    assert trivial.carry_to_remainder_map.ambiguity_signature == "functional"
+
+    assert prime.remainder_to_carry_map.preimage_fibers[0] == (0, (1, 3, 9, 27))
+    assert prime.remainder_to_carry_map.max_preimage_size == 4
+    assert prime.carry_to_remainder_map.ambiguous_sources == ((0, (1, 3, 9, 27)),)
+    assert prime.carry_to_remainder_map.ambiguity_signature == "0->1,3,9,27"
+
+    assert composite.remainder_to_carry_map.preimage_fibers[0] == (0, (1, 4, 16, 64))
+    assert composite.remainder_to_carry_map.max_preimage_size == 4
+    assert composite.carry_to_remainder_map.ambiguous_sources == ((0, (1, 4, 16, 64)),)
+    assert composite.carry_to_remainder_map.ambiguity_signature == "0->1,4,16,64"
+
+
 def test_carry_factorization_mode_selector_prefers_informative_track_17_coordinates() -> None:
     assert select_carry_factorization_prefer_m(21, base=10, n_blocks=8) == 6
     assert select_carry_factorization_prefer_m(97, base=10, n_blocks=8) == 2
@@ -196,11 +225,184 @@ def test_same_core_selector_family_rows_capture_disagreement_beyond_249_996() ->
     assert by_core[249]["members"] == [249, 498, 996]
     assert by_core[249]["selected_members"] == [249]
     assert by_core[249]["has_relabeling_disagreement"] is True
+    assert by_core[249]["related_open_claim_ids"] == ["carry_dfa_factorization"]
+    assert "carry_dfa_factorization_target_249_498_996_same_core" in by_core[249]["matching_witness_ids"]
 
     assert 17 in by_core
     assert by_core[17]["members"][:3] == [17, 34, 68]
     assert by_core[17]["selected_members"][:2] == [17, 34]
     assert by_core[17]["has_signature_disagreement"] is True
+    assert by_core[17]["matching_witness_ids"] == []
+
+
+def test_state_merging_rows_and_same_core_families_surface_canonical_compression() -> None:
+    rows = state_merging_rows(1000, base=10, n_blocks=8, max_m=8)
+    by_n = {row["n"]: row for row in rows}
+    families = state_merging_same_core_rows(1200, base=10, n_blocks=8, max_m=8)
+    by_core = {row["core_n"]: row for row in families}
+
+    assert {21, 89, 97, 996}.issubset(by_n)
+    assert by_n[21]["factorization_regime"] == "state_relabeling"
+    assert by_n[21]["obstruction_class"] == "state_relabeling"
+    assert by_n[21]["observed_alignment_bijection"] is True
+    assert by_n[21]["forward_preimage_signature"] == "0<-1"
+    assert by_n[21]["reverse_ambiguity_signature"] == "functional"
+
+    assert by_n[97]["factorization_regime"] == "quotient_candidate_only"
+    assert by_n[97]["obstruction_class"] == "visible_preimage_compression"
+    assert by_n[97]["forward_profile"]["max_preimage_size"] == 4
+    assert by_n[97]["reverse_profile"]["is_functional"] is False
+    assert by_n[97]["compression_targets"][0]["target_state"] == 0
+    assert by_n[97]["reverse_ambiguity_signature"] == "0->1,3,9,27"
+
+    assert by_n[89]["factorization_regime"] == "quotient_candidate_only"
+    assert by_n[89]["obstruction_class"] == "hidden_graph_obstruction"
+    assert by_n[89]["observed_alignment_bijection"] is True
+    assert by_n[89]["compression_targets"] == []
+    assert by_n[89]["graph_state_gap"] == 5
+    assert by_n[89]["minimized_class_gap"] == 5
+
+    assert by_n[996]["factorization_regime"] == "quotient_candidate_only"
+    assert by_n[996]["obstruction_class"] == "visible_preimage_compression"
+    assert by_n[996]["forward_profile"]["max_preimage_size"] == 4
+    assert by_n[996]["compression_targets"][0]["target_state"] == 0
+    assert by_n[996]["reverse_ambiguity_signature"] == "0->1,4,16,64"
+
+    assert by_core[249]["members"] == [249, 498, 996]
+    assert by_core[249]["has_state_merging_disagreement"] is True
+    assert by_core[249]["selected_regimes"] == [
+        "state_relabeling",
+        "quotient_candidate_only",
+        "quotient_candidate_only",
+    ]
+    assert by_core[249]["selected_obstruction_classes"] == [
+        "state_relabeling",
+        "visible_preimage_compression",
+        "visible_preimage_compression",
+    ]
+    assert by_core[249]["reverse_ambiguity_signatures"] == [
+        "functional",
+        "0->1,4,16,64",
+        "0->1,4,16,64",
+    ]
+
+    assert by_core[17]["members"][:4] == [17, 34, 68, 85]
+    assert by_core[17]["selected_obstruction_classes"][:4] == [
+        "state_relabeling",
+        "state_relabeling",
+        "hidden_graph_obstruction",
+        "visible_preimage_compression",
+    ]
+    assert by_core[17]["crosses_relabeling_hidden_visible_classes"] is True
+    assert by_core[17]["first_hidden_member"] == 68
+    assert by_core[17]["first_visible_member"] == 85
+    assert by_core[17]["visibility_behavior"] == "rehiding_visible"
+    assert by_core[17]["onset_kind"] == "hidden_first"
+    assert by_core[17]["has_rehidden_after_visible"] is True
+    assert by_core[17]["has_visible_after_hidden"] is True
+    assert by_core[17]["hidden_visible_switch_count"] == 2
+    assert by_core[17]["compressed_obstruction_path"] == [
+        "hidden_graph_obstruction",
+        "visible_preimage_compression",
+        "hidden_graph_obstruction",
+    ]
+
+
+def test_canonical_state_merging_studies_capture_case_and_family_signal() -> None:
+    cases = {case.n: case for case in canonical_state_merging_case_studies()}
+    families = {case.label: case for case in canonical_state_merging_family_studies()}
+
+    assert {21, 89, 97, 996}.issubset(cases)
+    assert cases[21].comparison.decision_report.regime == "state_relabeling"
+    assert cases[89].comparison.decision_report.obstruction_class == "hidden_graph_obstruction"
+    assert cases[97].comparison.remainder_to_carry_map.max_preimage_size == 4
+    assert cases[996].comparison.carry_to_remainder_map.is_functional is False
+
+    assert "Same-core visible compression" in families
+    assert "Mixed obstruction family" in families
+    assert families["Same-core visible compression"].members == (249, 498, 996)
+    assert families["Mixed obstruction family"].members == (17, 34, 68, 85)
+
+
+def test_quotient_obstruction_rows_and_family_rows_surface_visible_hidden_split() -> None:
+    rows = quotient_obstruction_rows(1000, base=10, n_blocks=8, max_m=8)
+    summary = rows[0]
+    visible = [row for row in rows if row["group"] == "visible_preimage_compression"]
+    hidden = [row for row in rows if row["group"] == "hidden_graph_obstruction"]
+    families = quotient_obstruction_family_rows(1200, base=10, n_blocks=8, max_m=8)
+    by_core = {row["core_n"]: row for row in families}
+
+    assert summary["group"] == "census_summary"
+    assert summary["visible_preimage_compression_count"] > 0
+    assert summary["hidden_graph_obstruction_count"] > 0
+    assert any(row["n"] == 97 for row in visible)
+    assert any(row["n"] == 996 for row in visible)
+    assert any(row["n"] == 89 for row in hidden)
+
+    assert 17 in by_core
+    assert 249 in by_core
+    assert by_core[17]["crosses_relabeling_hidden_visible_classes"] is True
+    assert by_core[249]["has_visible_preimage_compression_member"] is True
+
+
+def test_same_core_obstruction_phase_rows_capture_nonmonotone_rehiding_signal() -> None:
+    rows = same_core_obstruction_phase_rows(1200, base=10, n_blocks=8, max_m=8)
+    by_core = {row["core_n"]: row for row in rows}
+
+    assert 17 in by_core
+    assert 29 in by_core
+    assert 249 in by_core
+
+    assert by_core[17]["has_nonmonotone_hidden_visible_switching"] is True
+    assert by_core[17]["hidden_visible_switch_count"] == 2
+    assert by_core[17]["phase_summary"].startswith("same-core path")
+    assert by_core[17]["first_hidden_member"] == 68
+    assert by_core[17]["first_visible_member"] == 85
+
+    assert by_core[29]["has_nonmonotone_hidden_visible_switching"] is True
+    assert by_core[29]["hidden_visible_switch_count"] == 3
+    assert by_core[29]["has_rehidden_after_visible"] is True
+
+    assert by_core[249]["has_nonmonotone_hidden_visible_switching"] is False
+    assert by_core[249]["has_rehidden_after_visible"] is False
+    assert by_core[249]["visibility_behavior"] == "one_way_visible"
+    assert by_core[249]["compressed_obstruction_path"] == [
+        "visible_preimage_compression",
+    ]
+
+
+def test_same_core_obstruction_correlates_rows_capture_empirical_separators() -> None:
+    rows = same_core_obstruction_correlate_rows(2000, base=10, n_blocks=8, max_m=8)
+    behavior = rows[0]
+    onset_rows = {
+        row["onset_kind"]: row
+        for row in rows
+        if row["group"] == "onset_correlation"
+    }
+    hidden_multiplier_rows = {
+        row["valuation_bucket"]: row
+        for row in rows
+        if row["group"] == "first_hidden_multiplier_correlation"
+    }
+    family_examples = [row for row in rows if row["group"] == "family_examples"]
+    by_core = {row["core_n"]: row for row in family_examples}
+
+    assert behavior["group"] == "behavior_census"
+    assert behavior["rehiding_visible_count"] > behavior["one_way_visible_count"] > 0
+    assert onset_rows["visible_without_hidden"]["rehiding_count"] == 0
+    assert (
+        onset_rows["visible_without_hidden"]["one_way_visible_count"]
+        == onset_rows["visible_without_hidden"]["family_count"]
+    )
+    assert onset_rows["visible_first"]["one_way_visible_count"] == 0
+    assert onset_rows["visible_first"]["rehiding_count"] == onset_rows["visible_first"]["family_count"]
+    assert hidden_multiplier_rows["v2=1,v5=0"]["rehiding_count"] > hidden_multiplier_rows["v2=1,v5=0"]["one_way_visible_count"]
+    assert 17 in by_core
+    assert 167 in by_core
+    assert by_core[17]["has_rehidden_after_visible"] is True
+    assert by_core[17]["visibility_behavior"] == "rehiding_visible"
+    assert by_core[167]["has_rehidden_after_visible"] is False
+    assert by_core[167]["visibility_behavior"] == "one_way_visible"
 
 
 def test_canonical_carry_selector_studies_capture_systematic_track_17_signal() -> None:
@@ -259,6 +461,7 @@ def test_carry_factorization_rows_surface_canonical_track_17_regimes() -> None:
     assert "carry_dfa_factorization_target_21_97_996" in by_n[97]["matching_witness_ids"]
     assert by_n[996]["factorization_regime"] == "quotient_candidate_only"
     assert by_n[996]["remainder_to_carry_quotient_candidate"] is True
+    assert "carry_window_transducer_same_core_996_window4" in by_n[996]["matching_witness_ids"]
     assert "carry_dfa_factorization_target_21_97_996" in by_n[996]["matching_witness_ids"]
     assert by_n[249]["factorization_regime"] == "state_relabeling"
     assert by_n[249]["transition_signature"] == [
@@ -266,3 +469,37 @@ def test_carry_factorization_rows_surface_canonical_track_17_regimes() -> None:
         "state_relabeling",
         "quotient_candidate_only",
     ]
+    assert "carry_window_transducer_n249_window3" in by_n[249]["matching_witness_ids"]
+
+
+def test_orbit_carry_trace_rows_align_canonical_trio() -> None:
+    rows = orbit_carry_trace_rows(base=10, n_blocks=8)
+    summaries = {row["n"]: row for row in rows if row["group"] == "case_summary"}
+    state_maps = {row["n"]: row for row in rows if row["group"] == "state_map_summary"}
+    trace = {
+        (row["n"], row["position"]): row
+        for row in rows
+        if row["group"] == "trace_step"
+    }
+
+    assert set(summaries) == {21, 97, 996}
+    assert summaries[21]["period"] == 1
+    assert summaries[21]["factorization_regime"] == "state_relabeling"
+    assert summaries[97]["factorization_regime"] == "quotient_candidate_only"
+    assert summaries[996]["periodic_modulus"] == 249
+    assert summaries[996]["factorization_regime"] == "quotient_candidate_only"
+
+    assert {trace[(21, position)]["visibility_event"] for position in range(8)} == {
+        "carry_free_raw",
+    }
+    assert trace[(97, 4)]["visibility_event"] == "incoming_carry_before_overflow"
+    assert trace[(97, 4)]["coefficient_fits_block"] is True
+    assert trace[(97, 5)]["visibility_event"] == "local_overflow"
+    assert trace[(996, 4)]["visibility_event"] == "incoming_carry_before_overflow"
+    assert trace[(996, 5)]["visibility_event"] == "local_overflow"
+    assert all(row["output_matches"] is True for row in trace.values())
+
+    assert state_maps[21]["remainder_to_carry_functional"] is True
+    assert state_maps[21]["carry_to_remainder_functional"] is True
+    assert state_maps[97]["remainder_to_carry_functional"] is True
+    assert state_maps[97]["carry_to_remainder_functional"] is False

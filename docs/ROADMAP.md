@@ -482,7 +482,7 @@ Acceptance criteria:
 
 ## Track 18: Formal-Systems Integration and Release Snapshot
 
-Status: `planned`
+Status: `implemented`
 
 Why this matters:
 
@@ -491,18 +491,37 @@ Why this matters:
 
 Todo:
 
-- [ ] Add a roadmap item for a proof-system legend across public surfaces:
+- [x] Add a proof-system legend across the main public surfaces:
   - Lean-formalized
   - Agda-locally-proved
   - Agda-postulated but Lean-backed
   - empirical
   - open
-- [ ] Add a release-snapshot task that packages:
+- [x] Add a release-snapshot task that packages:
   - current proof status
   - open claims
   - published dataset version
   - note generation status
-- [ ] Treat this as the release-facing consolidation pass after Tracks 14–17, not before them.
+- [x] Treat this as the release-facing consolidation pass after Tracks 14–17, not before them.
+
+Current landing:
+
+- The shared proof-system legend is now deployed across the README, proof atlas,
+  theorem guide, Lean umbrella/example surfaces, Agda correspondence note,
+  theorem-witness atlas, and generated expository note.
+- The legend text is now registry-backed where appropriate and covered by
+  focused doc/surface tests, so this track no longer starts from a proof-system
+  wording gap.
+- [bridge_reptends/build_release_snapshot.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/build_release_snapshot.py)
+  now packages the current proof-status counts, open-claim boundary ordering,
+  Lean public-surface audit, witness surface, published atlas status, and
+  generated-note status into synchronized JSON/Markdown release artifacts.
+- The generated release-facing artifacts now live in
+  [docs/RELEASE_SNAPSHOT.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/RELEASE_SNAPSHOT.md)
+  and
+  [data/release_snapshot.json](/Users/mikepurvis/other/quadratic-residue-reptends/data/release_snapshot.json),
+  and the public command map now exposes `build-release-snapshot` alongside the
+  other registry-backed publishing helpers.
 
 Acceptance criteria:
 
@@ -540,9 +559,36 @@ Todo:
 - [ ] Require every theorem-level upgrade on this track to restate the atlas
   boundary so `small_k_visibility_threshold` and `carry_dfa_factorization`
   remain explicitly `open` unless they actually move.
+- [ ] Develop **Visibility Optics** as the next research lens: characterize
+  when the source remainder orbit is readable through the finite carry window,
+  using existing finite-window observables without promoting either open claim.
+- [ ] Use the **Instrument Atlas** to pressure-test working axioms across base
+  instruments: classify when bases reveal, absorb, distort, or obstruct the
+  finite-window trace before attempting any preferred-base theorem.
 
 Implementation note:
 
+- [docs/ORBIT_INSTRUMENT_VISIBILITY.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/ORBIT_INSTRUMENT_VISIBILITY.md)
+  now gives the reader-facing version of the lens: the reptend is the observed
+  trace, the remainder orbit is the source, and the finite carry window is the
+  instrument
+- [docs/INSTRUMENT_ATLAS.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/INSTRUMENT_ATLAS.md)
+  records the base-as-instrument atlas and keeps its working-axiom pressure
+  labels empirical.
+- [docs/VISIBILITY_GEOMETRY.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/VISIBILITY_GEOMETRY.md)
+  connects Visibility Optics to the existing `GeometricStack` surface via phase
+  space, capacity thresholds, carry-state fibers, and base charts.
+- [docs/CHART_INVARIANCE.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/CHART_INVARIANCE.md)
+  records the finite chart-invariance surface: candidate invariant pairs, clean
+  chart distortion witnesses, absorption-shift witnesses, and the plain
+  observation-to-signature reading.
+- [QRTour/ChartInvariance.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/ChartInvariance.lean)
+  now gives this lens a claim-free finite formal foothold:
+  `ChartObservation` rows project to `ChartSignature`s, selected
+  `ChartPairWitness` examples certify chart classes, compact witness counts are
+  audited in Lean, and only `transparentWindow` / `earlyCarryIntrusion` are
+  derived from row evidence while state-map labels remain annotated beneath
+  `carry_dfa_factorization`.
 - tranche 19A is now started in Lean:
   [Visibility.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/Visibility.lean)
   packages the necessary tail-mass lower bound beneath the exact prefix-gap
@@ -689,7 +735,7 @@ Acceptance criteria:
 
 ## Current State
 
-Tracks 1 through 17 are now implemented. The repo has:
+Tracks 1 through 18 are now implemented. The repo has:
 
 1. registry-backed public claims and vocabulary,
 2. a Lean core covering the main exact prime/composite/preperiod statements,
@@ -700,15 +746,14 @@ Tracks 1 through 17 are now implemented. The repo has:
 7. a generated expository note,
 8. an honest Agda pedagogical core audit,
 9. an exact Track 16 visibility framework with cross-base family studies,
-10. a Track 17 carry/DFA research framework that separates state relabeling, quotient candidates, and the still-open global theorem.
+10. a Track 17 carry/DFA research framework that separates state relabeling, quotient candidates, and the still-open global theorem,
+11. a release-facing snapshot that consolidates proof status, Lean public surfaces, witness coverage, and generated-artifact synchronization.
 
-Tracks 18 through 21 are now the active next-phase passes:
+Tracks 19 through 21 are now the active next-phase passes:
 
-1. add the proof-system legend across public surfaces and package a clean
-   release snapshot,
-2. push the exact carry/visibility frontier through honest intermediate
+1. push the exact carry/visibility frontier through honest intermediate
    theorems beneath the two open claims,
-3. continue classifying and, when warranted, promote the remaining Lean support
+2. continue classifying and, when warranted, promote the remaining Lean support
    modules without inflating the atlas,
-4. extend theorem-witness and research-tooling surfaces so the formal and
+3. extend theorem-witness and research-tooling surfaces so the formal and
    open-claim layers are easier to explore and publish.

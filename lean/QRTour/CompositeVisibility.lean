@@ -282,6 +282,542 @@ theorem sameCoreCompatible_rawCoefficient_shift_exact
           ac_rfl
     _ = actual.rawCoefficient (j + s) := by rw [BlockCoordinate.rawCoefficient]
 
+/-- Canonical carried output at a position, computed from the infinite-tail
+incoming carry rather than from a finite trace. This is the arithmetic payload
+that finite state-alignment rows expose once their carry states are certified. -/
+def BlockCoordinate.canonicalCarryBlockValue (C : BlockCoordinate) (j : ℕ) : ℕ :=
+  (C.rawCoefficient j + C.incomingCarry j) % C.blockBase
+
+/-- At position `1`, the canonical infinite-tail carry is the quotient of
+`k^2` by the modulus. This is a small arithmetic normal form used by the
+same-position obstruction family. -/
+theorem BlockCoordinate.incomingCarry_one_eq_remainderK_sq_div_modulus
+    (C : BlockCoordinate) (hgood : C.goodMode) :
+    C.incomingCarry 1 = C.remainderK ^ 2 / C.modulus := by
+  have hq : 0 < C.quotientQ := C.quotientQ_pos_of_goodMode hgood
+  have hden : C.blockBase - C.remainderK = C.quotientQ * C.modulus := by
+    rw [← C.quotientQ_mul_modulus_eq_blockBase_sub_remainderK]
+  unfold BlockCoordinate.incomingCarry BlockCoordinate.rawCoefficient
+  rw [hden]
+  ring_nf
+  exact Nat.mul_div_mul_left (C.remainderK ^ 2) C.modulus hq
+
+/-- At position `2`, the canonical infinite-tail carry is the quotient of
+`k^3` by the modulus. -/
+theorem BlockCoordinate.incomingCarry_two_eq_remainderK_cu_div_modulus
+    (C : BlockCoordinate) (hgood : C.goodMode) :
+    C.incomingCarry 2 = C.remainderK ^ 3 / C.modulus := by
+  have hq : 0 < C.quotientQ := C.quotientQ_pos_of_goodMode hgood
+  have hden : C.blockBase - C.remainderK = C.quotientQ * C.modulus := by
+    rw [← C.quotientQ_mul_modulus_eq_blockBase_sub_remainderK]
+  unfold BlockCoordinate.incomingCarry BlockCoordinate.rawCoefficient
+  rw [hden]
+  ring_nf
+  exact Nat.mul_div_mul_left (C.remainderK ^ 3) C.modulus hq
+
+/-- Same-position idempotent-remainder obstruction hook.
+
+If the remainder `k` is idempotent modulo the modulus, then canonical carried
+outputs at positions `1` and `2` agree. Finite examples still need certified
+state-alignment rows to connect these canonical carries to the displayed
+finite trace. -/
+theorem BlockCoordinate.samePositionIdempotent_hiddenCarryBlockValue
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hidempotent : C.remainderK * C.remainderK % C.modulus = C.remainderK) :
+    C.canonicalCarryBlockValue 1 = C.canonicalCarryBlockValue 2 := by
+  let k := C.remainderK
+  let N := C.modulus
+  let q := C.quotientQ
+  let B := C.blockBase
+  let t := k ^ 2 / N
+  have hk_lt : k < N := by simpa [k, N] using C.remainderK_lt_modulus
+  have hsq : k ^ 2 = N * t + k := by
+    have h := Nat.div_add_mod (k ^ 2) N
+    dsimp [t]
+    rw [show k ^ 2 % N = k by simpa [k, N, pow_two] using hidempotent] at h
+    exact h.symm
+  have hcu : k ^ 3 = N * (t * (k + 1)) + k := by
+    nlinarith [hsq]
+  have hcarry1 : C.incomingCarry 1 = t := by
+    simpa [k, N, t, pow_two] using
+      C.incomingCarry_one_eq_remainderK_sq_div_modulus hgood
+  have hcarry2 : C.incomingCarry 2 = t * (k + 1) := by
+    rw [C.incomingCarry_two_eq_remainderK_cu_div_modulus hgood]
+    dsimp [k, N, t] at hcu ⊢
+    rw [hcu]
+    rw [Nat.mul_add_div C.modulus_pos]
+    rw [Nat.div_eq_of_lt hk_lt, add_zero]
+  have hsum : C.rawCoefficient 2 + t * (k + 1) = C.rawCoefficient 1 + t + t * B := by
+    have hB : B = q * N + k := by
+      simpa [B, q, N, k, Nat.mul_comm] using
+        C.blockBase_eq_quotientQ_mul_modulus_add_remainderK
+    unfold BlockCoordinate.rawCoefficient
+    dsimp [q, k, N, B] at hB hsq ⊢
+    nlinarith [hsq, hB]
+  unfold BlockCoordinate.canonicalCarryBlockValue
+  rw [hcarry1, hcarry2]
+  calc
+    (C.rawCoefficient 1 + t) % C.blockBase
+      = (C.rawCoefficient 1 + t + t * C.blockBase) % C.blockBase := by
+          rw [Nat.add_mul_mod_self_right]
+    _ = (C.rawCoefficient 2 + t * (k + 1)) % C.blockBase := by rw [hsum]
+
+/-- Lean mirror of the exported Shape187/K188 same-position scaling
+hypotheses. The fields encode the arithmetic reason why the row-level
+idempotent-remainder check holds: the denominator is a scaled core, the
+remainder is one past that core, and the scale divides the remainder. -/
+structure BlockCoordinate.SamePositionScalingHiddenCarryBlockValueHypotheses
+    (C : BlockCoordinate) (coreModulus multiplier : ℕ) : Prop where
+  goodMode : C.goodMode
+  modulus_eq_multiplier_mul_core :
+    C.modulus = multiplier * coreModulus
+  remainderK_eq_core_plus_one :
+    C.remainderK = coreModulus + 1
+  multiplier_dvd_remainderK :
+    multiplier ∣ C.remainderK
+
+/-- The exported Shape187/K188 same-position scaling hypotheses imply the
+idempotent-remainder condition used by the canonical carried-output theorem. -/
+theorem BlockCoordinate.SamePositionScalingHiddenCarryBlockValueHypotheses.idempotent_remainder
+    {C : BlockCoordinate} {coreModulus multiplier : ℕ}
+    (h : C.SamePositionScalingHiddenCarryBlockValueHypotheses
+      coreModulus multiplier) :
+    C.remainderK * C.remainderK % C.modulus = C.remainderK := by
+  rcases h.multiplier_dvd_remainderK with ⟨scale, hscale⟩
+  have hcore_succ : coreModulus + 1 = multiplier * scale := by
+    rw [← h.remainderK_eq_core_plus_one, hscale]
+  have hprod :
+      C.remainderK * C.remainderK = scale * C.modulus + C.remainderK := by
+    rw [h.remainderK_eq_core_plus_one, h.modulus_eq_multiplier_mul_core]
+    nlinarith [hcore_succ]
+  rw [hprod, Nat.add_comm]
+  rw [Nat.add_mul_mod_self_right]
+  exact Nat.mod_eq_of_lt C.remainderK_lt_modulus
+
+/-- A bundled Shape187/K188 same-position scaling hypothesis record is enough
+to prove the canonical hidden carried-output equality at positions `1` and
+`2`. -/
+theorem BlockCoordinate.SamePositionScalingHiddenCarryBlockValueHypotheses.hiddenCarryBlockValue_one_two
+    {C : BlockCoordinate} {coreModulus multiplier : ℕ}
+    (h : C.SamePositionScalingHiddenCarryBlockValueHypotheses
+      coreModulus multiplier) :
+    C.canonicalCarryBlockValue 1 = C.canonicalCarryBlockValue 2 := by
+  exact C.samePositionIdempotent_hiddenCarryBlockValue
+    h.goodMode h.idempotent_remainder
+
+/-- Adapter from the exported Shape187/K188 same-position scaling hypothesis
+bundle to the existing idempotent-remainder hidden-output proof path. -/
+theorem BlockCoordinate.samePositionScaling_hiddenCarryBlockValue_one_two_of_exportedHypotheses
+    (C : BlockCoordinate) {coreModulus multiplier : ℕ}
+    (h : C.SamePositionScalingHiddenCarryBlockValueHypotheses
+      coreModulus multiplier) :
+    C.canonicalCarryBlockValue 1 = C.canonicalCarryBlockValue 2 := by
+  exact h.hiddenCarryBlockValue_one_two
+
+/-- If scaling a dividend does not push the original division remainder past
+the divisor, division commutes with that scaling. This is the exact arithmetic
+condition behind scaled same-core carry preservation. -/
+theorem nat_mul_div_eq_mul_div_of_mul_mod_lt
+    {x divisor scale : ℕ}
+    (hdivisor : 0 < divisor)
+    (hrem : scale * (x % divisor) < divisor) :
+    (scale * x) / divisor = scale * (x / divisor) := by
+  let quotient := x / divisor
+  let remainder := x % divisor
+  have hx : x = divisor * quotient + remainder := by
+    dsimp [quotient, remainder]
+    exact (Nat.div_add_mod x divisor).symm
+  have hscaled :
+      scale * x = divisor * (scale * quotient) + scale * remainder := by
+    rw [hx]
+    ring
+  calc
+    (scale * x) / divisor
+      = (divisor * (scale * quotient) + scale * remainder) / divisor := by rw [hscaled]
+    _ = scale * quotient + (scale * remainder) / divisor := by
+          exact Nat.mul_add_div hdivisor (scale * quotient) (scale * remainder)
+    _ = scale * quotient := by
+          rw [Nat.div_eq_of_lt hrem, add_zero]
+
+/-- Iff form of `nat_mul_div_eq_mul_div_of_mul_mod_lt`: scaling commutes with
+division exactly when the scaled original remainder still lies below the
+divisor. -/
+theorem nat_mul_div_eq_mul_div_iff_mul_mod_lt
+    {x divisor scale : ℕ}
+    (hdivisor : 0 < divisor) :
+    (scale * x) / divisor = scale * (x / divisor) ↔
+      scale * (x % divisor) < divisor := by
+  let quotient := x / divisor
+  let remainder := x % divisor
+  have hx : x = divisor * quotient + remainder := by
+    dsimp [quotient, remainder]
+    exact (Nat.div_add_mod x divisor).symm
+  have hscaled :
+      scale * x = divisor * (scale * quotient) + scale * remainder := by
+    rw [hx]
+    ring
+  have hdiv :
+      (scale * x) / divisor =
+        scale * quotient + (scale * remainder) / divisor := by
+    rw [hscaled]
+    exact Nat.mul_add_div hdivisor (scale * quotient) (scale * remainder)
+  constructor
+  · intro h
+    have hzero : (scale * remainder) / divisor = 0 := by
+      have hcancel :
+          scale * quotient + (scale * remainder) / divisor =
+            scale * quotient + 0 := by
+        calc
+          scale * quotient + (scale * remainder) / divisor
+            = (scale * x) / divisor := hdiv.symm
+          _ = scale * (x / divisor) := h
+          _ = scale * quotient + 0 := by simp [quotient]
+      exact Nat.add_left_cancel hcancel
+    have hzero_or_lt := (Nat.div_eq_zero_iff.mp hzero)
+    cases hzero_or_lt with
+    | inl hdivisor_zero => omega
+    | inr hlt => simpa [remainder] using hlt
+  · intro hrem
+    exact nat_mul_div_eq_mul_div_of_mul_mod_lt hdivisor hrem
+
+/-- If scaling a value does not push its block remainder past the modulus, then
+block reduction commutes with that scaling. -/
+theorem nat_mul_mod_eq_mul_mod_of_mul_mod_lt
+    {x modulus scale : ℕ}
+    (hrem : scale * (x % modulus) < modulus) :
+    (scale * x) % modulus = scale * (x % modulus) := by
+  let quotient := x / modulus
+  let remainder := x % modulus
+  have hx : x = modulus * quotient + remainder := by
+    dsimp [quotient, remainder]
+    exact (Nat.div_add_mod x modulus).symm
+  have hscaled :
+      scale * x = modulus * (scale * quotient) + scale * remainder := by
+    rw [hx]
+    ring
+  calc
+    (scale * x) % modulus
+      = (modulus * (scale * quotient) + scale * remainder) % modulus := by rw [hscaled]
+    _ = (scale * remainder) % modulus := by
+          rw [show modulus * (scale * quotient) + scale * remainder =
+              scale * remainder + modulus * (scale * quotient) by ac_rfl]
+          exact Nat.add_mul_mod_self_left (scale * remainder) modulus (scale * quotient)
+    _ = scale * remainder := Nat.mod_eq_of_lt hrem
+
+/-- Iff form of `nat_mul_mod_eq_mul_mod_of_mul_mod_lt`: scaling commutes with
+block reduction exactly when the scaled original remainder still lies below
+the modulus. -/
+theorem nat_mul_mod_eq_mul_mod_iff_mul_mod_lt
+    {x modulus scale : ℕ}
+    (hmodulus : 0 < modulus) :
+    (scale * x) % modulus = scale * (x % modulus) ↔
+      scale * (x % modulus) < modulus := by
+  constructor
+  · intro h
+    have hlt : (scale * x) % modulus < modulus := Nat.mod_lt _ hmodulus
+    simpa [h] using hlt
+  · intro hrem
+    exact nat_mul_mod_eq_mul_mod_of_mul_mod_lt hrem
+
+/-- One-block scaled same-core raw-coefficient shift. If the base-supported
+factor times `scale` is the shared remainder `k`, then the shifted actual raw
+coefficient is the stripped-core raw coefficient scaled by `scale`.
+
+For the Shape17/K4 family this distinguishes `17 -> 68`, where `scale = 1`,
+from `17 -> 34`, where `scale = 2`. -/
+theorem sameCoreCompatible_rawCoefficient_shift_scaled_one
+    {base n stride scale j : ℕ} {hn : 0 < n}
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hscale :
+      basePrimeSupportFactor base n * scale =
+        (actualCoordinate base n stride hn).remainderK) :
+    scale * (strippedCoordinate base n stride hn).rawCoefficient j =
+      (actualCoordinate base n stride hn).rawCoefficient (j + 1) := by
+  let actual := actualCoordinate base n stride hn
+  let core := strippedCoordinate base n stride hn
+  unfold BlockCoordinate.rawCoefficient
+  rw [sameCoreCompatible_quotientQ_eq hcompat, sameCoreCompatible_remainderK_eq hcompat]
+  rw [show actual.remainderK ^ (j + 1) =
+      actual.remainderK ^ j * actual.remainderK by rw [pow_succ]]
+  rw [← hscale]
+  ac_rfl
+
+/-- One-block scaled same-core incoming-carry shift. The extra hypothesis is
+the exact obstruction condition: after scaling, the dropped remainder in the
+division by `B-k` must still fit below `B-k`. -/
+theorem sameCoreCompatible_incomingCarry_shift_scaled_one
+    {base n stride scale j : ℕ} {hn : 0 < n}
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hscale :
+      basePrimeSupportFactor base n * scale =
+        (actualCoordinate base n stride hn).remainderK)
+    (hscaledRemainder :
+      scale *
+          ((strippedCoordinate base n stride hn).rawCoefficient (j + 1) %
+            ((actualCoordinate base n stride hn).blockBase -
+              (actualCoordinate base n stride hn).remainderK)) <
+        (actualCoordinate base n stride hn).blockBase -
+          (actualCoordinate base n stride hn).remainderK) :
+    scale * (strippedCoordinate base n stride hn).incomingCarry j =
+      (actualCoordinate base n stride hn).incomingCarry (j + 1) := by
+  let actual := actualCoordinate base n stride hn
+  let core := strippedCoordinate base n stride hn
+  have hsharedB : core.blockBase = actual.blockBase := rfl
+  have hsharedK : core.remainderK = actual.remainderK := by
+    simpa [actual, core] using sameCoreCompatible_remainderK_eq (hn := hn) hcompat
+  have hden :
+      core.blockBase - core.remainderK = actual.blockBase - actual.remainderK := by
+    rw [hsharedB, hsharedK]
+  have hden_pos : 0 < core.blockBase - core.remainderK := by
+    rw [hden]
+    exact Nat.sub_pos_of_lt (actual.remainderK_lt_blockBase hgood)
+  have hraw :
+      scale * core.rawCoefficient (j + 1) =
+        actual.rawCoefficient ((j + 1) + 1) := by
+    simpa [actual, core] using
+      sameCoreCompatible_rawCoefficient_shift_scaled_one
+        (base := base) (n := n) (stride := stride) (scale := scale)
+        (j := j + 1) (hn := hn) hcompat hscale
+  have hdiv :
+      (scale * core.rawCoefficient (j + 1)) /
+          (core.blockBase - core.remainderK) =
+        scale * (core.rawCoefficient (j + 1) /
+          (core.blockBase - core.remainderK)) := by
+    exact nat_mul_div_eq_mul_div_of_mul_mod_lt
+      (x := core.rawCoefficient (j + 1))
+      (divisor := core.blockBase - core.remainderK)
+      (scale := scale)
+      hden_pos
+      (by simpa [actual, core, hden] using hscaledRemainder)
+  calc
+    scale * core.incomingCarry j
+      = scale * (core.rawCoefficient (j + 1) / (core.blockBase - core.remainderK)) := by
+          rfl
+    _ = (scale * core.rawCoefficient (j + 1)) /
+          (core.blockBase - core.remainderK) := by rw [hdiv]
+    _ = actual.rawCoefficient ((j + 1) + 1) /
+          (actual.blockBase - actual.remainderK) := by rw [hraw, hden]
+    _ = actual.incomingCarry (j + 1) := by rfl
+
+/-- One-block scaled same-core canonical carried-output shift. The two
+inequalities say exactly where the arithmetic can fail: first at the incoming
+carry quotient, and then at the final block reduction. -/
+theorem sameCoreCompatible_canonicalCarryBlockValue_shift_scaled_one
+    {base n stride scale j : ℕ} {hn : 0 < n}
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hscale :
+      basePrimeSupportFactor base n * scale =
+        (actualCoordinate base n stride hn).remainderK)
+    (hscaledCarryRemainder :
+      scale *
+          ((strippedCoordinate base n stride hn).rawCoefficient (j + 1) %
+            ((actualCoordinate base n stride hn).blockBase -
+              (actualCoordinate base n stride hn).remainderK)) <
+        (actualCoordinate base n stride hn).blockBase -
+          (actualCoordinate base n stride hn).remainderK)
+    (hscaledBlockRemainder :
+      scale *
+          ((strippedCoordinate base n stride hn).canonicalCarryBlockValue j) <
+        (strippedCoordinate base n stride hn).blockBase) :
+    (actualCoordinate base n stride hn).canonicalCarryBlockValue (j + 1) =
+      scale * (strippedCoordinate base n stride hn).canonicalCarryBlockValue j := by
+  let actual := actualCoordinate base n stride hn
+  let core := strippedCoordinate base n stride hn
+  have hraw :
+      scale * core.rawCoefficient j = actual.rawCoefficient (j + 1) := by
+    simpa [actual, core] using
+      sameCoreCompatible_rawCoefficient_shift_scaled_one
+        (base := base) (n := n) (stride := stride) (scale := scale)
+        (j := j) (hn := hn) hcompat hscale
+  have hcarry :
+      scale * core.incomingCarry j = actual.incomingCarry (j + 1) := by
+    simpa [actual, core] using
+      sameCoreCompatible_incomingCarry_shift_scaled_one
+        (base := base) (n := n) (stride := stride) (scale := scale)
+        (j := j) (hn := hn) hgood hcompat hscale hscaledCarryRemainder
+  have hsharedB : core.blockBase = actual.blockBase := rfl
+  have hsum :
+      scale * core.rawCoefficient j + scale * core.incomingCarry j =
+        scale * (core.rawCoefficient j + core.incomingCarry j) := by
+    ring
+  unfold BlockCoordinate.canonicalCarryBlockValue
+  rw [← hraw, ← hcarry]
+  calc
+    (scale * core.rawCoefficient j + scale * core.incomingCarry j) % actual.blockBase
+      = (scale * (core.rawCoefficient j + core.incomingCarry j)) % core.blockBase := by
+          rw [← hsharedB, hsum]
+    _ = scale * ((core.rawCoefficient j + core.incomingCarry j) % core.blockBase) := by
+          exact nat_mul_mod_eq_mul_mod_of_mul_mod_lt
+            (x := core.rawCoefficient j + core.incomingCarry j)
+            (modulus := core.blockBase)
+            (scale := scale)
+            hscaledBlockRemainder
+
+/-- If the stripped core has a hidden canonical carried-output equality at two
+positions, the scaled one-block same-core criterion transports that hidden
+output equality to the shifted actual positions. -/
+theorem sameCoreCompatible_hiddenCarryBlockValue_shift_scaled_one
+    {base n stride scale left right : ℕ} {hn : 0 < n}
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hscale :
+      basePrimeSupportFactor base n * scale =
+        (actualCoordinate base n stride hn).remainderK)
+    (hleftCarryRemainder :
+      scale *
+          ((strippedCoordinate base n stride hn).rawCoefficient (left + 1) %
+            ((actualCoordinate base n stride hn).blockBase -
+              (actualCoordinate base n stride hn).remainderK)) <
+        (actualCoordinate base n stride hn).blockBase -
+          (actualCoordinate base n stride hn).remainderK)
+    (hrightCarryRemainder :
+      scale *
+          ((strippedCoordinate base n stride hn).rawCoefficient (right + 1) %
+            ((actualCoordinate base n stride hn).blockBase -
+              (actualCoordinate base n stride hn).remainderK)) <
+        (actualCoordinate base n stride hn).blockBase -
+          (actualCoordinate base n stride hn).remainderK)
+    (hleftBlockRemainder :
+      scale *
+          ((strippedCoordinate base n stride hn).canonicalCarryBlockValue left) <
+        (strippedCoordinate base n stride hn).blockBase)
+    (hrightBlockRemainder :
+      scale *
+          ((strippedCoordinate base n stride hn).canonicalCarryBlockValue right) <
+        (strippedCoordinate base n stride hn).blockBase)
+    (hcoreHidden :
+      (strippedCoordinate base n stride hn).canonicalCarryBlockValue left =
+        (strippedCoordinate base n stride hn).canonicalCarryBlockValue right) :
+    (actualCoordinate base n stride hn).canonicalCarryBlockValue (left + 1) =
+      (actualCoordinate base n stride hn).canonicalCarryBlockValue (right + 1) := by
+  rw [sameCoreCompatible_canonicalCarryBlockValue_shift_scaled_one
+      (base := base) (n := n) (stride := stride) (scale := scale)
+      (j := left) (hn := hn) hgood hcompat hscale hleftCarryRemainder
+      hleftBlockRemainder]
+  rw [sameCoreCompatible_canonicalCarryBlockValue_shift_scaled_one
+      (base := base) (n := n) (stride := stride) (scale := scale)
+      (j := right) (hn := hn) hgood hcompat hscale hrightCarryRemainder
+      hrightBlockRemainder]
+  rw [hcoreHidden]
+
+/-- Scale-two specialization of
+`sameCoreCompatible_hiddenCarryBlockValue_shift_scaled_one`. This is the
+Lean-facing criterion used by the Shape13/K4 mod-stable carry-loss hook: once
+the base-supported factor is exactly half of the shared remainder `k`, the only
+extra arithmetic needed to transport a hidden core carried-output equality is
+the pair of quotient-remainder and block-remainder bounds below. -/
+theorem sameCoreCompatible_hiddenCarryBlockValue_shift_scale_two
+    {base n stride left right : ℕ} {hn : 0 < n}
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hscale :
+      basePrimeSupportFactor base n * 2 =
+        (actualCoordinate base n stride hn).remainderK)
+    (hleftCarryRemainder :
+      2 *
+          ((strippedCoordinate base n stride hn).rawCoefficient (left + 1) %
+            ((actualCoordinate base n stride hn).blockBase -
+              (actualCoordinate base n stride hn).remainderK)) <
+        (actualCoordinate base n stride hn).blockBase -
+          (actualCoordinate base n stride hn).remainderK)
+    (hrightCarryRemainder :
+      2 *
+          ((strippedCoordinate base n stride hn).rawCoefficient (right + 1) %
+            ((actualCoordinate base n stride hn).blockBase -
+              (actualCoordinate base n stride hn).remainderK)) <
+        (actualCoordinate base n stride hn).blockBase -
+          (actualCoordinate base n stride hn).remainderK)
+    (hleftBlockRemainder :
+      2 *
+          ((strippedCoordinate base n stride hn).canonicalCarryBlockValue left) <
+        (strippedCoordinate base n stride hn).blockBase)
+    (hrightBlockRemainder :
+      2 *
+          ((strippedCoordinate base n stride hn).canonicalCarryBlockValue right) <
+        (strippedCoordinate base n stride hn).blockBase)
+    (hcoreHidden :
+      (strippedCoordinate base n stride hn).canonicalCarryBlockValue left =
+        (strippedCoordinate base n stride hn).canonicalCarryBlockValue right) :
+    (actualCoordinate base n stride hn).canonicalCarryBlockValue (left + 1) =
+      (actualCoordinate base n stride hn).canonicalCarryBlockValue (right + 1) := by
+  exact
+    sameCoreCompatible_hiddenCarryBlockValue_shift_scaled_one
+      (base := base) (n := n) (stride := stride) (scale := 2)
+      (left := left) (right := right) (hn := hn)
+      hgood hcompat hscale hleftCarryRemainder hrightCarryRemainder
+      hleftBlockRemainder hrightBlockRemainder hcoreHidden
+
+/-- Lean mirror of the exported Shape13/K4 scale-two hypothesis booleans.
+It bundles exactly the arithmetic data needed to reuse
+`sameCoreCompatible_hiddenCarryBlockValue_shift_scale_two`: good mode,
+same-core compatibility, `basePrimeSupportFactor * 2 = k`, the two
+quotient-remainder bounds below `B-k`, the two block-remainder bounds below
+`B`, and the source-core hidden carried-output equality. -/
+structure SameCoreScaleTwoHiddenCarryBlockValueHypotheses
+    (base n stride left right : ℕ) (hn : 0 < n) : Prop where
+  goodMode : (actualCoordinate base n stride hn).goodMode
+  sameCoreCompatible_hyp : sameCoreCompatible base n stride hn
+  basePrimeSupportFactor_times_two_eq_k :
+    basePrimeSupportFactor base n * 2 =
+      (actualCoordinate base n stride hn).remainderK
+  left_scaled_quotient_remainder_lt_gap :
+    2 *
+        ((strippedCoordinate base n stride hn).rawCoefficient (left + 1) %
+          ((actualCoordinate base n stride hn).blockBase -
+            (actualCoordinate base n stride hn).remainderK)) <
+      (actualCoordinate base n stride hn).blockBase -
+        (actualCoordinate base n stride hn).remainderK
+  right_scaled_quotient_remainder_lt_gap :
+    2 *
+        ((strippedCoordinate base n stride hn).rawCoefficient (right + 1) %
+          ((actualCoordinate base n stride hn).blockBase -
+            (actualCoordinate base n stride hn).remainderK)) <
+      (actualCoordinate base n stride hn).blockBase -
+        (actualCoordinate base n stride hn).remainderK
+  left_scaled_block_remainder_lt_blockBase :
+    2 *
+        ((strippedCoordinate base n stride hn).canonicalCarryBlockValue left) <
+      (strippedCoordinate base n stride hn).blockBase
+  right_scaled_block_remainder_lt_blockBase :
+    2 *
+        ((strippedCoordinate base n stride hn).canonicalCarryBlockValue right) <
+      (strippedCoordinate base n stride hn).blockBase
+  source_core_hidden_carryBlockValue :
+    (strippedCoordinate base n stride hn).canonicalCarryBlockValue left =
+      (strippedCoordinate base n stride hn).canonicalCarryBlockValue right
+
+/-- A bundled Shape13/K4 scale-two hypothesis record is enough to transport a
+source-core hidden carried-output equality to the shifted actual coordinate. -/
+theorem SameCoreScaleTwoHiddenCarryBlockValueHypotheses.hiddenCarryBlockValue_shift
+    {base n stride left right : ℕ} {hn : 0 < n}
+    (h : SameCoreScaleTwoHiddenCarryBlockValueHypotheses
+      base n stride left right hn) :
+    (actualCoordinate base n stride hn).canonicalCarryBlockValue (left + 1) =
+      (actualCoordinate base n stride hn).canonicalCarryBlockValue (right + 1) := by
+  exact
+    sameCoreCompatible_hiddenCarryBlockValue_shift_scale_two
+      (base := base) (n := n) (stride := stride)
+      (left := left) (right := right) (hn := hn)
+      h.goodMode h.sameCoreCompatible_hyp
+      h.basePrimeSupportFactor_times_two_eq_k
+      h.left_scaled_quotient_remainder_lt_gap
+      h.right_scaled_quotient_remainder_lt_gap
+      h.left_scaled_block_remainder_lt_blockBase
+      h.right_scaled_block_remainder_lt_blockBase
+      h.source_core_hidden_carryBlockValue
+
+/-- Adapter from the exported Shape13/K4 scale-two hypothesis bundle to the
+existing same-core hidden-output proof path. -/
+theorem sameCoreCompatible_hiddenCarryBlockValue_shift_scale_two_of_exportedHypotheses
+    {base n stride left right : ℕ} {hn : 0 < n}
+    (h : SameCoreScaleTwoHiddenCarryBlockValueHypotheses
+      base n stride left right hn) :
+    (actualCoordinate base n stride hn).canonicalCarryBlockValue (left + 1) =
+      (actualCoordinate base n stride hn).canonicalCarryBlockValue (right + 1) := by
+  exact h.hiddenCarryBlockValue_shift
+
 /-- In the exact `k`-power same-core regime, the actual body term splits into
 the leading actual prefix of length `s` and the stripped-core suffix. -/
 theorem sameCoreCompatible_bodyTerm_shift_exact
@@ -382,6 +918,69 @@ theorem sameCoreCompatible_truncatedVisiblePrefixValue_shift_exact
           rw [show Bpow = core.blockBase ^ lookaheadBlocks by rfl]
           simp [actual, core, BlockCoordinate.truncatedVisiblePrefixValue]
 
+/-- In the exact `k`-power same-core regime, the shifted actual truncated
+visible-prefix remainder agrees exactly with the stripped-core remainder. -/
+theorem sameCoreCompatible_truncatedVisiblePrefixRemainder_shift_exact
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s) :
+    (actualCoordinate base n stride hn).truncatedVisiblePrefixRemainder
+        (requestedBlocks + s) lookaheadBlocks =
+      (strippedCoordinate base n stride hn).truncatedVisiblePrefixRemainder
+        requestedBlocks lookaheadBlocks := by
+  let actual := actualCoordinate base n stride hn
+  let core := strippedCoordinate base n stride hn
+  let Bpow := actual.blockBase ^ lookaheadBlocks
+  calc
+    actual.truncatedVisiblePrefixRemainder (requestedBlocks + s) lookaheadBlocks
+      = actual.bodyTerm ((requestedBlocks + s) + lookaheadBlocks) % Bpow := by
+          simp [actual, Bpow, BlockCoordinate.truncatedVisiblePrefixRemainder]
+    _ = actual.bodyTerm (s + (requestedBlocks + lookaheadBlocks)) % Bpow := by
+          rw [show (requestedBlocks + s) + lookaheadBlocks =
+              s + (requestedBlocks + lookaheadBlocks) by omega]
+    _ = (core.bodyTerm (requestedBlocks + lookaheadBlocks) +
+          actual.bodyTerm s * actual.blockBase ^ (requestedBlocks + lookaheadBlocks)) % Bpow := by
+          rw [sameCoreCompatible_bodyTerm_shift_exact
+            (base := base) (n := n) (stride := stride) (s := s)
+            (length := requestedBlocks + lookaheadBlocks) (hn := hn) hcompat hfactor]
+    _ = (core.bodyTerm (requestedBlocks + lookaheadBlocks) +
+          (actual.bodyTerm s * actual.blockBase ^ requestedBlocks) * Bpow) % Bpow := by
+          rw [show actual.blockBase ^ (requestedBlocks + lookaheadBlocks) =
+              actual.blockBase ^ requestedBlocks * Bpow by
+                simp [Bpow, Nat.pow_add]]
+          ac_rfl
+    _ = core.bodyTerm (requestedBlocks + lookaheadBlocks) % Bpow := by
+          rw [Nat.mul_comm, Nat.add_mul_mod_self_left]
+    _ = core.truncatedVisiblePrefixRemainder requestedBlocks lookaheadBlocks := by
+          rw [show Bpow = core.blockBase ^ lookaheadBlocks by rfl]
+          simp [core, BlockCoordinate.truncatedVisiblePrefixRemainder]
+
+/-- In the exact `k`-power same-core regime, the shifted actual lookahead gap
+numerator agrees exactly with the stripped-core gap numerator. -/
+theorem sameCoreCompatible_lookaheadGapNumerator_shift_exact
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s) :
+    (actualCoordinate base n stride hn).lookaheadGapNumerator
+        (requestedBlocks + s) lookaheadBlocks =
+      (strippedCoordinate base n stride hn).lookaheadGapNumerator
+        requestedBlocks lookaheadBlocks := by
+  let actual := actualCoordinate base n stride hn
+  let core := strippedCoordinate base n stride hn
+  have hrem :
+      actual.truncatedVisiblePrefixRemainder (requestedBlocks + s) lookaheadBlocks =
+        core.truncatedVisiblePrefixRemainder requestedBlocks lookaheadBlocks := by
+    exact sameCoreCompatible_truncatedVisiblePrefixRemainder_shift_exact
+      (base := base) (n := n) (stride := stride) (s := s)
+      (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+      (hn := hn) hcompat hfactor
+  have hsharedBpow : actual.blockBase ^ lookaheadBlocks = core.blockBase ^ lookaheadBlocks := by
+    rfl
+  unfold BlockCoordinate.lookaheadGapNumerator
+  rw [hrem, hsharedBpow]
+
 /-- In the exact `k`-power same-core regime, the shifted actual emitted-prefix
 integer is the stripped-core emitted prefix with that same leading offset. -/
 theorem sameCoreCompatible_emittedPrefixValue_shift_exact
@@ -471,6 +1070,96 @@ theorem sameCoreCompatible_emittedPrefixValue_eq_truncatedVisiblePrefixValue_iff
   · intro h
     exact congrArg (fun t => t + actual.bodyTerm s * actual.blockBase ^ requestedBlocks) h
 
+/-- In the exact `k`-power same-core regime, the tail-versus-gap-modulus
+inequality transports exactly between the shifted actual denominator and the
+stripped core. This exposes the finite gap arithmetic directly beneath the
+lookahead certificate. -/
+theorem sameCoreCompatible_tail_lt_gapModulus_iff_add_exact
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s) :
+    (actualCoordinate base n stride hn).remainderK ^ ((requestedBlocks + s) + lookaheadBlocks) <
+        (actualCoordinate base n stride hn).lookaheadGapNumerator
+          (requestedBlocks + s) lookaheadBlocks *
+          (actualCoordinate base n stride hn).modulus ↔
+      (strippedCoordinate base n stride hn).remainderK ^ (requestedBlocks + lookaheadBlocks) <
+        (strippedCoordinate base n stride hn).lookaheadGapNumerator
+          requestedBlocks lookaheadBlocks *
+          (strippedCoordinate base n stride hn).modulus := by
+  let actual := actualCoordinate base n stride hn
+  let core := strippedCoordinate base n stride hn
+  have hsharedK : core.remainderK = actual.remainderK := by
+    simpa [actual, core] using sameCoreCompatible_remainderK_eq (hn := hn) hcompat
+  have hmod :
+      actual.modulus = actual.remainderK ^ s * core.modulus := by
+    calc
+      actual.modulus = basePrimeSupportFactor base n * core.modulus := by
+        simpa [actual, core, strippedPeriodModulus] using
+          (basePrimeSupportFactor_mul_strippedPeriodModulus base n).symm
+      _ = actual.remainderK ^ s * core.modulus := by rw [hfactor]
+  have hpow_pos : 0 < actual.remainderK ^ s := by
+    rw [← hfactor]
+    exact basePrimeSupportFactor_pos base n
+  have hgap :
+      actual.lookaheadGapNumerator (requestedBlocks + s) lookaheadBlocks =
+        core.lookaheadGapNumerator requestedBlocks lookaheadBlocks := by
+    simpa [actual, core] using
+      sameCoreCompatible_lookaheadGapNumerator_shift_exact
+        (base := base) (n := n) (stride := stride) (s := s)
+        (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+        (hn := hn) hcompat hfactor
+  constructor
+  · intro hactual
+    have hmul :
+        actual.remainderK ^ s * actual.remainderK ^ (requestedBlocks + lookaheadBlocks) <
+          actual.remainderK ^ s *
+            (core.lookaheadGapNumerator requestedBlocks lookaheadBlocks * core.modulus) := by
+      calc
+        actual.remainderK ^ s * actual.remainderK ^ (requestedBlocks + lookaheadBlocks)
+          = actual.remainderK ^ ((requestedBlocks + s) + lookaheadBlocks) := by
+              symm
+              rw [show (requestedBlocks + s) + lookaheadBlocks =
+                  s + (requestedBlocks + lookaheadBlocks) by omega]
+              rw [Nat.pow_add]
+        _ < actual.lookaheadGapNumerator (requestedBlocks + s) lookaheadBlocks * actual.modulus :=
+              hactual
+        _ = core.lookaheadGapNumerator requestedBlocks lookaheadBlocks * actual.modulus := by
+              rw [hgap]
+        _ = actual.remainderK ^ s *
+              (core.lookaheadGapNumerator requestedBlocks lookaheadBlocks * core.modulus) := by
+              rw [hmod]
+              ac_rfl
+    have hcoreTail :
+        actual.remainderK ^ (requestedBlocks + lookaheadBlocks) <
+          core.lookaheadGapNumerator requestedBlocks lookaheadBlocks * core.modulus :=
+      Nat.lt_of_mul_lt_mul_left hmul
+    simpa [core, hsharedK] using hcoreTail
+  · intro hcore
+    have hmul :
+        actual.remainderK ^ s * core.remainderK ^ (requestedBlocks + lookaheadBlocks) <
+          actual.remainderK ^ s *
+            (core.lookaheadGapNumerator requestedBlocks lookaheadBlocks * core.modulus) :=
+      Nat.mul_lt_mul_of_pos_left hcore hpow_pos
+    have hmul' :
+        actual.remainderK ^ s * actual.remainderK ^ (requestedBlocks + lookaheadBlocks) <
+          actual.remainderK ^ s *
+            (core.lookaheadGapNumerator requestedBlocks lookaheadBlocks * core.modulus) := by
+      simpa [hsharedK] using hmul
+    calc
+      actual.remainderK ^ ((requestedBlocks + s) + lookaheadBlocks)
+        = actual.remainderK ^ s * actual.remainderK ^ (requestedBlocks + lookaheadBlocks) := by
+            rw [show (requestedBlocks + s) + lookaheadBlocks =
+                s + (requestedBlocks + lookaheadBlocks) by omega]
+            rw [Nat.pow_add]
+      _ < actual.remainderK ^ s *
+            (core.lookaheadGapNumerator requestedBlocks lookaheadBlocks * core.modulus) := hmul'
+      _ = core.lookaheadGapNumerator requestedBlocks lookaheadBlocks * actual.modulus := by
+            rw [hmod]
+            ac_rfl
+      _ = actual.lookaheadGapNumerator (requestedBlocks + s) lookaheadBlocks * actual.modulus := by
+            rw [← hgap]
+
 /-- In the exact `k`-power same-core regime, the fixed-window lookahead
 certificate transports exactly between the stripped core at `(n, L)` and the
 actual denominator at `(n + s, L)`. This is still a fixed-window theorem, not
@@ -489,14 +1178,14 @@ theorem sameCoreCompatible_lookaheadCertificateHolds_iff_add_exact
   let core := strippedCoordinate base n stride hn
   have hcoreGood : core.goodMode :=
     strippedCoordinate_goodMode_of_actual_goodMode hn hgood
-  rw [← actual.emittedPrefixValue_eq_truncatedVisiblePrefixValue_iff_lookaheadCertificate
+  rw [actual.lookaheadCertificateHolds_iff_tail_lt_gapModulus
       hgood (requestedBlocks + s) lookaheadBlocks]
-  rw [← core.emittedPrefixValue_eq_truncatedVisiblePrefixValue_iff_lookaheadCertificate
+  rw [core.lookaheadCertificateHolds_iff_tail_lt_gapModulus
       hcoreGood requestedBlocks lookaheadBlocks]
-  exact sameCoreCompatible_emittedPrefixValue_eq_truncatedVisiblePrefixValue_iff_add_exact
+  exact sameCoreCompatible_tail_lt_gapModulus_iff_add_exact
     (base := base) (n := n) (stride := stride) (s := s)
     (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
-    (hn := hn) hgood hcompat hfactor
+    (hn := hn) hcompat hfactor
 
 /-- Forward transport form of the exact same-core fixed-window certificate. -/
 theorem sameCoreCompatible_lookaheadCertificateHolds_of_core_lookaheadCertificate_add_exact
@@ -515,6 +1204,29 @@ theorem sameCoreCompatible_lookaheadCertificateHolds_of_core_lookaheadCertificat
     (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
     (hn := hn) hgood hcompat hfactor).2 hcert
 
+/-- Forward exact same-core certificate transport also packages any explicitly
+larger lookahead window on the shifted actual denominator. -/
+theorem sameCoreCompatible_lookaheadCertificateHolds_of_core_lookaheadCertificate_add_exact_add
+    {base n stride s requestedBlocks lookaheadBlocks extraLookahead : ℕ} {hn : 0 < n}
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s)
+    (hcert :
+      (strippedCoordinate base n stride hn).lookaheadCertificateHolds
+        requestedBlocks lookaheadBlocks) :
+    (actualCoordinate base n stride hn).lookaheadCertificateHolds
+      (requestedBlocks + s) (lookaheadBlocks + extraLookahead) := by
+  let actual := actualCoordinate base n stride hn
+  have hcertActual :
+      actual.lookaheadCertificateHolds (requestedBlocks + s) lookaheadBlocks :=
+    sameCoreCompatible_lookaheadCertificateHolds_of_core_lookaheadCertificate_add_exact
+      (base := base) (n := n) (stride := stride) (s := s)
+      (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+      (hn := hn) hgood hcompat hfactor hcert
+  exact actual.lookaheadCertificateHolds_of_lookaheadCertificate_add
+    hgood (requestedBlocks + s) lookaheadBlocks extraLookahead hcertActual
+
 /-- Reverse transport form of the same exact fixed-window certificate. -/
 theorem sameCoreCompatible_core_lookaheadCertificateHolds_of_actual_lookaheadCertificate_add_exact
     {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
@@ -531,6 +1243,31 @@ theorem sameCoreCompatible_core_lookaheadCertificateHolds_of_actual_lookaheadCer
     (base := base) (n := n) (stride := stride) (s := s)
     (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
     (hn := hn) hgood hcompat hfactor).1 hcert
+
+/-- Reverse exact same-core certificate transport also packages any explicitly
+larger lookahead window on the stripped core. -/
+theorem sameCoreCompatible_core_lookaheadCertificateHolds_of_actual_lookaheadCertificate_add_exact_add
+    {base n stride s requestedBlocks lookaheadBlocks extraLookahead : ℕ} {hn : 0 < n}
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s)
+    (hcert :
+      (actualCoordinate base n stride hn).lookaheadCertificateHolds
+        (requestedBlocks + s) lookaheadBlocks) :
+    (strippedCoordinate base n stride hn).lookaheadCertificateHolds
+      requestedBlocks (lookaheadBlocks + extraLookahead) := by
+  let core := strippedCoordinate base n stride hn
+  have hcoreGood : core.goodMode :=
+    strippedCoordinate_goodMode_of_actual_goodMode hn hgood
+  have hcertCore :
+      core.lookaheadCertificateHolds requestedBlocks lookaheadBlocks :=
+    sameCoreCompatible_core_lookaheadCertificateHolds_of_actual_lookaheadCertificate_add_exact
+      (base := base) (n := n) (stride := stride) (s := s)
+      (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+      (hn := hn) hgood hcompat hfactor hcert
+  exact core.lookaheadCertificateHolds_of_lookaheadCertificate_add
+    hcoreGood requestedBlocks lookaheadBlocks extraLookahead hcertCore
 
 /-- Same-core compatibility is equivalent to quotient scaling by the stripped
 base-supported factor in the shared block base. This packages the exact
@@ -668,6 +1405,25 @@ theorem sameCoreCompatible_tailMassLowerBound_iff_add
     rw [hraw] at hcore'
     simpa [actual, core, hsharedK] using hcore'
 
+/-- Exact-named same-core tail-mass transport theorem in the `k^s` regime. -/
+theorem sameCoreCompatible_tailMassLowerBound_iff_add_exact
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s) :
+    (actualCoordinate base n stride hn).rawCoefficient ((requestedBlocks + s) + lookaheadBlocks) <
+        (actualCoordinate base n stride hn).blockBase ^ lookaheadBlocks *
+          ((actualCoordinate base n stride hn).blockBase -
+            (actualCoordinate base n stride hn).remainderK) ↔
+      (strippedCoordinate base n stride hn).rawCoefficient (requestedBlocks + lookaheadBlocks) <
+        (strippedCoordinate base n stride hn).blockBase ^ lookaheadBlocks *
+          ((strippedCoordinate base n stride hn).blockBase -
+            (strippedCoordinate base n stride hn).remainderK) := by
+  exact sameCoreCompatible_tailMassLowerBound_iff_add
+    (base := base) (n := n) (stride := stride) (s := s)
+    (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+    (hn := hn) hcompat hfactor
+
 /-- Any exact lookahead certificate on the shifted actual denominator forces
 the stripped core to satisfy the same raw tail-mass lower-bound inequality. -/
 theorem sameCoreCompatible_tailMassLowerBound_of_actual_lookaheadCertificate_add
@@ -688,10 +1444,28 @@ theorem sameCoreCompatible_tailMassLowerBound_of_actual_lookaheadCertificate_add
         actual.blockBase ^ lookaheadBlocks * (actual.blockBase - actual.remainderK) :=
     actual.lookaheadCertificateHolds_implies_tailMassLowerBound
       (requestedBlocks := requestedBlocks + s) (lookaheadBlocks := lookaheadBlocks) hcert
-  exact (sameCoreCompatible_tailMassLowerBound_iff_add
+  exact (sameCoreCompatible_tailMassLowerBound_iff_add_exact
     (base := base) (n := n) (stride := stride) (s := s)
     (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
     (hn := hn) hcompat hfactor).mp htail
+
+/-- Exact-named reverse same-core tail-mass implication in the `k^s` regime. -/
+theorem sameCoreCompatible_tailMassLowerBound_of_actual_lookaheadCertificate_add_exact
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s)
+    (hcert :
+      (actualCoordinate base n stride hn).lookaheadCertificateHolds
+        (requestedBlocks + s) lookaheadBlocks) :
+    (strippedCoordinate base n stride hn).rawCoefficient (requestedBlocks + lookaheadBlocks) <
+      (strippedCoordinate base n stride hn).blockBase ^ lookaheadBlocks *
+        ((strippedCoordinate base n stride hn).blockBase -
+          (strippedCoordinate base n stride hn).remainderK) := by
+  exact sameCoreCompatible_tailMassLowerBound_of_actual_lookaheadCertificate_add
+    (base := base) (n := n) (stride := stride) (s := s)
+    (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+    (hn := hn) hcompat hfactor hcert
 
 /-- Any exact lookahead certificate on the stripped core forces the shifted
 actual denominator to satisfy the same raw tail-mass lower-bound inequality. -/
@@ -713,10 +1487,28 @@ theorem sameCoreCompatible_tailMassLowerBound_of_core_lookaheadCertificate_add
         core.blockBase ^ lookaheadBlocks * (core.blockBase - core.remainderK) :=
     core.lookaheadCertificateHolds_implies_tailMassLowerBound
       (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks) hcert
-  exact (sameCoreCompatible_tailMassLowerBound_iff_add
+  exact (sameCoreCompatible_tailMassLowerBound_iff_add_exact
     (base := base) (n := n) (stride := stride) (s := s)
     (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
     (hn := hn) hcompat hfactor).mpr htail
+
+/-- Exact-named forward same-core tail-mass implication in the `k^s` regime. -/
+theorem sameCoreCompatible_tailMassLowerBound_of_core_lookaheadCertificate_add_exact
+    {base n stride s requestedBlocks lookaheadBlocks : ℕ} {hn : 0 < n}
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hfactor : basePrimeSupportFactor base n =
+      (actualCoordinate base n stride hn).remainderK ^ s)
+    (hcert :
+      (strippedCoordinate base n stride hn).lookaheadCertificateHolds
+        requestedBlocks lookaheadBlocks) :
+    (actualCoordinate base n stride hn).rawCoefficient ((requestedBlocks + s) + lookaheadBlocks) <
+      (actualCoordinate base n stride hn).blockBase ^ lookaheadBlocks *
+        ((actualCoordinate base n stride hn).blockBase -
+          (actualCoordinate base n stride hn).remainderK) := by
+  exact sameCoreCompatible_tailMassLowerBound_of_core_lookaheadCertificate_add
+    (base := base) (n := n) (stride := stride) (s := s)
+    (requestedBlocks := requestedBlocks) (lookaheadBlocks := lookaheadBlocks)
+    (hn := hn) hcompat hfactor hcert
 
 /-- In the exact `k`-power same-core regime, the coarse sufficient condition
 `k^(n+L) < modulus` for the stripped core is equivalent to the shifted
@@ -1036,6 +1828,105 @@ local-overflow boundaries. -/
 def firstVisibleMismatchPosition (incomingCarryPosition localOverflowBoundary : ℕ) : ℕ :=
   min incomingCarryPosition localOverflowBoundary
 
+/-- If the incoming-carry boundary is no later than the local-overflow
+boundary, then it is already the first visible mismatch position. -/
+theorem firstVisibleMismatchPosition_eq_incomingCarryPosition_of_le
+    {incomingCarryPosition localOverflowBoundary : ℕ}
+    (h : incomingCarryPosition ≤ localOverflowBoundary) :
+    firstVisibleMismatchPosition incomingCarryPosition localOverflowBoundary =
+      incomingCarryPosition := by
+  unfold firstVisibleMismatchPosition
+  exact min_eq_left h
+
+/-- If the local-overflow boundary is no later than the incoming-carry
+boundary, then it is already the first visible mismatch position. -/
+theorem firstVisibleMismatchPosition_eq_localOverflowBoundary_of_le
+    {incomingCarryPosition localOverflowBoundary : ℕ}
+    (h : localOverflowBoundary ≤ incomingCarryPosition) :
+    firstVisibleMismatchPosition incomingCarryPosition localOverflowBoundary =
+      localOverflowBoundary := by
+  unfold firstVisibleMismatchPosition
+  exact min_eq_right h
+
+@[simp] theorem firstVisibleMismatchPosition_self (boundary : ℕ) :
+    firstVisibleMismatchPosition boundary boundary = boundary := by
+  exact firstVisibleMismatchPosition_eq_incomingCarryPosition_of_le le_rfl
+
+/-- If both threshold boundaries shift by either `s` or `s + 1`, then the first
+visible mismatch position obeys the same interval law. -/
+theorem firstVisibleMismatchPosition_shift_interval
+    {incomingActual incomingCore overflowActual overflowCore s : ℕ}
+    (hincoming_lower : s ≤ incomingActual - incomingCore)
+    (hincoming_upper : incomingActual - incomingCore ≤ s + 1)
+    (hoverflow_lower : s ≤ overflowActual - overflowCore)
+    (hoverflow_upper : overflowActual - overflowCore ≤ s + 1) :
+    s ≤ firstVisibleMismatchPosition incomingActual overflowActual -
+        firstVisibleMismatchPosition incomingCore overflowCore ∧
+      firstVisibleMismatchPosition incomingActual overflowActual -
+          firstVisibleMismatchPosition incomingCore overflowCore ≤ s + 1 := by
+  unfold firstVisibleMismatchPosition
+  by_cases hs : s = 0
+  · subst hs
+    constructor
+    · exact Nat.zero_le _
+    ·
+      have hincoming_upper' : incomingActual ≤ incomingCore + 1 := by
+        simpa [Nat.add_comm] using (Nat.sub_le_iff_le_add.mp hincoming_upper)
+      have hoverflow_upper' : overflowActual ≤ overflowCore + 1 := by
+        simpa [Nat.add_comm] using (Nat.sub_le_iff_le_add.mp hoverflow_upper)
+      have hmin_upper : min incomingActual overflowActual ≤ min incomingCore overflowCore + 1 := by
+        calc
+          min incomingActual overflowActual
+            ≤ min (incomingCore + 1) (overflowCore + 1) := by
+                exact min_le_min hincoming_upper' hoverflow_upper'
+          _ = min incomingCore overflowCore + 1 := by
+                rw [min_add_add_right]
+      exact (Nat.sub_le_iff_le_add).2 (by
+        simpa [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using hmin_upper)
+  ·
+    have hs_pos : 0 < s := Nat.pos_of_ne_zero hs
+    have hincoming_order : incomingCore ≤ incomingActual := by
+      by_contra h
+      have hlt : incomingActual < incomingCore := Nat.lt_of_not_ge h
+      have hsub : incomingActual - incomingCore = 0 := Nat.sub_eq_zero_of_le (Nat.le_of_lt hlt)
+      omega
+    have hoverflow_order : overflowCore ≤ overflowActual := by
+      by_contra h
+      have hlt : overflowActual < overflowCore := Nat.lt_of_not_ge h
+      have hsub : overflowActual - overflowCore = 0 := Nat.sub_eq_zero_of_le (Nat.le_of_lt hlt)
+      omega
+    have hincoming_lower' : incomingCore + s ≤ incomingActual := by
+      simpa [Nat.add_comm] using
+        (Nat.le_sub_iff_add_le hincoming_order).mp hincoming_lower
+    have hincoming_upper' : incomingActual ≤ incomingCore + (s + 1) := by
+      simpa [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using
+        (Nat.sub_le_iff_le_add.mp hincoming_upper)
+    have hoverflow_lower' : overflowCore + s ≤ overflowActual := by
+      simpa [Nat.add_comm] using
+        (Nat.le_sub_iff_add_le hoverflow_order).mp hoverflow_lower
+    have hoverflow_upper' : overflowActual ≤ overflowCore + (s + 1) := by
+      simpa [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using
+        (Nat.sub_le_iff_le_add.mp hoverflow_upper)
+    have hmin_lower : min incomingCore overflowCore + s ≤ min incomingActual overflowActual := by
+      calc
+        min incomingCore overflowCore + s
+          = min (incomingCore + s) (overflowCore + s) := by
+              rw [min_add_add_right]
+        _ ≤ min incomingActual overflowActual := by
+              exact min_le_min hincoming_lower' hoverflow_lower'
+    have hmin_upper : min incomingActual overflowActual ≤ min incomingCore overflowCore + (s + 1) := by
+      calc
+        min incomingActual overflowActual
+          ≤ min (incomingCore + (s + 1)) (overflowCore + (s + 1)) := by
+              exact min_le_min hincoming_upper' hoverflow_upper'
+        _ = min incomingCore overflowCore + (s + 1) := by
+              rw [min_add_add_right]
+    have hmin_order : min incomingCore overflowCore ≤ min incomingActual overflowActual := by
+      exact le_trans (Nat.le_add_right _ _) hmin_lower
+    constructor
+    · exact (Nat.le_sub_iff_add_le hmin_order).2 (by simpa [Nat.add_comm] using hmin_lower)
+    · exact (Nat.sub_le_iff_le_add).2 (by simpa [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using hmin_upper)
+
 /-- If both threshold boundaries shift exactly by `s`, then so does the first
 visible mismatch position. -/
 theorem firstVisibleMismatchPosition_shift_exact
@@ -1087,6 +1978,46 @@ theorem sameCoreCompatible_firstVisibleMismatchPosition_shift_exact
       (Nat.sub_eq_iff_eq_add hoverflow_order).mp hoverflowShift
   rw [hincomingEq, hoverflowEq]
   exact firstVisibleMismatchPosition_shift_exact
+
+/-- In a same-core-compatible coordinate, if the incoming-carry and
+local-overflow boundaries each satisfy the non-power interval law, then the
+first visible mismatch position also shifts by either `s` or `s + 1`. This
+remains an exact finite-boundary theorem beneath the open global visibility
+claim. -/
+theorem sameCoreCompatible_firstVisibleMismatchPosition_shift_interval
+    {base n stride s incomingActual incomingCore overflowActual overflowCore : ℕ}
+    {hn : 0 < n}
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hincomingActual :
+      (actualCoordinate base n stride hn).isFirstIncomingCarryPosition incomingActual)
+    (hincomingCore :
+      (strippedCoordinate base n stride hn).isFirstIncomingCarryPosition incomingCore)
+    (hoverflowActual :
+      (actualCoordinate base n stride hn).isLocalOverflowBoundary overflowActual)
+    (hoverflowCore :
+      (strippedCoordinate base n stride hn).isLocalOverflowBoundary overflowCore)
+    (hk : 1 < (actualCoordinate base n stride hn).remainderK)
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hr_lower : (actualCoordinate base n stride hn).remainderK ^ s ≤
+      basePrimeSupportFactor base n)
+    (hr_upper : basePrimeSupportFactor base n <
+      (actualCoordinate base n stride hn).remainderK ^ (s + 1))
+    (hroom_incoming : s + 1 ≤ incomingActual)
+    (hroom_overflow : s + 1 ≤ overflowActual) :
+    s ≤ firstVisibleMismatchPosition incomingActual overflowActual -
+        firstVisibleMismatchPosition incomingCore overflowCore ∧
+      firstVisibleMismatchPosition incomingActual overflowActual -
+          firstVisibleMismatchPosition incomingCore overflowCore ≤ s + 1 := by
+  have hincomingShift :
+      s ≤ incomingActual - incomingCore ∧ incomingActual - incomingCore ≤ s + 1 :=
+    sameCoreCompatible_firstIncomingCarryPosition_shift_interval
+      hcompat hincomingActual hincomingCore hk hgood hr_lower hr_upper hroom_incoming
+  have hoverflowShift :
+      s ≤ overflowActual - overflowCore ∧ overflowActual - overflowCore ≤ s + 1 :=
+    sameCoreCompatible_localOverflowBoundary_shift_interval
+      hcompat hoverflowActual hoverflowCore hk hgood hr_lower hr_upper hroom_overflow
+  exact firstVisibleMismatchPosition_shift_interval
+    hincomingShift.1 hincomingShift.2 hoverflowShift.1 hoverflowShift.2
 
 /-- A scaled-raw-coefficient criterion for the lower incoming-carry endpoint:
 if the base-supported factor times the actual coefficient at `a - s` is still
@@ -1331,6 +2262,134 @@ theorem classifyThresholdShiftEndpoint_eq_upper
   have hne : factor ≠ k ^ s := hlower.ne'
   simp [hne, hlower, hupper, hshift]
 
+theorem classifyThresholdShiftEndpoint_eq_lower_iff
+    {k factor s a c : ℕ} :
+    classifyThresholdShiftEndpoint k factor s a c = some .lower ↔
+      k ^ s < factor ∧ factor < k ^ (s + 1) ∧ a - c = s := by
+  unfold classifyThresholdShiftEndpoint
+  by_cases hpow : factor = k ^ s
+  · simp [hpow]
+  · by_cases hinterval : k ^ s < factor ∧ factor < k ^ (s + 1)
+    · rcases hinterval with ⟨hlower, hupper⟩
+      constructor
+      · intro h
+        by_cases hshift : a - c = s
+        · simp [hpow, hlower, hupper, hshift] at h
+          exact ⟨hlower, hupper, hshift⟩
+        · simp [hpow, hlower, hupper, hshift] at h
+      · rintro ⟨_, _, hshift⟩
+        simp [hpow, hlower, hupper, hshift]
+    · constructor
+      · intro h
+        simp [hpow, hinterval] at h
+      · rintro ⟨hlower, hupper, _⟩
+        exact (hinterval ⟨hlower, hupper⟩).elim
+
+theorem classifyThresholdShiftEndpoint_eq_upper_iff
+    {k factor s a c : ℕ} :
+    classifyThresholdShiftEndpoint k factor s a c = some .upper ↔
+      k ^ s < factor ∧ factor < k ^ (s + 1) ∧ a - c = s + 1 := by
+  unfold classifyThresholdShiftEndpoint
+  by_cases hpow : factor = k ^ s
+  · simp [hpow]
+  · by_cases hinterval : k ^ s < factor ∧ factor < k ^ (s + 1)
+    · rcases hinterval with ⟨hlower, hupper⟩
+      constructor
+      · intro h
+        by_cases hshift : a - c = s
+        · simp [hpow, hlower, hupper, hshift] at h
+        · simpa [hpow, hlower, hupper, hshift] using h
+      · rintro ⟨_, _, hshift⟩
+        simp [hpow, hlower, hupper, hshift]
+    · constructor
+      · intro h
+        simp [hpow, hinterval] at h
+      · rintro ⟨hlower, hupper, _⟩
+        exact (hinterval ⟨hlower, hupper⟩).elim
+
+/-- If both the incoming-carry and local-overflow boundaries carry the `lower`
+non-power endpoint label, then the first visible mismatch boundary does too. -/
+theorem firstVisibleMismatchPosition_endpoint_lower_of_incomingCarry_lower_and_localOverflow_lower
+    {k factor s incomingActual incomingCore overflowActual overflowCore : ℕ}
+    (hincoming :
+      classifyThresholdShiftEndpoint k factor s incomingActual incomingCore = some .lower)
+    (hoverflow :
+      classifyThresholdShiftEndpoint k factor s overflowActual overflowCore = some .lower) :
+    classifyThresholdShiftEndpoint k factor s
+      (firstVisibleMismatchPosition incomingActual overflowActual)
+      (firstVisibleMismatchPosition incomingCore overflowCore) = some .lower := by
+  rcases (classifyThresholdShiftEndpoint_eq_lower_iff.mp hincoming) with
+    ⟨hlower, hupper, hincomingShift⟩
+  rcases (classifyThresholdShiftEndpoint_eq_lower_iff.mp hoverflow) with
+    ⟨_, _, hoverflowShift⟩
+  apply classifyThresholdShiftEndpoint_eq_lower
+  · exact hlower
+  · exact hupper
+  · by_cases hs : s = 0
+    · subst hs
+      have hincomingLe : incomingActual ≤ incomingCore := by
+        exact Nat.sub_eq_zero_iff_le.mp hincomingShift
+      have hoverflowLe : overflowActual ≤ overflowCore := by
+        exact Nat.sub_eq_zero_iff_le.mp hoverflowShift
+      have hminLe :
+          min incomingActual overflowActual ≤ min incomingCore overflowCore := by
+        exact min_le_min hincomingLe hoverflowLe
+      exact Nat.sub_eq_zero_of_le hminLe
+    ·
+      have hs_pos : 0 < s := Nat.pos_of_ne_zero hs
+      have hincomingOrder : incomingCore ≤ incomingActual := by
+        by_contra h
+        have hlt : incomingActual < incomingCore := Nat.lt_of_not_ge h
+        have hsub : incomingActual - incomingCore = 0 := Nat.sub_eq_zero_of_le (Nat.le_of_lt hlt)
+        omega
+      have hoverflowOrder : overflowCore ≤ overflowActual := by
+        by_contra h
+        have hlt : overflowActual < overflowCore := Nat.lt_of_not_ge h
+        have hsub : overflowActual - overflowCore = 0 := Nat.sub_eq_zero_of_le (Nat.le_of_lt hlt)
+        omega
+      have hincomingEq : incomingActual = incomingCore + s := by
+        exact (Nat.sub_eq_iff_eq_add' hincomingOrder).mp hincomingShift
+      have hoverflowEq : overflowActual = overflowCore + s := by
+        exact (Nat.sub_eq_iff_eq_add' hoverflowOrder).mp hoverflowShift
+      rw [hincomingEq, hoverflowEq]
+      exact firstVisibleMismatchPosition_shift_exact
+
+/-- If both the incoming-carry and local-overflow boundaries carry the `upper`
+non-power endpoint label, then the first visible mismatch boundary does too. -/
+theorem firstVisibleMismatchPosition_endpoint_upper_of_incomingCarry_upper_and_localOverflow_upper
+    {k factor s incomingActual incomingCore overflowActual overflowCore : ℕ}
+    (hincoming :
+      classifyThresholdShiftEndpoint k factor s incomingActual incomingCore = some .upper)
+    (hoverflow :
+      classifyThresholdShiftEndpoint k factor s overflowActual overflowCore = some .upper) :
+    classifyThresholdShiftEndpoint k factor s
+      (firstVisibleMismatchPosition incomingActual overflowActual)
+      (firstVisibleMismatchPosition incomingCore overflowCore) = some .upper := by
+  rcases (classifyThresholdShiftEndpoint_eq_upper_iff.mp hincoming) with
+    ⟨hlower, hupper, hincomingShift⟩
+  rcases (classifyThresholdShiftEndpoint_eq_upper_iff.mp hoverflow) with
+    ⟨_, _, hoverflowShift⟩
+  apply classifyThresholdShiftEndpoint_eq_upper
+  · exact hlower
+  · exact hupper
+  · have hincomingOrder : incomingCore ≤ incomingActual := by
+      by_contra h
+      have hlt : incomingActual < incomingCore := Nat.lt_of_not_ge h
+      have hsub : incomingActual - incomingCore = 0 := Nat.sub_eq_zero_of_le (Nat.le_of_lt hlt)
+      omega
+    have hoverflowOrder : overflowCore ≤ overflowActual := by
+      by_contra h
+      have hlt : overflowActual < overflowCore := Nat.lt_of_not_ge h
+      have hsub : overflowActual - overflowCore = 0 := Nat.sub_eq_zero_of_le (Nat.le_of_lt hlt)
+      omega
+    have hincomingEq : incomingActual = incomingCore + (s + 1) := by
+      exact (Nat.sub_eq_iff_eq_add' hincomingOrder).mp hincomingShift
+    have hoverflowEq : overflowActual = overflowCore + (s + 1) := by
+      exact (Nat.sub_eq_iff_eq_add' hoverflowOrder).mp hoverflowShift
+    rw [hincomingEq, hoverflowEq]
+    simpa using (firstVisibleMismatchPosition_shift_exact
+      (incomingCore := incomingCore) (overflowCore := overflowCore) (s := s + 1))
+
 /-- In the exact `k`-power same-core regime, the first visible mismatch
 position also carries the `exact` endpoint label. -/
 theorem sameCoreCompatible_firstVisibleMismatchPosition_endpoint_exact
@@ -1514,6 +2573,99 @@ theorem sameCoreCompatible_localOverflowBoundary_endpoint_upper_of_blockBase_le_
       sameCoreCompatible_localOverflowBoundary_shift_upper_of_blockBase_le_scaledRawCoefficient
         hcompat hactual hcore hk hgood hfactor_upper hroom hscaled
 
+/-- In the non-power interval regime, the first visible mismatch endpoint is
+`lower` when both the incoming-carry and local-overflow same-core endpoint
+criteria certify the lower endpoint. -/
+theorem sameCoreCompatible_firstVisibleMismatchPosition_endpoint_lower_of_scaledRawCoefficient_lt_gap_and_lt_blockBase
+    {base n stride s incomingActual incomingCore overflowActual overflowCore : ℕ}
+    {hn : 0 < n}
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hincomingActual :
+      (actualCoordinate base n stride hn).isFirstIncomingCarryPosition incomingActual)
+    (hincomingCore :
+      (strippedCoordinate base n stride hn).isFirstIncomingCarryPosition incomingCore)
+    (hoverflowActual :
+      (actualCoordinate base n stride hn).isLocalOverflowBoundary overflowActual)
+    (hoverflowCore :
+      (strippedCoordinate base n stride hn).isLocalOverflowBoundary overflowCore)
+    (hk : 1 < (actualCoordinate base n stride hn).remainderK)
+    (hfactor_lower : (actualCoordinate base n stride hn).remainderK ^ s <
+      basePrimeSupportFactor base n)
+    (hfactor_upper : basePrimeSupportFactor base n <
+      (actualCoordinate base n stride hn).remainderK ^ (s + 1))
+    (hs_le_incoming : s ≤ incomingActual)
+    (hs_le_overflow : s ≤ overflowActual)
+    (hincoming_scaled :
+      basePrimeSupportFactor base n *
+          (actualCoordinate base n stride hn).rawCoefficient (incomingActual - s) <
+        (actualCoordinate base n stride hn).blockBase -
+          (actualCoordinate base n stride hn).remainderK)
+    (hoverflow_scaled :
+      basePrimeSupportFactor base n *
+          (actualCoordinate base n stride hn).rawCoefficient (overflowActual - s) <
+        (actualCoordinate base n stride hn).blockBase) :
+    classifyThresholdShiftEndpoint
+        (actualCoordinate base n stride hn).remainderK
+        (basePrimeSupportFactor base n) s
+        (firstVisibleMismatchPosition incomingActual overflowActual)
+        (firstVisibleMismatchPosition incomingCore overflowCore) = some .lower := by
+  apply firstVisibleMismatchPosition_endpoint_lower_of_incomingCarry_lower_and_localOverflow_lower
+  · exact
+      sameCoreCompatible_firstIncomingCarryPosition_endpoint_lower_of_scaledRawCoefficient_lt_gap
+        hcompat hincomingActual hincomingCore hk hfactor_lower hfactor_upper hs_le_incoming
+        hincoming_scaled
+  · exact
+      sameCoreCompatible_localOverflowBoundary_endpoint_lower_of_scaledRawCoefficient_lt_blockBase
+        hcompat hoverflowActual hoverflowCore hk hfactor_lower hfactor_upper hs_le_overflow
+        hoverflow_scaled
+
+/-- In the non-power interval regime, the first visible mismatch endpoint is
+`upper` when both the incoming-carry and local-overflow same-core endpoint
+criteria certify the upper endpoint. -/
+theorem sameCoreCompatible_firstVisibleMismatchPosition_endpoint_upper_of_gap_le_scaledRawCoefficient_and_blockBase_le_scaledRawCoefficient
+    {base n stride s incomingActual incomingCore overflowActual overflowCore : ℕ}
+    {hn : 0 < n}
+    (hcompat : sameCoreCompatible base n stride hn)
+    (hincomingActual :
+      (actualCoordinate base n stride hn).isFirstIncomingCarryPosition incomingActual)
+    (hincomingCore :
+      (strippedCoordinate base n stride hn).isFirstIncomingCarryPosition incomingCore)
+    (hoverflowActual :
+      (actualCoordinate base n stride hn).isLocalOverflowBoundary overflowActual)
+    (hoverflowCore :
+      (strippedCoordinate base n stride hn).isLocalOverflowBoundary overflowCore)
+    (hk : 1 < (actualCoordinate base n stride hn).remainderK)
+    (hgood : (actualCoordinate base n stride hn).goodMode)
+    (hfactor_lower : (actualCoordinate base n stride hn).remainderK ^ s <
+      basePrimeSupportFactor base n)
+    (hfactor_upper : basePrimeSupportFactor base n <
+      (actualCoordinate base n stride hn).remainderK ^ (s + 1))
+    (hroom_incoming : s + 1 ≤ incomingActual)
+    (hroom_overflow : s + 1 ≤ overflowActual)
+    (hincoming_scaled :
+      (actualCoordinate base n stride hn).blockBase -
+          (actualCoordinate base n stride hn).remainderK ≤
+        basePrimeSupportFactor base n *
+          (actualCoordinate base n stride hn).rawCoefficient (incomingActual - s))
+    (hoverflow_scaled :
+      (actualCoordinate base n stride hn).blockBase ≤
+        basePrimeSupportFactor base n *
+          (actualCoordinate base n stride hn).rawCoefficient (overflowActual - s)) :
+    classifyThresholdShiftEndpoint
+        (actualCoordinate base n stride hn).remainderK
+        (basePrimeSupportFactor base n) s
+        (firstVisibleMismatchPosition incomingActual overflowActual)
+        (firstVisibleMismatchPosition incomingCore overflowCore) = some .upper := by
+  apply firstVisibleMismatchPosition_endpoint_upper_of_incomingCarry_upper_and_localOverflow_upper
+  · exact
+      sameCoreCompatible_firstIncomingCarryPosition_endpoint_upper_of_gap_le_scaledRawCoefficient
+        hcompat hincomingActual hincomingCore hk hgood hfactor_lower hfactor_upper
+        hroom_incoming hincoming_scaled
+  · exact
+      sameCoreCompatible_localOverflowBoundary_endpoint_upper_of_blockBase_le_scaledRawCoefficient
+        hcompat hoverflowActual hoverflowCore hk hgood hfactor_lower hfactor_upper
+        hroom_overflow hoverflow_scaled
+
 section Examples
 
 example : strippedPeriodModulus 10 996 = 249 := by
@@ -1591,6 +2743,12 @@ example :
   native_decide
 
 example :
+    0 ≤ firstVisibleMismatchPosition 4 5 - firstVisibleMismatchPosition 3 4 ∧
+      firstVisibleMismatchPosition 4 5 - firstVisibleMismatchPosition 3 4 ≤ 1 := by
+  exact firstVisibleMismatchPosition_shift_interval
+    (by native_decide) (by native_decide) (by native_decide) (by native_decide)
+
+example :
     classifyThresholdShiftEndpoint
       (actualCoordinate 10 996 3 (by native_decide)).remainderK
       (basePrimeSupportFactor 10 996) 1
@@ -1626,6 +2784,46 @@ example :
       native_decide)
     (by native_decide)
     (by native_decide)
+    (by native_decide)
+    (by native_decide)
+    (by native_decide)
+    (by native_decide)
+
+example :
+    0 ≤ firstVisibleMismatchPosition 4 4 - firstVisibleMismatchPosition 3 3 ∧
+      firstVisibleMismatchPosition 4 4 - firstVisibleMismatchPosition 3 3 ≤ 1 := by
+  exact sameCoreCompatible_firstVisibleMismatchPosition_shift_interval
+    (base := 10) (n := 498) (stride := 3) (s := 0)
+    (incomingActual := 4) (incomingCore := 3)
+    (overflowActual := 4) (overflowCore := 3)
+    (hn := by native_decide)
+    (by
+      unfold sameCoreCompatible actualCoordinate
+      native_decide)
+    (by
+      unfold actualCoordinate BlockCoordinate.isFirstIncomingCarryPosition
+        isGeometricThresholdBoundary BlockCoordinate.quotientQ BlockCoordinate.remainderK
+        BlockCoordinate.blockBase
+      native_decide)
+    (by
+      unfold strippedCoordinate strippedPeriodModulus BlockCoordinate.isFirstIncomingCarryPosition
+        isGeometricThresholdBoundary BlockCoordinate.quotientQ BlockCoordinate.remainderK
+        BlockCoordinate.blockBase
+      native_decide)
+    (by
+      unfold actualCoordinate BlockCoordinate.isLocalOverflowBoundary
+        isGeometricThresholdBoundary BlockCoordinate.quotientQ BlockCoordinate.remainderK
+        BlockCoordinate.blockBase
+      native_decide)
+    (by
+      unfold strippedCoordinate strippedPeriodModulus BlockCoordinate.isLocalOverflowBoundary
+        isGeometricThresholdBoundary BlockCoordinate.quotientQ BlockCoordinate.remainderK
+        BlockCoordinate.blockBase
+      native_decide)
+    (by native_decide)
+    (by
+      unfold actualCoordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+      native_decide)
     (by native_decide)
     (by native_decide)
     (by native_decide)
@@ -1781,6 +2979,101 @@ example :
     (by native_decide)
     (by native_decide)
     (by native_decide)
+
+example :
+    classifyThresholdShiftEndpoint
+      (actualCoordinate 12 10 2 (by native_decide)).remainderK
+      (basePrimeSupportFactor 12 10) 0
+      (firstVisibleMismatchPosition 1 1)
+      (firstVisibleMismatchPosition 1 1) = some .lower := by
+  exact
+    sameCoreCompatible_firstVisibleMismatchPosition_endpoint_lower_of_scaledRawCoefficient_lt_gap_and_lt_blockBase
+      (base := 12) (n := 10) (stride := 2) (s := 0)
+      (incomingActual := 1) (incomingCore := 1)
+      (overflowActual := 1) (overflowCore := 1)
+      (hn := by native_decide)
+      (by
+        unfold sameCoreCompatible actualCoordinate
+        native_decide)
+      (by
+        unfold actualCoordinate BlockCoordinate.isFirstIncomingCarryPosition
+          isGeometricThresholdBoundary BlockCoordinate.quotientQ BlockCoordinate.remainderK
+          BlockCoordinate.blockBase
+        native_decide)
+      (by
+        unfold strippedCoordinate strippedPeriodModulus BlockCoordinate.isFirstIncomingCarryPosition
+          isGeometricThresholdBoundary BlockCoordinate.quotientQ BlockCoordinate.remainderK
+          BlockCoordinate.blockBase
+        native_decide)
+      (by
+        unfold actualCoordinate BlockCoordinate.isLocalOverflowBoundary
+          isGeometricThresholdBoundary BlockCoordinate.quotientQ BlockCoordinate.remainderK
+          BlockCoordinate.blockBase
+        native_decide)
+      (by
+        unfold strippedCoordinate strippedPeriodModulus BlockCoordinate.isLocalOverflowBoundary
+          isGeometricThresholdBoundary BlockCoordinate.quotientQ BlockCoordinate.remainderK
+          BlockCoordinate.blockBase
+        native_decide)
+      (by native_decide)
+      (by native_decide)
+      (by native_decide)
+      (by native_decide)
+      (by native_decide)
+      (by native_decide)
+      (by native_decide)
+
+example :
+    classifyThresholdShiftEndpoint
+      (actualCoordinate 12 70 2 (by native_decide)).remainderK
+      (basePrimeSupportFactor 12 70) 0
+      (firstVisibleMismatchPosition 3 3)
+      (firstVisibleMismatchPosition 2 2) = some .upper := by
+  exact
+    sameCoreCompatible_firstVisibleMismatchPosition_endpoint_upper_of_gap_le_scaledRawCoefficient_and_blockBase_le_scaledRawCoefficient
+      (base := 12) (n := 70) (stride := 2) (s := 0)
+      (incomingActual := 3) (incomingCore := 2)
+      (overflowActual := 3) (overflowCore := 2)
+      (hn := by native_decide)
+      (by
+        unfold sameCoreCompatible actualCoordinate
+        native_decide)
+      (by
+        unfold actualCoordinate BlockCoordinate.isFirstIncomingCarryPosition
+          isGeometricThresholdBoundary BlockCoordinate.quotientQ BlockCoordinate.remainderK
+          BlockCoordinate.blockBase
+        native_decide)
+      (by
+        unfold strippedCoordinate strippedPeriodModulus BlockCoordinate.isFirstIncomingCarryPosition
+          isGeometricThresholdBoundary BlockCoordinate.quotientQ BlockCoordinate.remainderK
+          BlockCoordinate.blockBase
+        native_decide)
+      (by
+        unfold actualCoordinate BlockCoordinate.isLocalOverflowBoundary
+          isGeometricThresholdBoundary BlockCoordinate.quotientQ BlockCoordinate.remainderK
+          BlockCoordinate.blockBase
+        native_decide)
+      (by
+        unfold strippedCoordinate strippedPeriodModulus BlockCoordinate.isLocalOverflowBoundary
+          isGeometricThresholdBoundary BlockCoordinate.quotientQ BlockCoordinate.remainderK
+          BlockCoordinate.blockBase
+        native_decide)
+      (by native_decide)
+      (by
+        unfold actualCoordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+        native_decide)
+      (by native_decide)
+      (by native_decide)
+      (by native_decide)
+      (by native_decide)
+      (by
+        unfold actualCoordinate BlockCoordinate.rawCoefficient BlockCoordinate.quotientQ
+          BlockCoordinate.remainderK BlockCoordinate.blockBase
+        native_decide)
+      (by
+        unfold actualCoordinate BlockCoordinate.rawCoefficient BlockCoordinate.quotientQ
+          BlockCoordinate.remainderK BlockCoordinate.blockBase
+        native_decide)
 
 end Examples
 

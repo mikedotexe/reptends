@@ -45,6 +45,17 @@ theorem geometricThresholdBoundary_le_index_of_lower_lt
   have hmul : q * k ^ (j + 1) ≤ q * k ^ n := Nat.mul_le_mul_left q hpow
   exact not_le_of_gt hlower (le_trans hboundary.2 hmul)
 
+/-- A geometric threshold boundary is unique once the geometric ratio exceeds `1`. -/
+theorem geometricThresholdBoundary_unique
+    {threshold q k j n : ℕ}
+    (hk : 1 < k)
+    (hj : isGeometricThresholdBoundary threshold q k j)
+    (hn : isGeometricThresholdBoundary threshold q k n) :
+    j = n := by
+  apply Nat.le_antisymm
+  · exact geometricThresholdBoundary_index_le_of_upper hk hj hn.2
+  · exact geometricThresholdBoundary_index_le_of_upper hk hn hj.2
+
 /-- The exact incoming carry into block `j`, written as a natural-number quotient. -/
 def BlockCoordinate.incomingCarry (C : BlockCoordinate) (j : ℕ) : ℕ :=
   C.rawCoefficient (j + 1) / (C.blockBase - C.remainderK)
@@ -56,6 +67,24 @@ def BlockCoordinate.isFirstIncomingCarryPosition (C : BlockCoordinate) (j : ℕ)
 /-- The adjacent local-overflow boundary: block `j` still fits, but block `j+1` does not. -/
 def BlockCoordinate.isLocalOverflowBoundary (C : BlockCoordinate) (j : ℕ) : Prop :=
   isGeometricThresholdBoundary C.blockBase C.quotientQ C.remainderK j
+
+/-- The first incoming-carry boundary is unique once `k > 1`. -/
+theorem BlockCoordinate.isFirstIncomingCarryPosition_unique
+    (C : BlockCoordinate) {j n : ℕ}
+    (hk : 1 < C.remainderK)
+    (hj : C.isFirstIncomingCarryPosition j)
+    (hn : C.isFirstIncomingCarryPosition n) :
+    j = n := by
+  exact geometricThresholdBoundary_unique hk hj hn
+
+/-- The local-overflow boundary is unique once `k > 1`. -/
+theorem BlockCoordinate.isLocalOverflowBoundary_unique
+    (C : BlockCoordinate) {j n : ℕ}
+    (hk : 1 < C.remainderK)
+    (hj : C.isLocalOverflowBoundary j)
+    (hn : C.isLocalOverflowBoundary n) :
+    j = n := by
+  exact geometricThresholdBoundary_unique hk hj hn
 
 /-- The truncated visible-prefix quotient obtained from the finite body term
 through `requestedBlocks + lookaheadBlocks - 1`. -/
@@ -82,6 +111,14 @@ def BlockCoordinate.lookaheadCertificateHolds
   C.rawCoefficient (requestedBlocks + lookaheadBlocks) <
     C.lookaheadGapNumerator requestedBlocks lookaheadBlocks * (C.blockBase - C.remainderK)
 
+/-- A fixed-window lookahead certificate is minimal when it holds at
+`lookaheadBlocks` and fails at every smaller lookahead. -/
+def BlockCoordinate.isMinimalLookaheadCertificate
+    (C : BlockCoordinate) (requestedBlocks lookaheadBlocks : ℕ) : Prop :=
+  C.lookaheadCertificateHolds requestedBlocks lookaheadBlocks ∧
+    ∀ earlierLookahead, earlierLookahead < lookaheadBlocks →
+      ¬ C.lookaheadCertificateHolds requestedBlocks earlierLookahead
+
 theorem BlockCoordinate.truncatedVisiblePrefixValue_mul_blockBasePow_add_remainder
     (C : BlockCoordinate) (requestedBlocks lookaheadBlocks : ℕ) :
     C.truncatedVisiblePrefixValue requestedBlocks lookaheadBlocks * C.blockBase ^ lookaheadBlocks +
@@ -90,6 +127,87 @@ theorem BlockCoordinate.truncatedVisiblePrefixValue_mul_blockBasePow_add_remaind
   unfold BlockCoordinate.truncatedVisiblePrefixValue BlockCoordinate.truncatedVisiblePrefixRemainder
   simpa [Nat.mul_comm] using (Nat.div_add_mod (C.bodyTerm (requestedBlocks + lookaheadBlocks))
     (C.blockBase ^ lookaheadBlocks))
+
+/-- With one lookahead block, the lower suffix of the body term is exactly the
+next raw coefficient modulo the block base. -/
+theorem BlockCoordinate.truncatedVisiblePrefixRemainder_one_eq_rawCoefficient_mod_blockBase
+    (C : BlockCoordinate) (requestedBlocks : ℕ) :
+    C.truncatedVisiblePrefixRemainder requestedBlocks 1 =
+      C.rawCoefficient requestedBlocks % C.blockBase := by
+  unfold BlockCoordinate.truncatedVisiblePrefixRemainder
+  rw [pow_one]
+  have hbody :
+      C.bodyTerm (requestedBlocks + 1) =
+        C.blockBase * C.bodyTerm requestedBlocks + C.rawCoefficient requestedBlocks := by
+    exact C.bodyTerm_recurrence requestedBlocks
+  rw [hbody]
+  rw [Nat.add_comm, Nat.add_mul_mod_self_left]
+
+/-- With two lookahead blocks, the lower suffix of the body term is exactly the
+next two raw coefficients modulo the square of the block base. -/
+theorem BlockCoordinate.truncatedVisiblePrefixRemainder_two_eq_rawCoefficient_suffix_mod_blockBase_sq
+    (C : BlockCoordinate) (requestedBlocks : ℕ) :
+    C.truncatedVisiblePrefixRemainder requestedBlocks 2 =
+      (C.rawCoefficient requestedBlocks * C.blockBase +
+        C.rawCoefficient (requestedBlocks + 1)) % C.blockBase ^ 2 := by
+  unfold BlockCoordinate.truncatedVisiblePrefixRemainder
+  have hbody1 :
+      C.bodyTerm (requestedBlocks + 1) =
+        C.blockBase * C.bodyTerm requestedBlocks + C.rawCoefficient requestedBlocks := by
+    exact C.bodyTerm_recurrence requestedBlocks
+  have hbody2 :
+      C.bodyTerm (requestedBlocks + 2) =
+        C.blockBase * C.bodyTerm (requestedBlocks + 1) +
+          C.rawCoefficient (requestedBlocks + 1) := by
+    simpa [Nat.add_assoc] using C.bodyTerm_recurrence (requestedBlocks + 1)
+  rw [hbody2, hbody1]
+  have hperm :
+      C.blockBase * (C.blockBase * C.bodyTerm requestedBlocks + C.rawCoefficient requestedBlocks) +
+          C.rawCoefficient (requestedBlocks + 1) =
+        (C.rawCoefficient requestedBlocks * C.blockBase +
+            C.rawCoefficient (requestedBlocks + 1)) +
+          C.blockBase ^ 2 * C.bodyTerm requestedBlocks := by
+    ring_nf
+  rw [hperm]
+  rw [Nat.add_mul_mod_self_left]
+
+/-- With three lookahead blocks, the lower suffix of the body term is exactly
+the next three raw coefficients modulo the cube of the block base. -/
+theorem BlockCoordinate.truncatedVisiblePrefixRemainder_three_eq_rawCoefficient_suffix_mod_blockBase_cu
+    (C : BlockCoordinate) (requestedBlocks : ℕ) :
+    C.truncatedVisiblePrefixRemainder requestedBlocks 3 =
+      (C.rawCoefficient requestedBlocks * C.blockBase ^ 2 +
+        C.rawCoefficient (requestedBlocks + 1) * C.blockBase +
+        C.rawCoefficient (requestedBlocks + 2)) % C.blockBase ^ 3 := by
+  unfold BlockCoordinate.truncatedVisiblePrefixRemainder
+  have hbody1 :
+      C.bodyTerm (requestedBlocks + 1) =
+        C.blockBase * C.bodyTerm requestedBlocks + C.rawCoefficient requestedBlocks := by
+    exact C.bodyTerm_recurrence requestedBlocks
+  have hbody2 :
+      C.bodyTerm (requestedBlocks + 2) =
+        C.blockBase * C.bodyTerm (requestedBlocks + 1) +
+          C.rawCoefficient (requestedBlocks + 1) := by
+    simpa [Nat.add_assoc] using C.bodyTerm_recurrence (requestedBlocks + 1)
+  have hbody3 :
+      C.bodyTerm (requestedBlocks + 3) =
+        C.blockBase * C.bodyTerm (requestedBlocks + 2) +
+          C.rawCoefficient (requestedBlocks + 2) := by
+    simpa [Nat.add_assoc] using C.bodyTerm_recurrence (requestedBlocks + 2)
+  rw [hbody3, hbody2, hbody1]
+  have hperm :
+      C.blockBase *
+            (C.blockBase * (C.blockBase * C.bodyTerm requestedBlocks +
+                C.rawCoefficient requestedBlocks) +
+              C.rawCoefficient (requestedBlocks + 1)) +
+          C.rawCoefficient (requestedBlocks + 2) =
+        (C.rawCoefficient requestedBlocks * C.blockBase ^ 2 +
+            C.rawCoefficient (requestedBlocks + 1) * C.blockBase +
+            C.rawCoefficient (requestedBlocks + 2)) +
+          C.blockBase ^ 3 * C.bodyTerm requestedBlocks := by
+    ring_nf
+  rw [hperm]
+  rw [Nat.add_mul_mod_self_left]
 
 theorem BlockCoordinate.truncatedVisiblePrefixRemainder_lt_blockBasePow
     (C : BlockCoordinate) (hgood : C.goodMode) (requestedBlocks lookaheadBlocks : ℕ) :
@@ -497,6 +615,47 @@ theorem BlockCoordinate.lookaheadCertificateHolds_of_remainderK_pow_lt_modulus
         (Nat.succ_le_of_lt (C.lookaheadGapNumerator_pos hgood requestedBlocks lookaheadBlocks))
   exact lt_of_lt_of_le hsmall hgap_le
 
+/-- The coarse `k^(n+L) < modulus` condition already certifies emitted-prefix
+equality at the fixed `(requestedBlocks, lookaheadBlocks)` window. -/
+theorem BlockCoordinate.emittedPrefixValue_eq_truncatedVisiblePrefixValue_of_remainderK_pow_lt_modulus
+    (C : BlockCoordinate) (hgood : C.goodMode) (requestedBlocks lookaheadBlocks : ℕ)
+    (hsmall : C.remainderK ^ (requestedBlocks + lookaheadBlocks) < C.modulus) :
+    C.emittedPrefixValue requestedBlocks =
+      C.truncatedVisiblePrefixValue requestedBlocks lookaheadBlocks := by
+  exact
+    (C.emittedPrefixValue_eq_truncatedVisiblePrefixValue_iff_lookaheadCertificate
+      hgood requestedBlocks lookaheadBlocks).2
+      (C.lookaheadCertificateHolds_of_remainderK_pow_lt_modulus
+        hgood requestedBlocks lookaheadBlocks hsmall)
+
+@[simp] theorem BlockCoordinate.truncatedVisiblePrefixRemainder_zero
+    (C : BlockCoordinate) (requestedBlocks : ℕ) :
+    C.truncatedVisiblePrefixRemainder requestedBlocks 0 = 0 := by
+  unfold BlockCoordinate.truncatedVisiblePrefixRemainder
+  rw [pow_zero]
+  exact Nat.mod_one _
+
+@[simp] theorem BlockCoordinate.lookaheadGapNumerator_zero
+    (C : BlockCoordinate) (requestedBlocks : ℕ) :
+    C.lookaheadGapNumerator requestedBlocks 0 = 1 := by
+  simp [BlockCoordinate.lookaheadGapNumerator]
+
+theorem BlockCoordinate.lookaheadCertificateHolds_zero_iff_remainderK_pow_lt_modulus
+    (C : BlockCoordinate) (hgood : C.goodMode) (requestedBlocks : ℕ) :
+    C.lookaheadCertificateHolds requestedBlocks 0 ↔
+      C.remainderK ^ requestedBlocks < C.modulus := by
+  rw [C.lookaheadCertificateHolds_iff_tail_lt_gapModulus hgood, C.lookaheadGapNumerator_zero]
+  simp
+
+theorem BlockCoordinate.lookaheadCertificateHolds_iff_remainderK_pow_lt_modulus_of_lookaheadGapNumerator_eq_one
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks : ℕ)
+    (hgap : C.lookaheadGapNumerator requestedBlocks lookaheadBlocks = 1) :
+    C.lookaheadCertificateHolds requestedBlocks lookaheadBlocks ↔
+      C.remainderK ^ (requestedBlocks + lookaheadBlocks) < C.modulus := by
+  rw [C.lookaheadCertificateHolds_iff_tail_lt_gapModulus hgood, hgap]
+  simp
+
 /-- The exact prefix-gap certificate is stronger than the coarse tail-mass
 lower-bound inequality used by the Python lower-bound search. -/
 theorem BlockCoordinate.lookaheadCertificateHolds_implies_tailMassLowerBound
@@ -618,6 +777,65 @@ theorem BlockCoordinate.emittedPrefixValue_eq_truncatedVisiblePrefixValue_of_eq_
   · exact C.truncatedVisiblePrefixValue_le_emittedPrefixValue hgood requestedBlocks
       (lookaheadBlocks + extraLookahead)
 
+/-- Once a finite truncation matches the emitted prefix integer, the match
+persists for any lookahead window at least as large as the current one. -/
+theorem BlockCoordinate.emittedPrefixValue_eq_truncatedVisiblePrefixValue_of_eq_le
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks largerLookahead : ℕ)
+    (hle : lookaheadBlocks ≤ largerLookahead)
+    (heq :
+      C.emittedPrefixValue requestedBlocks =
+        C.truncatedVisiblePrefixValue requestedBlocks lookaheadBlocks) :
+    C.emittedPrefixValue requestedBlocks =
+      C.truncatedVisiblePrefixValue requestedBlocks largerLookahead := by
+  rcases Nat.exists_eq_add_of_le hle with ⟨extraLookahead, rfl⟩
+  exact C.emittedPrefixValue_eq_truncatedVisiblePrefixValue_of_eq_add
+    hgood requestedBlocks lookaheadBlocks extraLookahead heq
+
+/-- Once the exact prefix-gap certificate holds, the finite truncated
+visible-prefix integer itself has stabilized and remains unchanged at any
+larger lookahead window. -/
+theorem BlockCoordinate.truncatedVisiblePrefixValue_eq_of_lookaheadCertificate_add
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks extraLookahead : ℕ)
+    (hcert : C.lookaheadCertificateHolds requestedBlocks lookaheadBlocks) :
+    C.truncatedVisiblePrefixValue requestedBlocks lookaheadBlocks =
+      C.truncatedVisiblePrefixValue requestedBlocks (lookaheadBlocks + extraLookahead) := by
+  have hbase :
+      C.emittedPrefixValue requestedBlocks =
+        C.truncatedVisiblePrefixValue requestedBlocks lookaheadBlocks :=
+    (C.emittedPrefixValue_eq_truncatedVisiblePrefixValue_iff_lookaheadCertificate
+      hgood requestedBlocks lookaheadBlocks).2 hcert
+  have htransport :
+      C.emittedPrefixValue requestedBlocks =
+        C.truncatedVisiblePrefixValue requestedBlocks (lookaheadBlocks + extraLookahead) :=
+    C.emittedPrefixValue_eq_truncatedVisiblePrefixValue_of_eq_add
+      hgood requestedBlocks lookaheadBlocks extraLookahead hbase
+  exact hbase.symm.trans htransport
+
+/-- Once the exact prefix-gap certificate holds, the visible-prefix integer
+stays stabilized on any larger lookahead window specified by an inequality. -/
+theorem BlockCoordinate.truncatedVisiblePrefixValue_eq_of_lookaheadCertificate_le
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks largerLookahead : ℕ)
+    (hle : lookaheadBlocks ≤ largerLookahead)
+    (hcert : C.lookaheadCertificateHolds requestedBlocks lookaheadBlocks) :
+    C.truncatedVisiblePrefixValue requestedBlocks lookaheadBlocks =
+      C.truncatedVisiblePrefixValue requestedBlocks largerLookahead := by
+  rcases Nat.exists_eq_add_of_le hle with ⟨extraLookahead, rfl⟩
+  exact C.truncatedVisiblePrefixValue_eq_of_lookaheadCertificate_add
+    hgood requestedBlocks lookaheadBlocks extraLookahead hcert
+
+/-- One-step stabilization form of the truncated visible-prefix equality. -/
+theorem BlockCoordinate.truncatedVisiblePrefixValue_eq_of_lookaheadCertificate_succ
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks : ℕ)
+    (hcert : C.lookaheadCertificateHolds requestedBlocks lookaheadBlocks) :
+    C.truncatedVisiblePrefixValue requestedBlocks lookaheadBlocks =
+      C.truncatedVisiblePrefixValue requestedBlocks (lookaheadBlocks + 1) := by
+  simpa using C.truncatedVisiblePrefixValue_eq_of_lookaheadCertificate_add
+    hgood requestedBlocks lookaheadBlocks 1 hcert
+
 /-- The exact prefix-gap certificate transports to any larger lookahead window:
 once the first `requestedBlocks` blocks have stabilized, adding more carried
 blocks keeps that same visible prefix. -/
@@ -630,6 +848,18 @@ theorem BlockCoordinate.lookaheadCertificateHolds_of_lookaheadCertificate_add
   exact C.emittedPrefixValue_eq_truncatedVisiblePrefixValue_of_eq_add
     hgood requestedBlocks lookaheadBlocks extraLookahead hcert
 
+/-- The exact prefix-gap certificate also transports along any explicit
+lookahead inequality `lookaheadBlocks ≤ largerLookahead`. -/
+theorem BlockCoordinate.lookaheadCertificateHolds_of_lookaheadCertificate_le
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks largerLookahead : ℕ)
+    (hle : lookaheadBlocks ≤ largerLookahead)
+    (hcert : C.lookaheadCertificateHolds requestedBlocks lookaheadBlocks) :
+    C.lookaheadCertificateHolds requestedBlocks largerLookahead := by
+  rcases Nat.exists_eq_add_of_le hle with ⟨extraLookahead, rfl⟩
+  exact C.lookaheadCertificateHolds_of_lookaheadCertificate_add
+    hgood requestedBlocks lookaheadBlocks extraLookahead hcert
+
 /-- One-step transport form of the exact prefix-gap certificate. -/
 theorem BlockCoordinate.lookaheadCertificateHolds_of_lookaheadCertificate_succ
     (C : BlockCoordinate) (hgood : C.goodMode)
@@ -639,11 +869,263 @@ theorem BlockCoordinate.lookaheadCertificateHolds_of_lookaheadCertificate_succ
   simpa using C.lookaheadCertificateHolds_of_lookaheadCertificate_add
     hgood requestedBlocks lookaheadBlocks 1 hcert
 
+/-- Once the exact prefix-gap certificate holds, its necessary raw tail-mass
+lower bound also holds on any larger lookahead window obtained by adding more
+carried blocks. -/
+theorem BlockCoordinate.lookaheadCertificateHolds_implies_tailMassLowerBound_add
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks extraLookahead : ℕ)
+    (hcert : C.lookaheadCertificateHolds requestedBlocks lookaheadBlocks) :
+    C.rawCoefficient (requestedBlocks + (lookaheadBlocks + extraLookahead)) <
+      C.blockBase ^ (lookaheadBlocks + extraLookahead) * (C.blockBase - C.remainderK) := by
+  exact C.lookaheadCertificateHolds_implies_tailMassLowerBound
+    (requestedBlocks := requestedBlocks)
+    (lookaheadBlocks := lookaheadBlocks + extraLookahead)
+    (C.lookaheadCertificateHolds_of_lookaheadCertificate_add
+      hgood requestedBlocks lookaheadBlocks extraLookahead hcert)
+
+/-- The necessary raw tail-mass lower bound also transports along any explicit
+lookahead inequality `lookaheadBlocks ≤ largerLookahead`. -/
+theorem BlockCoordinate.lookaheadCertificateHolds_implies_tailMassLowerBound_le
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks largerLookahead : ℕ)
+    (hle : lookaheadBlocks ≤ largerLookahead)
+    (hcert : C.lookaheadCertificateHolds requestedBlocks lookaheadBlocks) :
+    C.rawCoefficient (requestedBlocks + largerLookahead) <
+      C.blockBase ^ largerLookahead * (C.blockBase - C.remainderK) := by
+  rcases Nat.exists_eq_add_of_le hle with ⟨extraLookahead, rfl⟩
+  simpa [Nat.add_assoc] using C.lookaheadCertificateHolds_implies_tailMassLowerBound_add
+    hgood requestedBlocks lookaheadBlocks extraLookahead hcert
+
+/-- One-step transport form of the necessary raw tail-mass lower bound. -/
+theorem BlockCoordinate.lookaheadCertificateHolds_implies_tailMassLowerBound_succ
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks : ℕ)
+    (hcert : C.lookaheadCertificateHolds requestedBlocks lookaheadBlocks) :
+    C.rawCoefficient (requestedBlocks + (lookaheadBlocks + 1)) <
+      C.blockBase ^ (lookaheadBlocks + 1) * (C.blockBase - C.remainderK) := by
+  simpa using C.lookaheadCertificateHolds_implies_tailMassLowerBound_add
+    hgood requestedBlocks lookaheadBlocks 1 hcert
+
 /-- Claim `incoming_carry_position_formula`: the incoming carry is `floor(q*k^(j+1)/(B-k))`. -/
 theorem BlockCoordinate.incomingCarry_formula (C : BlockCoordinate) (j : ℕ) :
     C.incomingCarry j =
       (C.quotientQ * C.remainderK ^ (j + 1)) / (C.blockBase - C.remainderK) := by
   simp [BlockCoordinate.incomingCarry, BlockCoordinate.rawCoefficient]
+
+/-- Arithmetic recurrence behind the infinite-tail carry quotient. -/
+theorem nat_carry_recurrence_of_lt {B k a : ℕ} (hk : k < B) :
+    (a + (a * k) / (B - k)) / B = a / (B - k) := by
+  let D := B - k
+  have hDpos : 0 < D := by omega
+  let n := a / D
+  let r := a % D
+  let s := (r * k) / D
+  have ha : a = n * D + r := by
+    dsimp [n, r]
+    rw [Nat.mul_comm]
+    exact (Nat.div_add_mod a D).symm
+  have hrlt : r < D := by
+    dsimp [r]
+    exact Nat.mod_lt a hDpos
+  have hB : B = D + k := by
+    dsimp [D]
+    omega
+  have hdivak : ((n * D + r) * k) / D = n * k + s := by
+    dsimp [s]
+    calc
+      ((n * D + r) * k) / D = (D * (n * k) + r * k) / D := by ring_nf
+      _ = n * k + (r * k) / D := by rw [Nat.mul_add_div hDpos]
+  rw [show a / D = n by rfl]
+  have htail_le : s ≤ k := by
+    dsimp [s]
+    rw [Nat.div_le_iff_le_mul hDpos]
+    by_cases hk0 : k = 0
+    · subst k
+      simp
+    · have hkpos : 0 < k := Nat.pos_of_ne_zero hk0
+      have hrk_lt : r * k < D * k := Nat.mul_lt_mul_of_pos_right hrlt hkpos
+      have hdk_le : D * k ≤ k * D + D - 1 := by
+        rw [Nat.mul_comm D k]
+        omega
+      exact le_trans (Nat.le_of_lt hrk_lt) hdk_le
+  have htail_lt : r + s < D + k := by omega
+  apply Nat.div_eq_of_lt_le
+  · rw [ha, show (B - k) = D by rfl, hdivak, hB]
+    calc
+      n * (D + k) = n * D + n * k := by ring
+      _ ≤ n * D + n * k + (r + s) := Nat.le_add_right _ _
+      _ = n * D + r + (n * k + s) := by ring
+  · rw [ha, show (B - k) = D by rfl, hdivak, hB]
+    calc
+      n * D + r + (n * k + s) = n * D + n * k + (r + s) := by ring
+      _ < n * D + n * k + (D + k) := by
+        exact Nat.add_lt_add_left htail_lt _
+      _ = (n + 1) * (D + k) := by ring
+
+/-- The canonical infinite-tail incoming carry obeys the same one-step
+recurrence as finite carry propagation. -/
+theorem BlockCoordinate.incomingCarry_step_recurrence
+    (C : BlockCoordinate) (hgood : C.goodMode) (j : ℕ) :
+    C.incomingCarry j =
+      (C.rawCoefficient (j + 1) + C.incomingCarry (j + 1)) / C.blockBase := by
+  unfold BlockCoordinate.incomingCarry
+  rw [show C.rawCoefficient (j + 1 + 1) = C.rawCoefficient (j + 1) * C.remainderK by
+    rw [show j + 1 + 1 = (j + 1) + 1 by omega]
+    exact C.rawCoefficient_succ (j + 1)]
+  exact (nat_carry_recurrence_of_lt (C.remainderK_lt_blockBase hgood)).symm
+
+/-- Adjacent entries in a positive-length raw trace expose the carry shift:
+the incoming carry at index `i` is the outgoing carry of index `i+1`. -/
+theorem BlockCoordinate.traceRawWord_carryIn_eq_next_carryOut_of_succ_length
+    (C : BlockCoordinate) (hgood : C.goodMode) (length i : ℕ) (hi : i < length) :
+    ((C.traceRawWord hgood (length + 1))[i]'(by rw [C.traceRawWord_length]; omega)).carryIn =
+      ((C.traceRawWord hgood (length + 1))[i + 1]'(by rw [C.traceRawWord_length]; omega)).carryOut := by
+  have hmap := C.traceRawWord_map_carryIn_eq_tail_map_carryOut_append_zero_of_pos hgood length
+  have hget := congrArg (fun xs => xs[i]?) hmap
+  simp [C.traceRawWord_length, hi, Nat.lt_of_lt_of_le hi (Nat.le_succ _)] at hget
+  exact hget
+
+/-- The rightmost raw-trace step has zero incoming carry, because finite
+normalization starts with no suffix carry. -/
+theorem BlockCoordinate.traceRawWord_last_carryIn_eq_zero
+    (C : BlockCoordinate) (hgood : C.goodMode) (length : ℕ) :
+    ((C.traceRawWord hgood (length + 1))[length]'(by rw [C.traceRawWord_length]; omega)).carryIn =
+      0 := by
+  have hmap := C.traceRawWord_map_carryIn_eq_tail_map_carryOut_append_zero_of_pos hgood length
+  have hget := congrArg (fun xs => xs[length]?) hmap
+  simp [C.traceRawWord_length] at hget
+  exact hget
+
+theorem BlockCoordinate.traceRawWord_coefficient_eq_rawCoefficient
+    (C : BlockCoordinate) (hgood : C.goodMode) (length i : ℕ) (hi : i < length) :
+    ((C.traceRawWord hgood length)[i]'(by rw [C.traceRawWord_length]; exact hi)).coefficient =
+      C.rawCoefficient i := by
+  have hmap := C.traceRawWord_map_coefficient hgood length
+  have hget := congrArg (fun xs => xs[i]?) hmap
+  simp [BlockCoordinate.rawCoefficientWord, C.traceRawWord_length, hi] at hget
+  exact hget
+
+theorem BlockCoordinate.traceRawWord_isLeftmost_eq_false_of_pos
+    (C : BlockCoordinate) (hgood : C.goodMode) (length i : ℕ) (hi : i < length) :
+    ((C.traceRawWord hgood (length + 1))[i + 1]'(by rw [C.traceRawWord_length]; omega)).isLeftmost =
+      false := by
+  have hmap := C.traceRawWord_map_isLeftmost_of_pos hgood length
+  have hget := congrArg (fun xs => xs[i + 1]?) hmap
+  simp [C.traceRawWord_length, hi] at hget
+  exact hget
+
+theorem BlockCoordinate.traceRawWord_carryOut_eq_div_of_pos_index
+    (C : BlockCoordinate) (hgood : C.goodMode) (length i : ℕ) (hi : i < length) :
+    ((C.traceRawWord hgood (length + 1))[i + 1]'(by rw [C.traceRawWord_length]; omega)).carryOut =
+      (((C.traceRawWord hgood (length + 1))[i + 1]'(by rw [C.traceRawWord_length]; omega)).coefficient +
+        ((C.traceRawWord hgood (length + 1))[i + 1]'(by rw [C.traceRawWord_length]; omega)).carryIn) /
+        C.blockBase := by
+  exact (C.carryTransducer hgood).mem_traceBlocks_nonleft_carryOut_eq_div
+    (by
+      rw [← BlockCoordinate.traceRawWord]
+      exact List.getElem_mem _)
+    (C.traceRawWord_isLeftmost_eq_false_of_pos hgood length i hi)
+
+theorem BlockCoordinate.traceRawWord_blockValue_eq_mod_of_pos_index
+    (C : BlockCoordinate) (hgood : C.goodMode) (length i : ℕ) (hi : i < length) :
+    ((C.traceRawWord hgood (length + 1))[i + 1]'(by rw [C.traceRawWord_length]; omega)).blockValue =
+      (((C.traceRawWord hgood (length + 1))[i + 1]'(by rw [C.traceRawWord_length]; omega)).coefficient +
+        ((C.traceRawWord hgood (length + 1))[i + 1]'(by rw [C.traceRawWord_length]; omega)).carryIn) %
+        C.blockBase := by
+  exact (C.carryTransducer hgood).mem_traceBlocks_nonleft_blockValue_eq_mod
+    (by
+      rw [← BlockCoordinate.traceRawWord]
+      exact List.getElem_mem _)
+    (C.traceRawWord_isLeftmost_eq_false_of_pos hgood length i hi)
+
+theorem BlockCoordinate.traceRawWord_carryIn_eq_next_carryOut
+    (C : BlockCoordinate) (hgood : C.goodMode) (length i : ℕ) (hi : i + 1 < length) :
+    ((C.traceRawWord hgood length)[i]'(by rw [C.traceRawWord_length]; omega)).carryIn =
+      ((C.traceRawWord hgood length)[i + 1]'(by rw [C.traceRawWord_length]; omega)).carryOut := by
+  cases length with
+  | zero =>
+      omega
+  | succ last =>
+      exact C.traceRawWord_carryIn_eq_next_carryOut_of_succ_length hgood last i (by omega)
+
+theorem BlockCoordinate.traceRawWord_carryOut_eq_div_of_pos
+    (C : BlockCoordinate) (hgood : C.goodMode) (length i : ℕ)
+    (hi : i < length) (hpos : 0 < i) :
+    ((C.traceRawWord hgood length)[i]'(by rw [C.traceRawWord_length]; exact hi)).carryOut =
+      (((C.traceRawWord hgood length)[i]'(by rw [C.traceRawWord_length]; exact hi)).coefficient +
+        ((C.traceRawWord hgood length)[i]'(by rw [C.traceRawWord_length]; exact hi)).carryIn) /
+        C.blockBase := by
+  cases i with
+  | zero =>
+      omega
+  | succ p =>
+      cases length with
+      | zero =>
+          omega
+      | succ last =>
+          exact C.traceRawWord_carryOut_eq_div_of_pos_index hgood last p (by omega)
+
+theorem BlockCoordinate.traceRawWord_blockValue_eq_mod_of_pos
+    (C : BlockCoordinate) (hgood : C.goodMode) (length i : ℕ)
+    (hi : i < length) (hpos : 0 < i) :
+    ((C.traceRawWord hgood length)[i]'(by rw [C.traceRawWord_length]; exact hi)).blockValue =
+      (((C.traceRawWord hgood length)[i]'(by rw [C.traceRawWord_length]; exact hi)).coefficient +
+        ((C.traceRawWord hgood length)[i]'(by rw [C.traceRawWord_length]; exact hi)).carryIn) %
+        C.blockBase := by
+  cases i with
+  | zero =>
+      omega
+  | succ p =>
+      cases length with
+      | zero =>
+          omega
+      | succ last =>
+          exact C.traceRawWord_blockValue_eq_mod_of_pos_index hgood last p (by omega)
+
+/-- Every finite carry entering a visible raw-trace position is bounded above
+by the canonical infinite-tail incoming carry at the same position. -/
+theorem BlockCoordinate.traceRawWord_carryIn_le_incomingCarry
+    (C : BlockCoordinate) (hgood : C.goodMode) (length i : ℕ)
+    (hi : i < (C.traceRawWord hgood length).length) :
+    ((C.traceRawWord hgood length)[i]'hi).carryIn ≤ C.incomingCarry i := by
+  rw [C.traceRawWord_length] at hi
+  cases length with
+  | zero =>
+      omega
+  | succ last =>
+      have hi_le : i ≤ last := by omega
+      let P : ℕ → Prop := fun t =>
+        ∀ ht : t ≤ last,
+          ((C.traceRawWord hgood (last + 1))[t]'(by rw [C.traceRawWord_length]; omega)).carryIn ≤
+            C.incomingCarry t
+      have hP : P i := by
+        refine Nat.decreasingInduction' (m := i) (n := last) (P := P) ?step hi_le ?base
+        · intro k hk _ ih hk_le
+          dsimp [P] at ih
+          have ihnext :
+              ((C.traceRawWord hgood (last + 1))[k + 1]'(by rw [C.traceRawWord_length]; omega)).carryIn ≤
+                C.incomingCarry (k + 1) := ih (by omega)
+          calc
+            ((C.traceRawWord hgood (last + 1))[k]'(by rw [C.traceRawWord_length]; omega)).carryIn
+                = ((C.traceRawWord hgood (last + 1))[k + 1]'(by rw [C.traceRawWord_length]; omega)).carryOut := by
+                    exact C.traceRawWord_carryIn_eq_next_carryOut_of_succ_length hgood last k hk
+            _ = (((C.traceRawWord hgood (last + 1))[k + 1]'(by rw [C.traceRawWord_length]; omega)).coefficient +
+                  ((C.traceRawWord hgood (last + 1))[k + 1]'(by rw [C.traceRawWord_length]; omega)).carryIn) /
+                  C.blockBase := by
+                    exact C.traceRawWord_carryOut_eq_div_of_pos_index hgood last k hk
+            _ = (C.rawCoefficient (k + 1) +
+                  ((C.traceRawWord hgood (last + 1))[k + 1]'(by rw [C.traceRawWord_length]; omega)).carryIn) /
+                  C.blockBase := by
+                    rw [C.traceRawWord_coefficient_eq_rawCoefficient hgood (last + 1) (k + 1) (by omega)]
+            _ ≤ (C.rawCoefficient (k + 1) + C.incomingCarry (k + 1)) / C.blockBase := by
+                    exact Nat.div_le_div_right (Nat.add_le_add_left ihnext _)
+            _ = C.incomingCarry k := by
+                    rw [← C.incomingCarry_step_recurrence hgood k]
+        · intro ht
+          rw [C.traceRawWord_last_carryIn_eq_zero hgood last]
+          exact Nat.zero_le _
+      simpa [P] using hP hi_le
 
 /-- Incoming carry is positive exactly when the next raw coefficient reaches `B - k`. -/
 theorem BlockCoordinate.incomingCarry_pos_iff
@@ -662,6 +1144,23 @@ theorem BlockCoordinate.incomingCarry_pos_iff
     unfold BlockCoordinate.incomingCarry
     exact Nat.div_pos hthreshold hgap_pos
 
+/-- Incoming carry vanishes exactly when the next raw coefficient stays below
+the gap threshold `B - k`. -/
+theorem BlockCoordinate.incomingCarry_eq_zero_iff
+    (C : BlockCoordinate) (hgood : C.goodMode) (j : ℕ) :
+    C.incomingCarry j = 0 ↔ C.rawCoefficient (j + 1) < C.blockBase - C.remainderK := by
+  constructor
+  · intro hzero
+    by_contra hge
+    have hcarry_pos : 0 < C.incomingCarry j :=
+      (C.incomingCarry_pos_iff hgood j).2 (Nat.not_lt.mp hge)
+    omega
+  · intro hlt
+    have hnot_pos : ¬ 0 < C.incomingCarry j := by
+      intro hcarry_pos
+      exact not_lt_of_ge ((C.incomingCarry_pos_iff hgood j).1 hcarry_pos) hlt
+    exact Nat.eq_zero_of_not_pos hnot_pos
+
 /-- The first incoming-carry position is exactly the least threshold-crossing index. -/
 theorem BlockCoordinate.isFirstIncomingCarryPosition_iff
     (C : BlockCoordinate) (j : ℕ) :
@@ -677,6 +1176,68 @@ theorem BlockCoordinate.isFirstIncomingCarryPosition_iff_carry
     C.isFirstIncomingCarryPosition j ↔
       C.rawCoefficient j < C.blockBase - C.remainderK ∧ 0 < C.incomingCarry j := by
   rw [C.isFirstIncomingCarryPosition_iff, C.incomingCarry_pos_iff hgood]
+
+/-- The adjacent local-overflow boundary is exactly the least index where the
+next raw coefficient reaches the block base. -/
+theorem BlockCoordinate.isLocalOverflowBoundary_iff
+    (C : BlockCoordinate) (j : ℕ) :
+    C.isLocalOverflowBoundary j ↔
+      C.rawCoefficient j < C.blockBase ∧
+        C.blockBase ≤ C.rawCoefficient (j + 1) := by
+  simp [BlockCoordinate.isLocalOverflowBoundary, isGeometricThresholdBoundary,
+    BlockCoordinate.rawCoefficient]
+
+/-- The next raw coefficient produces a local overflow exactly when its
+block-base quotient is positive. -/
+theorem BlockCoordinate.localOverflowQuotient_pos_iff
+    (C : BlockCoordinate) (hgood : C.goodMode) (j : ℕ) :
+    0 < C.rawCoefficient (j + 1) / C.blockBase ↔
+      C.blockBase ≤ C.rawCoefficient (j + 1) := by
+  have hbase_pos : 0 < C.blockBase := C.blockBase_pos_of_goodMode hgood
+  constructor
+  · intro hoverflow
+    by_contra hlt
+    have hzero : C.rawCoefficient (j + 1) / C.blockBase = 0 := by
+      exact Nat.div_eq_of_lt (lt_of_not_ge hlt)
+    omega
+  · intro hthreshold
+    exact Nat.div_pos hthreshold hbase_pos
+
+/-- A raw coefficient still fits in one block exactly when its block-base
+quotient is zero. -/
+theorem BlockCoordinate.rawCoefficient_div_blockBase_eq_zero_iff
+    (C : BlockCoordinate) (hgood : C.goodMode) (j : ℕ) :
+    C.rawCoefficient j / C.blockBase = 0 ↔
+      C.rawCoefficient j < C.blockBase := by
+  constructor
+  · intro hzero
+    by_contra hlt
+    have hoverflow :
+        0 < C.rawCoefficient j / C.blockBase :=
+      Nat.div_pos (Nat.not_lt.mp hlt) (C.blockBase_pos_of_goodMode hgood)
+    exact (show ¬ 0 < C.rawCoefficient j / C.blockBase by simp [hzero]) hoverflow
+  · intro hlt
+    exact Nat.div_eq_of_lt hlt
+
+/-- The adjacent local-overflow boundary can be read as positivity of the next
+raw coefficient's block-base overflow quotient. -/
+theorem BlockCoordinate.isLocalOverflowBoundary_iff_overflowQuotient
+    (C : BlockCoordinate) (hgood : C.goodMode) (j : ℕ) :
+    C.isLocalOverflowBoundary j ↔
+      C.rawCoefficient j < C.blockBase ∧
+        0 < C.rawCoefficient (j + 1) / C.blockBase := by
+  rw [C.isLocalOverflowBoundary_iff, C.localOverflowQuotient_pos_iff hgood]
+
+/-- The adjacent local-overflow boundary can also be read entirely through
+block-base quotients: the current raw coefficient still has zero overflow
+quotient, while the next one has a positive overflow quotient. -/
+theorem BlockCoordinate.isLocalOverflowBoundary_iff_overflowQuotients
+    (C : BlockCoordinate) (hgood : C.goodMode) (j : ℕ) :
+    C.isLocalOverflowBoundary j ↔
+      C.rawCoefficient j / C.blockBase = 0 ∧
+        0 < C.rawCoefficient (j + 1) / C.blockBase := by
+  rw [C.isLocalOverflowBoundary_iff_overflowQuotient hgood,
+    C.rawCoefficient_div_blockBase_eq_zero_iff hgood]
 
 /-- Same-core threshold boundaries can shift by only `s` or `s+1` when the `q`-ratio
 lies between consecutive powers of `k`. -/

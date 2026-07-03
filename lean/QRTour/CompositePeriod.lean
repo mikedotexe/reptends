@@ -14,6 +14,9 @@ This module packages the CRT period theorem for composite moduli:
 
 - in the pairwise coprime case, the order of a unit modulo `m * n`
   is the least common multiple of its component orders modulo `m` and `n`;
+- in the same pairwise case, the canonical base unit `ZMod.unitOfCoprime B _`
+  splits to the canonical local units, so the same lcm law is available
+  directly in the base/modulus interface used throughout the repo;
 - more generally, Mathlib's finite-family CRT equivalence for `ZMod`
   carries unit orders to the `Finset.lcm` of the component orders.
 
@@ -54,6 +57,34 @@ theorem orderOf_unitsChineseRemainder {m n : ℕ} (h : Nat.Coprime m n) (u : (ZM
     orderOf u = orderOf ((unitsChineseRemainder h) u) := horder
     _ = Nat.lcm (orderOf ((unitsChineseRemainder h u).1)) (orderOf ((unitsChineseRemainder h u).2)) := by
       exact Prod.orderOf (unitsChineseRemainder h u)
+
+/-- Under pairwise CRT, the canonical unit built from a base `B` splits into
+the canonical local units modulo `m` and `n`. -/
+theorem unitsChineseRemainder_unitOfCoprime {m n B : ℕ} (h : Nat.Coprime m n)
+    (hB : Nat.Coprime B (m * n)) :
+    unitsChineseRemainder h (ZMod.unitOfCoprime B hB) =
+      (ZMod.unitOfCoprime B (Nat.coprime_mul_iff_right.mp hB).1,
+       ZMod.unitOfCoprime B (Nat.coprime_mul_iff_right.mp hB).2) := by
+  apply Prod.ext
+  · apply Units.ext
+    change (((ZMod.chineseRemainder h)
+      ((ZMod.unitOfCoprime B hB : (ZMod (m * n))ˣ) : ZMod (m * n))).1 : ZMod m) = B
+    simp
+  · apply Units.ext
+    change (((ZMod.chineseRemainder h)
+      ((ZMod.unitOfCoprime B hB : (ZMod (m * n))ˣ) : ZMod (m * n))).2 : ZMod n) = B
+    simp
+
+/-- Pairwise CRT order theorem specialized to the canonical base unit
+`ZMod.unitOfCoprime B _`. -/
+theorem orderOf_unitOfCoprime_eq_lcm_component_orders {m n B : ℕ} (h : Nat.Coprime m n)
+    (hB : Nat.Coprime B (m * n)) :
+    orderOf (ZMod.unitOfCoprime B hB) =
+      Nat.lcm
+        (orderOf (ZMod.unitOfCoprime B (Nat.coprime_mul_iff_right.mp hB).1))
+        (orderOf (ZMod.unitOfCoprime B (Nat.coprime_mul_iff_right.mp hB).2)) := by
+  simpa [unitsChineseRemainder_unitOfCoprime (h := h) (hB := hB)] using
+    orderOf_unitsChineseRemainder h (ZMod.unitOfCoprime B hB)
 
 /-- The unit-group form of Mathlib's finite-family CRT equivalence for pairwise coprime moduli. -/
 noncomputable def unitsProdEquivPi {ι : Type*} [Fintype ι] (a : ι → ℕ)
@@ -98,6 +129,16 @@ example :
       Nat.lcm (orderOf ((unitsChineseRemainder (by decide : Nat.Coprime 3 83) 1).1))
         (orderOf ((unitsChineseRemainder (by decide : Nat.Coprime 3 83) 1).2)) := by
   exact orderOf_unitsChineseRemainder (m := 3) (n := 83) (by decide : Nat.Coprime 3 83) 1
+
+example :
+    orderOf (ZMod.unitOfCoprime 10 (by decide : Nat.Coprime 10 (3 * 7))) =
+      Nat.lcm
+        (orderOf (ZMod.unitOfCoprime 10 (by decide : Nat.Coprime 10 3)))
+        (orderOf (ZMod.unitOfCoprime 10 (by decide : Nat.Coprime 10 7))) := by
+  simpa using
+    orderOf_unitOfCoprime_eq_lcm_component_orders
+      (m := 3) (n := 7) (B := 10) (by decide : Nat.Coprime 3 7)
+      (by decide : Nat.Coprime 10 (3 * 7))
 
 example :
     orderOf (1 : (ZMod 249)ˣ) =

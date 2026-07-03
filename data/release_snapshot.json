@@ -1,0 +1,336 @@
+{
+  "generated_note": {
+    "build_command": "python -m bridge_reptends.build_expository_note",
+    "builder": "bridge_reptends.build_expository_note:render_expository_note_lines",
+    "path": "docs/EXPOSITORY_NOTE.md",
+    "status": "synchronized"
+  },
+  "lean_claim_surface": {
+    "atlas_backed_claim_count": 11,
+    "claim_carrier_path": "data/lean_claim_carriers.json",
+    "claim_ids": [
+      "series_q_weighted_identity",
+      "positive_q_good_modes",
+      "digit_periodicity",
+      "signed_bridge_recurrence",
+      "bridge_block_value_periodicity",
+      "incoming_carry_position_formula",
+      "same_core_threshold_shift_interval",
+      "qr_stride_classification",
+      "crt_period_lcm",
+      "preperiod_from_base_factors",
+      "carry_window_transducer"
+    ],
+    "worked_example_count": 5,
+    "worked_example_namespaces": [
+      "QRTour.Prime19",
+      "QRTour.Prime97",
+      "QRTour.Composite21",
+      "QRTour.Composite249",
+      "QRTour.Composite996"
+    ],
+    "worked_examples_path": "data/lean_worked_examples.json"
+  },
+  "lean_hygiene": {
+    "ci_entrypoint": "ci-checks",
+    "ci_module_entrypoint": "python -m bridge_reptends.ci_checks",
+    "ci_source_path": "bridge_reptends/ci_checks.py",
+    "no_eval_matches": [],
+    "no_eval_status": "clean",
+    "no_sorry_matches": [],
+    "no_sorry_scan_root": "lean",
+    "no_sorry_status": "clean",
+    "public_build_target_count": 21,
+    "public_build_targets": [
+      "QRTour.RemainderOrbit",
+      "QRTour.Bridge",
+      "QRTour.CosetStructure",
+      "QRTour.QuadraticResidues",
+      "QRTour.OrbitWeave",
+      "QRTour.Digits",
+      "QRTour.SignedBridge",
+      "QRTour.PAdicBridge",
+      "QRTour.CompositePeriod",
+      "QRTour.Preperiod",
+      "QRTour.Visibility",
+      "QRTour.CarryTransducer",
+      "QRTour.CarryComparison",
+      "QRTour.Factorization",
+      "QRTour.CompositeVisibility",
+      "QRTour.ChartInvariance",
+      "QRTour.Examples",
+      "QRTour",
+      "GeometricStack.Positional",
+      "GeometricStack.OrbitBufferDuality",
+      "GeometricStack"
+    ]
+  },
+  "lean_public_surface": {
+    "claim_free_modules": [
+      "QRTour",
+      "QRTour.Basic",
+      "QRTour.PrimitiveRoots",
+      "QRTour.BridgeQuality",
+      "QRTour.ChartInvariance",
+      "QRTour.Examples",
+      "GeometricStack",
+      "GeometricStack.Family",
+      "GeometricStack.Capacity",
+      "GeometricStack.Scale",
+      "GeometricStack.Valuation"
+    ],
+    "claim_tagged_modules": [
+      "QRTour.RemainderOrbit",
+      "QRTour.Bridge",
+      "QRTour.CosetStructure",
+      "QRTour.QuadraticResidues",
+      "QRTour.OrbitWeave",
+      "QRTour.Digits",
+      "QRTour.SignedBridge",
+      "QRTour.PAdicBridge",
+      "QRTour.CompositePeriod",
+      "QRTour.Preperiod",
+      "QRTour.Visibility",
+      "QRTour.CarryTransducer",
+      "QRTour.CarryComparison",
+      "QRTour.Factorization",
+      "QRTour.CompositeVisibility",
+      "GeometricStack.Positional",
+      "GeometricStack.OrbitBufferDuality"
+    ],
+    "counts": {
+      "claim_free": 11,
+      "claim_tagged": 17,
+      "infrastructure": 8,
+      "public_example": 1,
+      "public_support": 11,
+      "public_theorem": 8
+    },
+    "infrastructure_modules": [
+      "QRTour.Basic",
+      "QRTour.PrimitiveRoots",
+      "QRTour.BridgeQuality",
+      "GeometricStack",
+      "GeometricStack.Family",
+      "GeometricStack.Capacity",
+      "GeometricStack.Scale",
+      "GeometricStack.Valuation"
+    ],
+    "module_index_path": "data/lean_module_index.json",
+    "public_example_modules": [
+      "QRTour.Examples"
+    ],
+    "public_support_modules": [
+      "QRTour",
+      "QRTour.RemainderOrbit",
+      "QRTour.Bridge",
+      "QRTour.CosetStructure",
+      "QRTour.CarryTransducer",
+      "QRTour.CarryComparison",
+      "QRTour.Factorization",
+      "QRTour.CompositeVisibility",
+      "QRTour.ChartInvariance",
+      "GeometricStack.Positional",
+      "GeometricStack.OrbitBufferDuality"
+    ],
+    "public_theorem_modules": [
+      "QRTour.QuadraticResidues",
+      "QRTour.OrbitWeave",
+      "QRTour.Digits",
+      "QRTour.SignedBridge",
+      "QRTour.PAdicBridge",
+      "QRTour.CompositePeriod",
+      "QRTour.Preperiod",
+      "QRTour.Visibility"
+    ],
+    "theorem_guide_path": "lean/THEOREM_GUIDE.md",
+    "total_modules": 28,
+    "umbrella_modules": [
+      "QRTour",
+      "GeometricStack"
+    ]
+  },
+  "manifest": {
+    "build_command": "python -m bridge_reptends.build_release_snapshot",
+    "builder": "bridge_reptends.build_release_snapshot:build_release_snapshot",
+    "normalization": "UTF-8 JSON, indent=2, sort_keys=True, trailing newline",
+    "source_files": [
+      "bridge_reptends/build_release_snapshot.py",
+      "bridge_reptends/build_expository_note.py",
+      "bridge_reptends/ci_checks.py",
+      "bridge_reptends/search.py",
+      "bridge_reptends/sync_registry_docs.py",
+      "data/claim_registry.json",
+      "data/lean_claim_carriers.json",
+      "data/lean_frontier_lanes.json",
+      "data/lean_module_index.json",
+      "data/lean_open_claim_boundaries.json",
+      "data/lean_worked_examples.json",
+      "data/theorem_witnesses.json",
+      "data/throughlines.json",
+      "data/example_atlas.json",
+      "docs/EXPOSITORY_NOTE.md"
+    ]
+  },
+  "next_lean_frontier": {
+    "lane_count": 3,
+    "lanes": [
+      {
+        "label": "theorem frontier",
+        "summary": "strengthen same-core visibility and fixed-window carry/visibility arithmetic beyond the current quotient-scaling, scaled-raw-coefficient endpoint criteria, and exact certificate layer, while keeping `small_k_visibility_threshold` and `carry_dfa_factorization` explicitly `open`"
+      },
+      {
+        "label": "promotion audit",
+        "summary": "decide whether any of `PrimitiveRoots`, `BridgeQuality`, or the remaining bridge-specialized support modules deserve their own atlas claim IDs, and classify the rest explicitly as public support or infrastructure"
+      },
+      {
+        "label": "theorem-witness tooling",
+        "summary": "extend the now-generated [THEOREM_WITNESS_ATLAS.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/THEOREM_WITNESS_ATLAS.md) into search outputs, site-facing data, and targeted research exports so the formal surface and the open-claim surface are easier to inspect and publish without hand-maintained drift"
+      }
+    ],
+    "path": "data/lean_frontier_lanes.json",
+    "theorem_guide_path": "lean/THEOREM_GUIDE.md"
+  },
+  "open_claim_boundary": {
+    "claims": [
+      {
+        "id": "small_k_visibility_threshold",
+        "segment_count": 3,
+        "support_module_count": 3,
+        "support_modules": [
+          "QRTour.Visibility",
+          "QRTour.CompositeVisibility",
+          "QRTour.CarryComparison"
+        ],
+        "support_theorem_count": 20,
+        "support_theorem_counts": [
+          {
+            "count": 5,
+            "module": "QRTour.Visibility"
+          },
+          {
+            "count": 7,
+            "module": "QRTour.CompositeVisibility"
+          },
+          {
+            "count": 8,
+            "module": "QRTour.CarryComparison"
+          }
+        ],
+        "title": "Exact visibility threshold for carried prefixes"
+      },
+      {
+        "id": "carry_dfa_factorization",
+        "segment_count": 1,
+        "support_module_count": 3,
+        "support_modules": [
+          "QRTour.CarryTransducer",
+          "QRTour.CarryComparison",
+          "QRTour.Factorization"
+        ],
+        "support_theorem_count": 17,
+        "support_theorem_counts": [
+          {
+            "count": 3,
+            "module": "QRTour.CarryTransducer"
+          },
+          {
+            "count": 10,
+            "module": "QRTour.CarryComparison"
+          },
+          {
+            "count": 4,
+            "module": "QRTour.Factorization"
+          }
+        ],
+        "title": "Canonical factorization of long division into orbit and carry"
+      }
+    ],
+    "path": "data/lean_open_claim_boundaries.json",
+    "theorem_guide_path": "lean/THEOREM_GUIDE.md"
+  },
+  "proof_status": {
+    "claim_counts": {
+      "classical": 3,
+      "empirical": 1,
+      "implemented-here": 1,
+      "open": 2,
+      "reproved-here": 8
+    },
+    "open_claims": [
+      {
+        "id": "small_k_visibility_threshold",
+        "title": "Exact visibility threshold for carried prefixes"
+      },
+      {
+        "id": "carry_dfa_factorization",
+        "title": "Canonical factorization of long division into orbit and carry"
+      }
+    ],
+    "status_source_path": "docs/PROOF_STATUS_ATLAS.md"
+  },
+  "published_dataset": {
+    "build_command": "search-reptends published-atlas --max 1200 --top 8 --output data/example_atlas.json",
+    "builder": "bridge_reptends.search:build_example_atlas",
+    "dataset_kind": "published_example_atlas",
+    "path": "data/example_atlas.json",
+    "provenance": {
+      "base": 10,
+      "cross_base_selector_bases": [
+        7,
+        10,
+        12
+      ],
+      "max_n": 1200,
+      "max_p": 1200,
+      "standard_label_first": true,
+      "top": 8
+    },
+    "schema_version": "2.16",
+    "source_files": [
+      "bridge_reptends/search.py",
+      "bridge_reptends/composite.py",
+      "bridge_reptends/transducer.py",
+      "bridge_reptends/visibility.py",
+      "data/claim_registry.json",
+      "data/lean_worked_examples.json",
+      "data/theorem_witnesses.json",
+      "data/throughlines.json",
+      "data/vocabulary.json"
+    ],
+    "status": "synchronized"
+  },
+  "registry_doc_surface": {
+    "drifted_docs": [],
+    "managed_doc_count": 11,
+    "managed_docs": [
+      "README.md",
+      "docs/PROOF_STATUS_ATLAS.md",
+      "docs/AGDA_CORRESPONDENCE.md",
+      "docs/VOCABULARY.md",
+      "docs/CARRY_TRANSDUCER.md",
+      "docs/CARRIED_PREFIX_VISIBILITY.md",
+      "lean/THEOREM_GUIDE.md",
+      "lean/QRTour.lean",
+      "lean/GeometricStack.lean",
+      "lean/QRTour/Examples.lean",
+      "docs/THEOREM_WITNESS_ATLAS.md"
+    ],
+    "status": "synchronized",
+    "sync_check_entrypoint": "python -m bridge_reptends.sync_registry_docs --check",
+    "sync_entrypoint": "sync-registry-docs",
+    "sync_module_entrypoint": "python -m bridge_reptends.sync_registry_docs",
+    "sync_source_path": "bridge_reptends/sync_registry_docs.py"
+  },
+  "schema_version": "1.3",
+  "snapshot_kind": "release_snapshot",
+  "theorem_witness_surface": {
+    "total_witness_records": 20,
+    "witness_atlas_path": "docs/THEOREM_WITNESS_ATLAS.md",
+    "witness_counts": {
+      "empirical-witness": 1,
+      "open-target": 3,
+      "theorem-witness": 16
+    }
+  }
+}
