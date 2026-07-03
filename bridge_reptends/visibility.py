@@ -24,6 +24,7 @@ from .composite import crt_period_profile
 from .registry import claim_context_for_parameters
 from .transducer import (
     CarryTransition,
+    carry_remainder_comparison,
     carry_window_example,
     same_core_obstruction_phase_rows,
     state_merging_rows,
@@ -981,6 +982,957 @@ def visibility_profile_rows(
         )
     )
     return rows
+
+
+CERTIFIED_POSITIVE_LOOKAHEAD_STATUS_ORDER = {
+    "covered_by_gap_one_bridge": 0,
+    "empirically_coefficient_functional_frontier": 1,
+    "coefficient_functionality_counterexample_candidate": 2,
+}
+
+
+def _certified_positive_lookahead_status(
+    *,
+    exact_gap_numerator: int,
+    remainder_to_coefficient_functional: bool,
+) -> str:
+    if exact_gap_numerator == 1:
+        return "covered_by_gap_one_bridge"
+    if remainder_to_coefficient_functional:
+        return "empirically_coefficient_functional_frontier"
+    return "coefficient_functionality_counterexample_candidate"
+
+
+def certified_positive_lookahead_state_window_rows(
+    max_n: int = 1200,
+    *,
+    base: int = 10,
+    n_blocks: int = 8,
+    max_lookahead_blocks: int = 128,
+) -> list[dict[str, object]]:
+    """
+    Export certified positive-lookahead windows with coefficient diagnostics.
+
+    This surface stays empirical. It helps decide whether the next theorem move
+    should extend the current `gap = 1` bridge or search for a sharper
+    criterion/counterexample once that regime fails to appear.
+    """
+    case_rows: list[dict[str, object]] = []
+    for n in range(2, max_n + 1):
+        try:
+            profile = carried_prefix_visibility_profile(
+                n,
+                base=base,
+                n_blocks=n_blocks,
+                max_lookahead_blocks=max_lookahead_blocks,
+            )
+        except ValueError:
+            continue
+        if profile.q <= 0 or profile.certified_lookahead_blocks <= 0:
+            continue
+        comparison = carry_remainder_comparison(
+            n,
+            base=base,
+            n_blocks=n_blocks,
+            prefer_m=profile.m,
+            max_lookahead_blocks=max_lookahead_blocks,
+        )
+        remainder_to_coefficient_map = comparison.remainder_to_coefficient_map
+        theorem_frontier_status = _certified_positive_lookahead_status(
+            exact_gap_numerator=profile.exact_gap_numerator,
+            remainder_to_coefficient_functional=comparison.coefficient_functional,
+        )
+        case_rows.append(
+            {
+                "group": "certified_positive_lookahead_case",
+                "n": profile.n,
+                "periodic_modulus": profile.periodic_modulus,
+                "base": profile.base,
+                "m": profile.m,
+                "B": profile.B,
+                "q": profile.q,
+                "k": profile.k,
+                "period": profile.period,
+                "preperiod_digits": profile.preperiod_digits,
+                "requested_blocks": profile.requested_blocks,
+                "lookahead_blocks": profile.lookahead_blocks,
+                "certified_lookahead_blocks": profile.certified_lookahead_blocks,
+                "lookahead_lower_bound": profile.lookahead_lower_bound,
+                "exact_gap_numerator": profile.exact_gap_numerator,
+                "lookahead_certificate_matches": profile.lookahead_certificate_matches,
+                "remainder_to_coefficient_functional": comparison.coefficient_functional,
+                "remainder_to_coefficient_fiber_signature": remainder_to_coefficient_map.fiber_signature,
+                "remainder_to_carry_functional": comparison.remainder_to_carry_map.is_functional,
+                "carry_to_remainder_functional": comparison.carry_to_remainder_map.is_functional,
+                "obstruction_class": comparison.decision_report.obstruction_class,
+                "theorem_frontier_status": theorem_frontier_status,
+                **claim_context_for_parameters(
+                    ("small_k_visibility_threshold",),
+                    base=profile.base,
+                    n=profile.n,
+                    requested_blocks=profile.requested_blocks,
+                ),
+            }
+        )
+    case_rows.sort(
+        key=lambda row: (
+            CERTIFIED_POSITIVE_LOOKAHEAD_STATUS_ORDER[str(row["theorem_frontier_status"])],
+            int(row["exact_gap_numerator"]),
+            int(row["certified_lookahead_blocks"]),
+            int(row["k"]),
+            int(row["n"]),
+        )
+    )
+
+    status_counts = {
+        status: sum(1 for row in case_rows if row["theorem_frontier_status"] == status)
+        for status in CERTIFIED_POSITIVE_LOOKAHEAD_STATUS_ORDER
+    }
+    next_theorem_direction = (
+        "extend_gap_one_bridge"
+        if status_counts["covered_by_gap_one_bridge"] > 0
+        else "refine_gap_criterion_or_search_counterexample"
+    )
+    summary_row = {
+        "group": "certified_positive_lookahead_summary",
+        "base": base,
+        "requested_blocks": n_blocks,
+        "max_n": max_n,
+        "total_rows": len(case_rows),
+        "gap_one_covered_rows": status_counts["covered_by_gap_one_bridge"],
+        "empirical_coefficient_functional_frontier_rows": status_counts[
+            "empirically_coefficient_functional_frontier"
+        ],
+        "coefficient_functionality_counterexample_candidates": status_counts[
+            "coefficient_functionality_counterexample_candidate"
+        ],
+        "smallest_exact_gap_numerator": (
+            min(int(row["exact_gap_numerator"]) for row in case_rows)
+            if case_rows
+            else None
+        ),
+        "next_theorem_direction": next_theorem_direction,
+    }
+    return [summary_row, *case_rows]
+
+
+def certified_positive_lookahead_coefficient_conflict_rows(
+    max_n: int = 1200,
+    *,
+    base: int = 10,
+    n_blocks: int = 8,
+    top: int = 20,
+    max_lookahead_blocks: int = 128,
+) -> list[dict[str, object]]:
+    """
+    Export the first coefficient-functionality conflicts inside certified windows.
+
+    This is a drill-down beneath `certified_positive_lookahead_state_window_rows`:
+    it records concrete obstruction witnesses without promoting the open
+    visibility or factorization claims.
+    """
+    source_rows = certified_positive_lookahead_state_window_rows(
+        max_n,
+        base=base,
+        n_blocks=n_blocks,
+        max_lookahead_blocks=max_lookahead_blocks,
+    )
+    conflict_rows: list[dict[str, object]] = []
+    for row in source_rows:
+        if row.get("group") != "certified_positive_lookahead_case":
+            continue
+        if row.get("theorem_frontier_status") != "coefficient_functionality_counterexample_candidate":
+            continue
+        comparison = carry_remainder_comparison(
+            int(row["n"]),
+            base=int(row["base"]),
+            n_blocks=int(row["requested_blocks"]),
+            prefer_m=int(row["m"]),
+            max_lookahead_blocks=max_lookahead_blocks,
+        )
+        conflict = comparison.first_remainder_to_coefficient_conflict
+        if conflict is None:
+            continue
+        conflict_rows.append(
+            {
+                "group": "coefficient_conflict_witness",
+                "n": row["n"],
+                "periodic_modulus": row["periodic_modulus"],
+                "base": row["base"],
+                "m": row["m"],
+                "B": row["B"],
+                "q": row["q"],
+                "k": row["k"],
+                "period": row["period"],
+                "preperiod_digits": row["preperiod_digits"],
+                "requested_blocks": row["requested_blocks"],
+                "lookahead_blocks": row["lookahead_blocks"],
+                "certified_lookahead_blocks": row["certified_lookahead_blocks"],
+                "lookahead_lower_bound": row["lookahead_lower_bound"],
+                "exact_gap_numerator": row["exact_gap_numerator"],
+                "lookahead_certificate_matches": row["lookahead_certificate_matches"],
+                "theorem_frontier_status": row["theorem_frontier_status"],
+                "remainder_to_coefficient_fiber_signature": row[
+                    "remainder_to_coefficient_fiber_signature"
+                ],
+                "remainder_to_carry_functional": row["remainder_to_carry_functional"],
+                "carry_to_remainder_functional": row["carry_to_remainder_functional"],
+                "obstruction_class": row["obstruction_class"],
+                "conflict_remainder_state": conflict.remainder_state,
+                "conflict_positions": list(conflict.positions),
+                "conflict_coefficients": list(conflict.coefficients),
+                "conflict_carry_states": list(conflict.carry_states),
+                "conflict_block_values": list(conflict.block_values),
+                "conflict_output_hidden": conflict.output_hidden,
+                "conflict_position_gap": conflict.position_gap,
+                "conflict_coefficient_delta": conflict.coefficient_delta,
+                "related_claim_ids": row.get("related_claim_ids", []),
+                "related_open_claim_ids": row.get("related_open_claim_ids", []),
+                "matching_claim_ids": row.get("matching_claim_ids", []),
+                "matching_witness_ids": row.get("matching_witness_ids", []),
+            }
+        )
+    conflict_rows.sort(
+        key=lambda row: (
+            int(row["exact_gap_numerator"]),
+            int(row["certified_lookahead_blocks"]),
+            int(row["k"]),
+            int(row["n"]),
+            int(row["conflict_positions"][0]),
+            int(row["conflict_remainder_state"]),
+        )
+    )
+    selected_rows = conflict_rows if top <= 0 else conflict_rows[:top]
+    summary_row = {
+        "group": "coefficient_conflict_summary",
+        "base": base,
+        "requested_blocks": n_blocks,
+        "max_n": max_n,
+        "total_conflict_rows": len(conflict_rows),
+        "emitted_conflict_rows": len(selected_rows),
+        "output_hidden_conflict_rows": sum(
+            1 for row in conflict_rows if bool(row["conflict_output_hidden"])
+        ),
+        "smallest_exact_gap_numerator": (
+            int(conflict_rows[0]["exact_gap_numerator"]) if conflict_rows else None
+        ),
+        "first_conflict_n": int(conflict_rows[0]["n"]) if conflict_rows else None,
+        "first_conflict_tuple": (
+            [
+                int(conflict_rows[0]["base"]),
+                int(conflict_rows[0]["n"]),
+                int(conflict_rows[0]["m"]),
+                int(conflict_rows[0]["B"]),
+                int(conflict_rows[0]["q"]),
+                int(conflict_rows[0]["k"]),
+                int(conflict_rows[0]["certified_lookahead_blocks"]),
+                int(conflict_rows[0]["exact_gap_numerator"]),
+            ]
+            if conflict_rows
+            else None
+        ),
+    }
+    return [summary_row, *selected_rows]
+
+
+def certified_positive_lookahead_coefficient_conflict_atlas_rows(
+    max_n: int = 1200,
+    *,
+    bases: tuple[int, ...] = (7, 10, 12, 30),
+    n_blocks: int = 8,
+    top: int = 20,
+    max_lookahead_blocks: int = 128,
+) -> list[dict[str, object]]:
+    """
+    Export a cross-base atlas of certified positive-lookahead conflicts.
+
+    This composes the single-base conflict drill-down without promoting the
+    observed obstruction patterns into new atlas claims. Rows remain empirical
+    support beneath the open visibility/factorization boundary.
+    """
+    base_summaries: list[dict[str, object]] = []
+    atlas_rows: list[dict[str, object]] = []
+    for base in bases:
+        base_rows = certified_positive_lookahead_coefficient_conflict_rows(
+            max_n,
+            base=base,
+            n_blocks=n_blocks,
+            top=0,
+            max_lookahead_blocks=max_lookahead_blocks,
+        )
+        base_summary = dict(base_rows[0])
+        base_summaries.append(base_summary)
+        conflict_rows = [
+            row for row in base_rows if row.get("group") == "coefficient_conflict_witness"
+        ]
+        for base_rank, row in enumerate(conflict_rows, start=1):
+            atlas_rows.append(
+                {
+                    **row,
+                    "group": "coefficient_conflict_atlas_case",
+                    "base_conflict_rank": base_rank,
+                    "base_total_conflict_rows": base_summary["total_conflict_rows"],
+                    "base_output_hidden_conflict_rows": base_summary[
+                        "output_hidden_conflict_rows"
+                    ],
+                    "base_smallest_exact_gap_numerator": base_summary[
+                        "smallest_exact_gap_numerator"
+                    ],
+                }
+            )
+
+    atlas_rows.sort(
+        key=lambda row: (
+            int(row["exact_gap_numerator"]),
+            int(row["certified_lookahead_blocks"]),
+            int(row["k"]),
+            int(row["n"]),
+            int(row["conflict_positions"][0]),
+            int(row["conflict_remainder_state"]),
+        )
+    )
+    selected_rows = atlas_rows if top <= 0 else atlas_rows[:top]
+    for global_rank, row in enumerate(selected_rows, start=1):
+        row["global_conflict_rank"] = global_rank
+
+    first_base10_row = next(
+        (
+            row
+            for row in atlas_rows
+            if int(row["base"]) == 10 and int(row["base_conflict_rank"]) == 1
+        ),
+        None,
+    )
+    summary_row = {
+        "group": "coefficient_conflict_atlas_summary",
+        "bases": list(bases),
+        "requested_blocks": n_blocks,
+        "max_n": max_n,
+        "total_conflict_rows": sum(
+            int(summary["total_conflict_rows"]) for summary in base_summaries
+        ),
+        "emitted_conflict_rows": len(selected_rows),
+        "base_count": len(bases),
+        "bases_with_conflicts": sum(
+            1 for summary in base_summaries if int(summary["total_conflict_rows"]) > 0
+        ),
+        "output_hidden_conflict_rows": sum(
+            int(summary["output_hidden_conflict_rows"]) for summary in base_summaries
+        ),
+        "smallest_exact_gap_numerator": (
+            int(atlas_rows[0]["exact_gap_numerator"]) if atlas_rows else None
+        ),
+        "first_conflict_tuple": (
+            [
+                int(atlas_rows[0]["base"]),
+                int(atlas_rows[0]["n"]),
+                int(atlas_rows[0]["m"]),
+                int(atlas_rows[0]["B"]),
+                int(atlas_rows[0]["q"]),
+                int(atlas_rows[0]["k"]),
+                int(atlas_rows[0]["certified_lookahead_blocks"]),
+                int(atlas_rows[0]["exact_gap_numerator"]),
+            ]
+            if atlas_rows
+            else None
+        ),
+        "first_base10_conflict_tuple": (
+            [
+                int(first_base10_row["base"]),
+                int(first_base10_row["n"]),
+                int(first_base10_row["m"]),
+                int(first_base10_row["B"]),
+                int(first_base10_row["q"]),
+                int(first_base10_row["k"]),
+                int(first_base10_row["certified_lookahead_blocks"]),
+                int(first_base10_row["exact_gap_numerator"]),
+            ]
+            if first_base10_row
+            else None
+        ),
+        "base_summaries": [
+            {
+                "base": int(summary["base"]),
+                "total_conflict_rows": int(summary["total_conflict_rows"]),
+                "output_hidden_conflict_rows": int(summary["output_hidden_conflict_rows"]),
+                "smallest_exact_gap_numerator": summary["smallest_exact_gap_numerator"],
+                "first_conflict_n": summary["first_conflict_n"],
+                "first_conflict_tuple": summary["first_conflict_tuple"],
+            }
+            for summary in base_summaries
+        ],
+    }
+    return [summary_row, *selected_rows]
+
+
+def _coefficient_conflict_shape_key(row: dict[str, object]) -> tuple[object, ...]:
+    return (
+        int(row["periodic_modulus"]),
+        int(row["k"]),
+        int(row["conflict_remainder_state"]),
+        tuple(int(position) for position in row["conflict_positions"]),
+        tuple(int(carry_state) for carry_state in row["conflict_carry_states"]),
+        bool(row["conflict_output_hidden"]),
+    )
+
+
+def _coefficient_conflict_shape_signature(shape_key: tuple[object, ...]) -> str:
+    periodic_modulus, k, remainder_state, positions, carry_states, output_hidden = shape_key
+    return (
+        f"periodic_modulus={periodic_modulus};"
+        f"k={k};"
+        f"remainder_state={remainder_state};"
+        f"positions={list(positions)};"
+        f"carry_states={list(carry_states)};"
+        f"output_hidden={str(output_hidden).lower()}"
+    )
+
+
+def _coefficient_conflict_member_tuple(row: dict[str, object]) -> list[int]:
+    return [
+        int(row["base"]),
+        int(row["n"]),
+        int(row["m"]),
+        int(row["B"]),
+        int(row["q"]),
+        int(row["k"]),
+        int(row["certified_lookahead_blocks"]),
+        int(row["exact_gap_numerator"]),
+    ]
+
+
+def certified_positive_lookahead_coefficient_conflict_family_rows(
+    max_n: int = 1200,
+    *,
+    bases: tuple[int, ...] = (7, 10, 12, 30),
+    n_blocks: int = 8,
+    top: int = 20,
+    max_lookahead_blocks: int = 128,
+) -> list[dict[str, object]]:
+    """
+    Mine recurring hidden-output coefficient-conflict shapes across bases.
+
+    The grouping is deliberately empirical and finite-window-only. It preserves
+    the exact remainder `k`, stripped periodic modulus, conflict remainder
+    state, conflict positions, incoming carry states, and hidden-output flag
+    while allowing the block value and quotient `q` to vary across instruments.
+    """
+    atlas_rows = certified_positive_lookahead_coefficient_conflict_atlas_rows(
+        max_n,
+        bases=bases,
+        n_blocks=n_blocks,
+        top=0,
+        max_lookahead_blocks=max_lookahead_blocks,
+    )
+    hidden_conflict_rows = [
+        row
+        for row in atlas_rows
+        if row.get("group") == "coefficient_conflict_atlas_case"
+        and bool(row["conflict_output_hidden"])
+    ]
+
+    grouped_rows: dict[tuple[object, ...], list[dict[str, object]]] = {}
+    for row in hidden_conflict_rows:
+        grouped_rows.setdefault(_coefficient_conflict_shape_key(row), []).append(row)
+
+    family_rows: list[dict[str, object]] = []
+    for shape_key, members in grouped_rows.items():
+        if len(members) <= 1:
+            continue
+        members.sort(
+            key=lambda row: (
+                int(row["base"]),
+                int(row["n"]),
+                int(row["exact_gap_numerator"]),
+            )
+        )
+        periodic_modulus, k, remainder_state, positions, carry_states, output_hidden = shape_key
+        member_bases = sorted({int(row["base"]) for row in members})
+        member_ns = sorted({int(row["n"]) for row in members})
+        member_periods = sorted({int(row["period"]) for row in members})
+        min_gap = min(int(row["exact_gap_numerator"]) for row in members)
+        min_lookahead = min(int(row["certified_lookahead_blocks"]) for row in members)
+        contains_base10_68 = any(int(row["base"]) == 10 and int(row["n"]) == 68 for row in members)
+        if contains_base10_68 and len(member_bases) > 1:
+            theorem_candidate_kind = "composite68_cross_base_family_candidate"
+            next_lean_theorem_recommendation = "classify_composite68_cross_base_hidden_output_conflict"
+        elif len(member_bases) > 1:
+            theorem_candidate_kind = "cross_base_hidden_output_family_candidate"
+            next_lean_theorem_recommendation = "classify_hidden_output_conflict_shape_family"
+        else:
+            theorem_candidate_kind = "same_base_hidden_output_family_candidate"
+            next_lean_theorem_recommendation = "add_next_finite_example_package"
+
+        family_rows.append(
+            {
+                "group": "coefficient_conflict_family",
+                "shape_signature": _coefficient_conflict_shape_signature(shape_key),
+                "shape_periodic_modulus": periodic_modulus,
+                "shape_k": k,
+                "shape_conflict_remainder_state": remainder_state,
+                "shape_conflict_positions": list(positions),
+                "shape_conflict_carry_states": list(carry_states),
+                "shape_conflict_output_hidden": output_hidden,
+                "family_size": len(members),
+                "base_count": len(member_bases),
+                "bases": member_bases,
+                "n_values": member_ns,
+                "periods": member_periods,
+                "min_exact_gap_numerator": min_gap,
+                "min_certified_lookahead_blocks": min_lookahead,
+                "min_n": min(member_ns),
+                "contains_base10_68": contains_base10_68,
+                "theorem_candidate_kind": theorem_candidate_kind,
+                "next_lean_theorem_recommendation": next_lean_theorem_recommendation,
+                "member_tuples": [_coefficient_conflict_member_tuple(row) for row in members],
+                "members": [
+                    {
+                        "base": int(row["base"]),
+                        "n": int(row["n"]),
+                        "m": int(row["m"]),
+                        "B": int(row["B"]),
+                        "q": int(row["q"]),
+                        "k": int(row["k"]),
+                        "period": int(row["period"]),
+                        "preperiod_digits": int(row["preperiod_digits"]),
+                        "certified_lookahead_blocks": int(row["certified_lookahead_blocks"]),
+                        "exact_gap_numerator": int(row["exact_gap_numerator"]),
+                        "conflict_coefficients": list(row["conflict_coefficients"]),
+                        "conflict_block_values": list(row["conflict_block_values"]),
+                    }
+                    for row in members
+                ],
+            }
+        )
+
+    family_rows.sort(
+        key=lambda row: (
+            -int(row["base_count"]),
+            -int(row["family_size"]),
+            int(row["min_exact_gap_numerator"]),
+            int(row["min_certified_lookahead_blocks"]),
+            int(row["shape_k"]),
+            int(row["min_n"]),
+            str(row["shape_signature"]),
+        )
+    )
+    for family_rank, row in enumerate(family_rows, start=1):
+        row["family_rank"] = family_rank
+
+    selected_rows = family_rows if top <= 0 else family_rows[:top]
+    recommended_family = next(
+        (
+            row
+            for row in family_rows
+            if bool(row["contains_base10_68"]) and int(row["base_count"]) > 1
+        ),
+        None,
+    )
+    if recommended_family is None:
+        recommended_family = next(
+            (row for row in family_rows if int(row["base_count"]) > 1),
+            None,
+        )
+    if recommended_family is None:
+        recommended_family = family_rows[0] if family_rows else None
+
+    if recommended_family is None:
+        next_lean_theorem_recommendation = "mine_wider_bounds_before_lean_family_theorem"
+        recommendation_reason = "no repeated hidden-output coefficient-conflict shape appeared at the selected bound"
+    else:
+        next_lean_theorem_recommendation = str(
+            recommended_family["next_lean_theorem_recommendation"]
+        )
+        if bool(recommended_family["contains_base10_68"]) and int(recommended_family["base_count"]) > 1:
+            recommendation_reason = (
+                "the Composite68 obstruction already has a Lean finite package and "
+                "recurs across base instruments with the same hidden-output conflict shape"
+            )
+        elif int(recommended_family["base_count"]) > 1:
+            recommendation_reason = (
+                "a cross-base hidden-output conflict family appeared before a Lean-backed "
+                "Composite68 family was available at this bound"
+            )
+        else:
+            recommendation_reason = (
+                "only same-base repeated shapes appeared, so another finite package is safer "
+                "than a family-level classification"
+            )
+
+    summary_row = {
+        "group": "coefficient_conflict_family_summary",
+        "bases": list(bases),
+        "requested_blocks": n_blocks,
+        "max_n": max_n,
+        "total_hidden_conflict_rows": len(hidden_conflict_rows),
+        "total_shape_groups": len(grouped_rows),
+        "repeated_shape_families": len(family_rows),
+        "emitted_family_rows": len(selected_rows),
+        "cross_base_shape_families": sum(
+            1 for row in family_rows if int(row["base_count"]) > 1
+        ),
+        "largest_base_count": (
+            max(int(row["base_count"]) for row in family_rows) if family_rows else 0
+        ),
+        "largest_family_size": (
+            max(int(row["family_size"]) for row in family_rows) if family_rows else 0
+        ),
+        "strongest_family_signature": (
+            family_rows[0]["shape_signature"] if family_rows else None
+        ),
+        "composite68_cross_base_family_present": (
+            any(
+                bool(row["contains_base10_68"]) and int(row["base_count"]) > 1
+                for row in family_rows
+            )
+        ),
+        "recommended_family_signature": (
+            recommended_family["shape_signature"] if recommended_family else None
+        ),
+        "recommended_family_member_tuples": (
+            recommended_family["member_tuples"] if recommended_family else []
+        ),
+        "next_lean_theorem_recommendation": next_lean_theorem_recommendation,
+        "recommendation_reason": recommendation_reason,
+    }
+    return [summary_row, *selected_rows]
+
+
+COMPOSITE68_HIDDEN_OUTPUT_SHAPE_KEY: tuple[object, ...] = (
+    17,
+    4,
+    4,
+    (1, 5),
+    (0, 60),
+    True,
+)
+
+
+def _composite68_shape_role(*, base: int, shape_matches: bool) -> str:
+    if not shape_matches:
+        return "other_composite68_conflict_shape"
+    if base == 10:
+        return "lean_packaged_base10_anchor"
+    if base == 30:
+        return "next_base30_package_candidate"
+    return "additional_cross_base_family_signal"
+
+
+def composite68_cross_base_obstruction_sweep_rows(
+    max_base: int = 120,
+    *,
+    n_blocks: int = 8,
+    top: int = 20,
+    max_lookahead_blocks: int = 128,
+) -> list[dict[str, object]]:
+    """
+    Sweep base instruments for the `N = 68` hidden-output conflict shape.
+
+    This is an empirical selector for the next Lean package. It keeps the
+    finite obstruction local to `Composite68` and does not promote the open
+    visibility or factorization claims.
+    """
+    case_rows: list[dict[str, object]] = []
+    for base in range(2, max_base + 1):
+        try:
+            profile = carried_prefix_visibility_profile(
+                68,
+                base=base,
+                n_blocks=n_blocks,
+                max_lookahead_blocks=max_lookahead_blocks,
+            )
+        except ValueError:
+            continue
+        if profile.q <= 0 or profile.certified_lookahead_blocks <= 0:
+            continue
+        comparison = carry_remainder_comparison(
+            profile.n,
+            base=profile.base,
+            n_blocks=profile.requested_blocks,
+            prefer_m=profile.m,
+            max_lookahead_blocks=max_lookahead_blocks,
+        )
+        conflict = comparison.first_remainder_to_coefficient_conflict
+        if conflict is None:
+            continue
+        shape_key = (
+            profile.periodic_modulus,
+            profile.k,
+            conflict.remainder_state,
+            conflict.positions,
+            conflict.carry_states,
+            conflict.output_hidden,
+        )
+        shape_matches = shape_key == COMPOSITE68_HIDDEN_OUTPUT_SHAPE_KEY
+        block_base_mod_n = profile.B % profile.n
+        case_rows.append(
+            {
+                "group": "composite68_cross_base_sweep_case",
+                "n": profile.n,
+                "periodic_modulus": profile.periodic_modulus,
+                "base": profile.base,
+                "m": profile.m,
+                "B": profile.B,
+                "q": profile.q,
+                "k": profile.k,
+                "period": profile.period,
+                "preperiod_digits": profile.preperiod_digits,
+                "requested_blocks": profile.requested_blocks,
+                "lookahead_blocks": profile.lookahead_blocks,
+                "certified_lookahead_blocks": profile.certified_lookahead_blocks,
+                "lookahead_lower_bound": profile.lookahead_lower_bound,
+                "exact_gap_numerator": profile.exact_gap_numerator,
+                "lookahead_certificate_matches": profile.lookahead_certificate_matches,
+                "conflict_remainder_state": conflict.remainder_state,
+                "conflict_positions": list(conflict.positions),
+                "conflict_coefficients": list(conflict.coefficients),
+                "conflict_carry_states": list(conflict.carry_states),
+                "conflict_block_values": list(conflict.block_values),
+                "conflict_output_hidden": conflict.output_hidden,
+                "conflict_position_gap": conflict.position_gap,
+                "conflict_coefficient_delta": conflict.coefficient_delta,
+                "shape_signature": _coefficient_conflict_shape_signature(shape_key),
+                "composite68_hidden_output_shape_match": shape_matches,
+                "selected_block_base_mod_68": block_base_mod_n,
+                "selected_block_base_congruent_to_4_mod_68": block_base_mod_n == 4,
+                "lean_package_role": _composite68_shape_role(
+                    base=profile.base,
+                    shape_matches=shape_matches,
+                ),
+            }
+        )
+
+    case_rows.sort(
+        key=lambda row: (
+            not bool(row["composite68_hidden_output_shape_match"]),
+            int(row["base"]),
+            int(row["exact_gap_numerator"]),
+        )
+    )
+    selected_rows = case_rows if top <= 0 else case_rows[:top]
+    target_rows = [
+        row for row in case_rows if bool(row["composite68_hidden_output_shape_match"])
+    ]
+    base10_row = next((row for row in target_rows if int(row["base"]) == 10), None)
+    base30_row = next((row for row in target_rows if int(row["base"]) == 30), None)
+    if base30_row is not None and len(target_rows) > 1:
+        recommended_next_lean_task = "add_composite68_base30_finite_package_then_cross_base_shape_lemma"
+        recommendation_reason = (
+            "the base-10 Lean anchor recurs in base 30 and additional base instruments "
+            "with the same hidden-output shape, so package base 30 next before "
+            "attempting the generic shape lemma"
+        )
+    elif len(target_rows) > 1:
+        recommended_next_lean_task = "add_next_composite68_shape_member_package"
+        recommendation_reason = (
+            "the base-10 Lean anchor has a repeated hidden-output shape, but base 30 "
+            "is not present at this bound"
+        )
+    else:
+        recommended_next_lean_task = "mine_wider_composite68_base_bounds_before_family_lean"
+        recommendation_reason = (
+            "the exact Composite68 hidden-output shape has not yet recurred at this bound"
+        )
+
+    summary_row = {
+        "group": "composite68_cross_base_sweep_summary",
+        "n": 68,
+        "requested_blocks": n_blocks,
+        "max_base": max_base,
+        "total_bases_scanned": max(max_base - 1, 0),
+        "total_conflict_rows": len(case_rows),
+        "emitted_case_rows": len(selected_rows),
+        "target_shape_signature": _coefficient_conflict_shape_signature(
+            COMPOSITE68_HIDDEN_OUTPUT_SHAPE_KEY
+        ),
+        "target_shape_rows": len(target_rows),
+        "target_shape_bases": [int(row["base"]) for row in target_rows],
+        "target_shape_member_tuples": [
+            _coefficient_conflict_member_tuple(row) for row in target_rows
+        ],
+        "base10_anchor_tuple": (
+            _coefficient_conflict_member_tuple(base10_row) if base10_row else None
+        ),
+        "base30_package_candidate_tuple": (
+            _coefficient_conflict_member_tuple(base30_row) if base30_row else None
+        ),
+        "base30_target_present": base30_row is not None,
+        "all_target_rows_have_B_mod_68_eq_4": all(
+            bool(row["selected_block_base_congruent_to_4_mod_68"])
+            for row in target_rows
+        ),
+        "recommended_next_lean_task": recommended_next_lean_task,
+        "recommendation_reason": recommendation_reason,
+    }
+    return [summary_row, *selected_rows]
+
+
+def composite68_congruence_family_rows(
+    max_base: int = 120,
+    *,
+    max_m: int = 8,
+    n_blocks: int = 8,
+    top: int = 0,
+    max_lookahead_blocks: int = 128,
+) -> list[dict[str, object]]:
+    """
+    Enumerate bounded `N = 68` coordinates with `B = base^m ≡ 4 (mod 68)`.
+
+    The Lean obstruction now covers every good finite window in this congruence
+    family once positions `1` and `5` are present. The hidden-output conflict
+    shape remains an empirical classifier on top of that exact finite theorem.
+    """
+    case_rows: list[dict[str, object]] = []
+    for base in range(2, max_base + 1):
+        for m in range(1, max_m + 1):
+            B = pow(base, m)
+            if B <= 68 or B % 68 != 4:
+                continue
+            try:
+                profile = carried_prefix_visibility_profile(
+                    68,
+                    base=base,
+                    n_blocks=n_blocks,
+                    prefer_m=m,
+                    max_lookahead_blocks=max_lookahead_blocks,
+                )
+            except ValueError:
+                continue
+
+            conflict = None
+            try:
+                comparison = carry_remainder_comparison(
+                    profile.n,
+                    base=profile.base,
+                    n_blocks=profile.requested_blocks,
+                    prefer_m=profile.m,
+                    max_lookahead_blocks=max_lookahead_blocks,
+                )
+                conflict = comparison.first_remainder_to_coefficient_conflict
+            except ValueError:
+                conflict = None
+
+            shape_key: tuple[object, ...] | None = None
+            if conflict is not None:
+                shape_key = (
+                    profile.periodic_modulus,
+                    profile.k,
+                    conflict.remainder_state,
+                    conflict.positions,
+                    conflict.carry_states,
+                    conflict.output_hidden,
+                )
+            shape_matches = shape_key == COMPOSITE68_HIDDEN_OUTPUT_SHAPE_KEY
+            positions_available = n_blocks >= 6
+            case_rows.append(
+                {
+                    "group": "composite68_congruence_family_case",
+                    "n": profile.n,
+                    "periodic_modulus": profile.periodic_modulus,
+                    "base": profile.base,
+                    "m": profile.m,
+                    "B": profile.B,
+                    "q": profile.q,
+                    "k": profile.k,
+                    "period": profile.period,
+                    "preperiod_digits": profile.preperiod_digits,
+                    "requested_blocks": profile.requested_blocks,
+                    "lookahead_blocks": profile.lookahead_blocks,
+                    "certified_lookahead_blocks": profile.certified_lookahead_blocks,
+                    "lookahead_lower_bound": profile.lookahead_lower_bound,
+                    "exact_gap_numerator": profile.exact_gap_numerator,
+                    "lookahead_certificate_matches": profile.lookahead_certificate_matches,
+                    "selected_block_base_mod_68": profile.B % 68,
+                    "selected_block_base_congruent_to_4_mod_68": profile.B % 68 == 4,
+                    "finite_window_positions_available": positions_available,
+                    "lean_obstruction_covered": positions_available,
+                    "lean_obstruction_theorem": (
+                        "BlockCoordinate.not_coefficientFunctional_one_five_of_modulus_eq_"
+                        "sixty_eight_and_blockBase_mod_eq_four"
+                    ),
+                    "conflict_remainder_state": (
+                        conflict.remainder_state if conflict is not None else None
+                    ),
+                    "conflict_positions": (
+                        list(conflict.positions) if conflict is not None else []
+                    ),
+                    "conflict_coefficients": (
+                        list(conflict.coefficients) if conflict is not None else []
+                    ),
+                    "conflict_carry_states": (
+                        list(conflict.carry_states) if conflict is not None else []
+                    ),
+                    "conflict_block_values": (
+                        list(conflict.block_values) if conflict is not None else []
+                    ),
+                    "conflict_output_hidden": (
+                        conflict.output_hidden if conflict is not None else None
+                    ),
+                    "conflict_position_gap": (
+                        conflict.position_gap if conflict is not None else None
+                    ),
+                    "conflict_coefficient_delta": (
+                        conflict.coefficient_delta if conflict is not None else None
+                    ),
+                    "shape_signature": (
+                        _coefficient_conflict_shape_signature(shape_key)
+                        if shape_key is not None
+                        else None
+                    ),
+                    "composite68_hidden_output_shape_match": shape_matches,
+                    "empirical_classifier_status": (
+                        "certified_hidden_output_shape_match"
+                        if shape_matches
+                        else "congruence_family_member"
+                    ),
+                }
+            )
+
+    case_rows.sort(
+        key=lambda row: (
+            not bool(row["composite68_hidden_output_shape_match"]),
+            int(row["certified_lookahead_blocks"]),
+            int(row["exact_gap_numerator"]),
+            int(row["base"]),
+            int(row["m"]),
+        )
+    )
+    selected_rows = case_rows if top <= 0 else case_rows[:top]
+    target_rows = [
+        row for row in case_rows if bool(row["composite68_hidden_output_shape_match"])
+    ]
+    summary_row = {
+        "group": "composite68_congruence_family_summary",
+        "n": 68,
+        "requested_blocks": n_blocks,
+        "max_base": max_base,
+        "max_m": max_m,
+        "total_congruence_rows": len(case_rows),
+        "emitted_case_rows": len(selected_rows),
+        "lean_obstruction_covered_rows": sum(
+            1 for row in case_rows if bool(row["lean_obstruction_covered"])
+        ),
+        "target_shape_signature": _coefficient_conflict_shape_signature(
+            COMPOSITE68_HIDDEN_OUTPUT_SHAPE_KEY
+        ),
+        "hidden_output_shape_rows": len(target_rows),
+        "hidden_output_shape_bases": sorted({int(row["base"]) for row in target_rows}),
+        "hidden_output_shape_member_tuples": [
+            _coefficient_conflict_member_tuple(row) for row in target_rows
+        ],
+        "all_congruence_rows_have_k_eq_4": all(int(row["k"]) == 4 for row in case_rows),
+        "all_congruence_rows_have_B_mod_68_eq_4": all(
+            int(row["selected_block_base_mod_68"]) == 4 for row in case_rows
+        ),
+        "lean_obstruction_theorem": (
+            "BlockCoordinate.not_coefficientFunctional_one_five_of_modulus_eq_"
+            "sixty_eight_and_blockBase_mod_eq_four"
+        ),
+        "classifier_status": (
+            "empirical_hidden_output_shape_classifier_beneath_finite_lean_obstruction"
+        ),
+    }
+    return [summary_row, *selected_rows]
 
 
 def incoming_carry_counterexample_rows(

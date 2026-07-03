@@ -47,6 +47,14 @@ for the campfire-to-math version, or inspect the canonical finite-window trace:
 New readers can start with
 [docs/OUTSIDE_READER_DOORWAY.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/OUTSIDE_READER_DOORWAY.md),
 a short front porch for the observation/readout idea.
+For research-mode review, start with
+[docs/RESEARCH_BRIEF.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/RESEARCH_BRIEF.md),
+a compact status-aware summary of the claims, Lean surface, open boundaries,
+and observability thesis.
+For ranked frontier selection, use
+[docs/OBSERVABILITY_PROBLEMS.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/OBSERVABILITY_PROBLEMS.md),
+which keeps the intrepid observability questions tied to Lean/export surfaces
+and explicit stop conditions.
 
 ```bash
 search-reptends orbit-carry-trace --base 10 --blocks 8 --members 21,97,996
@@ -309,6 +317,10 @@ subgroup-cardinality, and concrete-example witness layer.
 ### Lean 4 (Formal Proofs)
 
 ```bash
+# Recommended when this checkout lives in Dropbox/iCloud:
+# keep Lake's large dependency/build tree outside the synced repository.
+./scripts/use_external_lake_cache.sh
+
 cd lean
 
 # Install dependencies (requires Mathlib cache)
@@ -343,6 +355,7 @@ open boundaries, use [lean/THEOREM_GUIDE.md](/Users/mikepurvis/other/quadratic-r
 ### Web Visualization
 
 ```bash
+./scripts/use_external_site_cache.sh
 cd site
 yarn install
 yarn dev

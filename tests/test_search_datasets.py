@@ -10,12 +10,35 @@ from bridge_reptends import (
     build_claim_witness_rows,
     build_example_atlas,
     build_orbit_carry_frontier_groups,
+    certificate_first_scaffold_mapping_lint_payload,
+    certificate_fixture_mapping_lint_payload,
+    certificate_lean_fixture_payload,
+    certificate_lean_fixture_rows,
+    certificate_lean_stub_payload,
+    certificate_lean_stub_rows,
+    certificate_workbench_rows,
     chart_invariance_rows,
+    certified_positive_lookahead_coefficient_conflict_atlas_rows,
+    certified_positive_lookahead_coefficient_conflict_family_rows,
+    certified_positive_lookahead_coefficient_conflict_rows,
+    certified_positive_lookahead_state_window_rows,
+    composite68_congruence_family_rows,
+    composite68_cross_base_obstruction_sweep_rows,
     composite_profile_rows,
     find_legacy_counterexamples,
     instrument_atlas_rows,
     load_lean_worked_examples,
     load_throughlines,
+    observability_atlas_rows,
+    observability_instrument_comparison_rows,
+    observability_mod_stable_carry_loss_rows,
+    observability_next_source_shape_family_rows,
+    observability_program_atlas_rows,
+    observability_shape13_k4_mod_stable_carry_loss_rows,
+    observability_shape187_k188_family_rows,
+    observability_shape17_k4_family_rows,
+    observability_target_signature_rows,
+    observability_target_split_rows,
     orbit_carry_frontier_rows,
     orbit_carry_trace_rows,
     quotient_obstruction_family_rows,
@@ -548,6 +571,2592 @@ def test_visibility_optics_workbench_rows_and_cli_rank_signal() -> None:
     cli_rows = [ast.literal_eval(line) for line in result.stdout.splitlines() if line.strip()]
     assert cli_rows[0]["group"] == "workbench_summary"
     assert any(row.get("signal_class") == "same_core_drift" for row in cli_rows)
+
+
+def test_certified_positive_lookahead_rows_and_cli_surface_frontier_summary() -> None:
+    rows = certified_positive_lookahead_state_window_rows(max_n=1000, base=10, n_blocks=8)
+    assert rows[0]["group"] == "certified_positive_lookahead_summary"
+    assert rows[0]["smallest_exact_gap_numerator"] == 44
+    assert any(
+        row["group"] == "certified_positive_lookahead_case"
+        and row["n"] == 97
+        and row["theorem_frontier_status"] == "empirically_coefficient_functional_frontier"
+        for row in rows
+    )
+    assert any(
+        row["group"] == "certified_positive_lookahead_case"
+        and row["n"] == 68
+        and row["theorem_frontier_status"] == "coefficient_functionality_counterexample_candidate"
+        for row in rows
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bridge_reptends.search",
+            "visibility-certified-lookahead",
+            "--max",
+            "1000",
+            "--base",
+            "10",
+            "--blocks",
+            "8",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    cli_rows = [ast.literal_eval(line) for line in result.stdout.splitlines() if line.strip()]
+    assert cli_rows[0]["group"] == "certified_positive_lookahead_summary"
+    assert any(row.get("n") == 97 for row in cli_rows if row.get("group") == "certified_positive_lookahead_case")
+    assert any(row.get("n") == 996 for row in cli_rows if row.get("group") == "certified_positive_lookahead_case")
+    assert any(row.get("n") == 68 for row in cli_rows if row.get("group") == "certified_positive_lookahead_case")
+
+
+def test_coefficient_conflict_rows_and_cli_surface_first_obstruction() -> None:
+    rows = certified_positive_lookahead_coefficient_conflict_rows(
+        max_n=1000,
+        base=10,
+        n_blocks=8,
+        top=5,
+    )
+    assert rows[0]["group"] == "coefficient_conflict_summary"
+    first = rows[1]
+    assert first["group"] == "coefficient_conflict_witness"
+    assert first["n"] == 68
+    assert first["conflict_remainder_state"] == 4
+    assert first["conflict_coefficients"] == [588, 150528]
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bridge_reptends.search",
+            "visibility-coefficient-conflicts",
+            "--max",
+            "1000",
+            "--base",
+            "10",
+            "--blocks",
+            "8",
+            "--top",
+            "5",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    cli_rows = [ast.literal_eval(line) for line in result.stdout.splitlines() if line.strip()]
+    assert cli_rows[0]["group"] == "coefficient_conflict_summary"
+    assert cli_rows[1]["n"] == 68
+    assert cli_rows[1]["conflict_positions"] == [1, 5]
+    assert cli_rows[1]["conflict_carry_states"] == [0, 60]
+
+
+def test_coefficient_conflict_atlas_rows_and_cli_surface_cross_base() -> None:
+    rows = certified_positive_lookahead_coefficient_conflict_atlas_rows(
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+        top=12,
+    )
+    assert rows[0]["group"] == "coefficient_conflict_atlas_summary"
+    assert rows[0]["first_base10_conflict_tuple"] == [10, 68, 4, 10000, 147, 4, 1, 6208]
+    assert any(
+        row["group"] == "coefficient_conflict_atlas_case"
+        and row["base"] == 10
+        and row["n"] == 68
+        and row["base_conflict_rank"] == 1
+        for row in rows
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bridge_reptends.search",
+            "visibility-coefficient-conflict-atlas",
+            "--max",
+            "1200",
+            "--bases",
+            "7,10,12,30",
+            "--blocks",
+            "8",
+            "--top",
+            "20",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    cli_rows = [ast.literal_eval(line) for line in result.stdout.splitlines() if line.strip()]
+    assert cli_rows[0]["group"] == "coefficient_conflict_atlas_summary"
+    assert cli_rows[0]["first_base10_conflict_tuple"] == [10, 68, 4, 10000, 147, 4, 1, 6208]
+    assert any(
+        row.get("group") == "coefficient_conflict_atlas_case"
+        and row.get("base") == 10
+        and row.get("n") == 68
+        for row in cli_rows
+    )
+
+
+def test_coefficient_conflict_family_rows_and_cli_surface_recommends_composite68_family() -> None:
+    rows = certified_positive_lookahead_coefficient_conflict_family_rows(
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+        top=12,
+    )
+    assert rows[0]["group"] == "coefficient_conflict_family_summary"
+    assert rows[0]["composite68_cross_base_family_present"] is True
+    assert rows[0]["next_lean_theorem_recommendation"] == (
+        "classify_composite68_cross_base_hidden_output_conflict"
+    )
+    assert [10, 68, 4, 10000, 147, 4, 1, 6208] in rows[0]["recommended_family_member_tuples"]
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bridge_reptends.search",
+            "visibility-coefficient-conflict-families",
+            "--max",
+            "120",
+            "--bases",
+            "7,10,12,30",
+            "--blocks",
+            "8",
+            "--top",
+            "12",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    cli_rows = [ast.literal_eval(line) for line in result.stdout.splitlines() if line.strip()]
+    assert cli_rows[0]["group"] == "coefficient_conflict_family_summary"
+    assert cli_rows[0]["next_lean_theorem_recommendation"] == (
+        "classify_composite68_cross_base_hidden_output_conflict"
+    )
+    assert any(
+        row.get("group") == "coefficient_conflict_family"
+        and row.get("contains_base10_68") is True
+        and row.get("bases") == [10, 30]
+        for row in cli_rows
+    )
+
+
+def test_composite68_base_sweep_rows_and_cli_surface_find_family_signal() -> None:
+    rows = composite68_cross_base_obstruction_sweep_rows(max_base=120, n_blocks=8, top=0)
+    assert rows[0]["group"] == "composite68_cross_base_sweep_summary"
+    assert rows[0]["target_shape_bases"] == [10, 30, 32, 64, 66, 72, 98, 100]
+    assert rows[0]["base30_package_candidate_tuple"] == [30, 68, 3, 27000, 397, 4, 1, 10208]
+    assert rows[0]["recommended_next_lean_task"] == (
+        "add_composite68_base30_finite_package_then_cross_base_shape_lemma"
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bridge_reptends.search",
+            "visibility-composite68-base-sweep",
+            "--max-base",
+            "120",
+            "--blocks",
+            "8",
+            "--top",
+            "20",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    cli_rows = [ast.literal_eval(line) for line in result.stdout.splitlines() if line.strip()]
+    assert cli_rows[0]["group"] == "composite68_cross_base_sweep_summary"
+    assert cli_rows[0]["target_shape_bases"] == [10, 30, 32, 64, 66, 72, 98, 100]
+    assert any(
+        row.get("group") == "composite68_cross_base_sweep_case"
+        and row.get("base") == 30
+        and row.get("lean_package_role") == "next_base30_package_candidate"
+        and row.get("selected_block_base_mod_68") == 4
+        for row in cli_rows
+    )
+
+
+def test_composite68_congruence_family_rows_and_cli_surface_classify_family() -> None:
+    rows = composite68_congruence_family_rows(max_base=120, max_m=8, n_blocks=8, top=0)
+    assert rows[0]["group"] == "composite68_congruence_family_summary"
+    known_targets = {10, 30, 32, 64, 66, 72, 98, 100}
+    assert known_targets <= set(rows[0]["hidden_output_shape_bases"])
+    assert rows[0]["all_congruence_rows_have_k_eq_4"] is True
+    assert rows[0]["all_congruence_rows_have_B_mod_68_eq_4"] is True
+    assert rows[0]["lean_obstruction_covered_rows"] == rows[0]["total_congruence_rows"]
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bridge_reptends.search",
+            "visibility-composite68-congruence-family",
+            "--max-base",
+            "120",
+            "--max-m",
+            "8",
+            "--blocks",
+            "8",
+            "--top",
+            "0",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    cli_rows = [ast.literal_eval(line) for line in result.stdout.splitlines() if line.strip()]
+    assert cli_rows[0]["group"] == "composite68_congruence_family_summary"
+    assert known_targets <= set(cli_rows[0]["hidden_output_shape_bases"])
+    assert any(
+        row.get("group") == "composite68_congruence_family_case"
+        and row.get("base") == 10
+        and row.get("m") == 4
+        and row.get("selected_block_base_mod_68") == 4
+        and row.get("lean_obstruction_covered") is True
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "composite68_congruence_family_case"
+        and row.get("base") == 30
+        and row.get("m") == 3
+        and row.get("composite68_hidden_output_shape_match") is True
+        for row in cli_rows
+    )
+
+
+def test_certificate_workbench_rows_and_cli_surface_lean_ready_anchors() -> None:
+    rows = certificate_workbench_rows(
+        max_n=1200,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+        top=20,
+    )
+    assert rows[0]["group"] == "certificate_workbench_summary"
+    assert rows[0]["first_lean_ready_tuple"] == [10, 68, 4, 10000, 147, 4, 1, 6208]
+    assert any(
+        row["group"] == "certificate_workbench_case"
+        and row["base"] == 10
+        and row["n"] == 68
+        and row["certificate_class"] == "lean_ready_hidden_conflict"
+        for row in rows
+    )
+    assert any(
+        row["group"] == "certificate_workbench_case"
+        and row["base"] == 30
+        and row["n"] == 68
+        and row["lean_readiness"] == "existing_composite68_family_theorem"
+        for row in rows
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bridge_reptends.search",
+            "visibility-certificate-workbench",
+            "--max",
+            "1200",
+            "--bases",
+            "7,10,12,30",
+            "--blocks",
+            "8",
+            "--top",
+            "20",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    cli_rows = [ast.literal_eval(line) for line in result.stdout.splitlines() if line.strip()]
+    assert cli_rows[0]["group"] == "certificate_workbench_summary"
+    assert cli_rows[0]["recommended_next_lean_task"] == "reuse_composite68_family_certificate"
+    assert any(
+        row.get("group") == "certificate_workbench_case"
+        and row.get("base") == 10
+        and row.get("n") == 68
+        and row.get("certificate_class") == "lean_ready_hidden_conflict"
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "certificate_workbench_case"
+        and row.get("base") == 30
+        and row.get("n") == 68
+        and row.get("lean_readiness") == "existing_composite68_family_theorem"
+        for row in cli_rows
+    )
+
+
+def test_observability_atlas_rows_and_cli_surface_anchors() -> None:
+    rows = observability_atlas_rows(
+        max_n=1200,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+        top=20,
+    )
+    assert rows[0]["group"] == "observability_summary"
+    assert rows[0]["recommended_next_observability_task"] == (
+        "develop_composite68_observability_flagship"
+    )
+    assert any(
+        row["group"] == "hidden_coefficient_conflict"
+        and row["base"] == 10
+        and row["n"] == 68
+        and row["certificate_class"] == "lean_ready_hidden_conflict"
+        for row in rows
+    )
+    assert any(
+        row["group"] == "hidden_coefficient_conflict"
+        and row["base"] == 30
+        and row["n"] == 68
+        and row["lean_readiness"] == "existing_composite68_family_theorem"
+        for row in rows
+    )
+    assert any(
+        row["group"] == "coefficient_functional_frontier"
+        and row["base"] == 10
+        and row["n"] == 97
+        for row in rows
+    )
+    assert any(
+        row["group"] == "coefficient_functional_frontier"
+        and row["base"] == 10
+        and row["n"] == 996
+        for row in rows
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bridge_reptends.search",
+            "observability-atlas",
+            "--max",
+            "1200",
+            "--bases",
+            "7,10,12,30",
+            "--blocks",
+            "8",
+            "--top",
+            "20",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    cli_rows = [ast.literal_eval(line) for line in result.stdout.splitlines() if line.strip()]
+    assert cli_rows[0]["group"] == "observability_summary"
+    assert any(
+        row.get("group") == "hidden_coefficient_conflict"
+        and row.get("base") == 10
+        and row.get("n") == 68
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "hidden_coefficient_conflict"
+        and row.get("base") == 30
+        and row.get("n") == 68
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "coefficient_functional_frontier"
+        and row.get("base") == 10
+        and row.get("n") == 97
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "coefficient_functional_frontier"
+        and row.get("base") == 10
+        and row.get("n") == 996
+        for row in cli_rows
+    )
+
+
+def test_observability_program_atlas_rows_and_cli_surface() -> None:
+    rows = observability_program_atlas_rows(
+        max_n=1200,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+        top=50,
+    )
+    assert rows[0]["group"] == "observability_program_summary"
+    assert rows[0]["open_boundary_ids"] == [
+        "small_k_visibility_threshold",
+        "carry_dfa_factorization",
+    ]
+    assert rows[0]["source_pinned_positive_reconstruction_cases"] == 26
+    assert rows[0]["empirical_positive_reconstruction_candidates"] > 0
+    assert rows[0]["positive_reconstruction_arithmetic_criterion_id"] == (
+        "finite_remainder_state_injective_on_window"
+    )
+    assert rows[0]["positive_reconstruction_injective_window_criterion_cases"] == (
+        rows[0]["emitted_positive_reconstruction_candidates"]
+    )
+    assert rows[0]["positive_reconstruction_power_no_collision_criterion_id"] == (
+        "finite_remainder_power_residue_no_collision"
+    )
+    assert rows[0]["positive_reconstruction_power_no_collision_criterion_cases"] == (
+        rows[0]["emitted_positive_reconstruction_candidates"]
+    )
+    assert rows[0]["positive_reconstruction_power_no_wrap_criterion_id"] == (
+        "finite_remainder_power_residue_no_wrap"
+    )
+    assert rows[0]["positive_reconstruction_power_no_wrap_criterion_cases"] == 1
+    assert rows[0]["source_pinned_positive_reconstruction_power_no_wrap_cases"] == 1
+    assert rows[0]["first_unpinned_positive_reconstruction_tuple"] == [
+        7,
+        340,
+        3,
+        343,
+        1,
+        3,
+        1,
+        299,
+    ]
+    assert rows[0]["first_unpinned_positive_reconstruction_family_seed_tuples"] == [
+        [7, 170, 3, 343, 2, 3, 1, 255]
+    ]
+    assert rows[0]["positive_reconstruction_family_criterion_status"] == (
+        "lean_proved_explicit_divisor_family_criterion"
+    )
+    assert rows[0]["positive_reconstruction_family_criterion_moduli"] == [
+        17,
+        34,
+        68,
+        85,
+        170,
+        340,
+    ]
+    assert rows[0]["positive_reconstruction_family_factor_through_theorem"] == (
+        "QRTour.Base7K3PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+    )
+    assert rows[0]["recommended_positive_reconstruction_decision"] == (
+        "use_lean_proved_family_criterion_before_source_pinning_more_examples"
+    )
+    assert rows[0]["recommended_positive_reconstruction_next_task"] == (
+        "prove_or_reject_same_base_block_remainder_power_no_collision_family"
+    )
+    assert rows[0]["first_uncovered_positive_reconstruction_tuple"] == [
+        10,
+        361,
+        5,
+        100000,
+        277,
+        3,
+        1,
+        82603,
+    ]
+    assert rows[0][
+        "first_uncovered_positive_reconstruction_remainder_power_residue_window"
+    ] == [1, 3, 9, 27, 81, 243, 7, 21]
+    assert rows[0]["first_uncovered_positive_reconstruction_family_signal"] == (
+        "same_base_block_remainder_as_source_pinned_candidate"
+    )
+    assert rows[0]["first_uncovered_positive_reconstruction_family_seed_tuples"] == [
+        [10, 277, 5, 100000, 361, 3, 1, 31479]
+    ]
+    assert rows[0]["first_uncovered_positive_reconstruction_decision"] == (
+        "pursue_family_criterion_before_source_pinning_more_examples"
+    )
+    assert rows[0]["first_uncovered_positive_reconstruction_next_task"] == (
+        "prove_or_reject_same_base_block_remainder_power_no_collision_family"
+    )
+    assert any(
+        row.get("group") == "observability_program_lane"
+        and row.get("program_lane_id") == "composite68_shape17_obstruction_lane"
+        for row in rows
+    )
+    assert any(
+        row.get("group") == "observability_program_lane"
+        and row.get("program_lane_id") == "positive_reconstruction_lane"
+        for row in rows
+    )
+    assert any(
+        row.get("group") == "observability_program_family"
+        and row.get("program_family_id") == "shape187_k188_same_position_scaling"
+        for row in rows
+    )
+    assert any(
+        row.get("group") == "observability_program_family"
+        and row.get("program_family_id") == "shape13_k4_mod_stable_carry_loss"
+        for row in rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 10
+        and row.get("n") == 97
+        for row in rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 10
+        and row.get("n") == 996
+        and row.get("positive_reconstruction_source_pinned") is True
+        and row.get("positive_reconstruction_factor_through_theorem")
+        == "actual996_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+        and row.get("positive_reconstruction_arithmetic_criterion_status")
+        == "source_pinned_sufficient_criterion_satisfied"
+        for row in rows
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bridge_reptends.search",
+            "observability-program-atlas",
+            "--max",
+            "1200",
+            "--bases",
+            "7,10,12,30",
+            "--blocks",
+            "8",
+            "--top",
+            "50",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    cli_rows = [ast.literal_eval(line) for line in result.stdout.splitlines() if line.strip()]
+    assert cli_rows[0]["group"] == "observability_program_summary"
+    assert cli_rows[0]["first_unpinned_positive_reconstruction_tuple"] == [
+        7,
+        340,
+        3,
+        343,
+        1,
+        3,
+        1,
+        299,
+    ]
+    assert cli_rows[0][
+        "first_unpinned_positive_reconstruction_remainder_power_residue_window"
+    ] == [1, 3, 9, 27, 81, 243, 49, 147]
+    assert cli_rows[0]["recommended_positive_reconstruction_next_task"] == (
+        "prove_or_reject_same_base_block_remainder_power_no_collision_family"
+    )
+    assert cli_rows[0]["first_uncovered_positive_reconstruction_tuple"] == [
+        10,
+        361,
+        5,
+        100000,
+        277,
+        3,
+        1,
+        82603,
+    ]
+    assert cli_rows[0][
+        "first_uncovered_positive_reconstruction_remainder_power_residue_window"
+    ] == [1, 3, 9, 27, 81, 243, 7, 21]
+    assert cli_rows[0]["first_uncovered_positive_reconstruction_family_seed_tuples"] == [
+        [10, 277, 5, 100000, 361, 3, 1, 31479]
+    ]
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 30
+        and row.get("n") == 897
+        and row.get("positive_reconstruction_frontier_covered") is True
+        and row.get("positive_reconstruction_frontier_coverage_status")
+        == "lean_proved_explicit_divisor_family_criterion"
+        and row.get("positive_reconstruction_frontier_coverage_theorem")
+        == "QRTour.Base30K3PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 10
+        and row.get("n") == 498
+        and row.get("positive_reconstruction_frontier_covered") is True
+        and row.get("positive_reconstruction_frontier_coverage_status")
+        == "lean_proved_explicit_divisor_family_criterion"
+        and row.get("positive_reconstruction_frontier_coverage_theorem")
+        == "QRTour.Base10K4PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 10
+        and row.get("n") == 714
+        and row.get("positive_reconstruction_frontier_covered") is True
+        and row.get("positive_reconstruction_frontier_coverage_status")
+        == "lean_proved_explicit_divisor_family_criterion"
+        and row.get("positive_reconstruction_frontier_coverage_theorem")
+        == "QRTour.Base10Stride4K4PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 12
+        and row.get("n") == 575
+        and row.get("positive_reconstruction_source_pinned") is True
+        and row.get("positive_reconstruction_namespace") == "QRTour.FutureBase12N575"
+        and row.get("positive_reconstruction_frontier_covered") is True
+        and row.get("positive_reconstruction_frontier_coverage_status")
+        == "source_pinned_finite_factor_through_theorem"
+        and row.get("remainder_power_residue_window")
+        == [1, 3, 9, 27, 81, 243, 154, 462]
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 12
+        and row.get("n") == 75
+        and row.get("positive_reconstruction_frontier_covered") is True
+        and row.get("positive_reconstruction_frontier_coverage_status")
+        == "lean_proved_explicit_divisor_family_criterion"
+        and row.get("positive_reconstruction_frontier_coverage_theorem")
+        == "QRTour.Base12K3PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+        and row.get("positive_reconstruction_frontier_coverage_moduli")
+        == [23, 25, 69, 75, 115, 345, 575, 1725]
+        and row.get("remainder_power_residue_window")
+        == [1, 3, 9, 27, 6, 18, 54, 12]
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 10
+        and row.get("n") == 997
+        and row.get("positive_reconstruction_source_pinned") is True
+        and row.get("positive_reconstruction_namespace") == "QRTour.FutureBase10N997"
+        and row.get("remainder_power_residue_window")
+        == [1, 3, 9, 27, 81, 243, 729, 193]
+        and row.get("positive_reconstruction_frontier_covered") is True
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 7
+        and row.get("n") == 1199
+        and row.get("positive_reconstruction_source_pinned") is True
+        and row.get("positive_reconstruction_namespace") == "QRTour.FutureBase7N1199"
+        and row.get("remainder_power_residue_window")
+        == [1, 3, 9, 27, 81, 243, 729, 988]
+        and row.get("positive_reconstruction_frontier_covered") is True
+        for row in cli_rows
+    )
+    wide_rows = observability_program_atlas_rows(
+        max_n=1200,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+        top=80,
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 7
+        and row.get("m") == 6
+        and row.get("n") == 997
+        and row.get("positive_reconstruction_source_pinned") is False
+        and row.get("positive_reconstruction_frontier_covered") is True
+        and row.get("positive_reconstruction_frontier_coverage_theorem")
+        == "QRTour.Base7Stride6K3PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+        and row.get("positive_reconstruction_frontier_coverage_moduli")
+        == [59, 118, 997, 1994, 58823, 117646]
+        for row in wide_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 10
+        and row.get("m") == 5
+        and row.get("n") == 289
+        and row.get("positive_reconstruction_source_pinned") is False
+        and row.get("positive_reconstruction_frontier_covered") is True
+        and row.get("positive_reconstruction_frontier_coverage_theorem")
+        == "QRTour.Base10Stride5K6PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+        and row.get("positive_reconstruction_frontier_coverage_moduli")
+        == [17, 34, 173, 289, 346, 578, 2941, 5882, 49997, 99994]
+        and row.get("remainder_power_residue_window")
+        == [1, 6, 36, 216, 140, 262, 127, 184]
+        for row in wide_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 12
+        and row.get("m") == 5
+        and row.get("n") == 289
+        and row.get("positive_reconstruction_source_pinned") is False
+        and row.get("positive_reconstruction_frontier_covered") is True
+        and row.get("positive_reconstruction_frontier_coverage_status")
+        == "lean_proved_explicit_divisor_family_criterion"
+        and row.get("positive_reconstruction_frontier_coverage_theorem")
+        == "QRTour.Base12Stride5K3PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+        and row.get("positive_reconstruction_frontier_coverage_moduli")
+        == [
+            17,
+            41,
+            51,
+            119,
+            123,
+            287,
+            289,
+            357,
+            697,
+            861,
+            867,
+            2023,
+            2091,
+            4879,
+            6069,
+            11849,
+            14637,
+            35547,
+            82943,
+            248829,
+        ]
+        and row.get("remainder_power_residue_window")
+        == [1, 3, 9, 27, 81, 243, 151, 164]
+        for row in wide_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 10
+        and row.get("m") == 5
+        and row.get("n") == 641
+        and row.get("positive_reconstruction_source_pinned") is False
+        and row.get("positive_reconstruction_frontier_covered") is True
+        and row.get("positive_reconstruction_frontier_coverage_status")
+        == "lean_proved_explicit_divisor_family_criterion"
+        and row.get("positive_reconstruction_frontier_coverage_theorem")
+        == "QRTour.Base10Stride5K4PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+        and row.get("positive_reconstruction_frontier_coverage_moduli")
+        == [641, 1282, 1923, 2564, 3846, 7692, 8333, 16666, 24999, 33332, 49998, 99996]
+        and row.get("remainder_power_residue_window")
+        == [1, 4, 16, 64, 256, 383, 250, 359]
+        for row in wide_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 12
+        and row.get("m") == 5
+        and row.get("n") == 149
+        and row.get("positive_reconstruction_source_pinned") is True
+        and row.get("positive_reconstruction_namespace") == "QRTour.FutureBase12N149"
+        and row.get("positive_reconstruction_frontier_coverage_theorem")
+        == "coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+        and row.get("remainder_power_residue_window")
+        == [1, 2, 4, 8, 16, 32, 64, 128]
+        and row.get("remainder_power_unreduced_window")
+        == [1, 2, 4, 8, 16, 32, 64, 128]
+        and row.get("positive_reconstruction_hyp_remainder_power_residue_no_wrap")
+        is True
+        and row.get("positive_reconstruction_power_no_wrap_criterion_status")
+        == "source_pinned_power_no_wrap_sufficient_criterion_satisfied"
+        for row in wide_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 12
+        and row.get("m") == 5
+        and row.get("n") == 226
+        and row.get("positive_reconstruction_rank") == 57
+        and row.get("positive_reconstruction_source_pinned") is True
+        and row.get("positive_reconstruction_namespace") == "QRTour.FutureBase12N226"
+        and row.get("positive_reconstruction_frontier_covered") is True
+        and row.get("positive_reconstruction_frontier_coverage_status")
+        == "source_pinned_finite_factor_through_theorem"
+        and row.get("positive_reconstruction_frontier_coverage_theorem")
+        == "coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+        and row.get("remainder_power_residue_window")
+        == [1, 6, 36, 216, 166, 92, 100, 148]
+        and row.get("raw_coefficient_window")
+        == [1101, 6606, 39636, 237816, 1426896, 8561376, 51368256, 308209536]
+        for row in wide_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 7
+        and row.get("m") == 3
+        and row.get("n") == 338
+        and row.get("positive_reconstruction_rank") == 58
+        and row.get("positive_reconstruction_source_pinned") is True
+        and row.get("positive_reconstruction_namespace") == "QRTour.FutureBase7N338"
+        and row.get("positive_reconstruction_frontier_covered") is True
+        and row.get("positive_reconstruction_frontier_coverage_status")
+        == "source_pinned_finite_factor_through_theorem"
+        and row.get("positive_reconstruction_frontier_coverage_theorem")
+        == "coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_two"
+        and row.get("remainder_power_residue_window")
+        == [1, 5, 25, 125, 287, 83, 77, 47]
+        and row.get("raw_coefficient_window")
+        == [1, 5, 25, 125, 625, 3125, 15625, 78125]
+        for row in wide_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 12
+        and row.get("n") == 146
+        and row.get("positive_reconstruction_source_pinned") is True
+        and row.get("positive_reconstruction_namespace") == "QRTour.FutureBase12N146"
+        and row.get("positive_reconstruction_frontier_covered") is True
+        and row.get("positive_reconstruction_frontier_coverage_status")
+        == "source_pinned_finite_factor_through_theorem"
+        and row.get("remainder_power_residue_window")
+        == [1, 4, 16, 64, 110, 2, 8, 32]
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 12
+        and row.get("n") == 73
+        and row.get("positive_reconstruction_source_pinned") is False
+        and row.get("positive_reconstruction_frontier_covered") is True
+        and row.get("positive_reconstruction_frontier_coverage_status")
+        == "lean_proved_explicit_divisor_family_criterion"
+        and row.get("positive_reconstruction_frontier_coverage_theorem")
+        == "QRTour.Base12Stride4K4PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+        and row.get("positive_reconstruction_frontier_coverage_moduli")
+        == [71, 73, 142, 146, 284, 292, 5183, 10366, 20732]
+        and row.get("remainder_power_residue_window")
+        == [1, 4, 16, 64, 37, 2, 8, 32]
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 12
+        and row.get("n") == 47
+        and row.get("positive_reconstruction_source_pinned") is True
+        and row.get("positive_reconstruction_namespace") == "QRTour.FutureBase12N47"
+        and row.get("positive_reconstruction_frontier_covered") is True
+        and row.get("positive_reconstruction_frontier_coverage_status")
+        == "source_pinned_finite_factor_through_theorem"
+        and row.get("remainder_power_residue_window")
+        == [1, 3, 9, 27, 34, 8, 24, 25]
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 12
+        and row.get("n") == 141
+        and row.get("positive_reconstruction_source_pinned") is False
+        and row.get("positive_reconstruction_frontier_covered") is True
+        and row.get("positive_reconstruction_frontier_coverage_status")
+        == "lean_proved_explicit_divisor_family_criterion"
+        and row.get("positive_reconstruction_frontier_coverage_theorem")
+        == "QRTour.Base12Stride2K3PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+        and row.get("positive_reconstruction_frontier_coverage_moduli")
+        == [47, 141]
+        and row.get("remainder_power_residue_window")
+        == [1, 3, 9, 27, 81, 102, 24, 72]
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 30
+        and row.get("n") == 794
+        and row.get("positive_reconstruction_source_pinned") is True
+        and row.get("positive_reconstruction_namespace") == "QRTour.FutureBase30N794"
+        and row.get("positive_reconstruction_frontier_covered") is True
+        and row.get("positive_reconstruction_frontier_coverage_status")
+        == "source_pinned_finite_factor_through_theorem"
+        and row.get("remainder_power_residue_window")
+        == [1, 4, 16, 64, 256, 230, 126, 504]
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 7
+        and row.get("n") == 113
+        and row.get("positive_reconstruction_source_pinned") is True
+        and row.get("positive_reconstruction_namespace") == "QRTour.FutureBase7N113"
+        and row.get("positive_reconstruction_frontier_covered") is True
+        and row.get("positive_reconstruction_frontier_coverage_status")
+        == "source_pinned_finite_factor_through_theorem"
+        and row.get("positive_reconstruction_frontier_coverage_theorem")
+        == "coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_two"
+        and row.get("remainder_power_residue_window")
+        == [1, 4, 16, 64, 30, 7, 28, 112]
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 12
+        and row.get("n") == 691
+        and row.get("positive_reconstruction_source_pinned") is True
+        and row.get("positive_reconstruction_namespace") == "QRTour.FutureBase12N691"
+        and row.get("positive_reconstruction_frontier_covered") is True
+        and row.get("positive_reconstruction_frontier_coverage_status")
+        == "source_pinned_finite_factor_through_theorem"
+        and row.get("positive_reconstruction_frontier_coverage_theorem")
+        == "coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+        and row.get("remainder_power_residue_window")
+        == [1, 6, 36, 216, 605, 175, 359, 81]
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 10
+        and row.get("n") == 578
+        and row.get("positive_reconstruction_source_pinned") is True
+        and row.get("positive_reconstruction_namespace") == "QRTour.FutureBase10N578"
+        and row.get("positive_reconstruction_frontier_covered") is True
+        and row.get("positive_reconstruction_frontier_coverage_status")
+        == "source_pinned_finite_factor_through_theorem"
+        and row.get("positive_reconstruction_frontier_coverage_theorem")
+        == "coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+        and row.get("remainder_power_residue_window")
+        == [1, 6, 36, 216, 140, 262, 416, 184]
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 10
+        and row.get("n") == 277
+        and row.get("positive_reconstruction_source_pinned") is True
+        and row.get("positive_reconstruction_namespace") == "QRTour.FutureBase10N277"
+        and row.get("positive_reconstruction_frontier_covered") is True
+        and row.get("positive_reconstruction_frontier_coverage_status")
+        == "source_pinned_finite_factor_through_theorem"
+        and row.get("positive_reconstruction_frontier_coverage_theorem")
+        == "coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+        and row.get("remainder_power_residue_window")
+        == [1, 3, 9, 27, 81, 243, 175, 248]
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 7
+        and row.get("n") == 669
+        and row.get("positive_reconstruction_source_pinned") is True
+        and row.get("positive_reconstruction_namespace") == "QRTour.FutureBase7N669"
+        and row.get("positive_reconstruction_frontier_covered") is True
+        and row.get("positive_reconstruction_frontier_coverage_status")
+        == "source_pinned_finite_factor_through_theorem"
+        and row.get("positive_reconstruction_frontier_coverage_theorem")
+        == "coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+        and row.get("remainder_power_residue_window")
+        == [1, 4, 16, 64, 256, 355, 82, 328]
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 30
+        and row.get("n") == 397
+        and row.get("positive_reconstruction_source_pinned") is False
+        and row.get("positive_reconstruction_frontier_covered") is True
+        and row.get("positive_reconstruction_frontier_coverage_status")
+        == "lean_proved_explicit_divisor_family_criterion"
+        and row.get("positive_reconstruction_frontier_coverage_theorem")
+        == "QRTour.Base30Stride3K4PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+        and row.get("positive_reconstruction_frontier_coverage_moduli")
+        == [397, 794, 1588, 6749, 13498, 26996]
+        and row.get("remainder_power_residue_window")
+        == [1, 4, 16, 64, 256, 230, 126, 107]
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 10
+        and row.get("n") == 769
+        and row.get("positive_reconstruction_source_pinned") is True
+        and row.get("positive_reconstruction_namespace") == "QRTour.FutureBase10N769"
+        and row.get("positive_reconstruction_frontier_covered") is True
+        and row.get("positive_reconstruction_frontier_coverage_status")
+        == "source_pinned_finite_factor_through_theorem"
+        and row.get("remainder_power_residue_window")
+        == [1, 3, 9, 27, 81, 243, 729, 649]
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 10
+        and row.get("n") == 294
+        and row.get("positive_reconstruction_source_pinned") is True
+        and row.get("positive_reconstruction_namespace") == "QRTour.FutureBase10N294"
+        and row.get("positive_reconstruction_frontier_covered") is True
+        and row.get("positive_reconstruction_frontier_coverage_status")
+        == "source_pinned_finite_factor_through_theorem"
+        and row.get("remainder_power_residue_window")
+        == [1, 4, 16, 64, 256, 142, 274, 214]
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 7
+        and row.get("n") == 109
+        and row.get("positive_reconstruction_source_pinned") is False
+        and row.get("positive_reconstruction_frontier_covered") is True
+        and row.get("positive_reconstruction_frontier_coverage_status")
+        == "lean_proved_explicit_divisor_family_criterion"
+        and row.get("positive_reconstruction_frontier_coverage_theorem")
+        == "QRTour.Base7Stride4K3PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+        and row.get("positive_reconstruction_frontier_coverage_moduli")
+        == [109, 218, 1199, 2398]
+        and row.get("remainder_power_residue_window")
+        == [1, 3, 9, 27, 81, 25, 75, 7]
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 7
+        and row.get("n") == 218
+        and row.get("positive_reconstruction_source_pinned") is False
+        and row.get("positive_reconstruction_frontier_covered") is True
+        and row.get("positive_reconstruction_frontier_coverage_status")
+        == "lean_proved_explicit_divisor_family_criterion"
+        and row.get("positive_reconstruction_frontier_coverage_theorem")
+        == "QRTour.Base7Stride4K3PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+        and row.get("positive_reconstruction_frontier_coverage_moduli")
+        == [109, 218, 1199, 2398]
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 7
+        and row.get("n") == 465
+        and row.get("positive_reconstruction_source_pinned") is False
+        and row.get("positive_reconstruction_frontier_covered") is True
+        and row.get("positive_reconstruction_frontier_coverage_status")
+        == "lean_proved_explicit_divisor_family_criterion"
+        and row.get("positive_reconstruction_frontier_coverage_theorem")
+        == "QRTour.Base7Stride6K4PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+        and row.get("positive_reconstruction_frontier_coverage_moduli")
+        == [
+            23,
+            55,
+            69,
+            115,
+            155,
+            165,
+            253,
+            345,
+            465,
+            713,
+            759,
+            1265,
+            1705,
+            2139,
+            3565,
+            3795,
+            5115,
+            7843,
+            10695,
+            23529,
+            39215,
+            117645,
+        ]
+        and row.get("remainder_power_residue_window")
+        == [1, 4, 16, 64, 256, 94, 376, 109]
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 7
+        and row.get("n") == 542
+        and row.get("positive_reconstruction_source_pinned") is True
+        and row.get("positive_reconstruction_namespace") == "QRTour.FutureBase7N542"
+        and row.get("positive_reconstruction_frontier_covered") is True
+        and row.get("positive_reconstruction_frontier_coverage_status")
+        == "source_pinned_finite_factor_through_theorem"
+        and row.get("remainder_power_residue_window")
+        == [1, 5, 25, 125, 83, 415, 449, 77]
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 7
+        and row.get("n") == 46
+        and row.get("positive_reconstruction_source_pinned") is True
+        and row.get("positive_reconstruction_namespace") == "QRTour.FutureBase7N46"
+        and row.get("positive_reconstruction_frontier_covered") is True
+        and row.get("positive_reconstruction_frontier_coverage_status")
+        == "source_pinned_finite_factor_through_theorem"
+        and row.get("remainder_power_residue_window")
+        == [1, 3, 9, 27, 35, 13, 39, 25]
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 7
+        and row.get("n") == 141
+        and row.get("positive_reconstruction_source_pinned") is True
+        and row.get("positive_reconstruction_namespace") == "QRTour.FutureBase7N141"
+        and row.get("positive_reconstruction_frontier_covered") is True
+        and row.get("positive_reconstruction_frontier_coverage_status")
+        == "source_pinned_finite_factor_through_theorem"
+        and row.get("remainder_power_residue_window")
+        == [1, 4, 16, 64, 115, 37, 7, 28]
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 12
+        and row.get("n") == 142
+        and row.get("positive_reconstruction_source_pinned") is True
+        and row.get("positive_reconstruction_namespace") == "QRTour.FutureBase12N142"
+        and row.get("remainder_state_window") == [1, 2, 4, 8, 16, 32, 64, 128]
+        and row.get("positive_reconstruction_hyp_remainder_state_window_injective")
+        is True
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 7
+        and row.get("n") == 47
+        and row.get("positive_reconstruction_source_pinned") is True
+        and row.get("positive_reconstruction_namespace") == "QRTour.FutureBase7N47"
+        and row.get("remainder_state_window") == [1, 2, 4, 8, 16, 32, 17, 34]
+        and row.get("positive_reconstruction_hyp_remainder_state_window_injective")
+        is True
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 12
+        and row.get("n") == 71
+        and row.get("positive_reconstruction_source_pinned") is True
+        and row.get("positive_reconstruction_namespace") == "QRTour.FutureBase12N71"
+        and row.get("remainder_state_window") == [1, 2, 4, 8, 16, 32, 64, 57]
+        and row.get("positive_reconstruction_hyp_remainder_state_window_injective")
+        is True
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 10
+        and row.get("n") == 49
+        and row.get("positive_reconstruction_source_pinned") is True
+        and row.get("positive_reconstruction_namespace") == "QRTour.FutureBase10N49"
+        and row.get("remainder_state_window") == [1, 2, 4, 8, 16, 32, 15, 30]
+        and row.get("positive_reconstruction_hyp_remainder_state_window_injective")
+        is True
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 30
+        and row.get("n") == 299
+        and row.get("positive_reconstruction_source_pinned") is True
+        and row.get("positive_reconstruction_namespace") == "QRTour.FutureBase30N299"
+        and row.get("remainder_state_window") == [1, 3, 9, 27, 81, 243, 131, 94]
+        and row.get("remainder_power_residue_window")
+        == [1, 3, 9, 27, 81, 243, 131, 94]
+        and row.get("positive_reconstruction_hyp_remainder_state_window_injective")
+        is True
+        and row.get(
+            "positive_reconstruction_hyp_remainder_power_residue_window_injective"
+        )
+        is True
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 7
+        and row.get("n") == 170
+        and row.get("positive_reconstruction_source_pinned") is True
+        and row.get("positive_reconstruction_namespace") == "QRTour.FutureBase7N170"
+        and row.get("remainder_state_window") == [1, 3, 9, 27, 81, 73, 49, 147]
+        and row.get("raw_coefficient_window") == [2, 6, 18, 54, 162, 486, 1458, 4374]
+        and row.get("remainder_power_residue_window")
+        == [1, 3, 9, 27, 81, 73, 49, 147]
+        and row.get("positive_reconstruction_hyp_remainder_state_window_injective")
+        is True
+        and row.get(
+            "positive_reconstruction_hyp_remainder_power_residue_window_injective"
+        )
+        is True
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 7
+        and row.get("n") == 340
+        and row.get("positive_reconstruction_source_pinned") is False
+        and row.get("positive_reconstruction_power_no_collision_criterion_status")
+        == "empirical_power_no_collision_sufficient_criterion_satisfied"
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_positive_reconstruction_candidate"
+        and row.get("base") == 10
+        and row.get("n") == 98
+        and row.get("positive_reconstruction_source_pinned") is True
+        and row.get("positive_reconstruction_namespace") == "QRTour.FutureBase10N98"
+        and row.get("remainder_state_window") == [1, 2, 4, 8, 16, 32, 64, 30]
+        and row.get("positive_reconstruction_hyp_remainder_state_window_injective")
+        is True
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_program_next_task"
+        and row.get("program_next_task_id")
+        == "prove_or_reject_same_base_block_remainder_power_no_collision_family"
+        for row in cli_rows
+    )
+
+
+def test_observability_target_split_rows_and_cli_surface_anchors() -> None:
+    rows = observability_target_split_rows(
+        max_n=1200,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+        top=20,
+    )
+    assert rows[0]["group"] == "observability_target_split_summary"
+    assert "raw_coefficient_nat" in rows[0]["observability_targets"]
+    assert "displayed_prefix" in rows[0]["observability_targets"]
+
+    assert any(
+        row["group"] == "observability_target_split_case"
+        and row["base"] == 10
+        and row["n"] == 68
+        and row["observability_target_id"] == "carried_block_value"
+        and row["target_hides_raw_coefficient_conflict"] is True
+        for row in rows
+    )
+    assert any(
+        row["group"] == "observability_target_split_case"
+        and row["base"] == 30
+        and row["n"] == 68
+        and row["observability_target_id"] == "raw_coefficient_nat"
+        and row["target_observability_status"] == "factor_through_obstructed"
+        for row in rows
+    )
+    assert any(
+        row["group"] == "observability_target_split_case"
+        and row["base"] == 10
+        and row["n"] == 97
+        and row["observability_target_id"] == "coefficient_mod_block_base"
+        and row["target_observability_status"] == "factor_through_candidate"
+        for row in rows
+    )
+    assert any(
+        row["group"] == "observability_target_split_case"
+        and row["base"] == 10
+        and row["n"] == 996
+        and row["observability_target_id"] == "raw_coefficient_nat"
+        and row["target_observability_status"] == "factor_through_candidate"
+        for row in rows
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bridge_reptends.search",
+            "observability-target-split",
+            "--max",
+            "1200",
+            "--bases",
+            "7,10,12,30",
+            "--blocks",
+            "8",
+            "--top",
+            "20",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    cli_rows = [ast.literal_eval(line) for line in result.stdout.splitlines() if line.strip()]
+    assert cli_rows[0]["group"] == "observability_target_split_summary"
+    assert any(
+        row.get("group") == "observability_target_split_case"
+        and row.get("base") == 10
+        and row.get("n") == 68
+        and row.get("observability_target_id") == "carried_block_value"
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_target_split_case"
+        and row.get("base") == 30
+        and row.get("n") == 68
+        for row in cli_rows
+    )
+
+
+def test_observability_target_signature_rows_and_cli_surface_families() -> None:
+    rows = observability_target_signature_rows(
+        max_n=1200,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+        top=20,
+    )
+    assert rows[0]["group"] == "observability_target_signature_summary"
+    assert rows[0]["recommended_next_target_signature_task"] == (
+        "classify_hidden_output_normalization_family"
+    )
+
+    family_rows = [
+        row
+        for row in rows
+        if row["group"] == "observability_target_signature_family"
+    ]
+    assert any(
+        row["signature_family_class"]
+        == "raw_coefficient_obstructed_carried_output_hidden"
+        and row["contains_base10_68"] is True
+        and row["contains_base30_68"] is True
+        and row["carried_block_value_hidden_cases"] == row["member_count"]
+        for row in family_rows
+    )
+    assert any(
+        row["signature_family_class"] == "all_pointwise_targets_functional_frontier"
+        and row["contains_base10_97"] is True
+        and row["contains_base10_996"] is True
+        and row["first_nonfunctional_pointwise_target"] is None
+        for row in family_rows
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bridge_reptends.search",
+            "observability-target-signatures",
+            "--max",
+            "1200",
+            "--bases",
+            "7,10,12,30",
+            "--blocks",
+            "8",
+            "--top",
+            "20",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    cli_rows = [ast.literal_eval(line) for line in result.stdout.splitlines() if line.strip()]
+    assert cli_rows[0]["group"] == "observability_target_signature_summary"
+    assert any(
+        row.get("group") == "observability_target_signature_family"
+        and row.get("contains_base10_68") is True
+        and row.get("contains_base30_68") is True
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_target_signature_family"
+        and row.get("contains_base10_97") is True
+        and row.get("contains_base10_996") is True
+        for row in cli_rows
+    )
+
+
+def test_observability_mod_stable_carry_loss_rows_and_cli_surface() -> None:
+    rows = observability_mod_stable_carry_loss_rows(
+        max_n=1200,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+        top=20,
+    )
+    assert rows[0]["group"] == "observability_mod_stable_carry_loss_summary"
+    assert rows[0]["first_mod_stable_carry_loss_tuple"] == [
+        30,
+        26,
+        1,
+        30,
+        1,
+        4,
+        5,
+        11927264,
+    ]
+    assert any(
+        row["group"] == "observability_mod_stable_carry_loss_case"
+        and row["base"] == 30
+        and row["n"] == 26
+        and row["coefficient_mod_block_base_preserved"] is True
+        and row["first_nonfunctional_pointwise_target_after_raw"] == "carry_state"
+        for row in rows
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bridge_reptends.search",
+            "observability-mod-stable-carry-loss",
+            "--max",
+            "1200",
+            "--bases",
+            "7,10,12,30",
+            "--blocks",
+            "8",
+            "--top",
+            "20",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    cli_rows = [ast.literal_eval(line) for line in result.stdout.splitlines() if line.strip()]
+    assert cli_rows[0]["group"] == "observability_mod_stable_carry_loss_summary"
+    assert any(
+        row.get("group") == "observability_mod_stable_carry_loss_case"
+        and row.get("base") == 30
+        and row.get("n") == 26
+        and row.get("target_signature_family_class") == "mod_stable_carry_state_loss"
+        for row in cli_rows
+    )
+
+
+def test_observability_shape13_k4_mod_stable_carry_loss_rows_and_cli_surface() -> None:
+    rows = observability_shape13_k4_mod_stable_carry_loss_rows(
+        max_n=1200,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+        top=20,
+    )
+    assert rows[0]["group"] == (
+        "observability_shape13_k4_mod_stable_carry_loss_summary"
+    )
+    assert rows[0]["source_symmetry_signature"] == (
+        "periodic_modulus=13;k=4;position_gap=6"
+    )
+    assert rows[0]["source_core_tuple"] == [30, 13, 1, 30, 2, 4, 5, 23854528]
+    assert rows[0]["shifted_member_tuple"] == [30, 26, 1, 30, 1, 4, 5, 11927264]
+    assert rows[0]["mod_stable_shift_proved_cases"] == 1
+    assert rows[0]["mod_stable_shift_candidate_cases"] == 0
+    assert rows[0]["shape13_k4_scale_two_hypothesis_ready_members"] == 1
+    assert rows[0]["shape13_k4_scale_two_hypothesis_failed_members"] == 1
+    assert rows[0]["shape13_k4_scale_two_unnamed_candidate_members"] == 0
+    assert rows[0]["shape13_k4_scale_two_unnamed_candidate_tuples"] == []
+    assert rows[0]["shape13_k4_scale_two_candidate_mining_status"] == (
+        "no_unnamed_scale_two_ready_members_under_current_bounds"
+    )
+    assert rows[0]["shape13_k4_current_scan_status"] == (
+        "only_base30_core_and_shift_pair_under_current_bounds"
+    )
+    assert rows[0]["shape13_k4_current_scan_stop_condition"] == (
+        "do_not_add_new_shape13_k4_finite_package_until_wider_scan_emits_new_member"
+    )
+    assert rows[0]["recommended_next_observability_task"] == (
+        "mine_wider_shape13_k4_members_or_generalize_scale_two_criterion"
+    )
+    assert any(
+        row["group"] == "observability_shape13_k4_mod_stable_carry_loss_member"
+        and row["base"] == 30
+        and row["n"] == 13
+        and row["shape13_k4_family_role"] == "source_core_reference"
+        for row in rows
+    )
+    assert any(
+        row["group"] == "observability_shape13_k4_mod_stable_carry_loss_member"
+        and row["base"] == 30
+        and row["n"] == 26
+        and row["shape13_k4_family_role"] == "base_supported_shift_member"
+        and row["shape13_k4_position_shift_from_core"] == 1
+        and row["shape13_k4_preperiod_shift_from_core"] == 1
+        for row in rows
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bridge_reptends.search",
+            "observability-shape13-k4-mod-stable-carry-loss",
+            "--max",
+            "1200",
+            "--bases",
+            "7,10,12,30",
+            "--blocks",
+            "8",
+            "--top",
+            "20",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    cli_rows = [ast.literal_eval(line) for line in result.stdout.splitlines() if line.strip()]
+    assert cli_rows[0]["group"] == (
+        "observability_shape13_k4_mod_stable_carry_loss_summary"
+    )
+    assert cli_rows[0]["shape13_k4_current_scan_stop_condition"] == (
+        "do_not_add_new_shape13_k4_finite_package_until_wider_scan_emits_new_member"
+    )
+    assert cli_rows[0]["shape13_k4_scale_two_unnamed_candidate_members"] == 0
+    assert cli_rows[0]["shape13_k4_scale_two_candidate_mining_status"] == (
+        "no_unnamed_scale_two_ready_members_under_current_bounds"
+    )
+    assert any(
+        row.get("group") == "observability_shape13_k4_mod_stable_carry_loss_member"
+        and row.get("base") == 30
+        and row.get("n") == 26
+        and row.get("shape13_k4_support_status")
+        == "mod_stable_carry_loss_shift_proved_by_arithmetic_criterion"
+        and row.get("shape13_k4_named_instantiation")
+        == "QRTour.Shape13K4.base30_n26_sameCore_scale_two_hiddenCarryBlockValue_shift"
+        and row.get("shape13_k4_next_lean_task")
+        == "generalize_shape13_scale_two_criterion_beyond_base30_13_26"
+        and row.get("shape13_k4_scale_two_hypotheses_hold") is True
+        and row.get("shape13_k4_hyp_base_prime_support_times_two_eq_k") is True
+        for row in cli_rows
+    )
+
+
+def test_observability_instrument_comparison_rows_and_cli_surface_shapes() -> None:
+    rows = observability_instrument_comparison_rows(
+        max_n=1200,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+        top=3,
+    )
+    assert rows[0]["group"] == "observability_instrument_summary"
+    assert rows[0]["first_source_symmetry_signature"] == (
+        "periodic_modulus=17;k=4;position_gap=4"
+    )
+    assert any(
+        row["group"] == "observability_source_symmetry_shape"
+        and row["source_symmetry_signature"]
+        == "periodic_modulus=17;k=4;position_gap=4"
+        and row["hidden_bases"] == [10, 30]
+        and row["shifted_bases"] == [10]
+        for row in rows
+    )
+    assert any(
+        row["group"] == "observability_instrument_member"
+        and row["base"] == 10
+        and row["n"] == 68
+        and row["instrument_observation_status"] == "hides_source_symmetry"
+        for row in rows
+    )
+    assert any(
+        row["group"] == "observability_instrument_member"
+        and row["base"] == 30
+        and row["n"] == 68
+        and row["instrument_observation_status"] == "hides_source_symmetry"
+        for row in rows
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bridge_reptends.search",
+            "observability-instrument-compare",
+            "--max",
+            "1200",
+            "--bases",
+            "7,10,12,30",
+            "--blocks",
+            "8",
+            "--top",
+            "3",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    cli_rows = [ast.literal_eval(line) for line in result.stdout.splitlines() if line.strip()]
+    assert cli_rows[0]["group"] == "observability_instrument_summary"
+    assert any(
+        row.get("group") == "observability_source_symmetry_shape"
+        and row.get("source_symmetry_signature")
+        == "periodic_modulus=17;k=4;position_gap=4"
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_instrument_member"
+        and row.get("base") == 30
+        and row.get("n") == 68
+        for row in cli_rows
+    )
+
+
+def test_observability_shape17_k4_family_rows_and_cli_surface() -> None:
+    rows = observability_shape17_k4_family_rows(
+        max_n=1200,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+        top=20,
+    )
+    assert rows[0]["group"] == "observability_shape17_k4_family_summary"
+    assert rows[0]["n_values"] == [17, 34, 68]
+    assert any(
+        row["group"] == "observability_shape17_k4_family_member"
+        and row["base"] == 10
+        and row["n"] == 17
+        and row["source_symmetry_family_role"] == "periodic_core_shifted_member"
+        for row in rows
+    )
+    assert any(
+        row["group"] == "observability_shape17_k4_family_member"
+        and row["base"] == 10
+        and row["n"] == 68
+        and row["source_symmetry_family_role"] == "composite68_style_member"
+        and row["same_core_shift_support_status"]
+        == "same_core_shift_proved_by_arithmetic_criterion"
+        for row in rows
+    )
+    assert any(
+        row["group"] == "observability_shape17_k4_family_member"
+        and row["base"] == 30
+        and row["n"] == 68
+        and row["lean_readiness"] == "existing_composite68_family_theorem"
+        and row["same_core_shift_support_status"]
+        == "same_core_shift_proved_by_arithmetic_criterion"
+        for row in rows
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bridge_reptends.search",
+            "observability-shape17-k4-family",
+            "--max",
+            "1200",
+            "--bases",
+            "7,10,12,30",
+            "--blocks",
+            "8",
+            "--top",
+            "20",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    cli_rows = [ast.literal_eval(line) for line in result.stdout.splitlines() if line.strip()]
+    assert cli_rows[0]["group"] == "observability_shape17_k4_family_summary"
+    assert any(
+        row.get("group") == "observability_shape17_k4_family_member"
+        and row.get("base") == 10
+        and row.get("n") == 17
+        and row.get("position_shift_from_canonical") == -1
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_shape17_k4_family_member"
+        and row.get("base") == 30
+        and row.get("n") == 68
+        and row.get("same_core_shift_support_status")
+        == "same_core_shift_proved_by_arithmetic_criterion"
+        and row.get("same_core_shift_named_instantiation")
+        == "QRTour.Shape17K4.base30_n68_sameCore_scale_one_hiddenCarryBlockValue_shift"
+        and "same_core_hyp_scaled_quotient_remainder_lt_gap" in row
+        and "same_core_hyp_scaled_block_remainder_lt_block_base" in row
+        for row in cli_rows
+    )
+
+
+def test_observability_next_source_shape_family_rows_and_cli_surface() -> None:
+    rows = observability_next_source_shape_family_rows(
+        max_n=1200,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+        top=20,
+    )
+    assert rows[0]["group"] == "observability_next_source_shape_family_summary"
+    assert rows[0]["source_symmetry_signature"] == (
+        "periodic_modulus=187;k=188;position_gap=6"
+    )
+    assert rows[0]["selected_shape_rank"] == 2
+    assert any(
+        row["group"] == "observability_next_source_shape_family_member"
+        and row["base"] == 30
+        and row["n"] == 374
+        and row["same_core_multiplier"] == 2
+        and row["base_local_coefficient_scale"] == 2
+        and row["same_core_shift_support_status"] == "finite_only_hidden_conflict"
+        for row in rows
+    )
+    assert any(
+        row["group"] == "observability_next_source_shape_family_member"
+        and row["base"] == 10
+        and row["n"] == 748
+        and row["same_core_multiplier"] == 4
+        and row["base_local_coefficient_scale"] == 1
+        for row in rows
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bridge_reptends.search",
+            "observability-next-source-shape-family",
+            "--max",
+            "1200",
+            "--bases",
+            "7,10,12,30",
+            "--blocks",
+            "8",
+            "--top",
+            "20",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    cli_rows = [ast.literal_eval(line) for line in result.stdout.splitlines() if line.strip()]
+    assert cli_rows[0]["group"] == "observability_next_source_shape_family_summary"
+    assert cli_rows[0]["source_symmetry_signature"] == (
+        "periodic_modulus=187;k=188;position_gap=6"
+    )
+    assert any(
+        row.get("group") == "observability_next_source_shape_family_member"
+        and row.get("base") == 30
+        and row.get("n") == 374
+        and row.get("same_core_shift_support_status") == "finite_only_hidden_conflict"
+        for row in cli_rows
+    )
+
+
+def test_observability_shape187_k188_family_rows_and_cli_surface() -> None:
+    rows = observability_shape187_k188_family_rows(
+        max_n=1200,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+        top=20,
+    )
+    assert rows[0]["group"] == "observability_shape187_k188_family_summary"
+    assert rows[0]["same_position_scaling_proved_cases"] == 4
+    assert rows[0]["same_position_scaling_candidate_cases"] == 2
+    assert rows[0]["first_finite_package_namespace"] == "QRTour.FutureBase30N374"
+    assert rows[0]["recommended_next_observability_task"] == (
+        "extend_same_position_idempotent_criterion_to_remaining_shape187_rows_or_add_next_finite_package"
+    )
+    assert rows[0]["same_position_scaling_exported_hypothesis_record"] == (
+        "BlockCoordinate.SamePositionScalingHiddenCarryBlockValueHypotheses"
+    )
+    assert rows[0]["same_position_scaling_exported_hypothesis_adapter"] == (
+        "BlockCoordinate.samePositionScaling_hiddenCarryBlockValue_one_two_of_exportedHypotheses"
+    )
+    assert any(
+        row["group"] == "observability_shape187_k188_family_member"
+        and row["base"] == 10
+        and row["n"] == 374
+        and row["same_position_scaling_support_status"]
+        == "same_position_scaling_proved_by_arithmetic_criterion"
+        and row["same_position_scaling_named_instantiation"]
+        == "QRTour.FutureBase10N374.coordinate_samePositionIdempotent_hiddenCarryBlockValue_one_two"
+        and row["same_position_scaling_named_hypothesis_instantiation"]
+        == "QRTour.FutureBase10N374.coordinate_samePositionScalingHiddenCarryBlockValueHypotheses"
+        and row["same_position_scaling_named_finite_conflict_instantiation"]
+        == "QRTour.FutureBase10N374.coordinate_stateAlignments_one_two_certifiedConflict_eight_two"
+        and row["same_position_scaling_expected_carry_states"] == [94, 17766]
+        for row in rows
+    )
+    assert any(
+        row["group"] == "observability_shape187_k188_family_member"
+        and row["base"] == 12
+        and row["n"] == 374
+        and row["same_position_scaling_support_status"]
+        == "same_position_scaling_proved_by_arithmetic_criterion"
+        and row["same_position_scaling_named_instantiation"]
+        == "QRTour.FutureBase12N374.coordinate_samePositionIdempotent_hiddenCarryBlockValue_one_two"
+        and row["same_position_scaling_named_hypothesis_instantiation"]
+        == "QRTour.FutureBase12N374.coordinate_samePositionScalingHiddenCarryBlockValueHypotheses"
+        and row["same_position_scaling_named_finite_conflict_instantiation"] is None
+        and row["same_position_scaling_expected_carry_states"] == [94, 17766]
+        for row in rows
+    )
+    assert any(
+        row["group"] == "observability_shape187_k188_family_member"
+        and row["base"] == 30
+        and row["n"] == 374
+        and row["same_position_scaling_support_status"]
+        == "same_position_scaling_proved_by_arithmetic_criterion"
+        and row["same_position_scaling_named_instantiation"]
+        == "QRTour.FutureBase30N374.coordinate_samePositionIdempotent_hiddenCarryBlockValue_one_two"
+        and row["same_position_scaling_named_hypothesis_instantiation"]
+        == "QRTour.FutureBase30N374.coordinate_samePositionScalingHiddenCarryBlockValueHypotheses"
+        and row["same_position_scaling_expected_carry_states"] == [94, 17766]
+        for row in rows
+    )
+    assert any(
+        row["group"] == "observability_shape187_k188_family_member"
+        and row["base"] == 30
+        and row["n"] == 748
+        and row["same_position_scaling_support_status"]
+        == "same_position_scaling_proved_by_arithmetic_criterion"
+        and row["same_position_scaling_named_instantiation"]
+        == "QRTour.FutureBase30N748.coordinate_samePositionIdempotent_hiddenCarryBlockValue_one_two"
+        and row["same_position_scaling_named_hypothesis_instantiation"]
+        == "QRTour.FutureBase30N748.coordinate_samePositionScalingHiddenCarryBlockValueHypotheses"
+        and row["same_position_scaling_expected_carry_states"] == [47, 8883]
+        for row in rows
+    )
+    assert any(
+        row["group"] == "observability_shape187_k188_family_member"
+        and row["base"] == 10
+        and row["n"] == 748
+        and row["same_position_scaling_support_status"]
+        == "same_position_scaling_criterion_candidate"
+        and row["same_position_scaling_named_hypothesis_instantiation"] is None
+        and row["same_position_scaling_exported_hypothesis_adapter"]
+        == "BlockCoordinate.samePositionScaling_hiddenCarryBlockValue_one_two_of_exportedHypotheses"
+        for row in rows
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bridge_reptends.search",
+            "observability-shape187-k188-family",
+            "--max",
+            "1200",
+            "--bases",
+            "7,10,12,30",
+            "--blocks",
+            "8",
+            "--top",
+            "20",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    cli_rows = [ast.literal_eval(line) for line in result.stdout.splitlines() if line.strip()]
+    assert cli_rows[0]["group"] == "observability_shape187_k188_family_summary"
+    assert cli_rows[0]["source_symmetry_signature"] == (
+        "periodic_modulus=187;k=188;position_gap=6"
+    )
+    assert cli_rows[0]["same_position_scaling_exported_hypothesis_record"] == (
+        "BlockCoordinate.SamePositionScalingHiddenCarryBlockValueHypotheses"
+    )
+    assert any(
+        row.get("group") == "observability_shape187_k188_family_member"
+        and row.get("base") == 10
+        and row.get("n") == 374
+        and row.get("same_position_scaling_support_status")
+        == "same_position_scaling_proved_by_arithmetic_criterion"
+        and row.get("same_position_scaling_named_instantiation")
+        == "QRTour.FutureBase10N374.coordinate_samePositionIdempotent_hiddenCarryBlockValue_one_two"
+        and row.get("same_position_scaling_named_hypothesis_instantiation")
+        == "QRTour.FutureBase10N374.coordinate_samePositionScalingHiddenCarryBlockValueHypotheses"
+        and row.get("same_position_scaling_named_finite_conflict_instantiation")
+        == "QRTour.FutureBase10N374.coordinate_stateAlignments_one_two_certifiedConflict_eight_two"
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_shape187_k188_family_member"
+        and row.get("base") == 12
+        and row.get("n") == 374
+        and row.get("same_position_scaling_support_status")
+        == "same_position_scaling_proved_by_arithmetic_criterion"
+        and row.get("same_position_scaling_named_instantiation")
+        == "QRTour.FutureBase12N374.coordinate_samePositionIdempotent_hiddenCarryBlockValue_one_two"
+        and row.get("same_position_scaling_named_hypothesis_instantiation")
+        == "QRTour.FutureBase12N374.coordinate_samePositionScalingHiddenCarryBlockValueHypotheses"
+        and row.get("same_position_scaling_named_finite_conflict_instantiation") is None
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_shape187_k188_family_member"
+        and row.get("base") == 30
+        and row.get("n") == 374
+        and row.get("same_position_scaling_support_status")
+        == "same_position_scaling_proved_by_arithmetic_criterion"
+        and row.get("same_position_scaling_named_instantiation")
+        == "QRTour.FutureBase30N374.coordinate_samePositionIdempotent_hiddenCarryBlockValue_one_two"
+        and row.get("same_position_scaling_named_hypothesis_instantiation")
+        == "QRTour.FutureBase30N374.coordinate_samePositionScalingHiddenCarryBlockValueHypotheses"
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_shape187_k188_family_member"
+        and row.get("base") == 30
+        and row.get("n") == 748
+        and row.get("same_position_scaling_support_status")
+        == "same_position_scaling_proved_by_arithmetic_criterion"
+        and row.get("same_position_scaling_named_instantiation")
+        == "QRTour.FutureBase30N748.coordinate_samePositionIdempotent_hiddenCarryBlockValue_one_two"
+        and row.get("same_position_scaling_named_hypothesis_instantiation")
+        == "QRTour.FutureBase30N748.coordinate_samePositionScalingHiddenCarryBlockValueHypotheses"
+        for row in cli_rows
+    )
+    assert any(
+        row.get("group") == "observability_shape187_k188_family_member"
+        and row.get("base") == 10
+        and row.get("n") == 748
+        and row.get("same_position_scaling_support_status")
+        == "same_position_scaling_criterion_candidate"
+        and row.get("same_position_scaling_named_hypothesis_instantiation") is None
+        and row.get("same_position_scaling_exported_hypothesis_adapter")
+        == "BlockCoordinate.samePositionScaling_hiddenCarryBlockValue_one_two_of_exportedHypotheses"
+        for row in cli_rows
+    )
+
+
+def test_certificate_lean_fixture_payload_and_cli_emit_source_pinned_json() -> None:
+    payload = certificate_lean_fixture_payload(
+        max_n=1200,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+        top=20,
+    )
+    rows = certificate_lean_fixture_rows(
+        max_n=1200,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+        top=20,
+    )
+    assert payload["schema"] == "certificate-lean-fixtures-v1"
+    assert payload["fixtures"] == rows
+    assert payload["summary"]["emitted_fixture_count"] == 2
+    assert payload["summary"]["namespaces"] == [
+        "QRTour.Composite68",
+        "QRTour.Composite68Base30",
+    ]
+    assert payload["summary"]["first_tuple"] == [10, 68, 4, 10000, 147, 4, 1, 6208]
+    assert payload["summary"]["open_boundary_ids"] == [
+        "small_k_visibility_threshold",
+        "carry_dfa_factorization",
+    ]
+    assert {
+        fixture["copyable_lean_stub"]["projection_accessor"]
+        for fixture in payload["fixtures"]
+    } == {"not_remainderToCoefficientFunctional"}
+    assert all(
+        fixture["copyable_lean_stub"]["recommended_theorem_name"]
+        == f"{fixture['certificate_id']}_not_remainderToCoefficientFunctional"
+        for fixture in payload["fixtures"]
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bridge_reptends.search",
+            "visibility-certificate-lean-fixtures",
+            "--max",
+            "1200",
+            "--bases",
+            "7,10,12,30",
+            "--blocks",
+            "8",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    cli_payload = json.loads(result.stdout)
+    assert cli_payload["schema"] == "certificate-lean-fixtures-v1"
+    assert cli_payload["summary"]["emitted_fixture_count"] == 2
+    assert [fixture["namespace"] for fixture in cli_payload["fixtures"]] == [
+        "QRTour.Composite68",
+        "QRTour.Composite68Base30",
+    ]
+    assert [fixture["certificate_tuple"] for fixture in cli_payload["fixtures"]] == [
+        [10, 68, 4, 10000, 147, 4, 1, 6208],
+        [30, 68, 3, 27000, 397, 4, 1, 10208],
+    ]
+    assert all("copyable_lean_stub" in fixture for fixture in cli_payload["fixtures"])
+
+
+def test_certificate_lean_stub_payload_and_cli_emit_linted_scaffold_json() -> None:
+    payload = certificate_lean_stub_payload(
+        max_n=1200,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+        top=20,
+    )
+    rows = certificate_lean_stub_rows(
+        max_n=1200,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+        top=20,
+    )
+    assert payload["schema"] == "certificate-lean-stubs-v1"
+    assert payload["summary"]["source_schema"] == "certificate-lean-fixtures-v1"
+    assert payload["summary"]["emitted_stub_count"] == 2
+    assert payload["summary"]["lint_passed"] == 2
+    assert payload["summary"]["lint_failed"] == 0
+    assert payload["stubs"] == rows
+    assert [stub["namespace"] for stub in rows] == [
+        "QRTour.Composite68",
+        "QRTour.Composite68Base30",
+    ]
+    assert [stub["certificate_tuple"] for stub in rows] == [
+        [10, 68, 4, 10000, 147, 4, 1, 6208],
+        [30, 68, 3, 27000, 397, 4, 1, 10208],
+    ]
+    assert {stub["stub_scaffold_status"] for stub in rows} == {
+        "copyable_projection_stub"
+    }
+    assert {stub["lint_status"] for stub in rows} == {"passed"}
+    assert all(not stub["lint_errors"] for stub in rows)
+    assert all(
+        stub["copyable_lean_code"].startswith("/-- Copyable fixture stub")
+        for stub in rows
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bridge_reptends.search",
+            "visibility-certificate-lean-stubs",
+            "--max",
+            "1200",
+            "--bases",
+            "7,10,12,30",
+            "--blocks",
+            "8",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    cli_payload = json.loads(result.stdout)
+    assert cli_payload["schema"] == "certificate-lean-stubs-v1"
+    assert cli_payload["summary"]["lint_failed"] == 0
+    assert [stub["stub_theorem_name"] for stub in cli_payload["stubs"]] == [
+        "base10_n68_m4_blocks8_L1_not_remainderToCoefficientFunctional",
+        "base30_n68_m3_blocks8_L1_not_remainderToCoefficientFunctional",
+    ]
+
+
+def test_certificate_fixture_mapping_lint_stages_future_namespace_without_promotion() -> None:
+    source_ready_payload = certificate_fixture_mapping_lint_payload(
+        candidate_base=10,
+        candidate_n=68,
+        namespace="QRTour.Composite68",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(10,),
+        n_blocks=8,
+    )
+    assert source_ready_payload["schema"] == "certificate-fixture-mapping-lint-v1"
+    assert source_ready_payload["summary"]["mapping_lint_status"] == (
+        "source_ready_existing_mapping"
+    )
+    assert source_ready_payload["summary"]["source_ready"] is True
+    assert source_ready_payload["summary"]["promotes_claims"] is False
+    assert source_ready_payload["candidate"]["certificate_tuple"] == [
+        10,
+        68,
+        4,
+        10000,
+        147,
+        4,
+        1,
+        6208,
+    ]
+    assert source_ready_payload["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ] == []
+    assert source_ready_payload["proposed_mapping"]["source_checks"][
+        "missing_theorem_guide_mentions"
+    ] == []
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bridge_reptends.search",
+            "visibility-certificate-lean-stubs",
+            "--max",
+            "120",
+            "--bases",
+            "30",
+            "--blocks",
+            "8",
+            "--candidate-base",
+            "30",
+            "--candidate-n",
+            "7",
+            "--namespace",
+            "QRTour.FutureN7",
+            "--module-path",
+            "lean/QRTour/Examples.lean",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    staged_payload = json.loads(result.stdout)
+    assert staged_payload["schema"] == "certificate-fixture-mapping-lint-v1"
+    assert staged_payload["summary"]["mapping_lint_status"] == (
+        "scaffold_ready_pending_lean_source"
+    )
+    assert staged_payload["summary"]["source_ready"] is False
+    assert staged_payload["summary"]["scaffold_ready"] is True
+    assert staged_payload["summary"]["promotes_claims"] is False
+    assert staged_payload["candidate"]["certificate_tuple"][:2] == [30, 7]
+    source_checks = staged_payload["proposed_mapping"]["source_checks"]
+    assert source_checks["module_path_exists"] is True
+    assert source_checks["namespace_found"] is False
+    assert source_checks["missing_source_theorem_names"]
+    assert source_checks["missing_theorem_guide_mentions"]
+    assert staged_payload["proposed_mapping"]["stub_lint_status"] == "passed"
+    recipe = staged_payload["proposed_mapping"]["source_pinning_recipe"]
+    assert recipe["recipe_id"] == "source_pinning_recipe_v1"
+    assert recipe["status_transition"] == [
+        "scaffold_ready_pending_lean_source",
+        "source_ready_existing_mapping",
+    ]
+    assert recipe["required_theorem_names"] == staged_payload["proposed_mapping"][
+        "required_theorem_names"
+    ]
+    assert recipe["record_theorem_name"] == (
+        "coordinate_stateAlignments_zero_three_certifiedConflict_eight_two"
+    )
+    assert recipe["projection_accessor"] == "not_remainderToCoefficientFunctional"
+    assert recipe["copyable_stub_theorem_name"] == (
+        "base30_n7_m1_blocks8_L2_not_remainderToCoefficientFunctional"
+    )
+    assert "proposed_mapping.copyable_lean_stub.code" == recipe[
+        "copyable_stub_field"
+    ]
+    assert any("theorem-guide mentions" in step for step in recipe["steps"])
+    assert "No registry IDs" in recipe["promotion_boundary"]
+
+    n7_source_ready = certificate_fixture_mapping_lint_payload(
+        candidate_base=30,
+        candidate_n=7,
+        candidate_m=1,
+        namespace="QRTour.FutureBase30N7",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+    )
+    assert n7_source_ready["summary"]["mapping_lint_status"] == (
+        "source_ready_existing_mapping"
+    )
+    assert n7_source_ready["summary"]["source_ready"] is True
+    assert n7_source_ready["proposed_mapping"]["required_theorem_names"] == [
+        "coordinate_stateAlignments_zero_three_certifiedConflict_eight_two",
+        "coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_two",
+        "base30_n7_m1_blocks8_L2_not_remainderToCoefficientFunctional",
+    ]
+    assert n7_source_ready["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ] == []
+    assert n7_source_ready["proposed_mapping"]["source_checks"][
+        "missing_theorem_guide_mentions"
+    ] == []
+
+    n14_source_ready = certificate_fixture_mapping_lint_payload(
+        candidate_base=30,
+        candidate_n=14,
+        candidate_m=1,
+        namespace="QRTour.FutureBase30N14",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+    )
+    assert n14_source_ready["summary"]["mapping_lint_status"] == (
+        "source_ready_existing_mapping"
+    )
+    assert n14_source_ready["summary"]["source_ready"] is True
+    assert n14_source_ready["proposed_mapping"]["required_theorem_names"] == [
+        "coordinate_stateAlignments_one_four_certifiedConflict_eight_two",
+        "coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_two",
+        "base30_n14_m1_blocks8_L2_not_remainderToCoefficientFunctional",
+    ]
+    assert n14_source_ready["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ] == []
+    assert n14_source_ready["proposed_mapping"]["source_checks"][
+        "missing_theorem_guide_mentions"
+    ] == []
+
+    n28_source_ready = certificate_fixture_mapping_lint_payload(
+        candidate_base=30,
+        candidate_n=28,
+        candidate_m=1,
+        namespace="QRTour.FutureBase30N28",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+    )
+    assert n28_source_ready["summary"]["mapping_lint_status"] == (
+        "source_ready_existing_mapping"
+    )
+    assert n28_source_ready["summary"]["source_ready"] is True
+    assert n28_source_ready["proposed_mapping"]["required_theorem_names"] == [
+        "coordinate_stateAlignments_two_five_certifiedConflict_eight_two",
+        "coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_two",
+        "base30_n28_m1_blocks8_L2_not_remainderToCoefficientFunctional",
+    ]
+    assert n28_source_ready["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ] == []
+    assert n28_source_ready["proposed_mapping"]["source_checks"][
+        "missing_theorem_guide_mentions"
+    ] == []
+
+    base12_n10_source_ready = certificate_fixture_mapping_lint_payload(
+        candidate_base=12,
+        candidate_n=10,
+        candidate_m=1,
+        namespace="QRTour.FutureBase12N10",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+    )
+    assert base12_n10_source_ready["summary"]["mapping_lint_status"] == (
+        "source_ready_existing_mapping"
+    )
+    assert base12_n10_source_ready["summary"]["source_ready"] is True
+    assert base12_n10_source_ready["proposed_mapping"]["required_theorem_names"] == [
+        "coordinate_stateAlignments_one_five_certifiedConflict_eight_three",
+        "coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_three",
+        "base12_n10_m1_blocks8_L3_not_remainderToCoefficientFunctional",
+    ]
+    assert base12_n10_source_ready["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ] == []
+    assert base12_n10_source_ready["proposed_mapping"]["source_checks"][
+        "missing_theorem_guide_mentions"
+    ] == []
+
+    base10_n102_source_ready = certificate_fixture_mapping_lint_payload(
+        candidate_base=10,
+        candidate_n=102,
+        candidate_m=4,
+        namespace="QRTour.FutureBase10N102",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+    )
+    assert base10_n102_source_ready["summary"]["mapping_lint_status"] == (
+        "source_ready_existing_mapping"
+    )
+    assert base10_n102_source_ready["summary"]["source_ready"] is True
+    assert base10_n102_source_ready["proposed_mapping"]["required_theorem_names"] == [
+        "coordinate_stateAlignments_one_five_certifiedConflict_eight_one",
+        "coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_one",
+        "base10_n102_m4_blocks8_L1_not_remainderToCoefficientFunctional",
+    ]
+    assert base10_n102_source_ready["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ] == []
+    assert base10_n102_source_ready["proposed_mapping"]["source_checks"][
+        "missing_theorem_guide_mentions"
+    ] == []
+
+    base7_n5_source_ready = certificate_fixture_mapping_lint_payload(
+        candidate_base=7,
+        candidate_n=5,
+        candidate_m=1,
+        namespace="QRTour.FutureBase7N5",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+    )
+    assert base7_n5_source_ready["summary"]["mapping_lint_status"] == (
+        "source_ready_existing_mapping"
+    )
+    assert base7_n5_source_ready["summary"]["source_ready"] is True
+    assert base7_n5_source_ready["proposed_mapping"]["required_theorem_names"] == [
+        "coordinate_stateAlignments_zero_four_certifiedConflict_eight_five",
+        "coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_five",
+        "base7_n5_m1_blocks8_L5_not_remainderToCoefficientFunctional",
+    ]
+    assert base7_n5_source_ready["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ] == []
+    assert base7_n5_source_ready["proposed_mapping"]["source_checks"][
+        "missing_theorem_guide_mentions"
+    ] == []
+
+    base12_n5_source_ready = certificate_fixture_mapping_lint_payload(
+        candidate_base=12,
+        candidate_n=5,
+        candidate_m=1,
+        namespace="QRTour.FutureBase12N5",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+    )
+    assert base12_n5_source_ready["summary"]["mapping_lint_status"] == (
+        "source_ready_existing_mapping"
+    )
+    assert base12_n5_source_ready["summary"]["source_ready"] is True
+    assert base12_n5_source_ready["proposed_mapping"]["required_theorem_names"] == [
+        "coordinate_stateAlignments_zero_four_certifiedConflict_eight_four",
+        "coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_four",
+        "base12_n5_m1_blocks8_L4_not_remainderToCoefficientFunctional",
+    ]
+    assert base12_n5_source_ready["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ] == []
+    assert base12_n5_source_ready["proposed_mapping"]["source_checks"][
+        "missing_theorem_guide_mentions"
+    ] == []
+
+    base30_n34_source_ready = certificate_fixture_mapping_lint_payload(
+        candidate_base=30,
+        candidate_n=34,
+        candidate_m=3,
+        namespace="QRTour.FutureBase30N34",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+    )
+    assert base30_n34_source_ready["summary"]["mapping_lint_status"] == (
+        "source_ready_existing_mapping"
+    )
+    assert base30_n34_source_ready["summary"]["source_ready"] is True
+    assert base30_n34_source_ready["proposed_mapping"]["required_theorem_names"] == [
+        "coordinate_stateAlignments_one_five_certifiedConflict_eight_one",
+        "coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_one",
+        "base30_n34_m3_blocks8_L1_not_remainderToCoefficientFunctional",
+    ]
+    assert base30_n34_source_ready["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ] == []
+    assert base30_n34_source_ready["proposed_mapping"]["source_checks"][
+        "missing_theorem_guide_mentions"
+    ] == []
+
+    base7_n93_source_ready = certificate_fixture_mapping_lint_payload(
+        candidate_base=7,
+        candidate_n=93,
+        candidate_m=6,
+        namespace="QRTour.FutureBase7N93",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+    )
+    assert base7_n93_source_ready["summary"]["mapping_lint_status"] == (
+        "source_ready_existing_mapping"
+    )
+    assert base7_n93_source_ready["summary"]["source_ready"] is True
+    assert base7_n93_source_ready["proposed_mapping"]["required_theorem_names"] == [
+        "coordinate_stateAlignments_zero_five_certifiedConflict_eight_one",
+        "coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_one",
+        "base7_n93_m6_blocks8_L1_not_remainderToCoefficientFunctional",
+    ]
+    assert base7_n93_source_ready["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ] == []
+    assert base7_n93_source_ready["proposed_mapping"]["source_checks"][
+        "missing_theorem_guide_mentions"
+    ] == []
+
+    base10_n39_source_ready = certificate_fixture_mapping_lint_payload(
+        candidate_base=10,
+        candidate_n=39,
+        candidate_m=5,
+        namespace="QRTour.FutureBase10N39",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+    )
+    assert base10_n39_source_ready["summary"]["mapping_lint_status"] == (
+        "source_ready_existing_mapping"
+    )
+    assert base10_n39_source_ready["summary"]["source_ready"] is True
+    assert base10_n39_source_ready["proposed_mapping"]["required_theorem_names"] == [
+        "coordinate_stateAlignments_zero_six_certifiedConflict_eight_one",
+        "coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_one",
+        "base10_n39_m5_blocks8_L1_not_remainderToCoefficientFunctional",
+    ]
+    assert base10_n39_source_ready["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ] == []
+    assert base10_n39_source_ready["proposed_mapping"]["source_checks"][
+        "missing_theorem_guide_mentions"
+    ] == []
+
+    base10_n78_source_ready = certificate_fixture_mapping_lint_payload(
+        candidate_base=10,
+        candidate_n=78,
+        candidate_m=5,
+        namespace="QRTour.FutureBase10N78",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+    )
+    assert base10_n78_source_ready["summary"]["mapping_lint_status"] == (
+        "source_ready_existing_mapping"
+    )
+    assert base10_n78_source_ready["summary"]["source_ready"] is True
+    assert base10_n78_source_ready["proposed_mapping"]["required_theorem_names"] == [
+        "coordinate_stateAlignments_one_seven_certifiedConflict_eight_one",
+        "coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_one",
+        "base10_n78_m5_blocks8_L1_not_remainderToCoefficientFunctional",
+    ]
+    assert base10_n78_source_ready["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ] == []
+    assert base10_n78_source_ready["proposed_mapping"]["source_checks"][
+        "missing_theorem_guide_mentions"
+    ] == []
+
+    base10_n96_source_ready = certificate_fixture_mapping_lint_payload(
+        candidate_base=10,
+        candidate_n=96,
+        candidate_m=2,
+        namespace="QRTour.FutureBase10N96",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+    )
+    assert base10_n96_source_ready["summary"]["mapping_lint_status"] == (
+        "source_ready_existing_mapping"
+    )
+    assert base10_n96_source_ready["summary"]["source_ready"] is True
+    assert base10_n96_source_ready["proposed_mapping"]["required_theorem_names"] == [
+        "coordinate_stateAlignments_three_four_certifiedConflict_eight_three",
+        "coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_three",
+        "base10_n96_m2_blocks8_L3_not_remainderToCoefficientFunctional",
+    ]
+    assert base10_n96_source_ready["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ] == []
+    assert base10_n96_source_ready["proposed_mapping"]["source_checks"][
+        "missing_theorem_guide_mentions"
+    ] == []
+
+    base12_n35_source_ready = certificate_fixture_mapping_lint_payload(
+        candidate_base=12,
+        candidate_n=35,
+        candidate_m=2,
+        namespace="QRTour.FutureBase12N35",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+    )
+    assert base12_n35_source_ready["summary"]["mapping_lint_status"] == (
+        "source_ready_existing_mapping"
+    )
+    assert base12_n35_source_ready["summary"]["source_ready"] is True
+    assert base12_n35_source_ready["proposed_mapping"]["required_theorem_names"] == [
+        "coordinate_stateAlignments_zero_six_certifiedConflict_eight_three",
+        "coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_three",
+        "base12_n35_m2_blocks8_L3_not_remainderToCoefficientFunctional",
+    ]
+    assert base12_n35_source_ready["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ] == []
+    assert base12_n35_source_ready["proposed_mapping"]["source_checks"][
+        "missing_theorem_guide_mentions"
+    ] == []
+
+    base12_n31_source_ready = certificate_fixture_mapping_lint_payload(
+        candidate_base=12,
+        candidate_n=31,
+        candidate_m=6,
+        namespace="QRTour.FutureBase12N31",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+    )
+    assert base12_n31_source_ready["summary"]["mapping_lint_status"] == (
+        "source_ready_existing_mapping"
+    )
+    assert base12_n31_source_ready["summary"]["source_ready"] is True
+    assert base12_n31_source_ready["proposed_mapping"]["required_theorem_names"] == [
+        "coordinate_stateAlignments_zero_five_certifiedConflict_eight_one",
+        "coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_one",
+        "base12_n31_m6_blocks8_L1_not_remainderToCoefficientFunctional",
+    ]
+    assert base12_n31_source_ready["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ] == []
+    assert base12_n31_source_ready["proposed_mapping"]["source_checks"][
+        "missing_theorem_guide_mentions"
+    ] == []
+
+    auto_payload = certificate_first_scaffold_mapping_lint_payload(
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+    )
+    assert auto_payload["schema"] == "certificate-fixture-mapping-lint-v1"
+    assert auto_payload["summary"]["candidate_selection_mode"] == "first_scaffold_only"
+    assert auto_payload["summary"]["auto_selected_candidate"] is True
+    assert auto_payload["summary"]["namespace_auto_generated"] is True
+    assert auto_payload["summary"]["skipped_source_pinned_candidates"] == 2
+    assert auto_payload["summary"]["mapping_lint_status"] == (
+        "scaffold_ready_pending_lean_source"
+    )
+    assert auto_payload["candidate"]["certificate_tuple"] == [
+        12,
+        70,
+        2,
+        144,
+        2,
+        4,
+        3,
+        2363392,
+    ]
+    assert auto_payload["proposed_mapping"]["namespace"] == "QRTour.FutureBase12N70"
+    assert auto_payload["proposed_mapping"]["source_pinning_recipe"][
+        "record_theorem_name"
+    ] == "coordinate_stateAlignments_one_seven_certifiedConflict_eight_three"
+    assert auto_payload["proposed_mapping"]["source_pinning_recipe"][
+        "copyable_stub_theorem_name"
+    ] == "base12_n70_m2_blocks8_L3_not_remainderToCoefficientFunctional"
+    package_plan = auto_payload["proposed_mapping"]["lean_package_plan"]
+    assert package_plan["plan_id"] == "lean_finite_package_plan_v1"
+    assert package_plan["candidate_id"] == "base12_n70_m2_blocks8_L3"
+    assert package_plan["worth_proving_next"] is True
+    assert package_plan["decision"] == "prove_next_finite_obstruction_example"
+    assert package_plan["recommended_namespace"] == "QRTour.FutureBase12N70"
+    assert package_plan["record_theorem_name"] == (
+        "coordinate_stateAlignments_one_seven_certifiedConflict_eight_three"
+    )
+    assert package_plan["conflict_shape"]["conflict_remainder_state"] == 4
+    assert package_plan["conflict_shape"]["conflict_positions"] == [1, 7]
+    assert package_plan["conflict_shape"]["conflict_coefficients"] == [8, 32768]
+    assert package_plan["conflict_shape"]["conflict_carry_states"] == [0, 936]
+    assert package_plan["conflict_shape"]["conflict_block_values"] == [8, 8]
+    assert package_plan["stub_theorem_name"] == (
+        "base12_n70_m2_blocks8_L3_not_remainderToCoefficientFunctional"
+    )
+    assert any(
+        "source_ready_existing_mapping" in step for step in package_plan["checklist"]
+    )
+
+    auto_result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bridge_reptends.search",
+            "visibility-certificate-lean-stubs",
+            "--max",
+            "120",
+            "--bases",
+            "7,10,12,30",
+            "--blocks",
+            "8",
+            "--first-scaffold-only",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    auto_cli_payload = json.loads(auto_result.stdout)
+    assert auto_cli_payload["summary"]["candidate_selection_mode"] == (
+        "first_scaffold_only"
+    )
+    assert auto_cli_payload["candidate"]["certificate_tuple"] == [
+        12,
+        70,
+        2,
+        144,
+        2,
+        4,
+        3,
+        2363392,
+    ]
+    assert auto_cli_payload["proposed_mapping"]["namespace"] == (
+        "QRTour.FutureBase12N70"
+    )
+    assert auto_cli_payload["proposed_mapping"]["lean_package_plan"][
+        "worth_proving_next"
+    ] is True
 
 
 def test_visibility_base_compare_rows_and_cli_compare_instruments() -> None:

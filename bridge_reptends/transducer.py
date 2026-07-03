@@ -416,6 +416,20 @@ class StateAlignment:
 
 
 @dataclass(frozen=True)
+class CoefficientConflictWitness:
+    """A repeated remainder state with incompatible raw coefficients."""
+
+    remainder_state: int
+    positions: tuple[int, ...]
+    coefficients: tuple[int, ...]
+    carry_states: tuple[int, ...]
+    block_values: tuple[int, ...]
+    position_gap: int
+    coefficient_delta: int
+    output_hidden: bool
+
+
+@dataclass(frozen=True)
 class ObservedStateMap:
     """Observed state-map candidate extracted from aligned finite windows."""
 
@@ -1287,6 +1301,36 @@ class CarryRemainderComparison:
         )
 
     @property
+    def remainder_to_coefficient_map(self) -> ObservedStateMap:
+        pairs = tuple((alignment.remainder_state, alignment.coefficient) for alignment in self.alignments)
+        return ObservedStateMap(
+            source_kind="remainder state",
+            target_kind="raw coefficient",
+            fibers=_fiber_map(pairs),
+        )
+
+    @property
+    def remainder_to_coefficient_mod_block_base_map(self) -> ObservedStateMap:
+        pairs = tuple(
+            (alignment.remainder_state, alignment.coefficient % self.B)
+            for alignment in self.alignments
+        )
+        return ObservedStateMap(
+            source_kind="remainder state",
+            target_kind="coefficient modulo block base",
+            fibers=_fiber_map(pairs),
+        )
+
+    @property
+    def remainder_to_carried_block_value_map(self) -> ObservedStateMap:
+        pairs = tuple((alignment.remainder_state, alignment.block_value) for alignment in self.alignments)
+        return ObservedStateMap(
+            source_kind="remainder state",
+            target_kind="carried block value",
+            fibers=_fiber_map(pairs),
+        )
+
+    @property
     def carry_to_remainder_map(self) -> ObservedStateMap:
         pairs = tuple((alignment.carry_state, alignment.remainder_state) for alignment in self.alignments)
         return ObservedStateMap(
@@ -1294,6 +1338,50 @@ class CarryRemainderComparison:
             target_kind="remainder state",
             fibers=_fiber_map(pairs),
         )
+
+    @property
+    def coefficient_functional(self) -> bool:
+        return self.remainder_to_coefficient_map.is_functional
+
+    @property
+    def remainder_to_coefficient_conflicts(self) -> tuple[CoefficientConflictWitness, ...]:
+        conflicts: list[CoefficientConflictWitness] = []
+        for remainder_state, _ in self.remainder_to_coefficient_map.ambiguous_sources:
+            alignments = tuple(
+                alignment
+                for alignment in self.alignments
+                if alignment.remainder_state == remainder_state
+            )
+            coefficients = tuple(alignment.coefficient for alignment in alignments)
+            if len(set(coefficients)) <= 1:
+                continue
+            positions = tuple(alignment.position for alignment in alignments)
+            carry_states = tuple(alignment.carry_state for alignment in alignments)
+            block_values = tuple(alignment.block_value for alignment in alignments)
+            conflicts.append(
+                CoefficientConflictWitness(
+                    remainder_state=remainder_state,
+                    positions=positions,
+                    coefficients=coefficients,
+                    carry_states=carry_states,
+                    block_values=block_values,
+                    position_gap=max(positions) - min(positions),
+                    coefficient_delta=max(coefficients) - min(coefficients),
+                    output_hidden=len(set(block_values)) == 1,
+                )
+            )
+        conflicts.sort(
+            key=lambda conflict: (
+                conflict.positions[0],
+                conflict.remainder_state,
+            )
+        )
+        return tuple(conflicts)
+
+    @property
+    def first_remainder_to_coefficient_conflict(self) -> CoefficientConflictWitness | None:
+        conflicts = self.remainder_to_coefficient_conflicts
+        return conflicts[0] if conflicts else None
 
     @property
     def decision_report(self) -> FactorizationDecisionReport:

@@ -78,6 +78,101 @@ theorem functionalOnFst_iff_getElem {α β : Type*} {pairs : List (α × β)} :
     rcases List.mem_iff_getElem.mp hb with ⟨j, hj, rfl⟩
     exact h i hi j hj hab
 
+/-- If the observed first coordinates are pairwise distinct, then the finite
+row list is automatically functional from first coordinate to second
+coordinate. -/
+theorem functionalOnFst_of_map_fst_nodup {α β : Type*} {pairs : List (α × β)}
+    (hnodup : (pairs.map (fun p : α × β => p.1)).Nodup) :
+    FunctionalOnFst pairs := by
+  rw [functionalOnFst_iff_getElem]
+  intro i hi j hj hfst
+  have hiMap : i < (pairs.map (fun p : α × β => p.1)).length := by
+    simpa using hi
+  have hjMap : j < (pairs.map (fun p : α × β => p.1)).length := by
+    simpa using hj
+  have hmap :
+      (pairs.map (fun p : α × β => p.1))[i]'hiMap =
+        (pairs.map (fun p : α × β => p.1))[j]'hjMap := by
+    simpa using hfst
+  have hij : i = j :=
+    (hnodup.getElem_inj_iff (i := i) (hi := hiMap) (j := j) (hj := hjMap)).mp hmap
+  subst j
+  simp
+
+end List
+
+/-- A signal factors through an observation map when there is a decoder from
+observations to signal values. This is the generic finite observability
+predicate used by the state-alignment obstruction records below. -/
+def FactorsThrough {T Obs Signal : Type*} (obs : T → Obs) (signal : T → Signal) : Prop :=
+  ∃ decode : Obs → Signal, ∀ t, decode (obs t) = signal t
+
+namespace FactorsThrough
+
+/-- If a signal factors through an observation map, equal observations force
+equal signal values. -/
+theorem eq_of_obs_eq {T Obs Signal : Type*} {obs : T → Obs} {signal : T → Signal}
+    (h : FactorsThrough obs signal) {i j : T} (hobs : obs i = obs j) :
+    signal i = signal j := by
+  rcases h with ⟨decode, hdecode⟩
+  calc
+    signal i = decode (obs i) := (hdecode i).symm
+    _ = decode (obs j) := by rw [hobs]
+    _ = signal j := hdecode j
+
+end FactorsThrough
+
+/-- A single collision with equal observation and unequal signal refutes
+factor-through observability. -/
+theorem not_factorsThrough_of_collision
+    {T Obs Signal : Type*} {obs : T → Obs} {signal : T → Signal}
+    {i j : T}
+    (hobs : obs i = obs j)
+    (hsignal : signal i ≠ signal j) :
+    ¬ FactorsThrough obs signal := by
+  intro h
+  exact hsignal (FactorsThrough.eq_of_obs_eq h hobs)
+
+namespace List
+
+/-- Finite-list functionality is equivalent to factor-through observability on
+the subtype of list members, using the subtype of observed first-coordinates as
+the observation codomain. The observed-first subtype avoids introducing an
+arbitrary default decoder value outside the finite row set. -/
+theorem functionalOnFst_iff_factorsThrough_memberSubtype
+    {α β : Type*} {pairs : List (α × β)} :
+    FunctionalOnFst pairs ↔
+      FactorsThrough
+        (fun p : {p : α × β // p ∈ pairs} =>
+          (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+            {a : α // ∃ b : β, (a, b) ∈ pairs}))
+        (fun p : {p : α × β // p ∈ pairs} => p.val.2) := by
+  constructor
+  · intro hfunctional
+    classical
+    let decode : {a : α // ∃ b : β, (a, b) ∈ pairs} → β :=
+      fun observed => Classical.choose observed.property
+    refine ⟨decode, ?_⟩
+    intro p
+    let observed : {a : α // ∃ b : β, (a, b) ∈ pairs} :=
+      ⟨p.val.1, ⟨p.val.2, p.property⟩⟩
+    change decode observed = p.val.2
+    have hchosen_mem : (observed.val, decode observed) ∈ pairs := by
+      dsimp [decode]
+      exact Classical.choose_spec observed.property
+    exact hfunctional (observed.val, decode observed) hchosen_mem p.val p.property rfl
+  · intro hfactors a ha b hb hab
+    let left : {p : α × β // p ∈ pairs} := ⟨a, ha⟩
+    let right : {p : α × β // p ∈ pairs} := ⟨b, hb⟩
+    have hobs :
+        (⟨left.val.1, ⟨left.val.2, left.property⟩⟩ :
+          {x : α // ∃ y : β, (x, y) ∈ pairs}) =
+          (⟨right.val.1, ⟨right.val.2, right.property⟩⟩ :
+            {x : α // ∃ y : β, (x, y) ∈ pairs}) := by
+      apply Subtype.ext
+      exact hab
+    exact FactorsThrough.eq_of_obs_eq hfactors hobs
+
 end List
 
 theorem CarryTransducer.traceReversedAux_take_map_carryIn_append
@@ -211,6 +306,106 @@ theorem BlockCoordinate.visibleCarryTrace_map_carryOut
         lookaheadBlocks := by
   unfold BlockCoordinate.visibleCarryTrace
   rw [List.map_rdrop]
+
+theorem BlockCoordinate.visibleCarryTrace_get_eq_trace
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks i : ℕ) (hi : i < requestedBlocks) :
+    ((C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks)[i]'(by
+      rw [C.visibleCarryTrace_length]
+      exact hi)) =
+      ((C.traceRawWord hgood (requestedBlocks + lookaheadBlocks))[i]'(by
+        rw [C.traceRawWord_length]
+        omega)) := by
+  have hvisible :
+      C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks =
+        (C.traceRawWord hgood (requestedBlocks + lookaheadBlocks)).take requestedBlocks := by
+    unfold BlockCoordinate.visibleCarryTrace
+    exact List.rdrop_eq_take_of_length_eq (by rw [C.traceRawWord_length])
+  have hget := congrArg (fun xs => xs[i]?) hvisible
+  simp [C.visibleCarryTrace_length, C.traceRawWord_length, hi] at hget
+  exact hget
+
+theorem BlockCoordinate.visibleCarryTrace_coefficient_eq_rawCoefficient
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks i : ℕ) (hi : i < requestedBlocks) :
+    ((C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks)[i]'(by
+      rw [C.visibleCarryTrace_length]
+      exact hi)).coefficient =
+      C.rawCoefficient i := by
+  have hmap := C.visibleCarryTrace_map_coefficient_prefix hgood requestedBlocks lookaheadBlocks
+  have hget := congrArg (fun xs => xs[i]?) hmap
+  simp [BlockCoordinate.rawCoefficientWord, C.visibleCarryTrace_length, hi] at hget
+  exact hget
+
+theorem BlockCoordinate.visibleCarryTrace_carryIn_eq_next_carryOut
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks i : ℕ) (hi : i + 1 < requestedBlocks) :
+    ((C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks)[i]'(by
+      rw [C.visibleCarryTrace_length]
+      omega)).carryIn =
+      ((C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks)[i + 1]'(by
+        rw [C.visibleCarryTrace_length]
+        omega)).carryOut := by
+  rw [C.visibleCarryTrace_get_eq_trace hgood requestedBlocks lookaheadBlocks i (by omega)]
+  rw [C.visibleCarryTrace_get_eq_trace hgood requestedBlocks lookaheadBlocks (i + 1) (by omega)]
+  exact C.traceRawWord_carryIn_eq_next_carryOut hgood
+    (requestedBlocks + lookaheadBlocks) i (by omega)
+
+theorem BlockCoordinate.visibleCarryTrace_carryOut_eq_div_of_pos
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks i : ℕ) (hi : i < requestedBlocks) (hpos : 0 < i) :
+    ((C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks)[i]'(by
+      rw [C.visibleCarryTrace_length]
+      exact hi)).carryOut =
+      (((C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks)[i]'(by
+        rw [C.visibleCarryTrace_length]
+        exact hi)).coefficient +
+        ((C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks)[i]'(by
+          rw [C.visibleCarryTrace_length]
+          exact hi)).carryIn) /
+        C.blockBase := by
+  rw [C.visibleCarryTrace_get_eq_trace hgood requestedBlocks lookaheadBlocks i hi]
+  exact C.traceRawWord_carryOut_eq_div_of_pos hgood
+    (requestedBlocks + lookaheadBlocks) i (by omega) hpos
+
+theorem BlockCoordinate.visibleCarryTrace_blockValue_eq_mod_of_pos
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks i : ℕ) (hi : i < requestedBlocks) (hpos : 0 < i) :
+    ((C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks)[i]'(by
+      rw [C.visibleCarryTrace_length]
+      exact hi)).blockValue =
+      (((C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks)[i]'(by
+        rw [C.visibleCarryTrace_length]
+        exact hi)).coefficient +
+        ((C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks)[i]'(by
+          rw [C.visibleCarryTrace_length]
+          exact hi)).carryIn) %
+        C.blockBase := by
+  rw [C.visibleCarryTrace_get_eq_trace hgood requestedBlocks lookaheadBlocks i hi]
+  exact C.traceRawWord_blockValue_eq_mod_of_pos hgood
+    (requestedBlocks + lookaheadBlocks) i (by omega) hpos
+
+/-- Visible finite carries are bounded above by the canonical infinite-tail
+incoming carry at the same visible position. -/
+theorem BlockCoordinate.visibleCarryTrace_carryIn_le_incomingCarry
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks i : ℕ)
+    (hi : i < (C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks).length) :
+    ((C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks)[i]'hi).carryIn ≤
+      C.incomingCarry i := by
+  have hvisible :
+      C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks =
+        (C.traceRawWord hgood (requestedBlocks + lookaheadBlocks)).take requestedBlocks := by
+    unfold BlockCoordinate.visibleCarryTrace
+    exact List.rdrop_eq_take_of_length_eq (by rw [C.traceRawWord_length])
+  have hiReq : i < requestedBlocks := by
+    rwa [C.visibleCarryTrace_length] at hi
+  have hiTrace : i < (C.traceRawWord hgood (requestedBlocks + lookaheadBlocks)).length := by
+    rw [C.traceRawWord_length]
+    omega
+  have hbound := C.traceRawWord_carryIn_le_incomingCarry hgood
+    (requestedBlocks + lookaheadBlocks) i hiTrace
+  simpa [hvisible, hiReq] using hbound
 
 theorem BlockCoordinate.visibleCarryTrace_map_blockValue
     (C : BlockCoordinate) (hgood : C.goodMode)
@@ -1486,6 +1681,37 @@ theorem BlockCoordinate.stateAlignments_map_carryIn
         (fun l => l[i]?) (C.visibleCarryPairs_map_carryIn hgood requestedBlocks lookaheadBlocks)
     simpa [List.getElem?_eq_getElem hleft, List.getElem?_eq_getElem hright] using hmap
 
+/-- State-alignment finite carries inherit the visible-trace upper bound by the
+canonical infinite-tail incoming carry. -/
+theorem BlockCoordinate.stateAlignments_carryIn_le_incomingCarry
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks i : ℕ)
+    (hi : i < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length) :
+    ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[i]'hi).carryIn ≤
+      C.incomingCarry i := by
+  have hiVisible : i < (C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks).length := by
+    rw [C.visibleCarryTrace_length]
+    rwa [C.stateAlignments_length] at hi
+  have hmap := C.stateAlignments_map_carryIn hgood requestedBlocks lookaheadBlocks
+  have hget :
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks).map StateAlignment.carryIn)[i]? =
+        ((C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks).map
+          CarryTraceStep.carryIn)[i]? := by
+    exact congrArg (fun word => word[i]?) hmap
+  have hleft :
+      i < ((C.stateAlignments hgood requestedBlocks lookaheadBlocks).map
+        StateAlignment.carryIn).length := by
+    simpa using hi
+  have hright :
+      i < ((C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks).map
+        CarryTraceStep.carryIn).length := by
+    simpa using hiVisible
+  rw [List.getElem?_eq_getElem hleft, List.getElem?_eq_getElem hright] at hget
+  rw [show ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[i]'hi).carryIn =
+      ((C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks)[i]'hiVisible).carryIn by
+    simpa using hget]
+  exact C.visibleCarryTrace_carryIn_le_incomingCarry hgood requestedBlocks lookaheadBlocks i hiVisible
+
 theorem BlockCoordinate.stateAlignments_map_carryOut
     (C : BlockCoordinate) (hgood : C.goodMode)
     (requestedBlocks lookaheadBlocks : ℕ) :
@@ -1515,6 +1741,44 @@ theorem BlockCoordinate.stateAlignments_map_remainderIn
       simpa [BlockCoordinate.stateAlignments, StateAlignment.ofZipIdxEntry] using congrArg
         (fun l => l[i]?) (C.visibleCarryPairs_map_remainderIn hgood requestedBlocks lookaheadBlocks)
     simpa [List.getElem?_eq_getElem hleft, List.getElem?_eq_getElem hright] using hmap
+
+/-- Eight-block convenience wrapper for explicit `remainderIn` windows.  This
+keeps worked examples from repeating the same `List.range 8` expansion after
+`stateAlignments_map_remainderIn`. -/
+theorem BlockCoordinate.stateAlignments_remainderIn_window_eight_eq_of_longDivisionRemainders
+    (C : BlockCoordinate) (hgood : C.goodMode) (lookaheadBlocks : ℕ)
+    {r0 r1 r2 r3 r4 r5 r6 r7 : ℕ}
+    (h0 : C.longDivisionRemainder 0 = r0)
+    (h1 : C.longDivisionRemainder 1 = r1)
+    (h2 : C.longDivisionRemainder 2 = r2)
+    (h3 : C.longDivisionRemainder 3 = r3)
+    (h4 : C.longDivisionRemainder 4 = r4)
+    (h5 : C.longDivisionRemainder 5 = r5)
+    (h6 : C.longDivisionRemainder 6 = r6)
+    (h7 : C.longDivisionRemainder 7 = r7) :
+    (C.stateAlignments hgood 8 lookaheadBlocks).map StateAlignment.remainderIn =
+      [r0, r1, r2, r3, r4, r5, r6, r7] := by
+  rw [C.stateAlignments_map_remainderIn]
+  change [C.longDivisionRemainder 0, C.longDivisionRemainder 1,
+      C.longDivisionRemainder 2, C.longDivisionRemainder 3,
+      C.longDivisionRemainder 4, C.longDivisionRemainder 5,
+      C.longDivisionRemainder 6, C.longDivisionRemainder 7] =
+    [r0, r1, r2, r3, r4, r5, r6, r7]
+  simp [h0, h1, h2, h3, h4, h5, h6, h7]
+
+/-- Transport duplicate-freeness from an explicit finite `remainderIn` window
+to the corresponding state-alignment readout. -/
+theorem BlockCoordinate.stateAlignments_remainderIn_nodup_of_window_eq
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks : ℕ) {window : List ℕ}
+    (hwindow :
+      (C.stateAlignments hgood requestedBlocks lookaheadBlocks).map
+        StateAlignment.remainderIn = window)
+    (hnodup : window.Nodup) :
+    ((C.stateAlignments hgood requestedBlocks lookaheadBlocks).map
+      StateAlignment.remainderIn).Nodup := by
+  rw [hwindow]
+  exact hnodup
 
 theorem BlockCoordinate.stateAlignments_map_remainderOut
     (C : BlockCoordinate) (hgood : C.goodMode)
@@ -1562,6 +1826,95 @@ theorem BlockCoordinate.stateAlignments_map_remainderBlockValue
         (fun l => l[i]?) (C.visibleCarryPairs_map_remainderBlockValue hgood requestedBlocks lookaheadBlocks)
     simpa [List.getElem?_eq_getElem hleft, List.getElem?_eq_getElem hright] using hmap
 
+theorem BlockCoordinate.stateAlignments_carryBlockValue_eq_visibleCarryTrace_blockValue
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks i : ℕ)
+    (hi : i < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length)
+    (hiVisible : i < (C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks).length) :
+    ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[i]'hi).carryBlockValue =
+      ((C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks)[i]'hiVisible).blockValue := by
+  have hmap := C.stateAlignments_map_carryBlockValue hgood requestedBlocks lookaheadBlocks
+  have hvisibleMap := C.visibleCarryTrace_map_blockValue hgood requestedBlocks lookaheadBlocks
+  have hmap' :
+      (C.stateAlignments hgood requestedBlocks lookaheadBlocks).map StateAlignment.carryBlockValue =
+        (C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks).map CarryTraceStep.blockValue := by
+    rw [hmap, hvisibleMap]
+  have hget := congrArg (fun word => word[i]?) hmap'
+  have hleft :
+      i < ((C.stateAlignments hgood requestedBlocks lookaheadBlocks).map
+        StateAlignment.carryBlockValue).length := by
+    simpa using hi
+  have hright :
+      i < ((C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks).map
+        CarryTraceStep.blockValue).length := by
+    simpa using hiVisible
+  simpa [List.getElem?_eq_getElem hleft, List.getElem?_eq_getElem hright] using hget
+
+theorem BlockCoordinate.stateAlignments_coefficient_eq_visibleCarryTrace_coefficient
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks i : ℕ)
+    (hi : i < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length)
+    (hiVisible : i < (C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks).length) :
+    ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[i]'hi).coefficient =
+      ((C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks)[i]'hiVisible).coefficient := by
+  have hmap := C.stateAlignments_map_coefficient hgood requestedBlocks lookaheadBlocks
+  have hvisibleMap := C.visibleCarryTrace_map_coefficient_prefix hgood requestedBlocks lookaheadBlocks
+  have hmap' :
+      (C.stateAlignments hgood requestedBlocks lookaheadBlocks).map StateAlignment.coefficient =
+        (C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks).map CarryTraceStep.coefficient := by
+    rw [hmap, hvisibleMap]
+  have hget := congrArg (fun word => word[i]?) hmap'
+  have hleft :
+      i < ((C.stateAlignments hgood requestedBlocks lookaheadBlocks).map
+        StateAlignment.coefficient).length := by
+    simpa using hi
+  have hright :
+      i < ((C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks).map
+        CarryTraceStep.coefficient).length := by
+    simpa using hiVisible
+  simpa [List.getElem?_eq_getElem hleft, List.getElem?_eq_getElem hright] using hget
+
+theorem BlockCoordinate.stateAlignments_carryIn_eq_visibleCarryTrace_carryIn
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks i : ℕ)
+    (hi : i < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length)
+    (hiVisible : i < (C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks).length) :
+    ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[i]'hi).carryIn =
+      ((C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks)[i]'hiVisible).carryIn := by
+  have hmap := C.stateAlignments_map_carryIn hgood requestedBlocks lookaheadBlocks
+  have hget := congrArg (fun word => word[i]?) hmap
+  have hleft :
+      i < ((C.stateAlignments hgood requestedBlocks lookaheadBlocks).map
+        StateAlignment.carryIn).length := by
+    simpa using hi
+  have hright :
+      i < ((C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks).map
+        CarryTraceStep.carryIn).length := by
+    simpa using hiVisible
+  simpa [List.getElem?_eq_getElem hleft, List.getElem?_eq_getElem hright] using hget
+
+theorem BlockCoordinate.stateAlignments_carryBlockValue_eq_mod_of_pos
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks i : ℕ)
+    (hi : i < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length)
+    (hpos : 0 < i) :
+    ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[i]'hi).carryBlockValue =
+      (((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[i]'hi).coefficient +
+        ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[i]'hi).carryIn) % C.blockBase := by
+  have hiVisible : i < (C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks).length := by
+    rw [C.visibleCarryTrace_length]
+    rwa [C.stateAlignments_length] at hi
+  have hiRequested : i < requestedBlocks := by
+    rwa [C.stateAlignments_length] at hi
+  rw [C.stateAlignments_carryBlockValue_eq_visibleCarryTrace_blockValue
+    hgood requestedBlocks lookaheadBlocks i hi hiVisible]
+  rw [C.stateAlignments_coefficient_eq_visibleCarryTrace_coefficient
+    hgood requestedBlocks lookaheadBlocks i hi hiVisible]
+  rw [C.stateAlignments_carryIn_eq_visibleCarryTrace_carryIn
+    hgood requestedBlocks lookaheadBlocks i hi hiVisible]
+  exact C.visibleCarryTrace_blockValue_eq_mod_of_pos
+    hgood requestedBlocks lookaheadBlocks i hiRequested hpos
+
 theorem BlockCoordinate.stateAlignments_map_remainderToCarryPairs
     (C : BlockCoordinate) (hgood : C.goodMode)
     (requestedBlocks lookaheadBlocks : ℕ) :
@@ -1587,6 +1940,101 @@ theorem BlockCoordinate.stateAlignments_map_carryToRemainderPairs
   · intro i hleft hright
     simp [BlockCoordinate.stateAlignments, BlockCoordinate.carryToRemainderPairs,
       StateAlignment.ofZipIdxEntry]
+
+/-- The concrete state-alignment remainder-to-coefficient row surface is
+equivalent to factor-through observability on the finite member subtype. -/
+theorem BlockCoordinate.stateAlignments_remainderToCoefficientFunctional_iff_factorsThrough_memberSubtype
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks : ℕ) :
+    let pairs :=
+      (C.stateAlignments hgood requestedBlocks lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    List.FunctionalOnFst pairs ↔
+      FactorsThrough
+        (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+          (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+            {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+        (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact List.functionalOnFst_iff_factorsThrough_memberSubtype
+
+/-- A functional state-alignment remainder-to-coefficient row surface is a
+positive reconstruction witness on the finite member subtype. -/
+theorem BlockCoordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderToCoefficientFunctional
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks : ℕ) :
+    let pairs :=
+      (C.stateAlignments hgood requestedBlocks lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    List.FunctionalOnFst pairs →
+      FactorsThrough
+        (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+          (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+            {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+        (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  dsimp only
+  intro hfunctional
+  exact
+    ((C.stateAlignments_remainderToCoefficientFunctional_iff_factorsThrough_memberSubtype
+      hgood requestedBlocks lookaheadBlocks).mp hfunctional)
+
+/-- If every observed `remainderIn` state is distinct on the finite
+state-alignment window, then the raw coefficient is reconstructible from that
+observation on the window. This is the Lean form of the
+`finite_remainder_state_injective_on_window` criterion exported by the
+observability program atlas. -/
+theorem BlockCoordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderIn_nodup
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks : ℕ)
+    (hnodup :
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks).map
+        (fun alignment => alignment.remainderIn)).Nodup) :
+    List.FunctionalOnFst
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  apply List.functionalOnFst_of_map_fst_nodup
+  simpa [List.map_map, Function.comp_def] using hnodup
+
+/-- Factor-through form of
+`stateAlignments_remainderToCoefficientFunctional_of_remainderIn_nodup`. -/
+theorem BlockCoordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderIn_nodup
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks : ℕ)
+    (hnodup :
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks).map
+        (fun alignment => alignment.remainderIn)).Nodup) :
+    let pairs :=
+      (C.stateAlignments hgood requestedBlocks lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    C.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderToCoefficientFunctional
+      hgood requestedBlocks lookaheadBlocks
+      (C.stateAlignments_remainderToCoefficientFunctional_of_remainderIn_nodup
+        hgood requestedBlocks lookaheadBlocks hnodup)
+
+/-- A nonfunctional state-alignment remainder-to-coefficient row surface is a
+full-window factor-through obstruction on the finite member subtype. -/
+theorem BlockCoordinate.stateAlignments_not_remainderToCoefficientFactorsThrough_of_not_remainderToCoefficientFunctional
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks : ℕ) :
+    let pairs :=
+      (C.stateAlignments hgood requestedBlocks lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    ¬ List.FunctionalOnFst pairs →
+      ¬ FactorsThrough
+        (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+          (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+            {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+        (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  dsimp only
+  intro hnot hfactors
+  exact hnot
+    ((C.stateAlignments_remainderToCoefficientFunctional_iff_factorsThrough_memberSubtype
+      hgood requestedBlocks lookaheadBlocks).mpr hfactors)
 
 def BlockCoordinate.remainderToCarryFunctional
     (C : BlockCoordinate) (hgood : C.goodMode)
@@ -2265,6 +2713,74 @@ theorem BlockCoordinate.not_carryToRemainderFunctional_of_conflict
   intro hfunc
   exact hstate (hfunc i hi j hj hcarry)
 
+theorem BlockCoordinate.not_coefficientFunctional_of_conflict
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks : ℕ)
+    (i : ℕ) (hi : i < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length)
+    (j : ℕ) (hj : j < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length)
+    (hstate :
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[i]'hi).remainderIn =
+        ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[j]'hj).remainderIn)
+    (hcoeff :
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[i]'hi).coefficient ≠
+        ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[j]'hj).coefficient) :
+    ¬ List.FunctionalOnFst
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  intro hfunc
+  rw [List.functionalOnFst_iff_getElem] at hfunc
+  let pairs :=
+    (C.stateAlignments hgood requestedBlocks lookaheadBlocks).map
+      (fun alignment => (alignment.remainderIn, alignment.coefficient))
+  have hstatePairs :
+      (pairs[i]'(by simpa [pairs, List.length_map] using hi)).1 =
+        (pairs[j]'(by simpa [pairs, List.length_map] using hj)).1 := by
+    simpa [pairs, List.getElem_map] using hstate
+  have hcoeffPairs :
+      (pairs[i]'(by simpa [pairs, List.length_map] using hi)).2 =
+        (pairs[j]'(by simpa [pairs, List.length_map] using hj)).2 :=
+    hfunc i (by simpa [pairs, List.length_map] using hi)
+      j (by simpa [pairs, List.length_map] using hj)
+      hstatePairs
+  exact hcoeff (by simpa [pairs, List.getElem_map] using hcoeffPairs)
+
+/-- A reusable finite obstruction shape: when `k = 4`, the aligned positions
+`1` and `5` have raw coefficients `4q` and `1024q`. If those positions share
+the same observed remainder state and `q > 0`, the finite
+remainder-to-coefficient map cannot be functional. -/
+theorem BlockCoordinate.not_coefficientFunctional_one_five_of_remainderK_eq_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks : ℕ)
+    (h1 : 1 < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length)
+    (h5 : 5 < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length)
+    (hstate :
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[1]'h1).remainderIn =
+        ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[5]'h5).remainderIn)
+    (hremainderK : C.remainderK = 4)
+    (hquotientQ : 0 < C.quotientQ) :
+    ¬ List.FunctionalOnFst
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  refine C.not_coefficientFunctional_of_conflict hgood requestedBlocks lookaheadBlocks
+    1 h1 5 h5 hstate ?_
+  have hcoeff1 :
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[1]'h1).coefficient =
+        C.quotientQ * 4 := by
+    rw [C.stateAlignments_coefficient_eq_rawCoefficient hgood requestedBlocks lookaheadBlocks 1 h1,
+      BlockCoordinate.rawCoefficient, hremainderK]
+    norm_num
+  have hcoeff5 :
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[5]'h5).coefficient =
+        C.quotientQ * 1024 := by
+    rw [C.stateAlignments_coefficient_eq_rawCoefficient hgood requestedBlocks lookaheadBlocks 5 h5,
+      BlockCoordinate.rawCoefficient, hremainderK]
+    norm_num
+  intro hcoeff
+  have hmul : C.quotientQ * 4 = C.quotientQ * 1024 := by
+    rw [← hcoeff1, ← hcoeff5]
+    exact hcoeff
+  exact (Nat.ne_of_lt (Nat.mul_lt_mul_of_pos_left (by native_decide : 4 < 1024) hquotientQ)) hmul
+
 theorem BlockCoordinate.blockBase_pow_mod_eq_remainderK_pow_mod
     (C : BlockCoordinate) (length : ℕ) :
     C.blockBase ^ length % C.modulus = C.remainderK ^ length % C.modulus := by
@@ -2287,6 +2803,1818 @@ theorem BlockCoordinate.blockBase_pow_mod_eq_remainderK_pow_mod
               rw [Nat.mul_mod, Nat.mod_eq_of_lt C.remainderK_lt_modulus]
         _ = C.remainderK ^ (length + 1) % C.modulus := by
               rw [pow_succ]
+
+/-- Powers of a natural number greater than one are injective in the exponent. -/
+theorem Nat.pow_right_injective_of_one_lt {k : ℕ} (hk : 1 < k) :
+    Function.Injective (fun j : ℕ => k ^ j) := by
+  intro a b h
+  rcases lt_trichotomy a b with hlt | heq | hgt
+  · have hp : k ^ a < k ^ b := Nat.pow_lt_pow_right hk hlt
+    exact False.elim ((Nat.ne_of_lt hp) h)
+  · exact heq
+  · have hp : k ^ b < k ^ a := Nat.pow_lt_pow_right hk hgt
+    exact False.elim ((Nat.ne_of_lt hp) h.symm)
+
+/-- No-wrap arithmetic no-collision criterion: if `1 < k` and every power
+`k^j` in the requested finite window is already below the modulus, then reducing
+those powers modulo the modulus cannot create collisions. -/
+theorem BlockCoordinate.remainderK_powerResidues_nodup_of_remainderK_pow_lt_modulus
+    (C : BlockCoordinate) (requestedBlocks : ℕ)
+    (hremainderK : 1 < C.remainderK)
+    (hpow :
+      ∀ j ∈ List.range requestedBlocks, C.remainderK ^ j < C.modulus) :
+    ((List.range requestedBlocks).map
+      (fun j => C.remainderK ^ j % C.modulus)).Nodup := by
+  have hmap :
+      (List.range requestedBlocks).map
+          (fun j => C.remainderK ^ j % C.modulus) =
+        (List.range requestedBlocks).map (fun j => C.remainderK ^ j) := by
+    apply List.map_congr_left
+    intro j hj
+    rw [Nat.mod_eq_of_lt (hpow j hj)]
+  rw [hmap]
+  exact List.nodup_range.map
+    (Nat.pow_right_injective_of_one_lt hremainderK)
+
+/-- Arithmetic no-collision form of finite positive reconstruction: if the
+power-residue window `(k^j % N)` has no duplicates, then the corresponding
+state-alignment `remainderIn` readout has no duplicates. The criterion is over
+the full block-coordinate modulus `N`, not the stripped periodic modulus. -/
+theorem BlockCoordinate.stateAlignments_remainderIn_nodup_of_remainderK_powerResidues_nodup
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks : ℕ)
+    (hnodup :
+      ((List.range requestedBlocks).map
+        (fun j => C.remainderK ^ j % C.modulus)).Nodup) :
+    ((C.stateAlignments hgood requestedBlocks lookaheadBlocks).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  rw [C.stateAlignments_map_remainderIn]
+  have hmap :
+      (List.range requestedBlocks).map C.longDivisionRemainder =
+        (List.range requestedBlocks).map
+          (fun j => C.remainderK ^ j % C.modulus) := by
+    apply List.map_congr_left
+    intro j _hj
+    calc
+      C.longDivisionRemainder j = C.blockBase ^ j % C.modulus := by
+        rw [C.longDivisionRemainder_eq_pow_mod]
+      _ = C.remainderK ^ j % C.modulus := by
+        rw [C.blockBase_pow_mod_eq_remainderK_pow_mod]
+  rw [hmap]
+  exact hnodup
+
+/-- No-wrap form of finite positive reconstruction: if the requested powers
+`k^j` stay below the modulus, the observed `remainderIn` states are pairwise
+distinct on the aligned window. -/
+theorem BlockCoordinate.stateAlignments_remainderIn_nodup_of_remainderK_pow_lt_modulus
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks : ℕ)
+    (hremainderK : 1 < C.remainderK)
+    (hpow :
+      ∀ j ∈ List.range requestedBlocks, C.remainderK ^ j < C.modulus) :
+    ((C.stateAlignments hgood requestedBlocks lookaheadBlocks).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact C.stateAlignments_remainderIn_nodup_of_remainderK_powerResidues_nodup
+    hgood requestedBlocks lookaheadBlocks
+    (C.remainderK_powerResidues_nodup_of_remainderK_pow_lt_modulus
+      requestedBlocks hremainderK hpow)
+
+/-- Functional reconstruction from the arithmetic no-collision criterion on
+the power-residue window `(k^j % N)`. -/
+theorem BlockCoordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks : ℕ)
+    (hnodup :
+      ((List.range requestedBlocks).map
+        (fun j => C.remainderK ^ j % C.modulus)).Nodup) :
+    List.FunctionalOnFst
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    C.stateAlignments_remainderToCoefficientFunctional_of_remainderIn_nodup
+      hgood requestedBlocks lookaheadBlocks
+      (C.stateAlignments_remainderIn_nodup_of_remainderK_powerResidues_nodup
+        hgood requestedBlocks lookaheadBlocks hnodup)
+
+/-- Functional reconstruction from the no-wrap arithmetic criterion on
+the power-residue window `(k^j % N)`. -/
+theorem BlockCoordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderK_pow_lt_modulus
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks : ℕ)
+    (hremainderK : 1 < C.remainderK)
+    (hpow :
+      ∀ j ∈ List.range requestedBlocks, C.remainderK ^ j < C.modulus) :
+    List.FunctionalOnFst
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    C.stateAlignments_remainderToCoefficientFunctional_of_remainderIn_nodup
+      hgood requestedBlocks lookaheadBlocks
+      (C.stateAlignments_remainderIn_nodup_of_remainderK_pow_lt_modulus
+        hgood requestedBlocks lookaheadBlocks hremainderK hpow)
+
+/-- Factor-through reconstruction from the arithmetic no-collision criterion
+on the power-residue window `(k^j % N)`. -/
+theorem BlockCoordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks : ℕ)
+    (hnodup :
+      ((List.range requestedBlocks).map
+        (fun j => C.remainderK ^ j % C.modulus)).Nodup) :
+    let pairs :=
+      (C.stateAlignments hgood requestedBlocks lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    C.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderIn_nodup
+      hgood requestedBlocks lookaheadBlocks
+      (C.stateAlignments_remainderIn_nodup_of_remainderK_powerResidues_nodup
+        hgood requestedBlocks lookaheadBlocks hnodup)
+
+/-- Factor-through reconstruction from the no-wrap arithmetic criterion on
+the power-residue window `(k^j % N)`. -/
+theorem BlockCoordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_pow_lt_modulus
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks : ℕ)
+    (hremainderK : 1 < C.remainderK)
+    (hpow :
+      ∀ j ∈ List.range requestedBlocks, C.remainderK ^ j < C.modulus) :
+    let pairs :=
+      (C.stateAlignments hgood requestedBlocks lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    C.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderIn_nodup
+      hgood requestedBlocks lookaheadBlocks
+      (C.stateAlignments_remainderIn_nodup_of_remainderK_pow_lt_modulus
+        hgood requestedBlocks lookaheadBlocks hremainderK hpow)
+
+/-- In the `N = 68`, `k = 4` obstruction family, aligned positions `1` and
+`5` have the same observed remainder input on any finite state window that
+contains them. This proves the repeated-state side of the finite obstruction
+from arithmetic: `4^1 ≡ 4^5 ≡ 4 (mod 68)`. -/
+theorem BlockCoordinate.stateAlignments_remainderIn_one_eq_five_of_modulus_eq_sixty_eight
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks : ℕ)
+    (h1 : 1 < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length)
+    (h5 : 5 < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length)
+    (hmodulus : C.modulus = 68)
+    (hremainderK : C.remainderK = 4) :
+    ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[1]'h1).remainderIn =
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[5]'h5).remainderIn := by
+  have hrem1 : C.longDivisionRemainder 1 = 4 := by
+    calc
+      C.longDivisionRemainder 1 = C.blockBase ^ 1 % C.modulus := by
+        rw [C.longDivisionRemainder_eq_pow_mod]
+      _ = C.remainderK ^ 1 % C.modulus := by
+        rw [C.blockBase_pow_mod_eq_remainderK_pow_mod]
+      _ = 4 := by
+        rw [hremainderK, hmodulus]
+        norm_num
+  have hrem5 : C.longDivisionRemainder 5 = 4 := by
+    calc
+      C.longDivisionRemainder 5 = C.blockBase ^ 5 % C.modulus := by
+        rw [C.longDivisionRemainder_eq_pow_mod]
+      _ = C.remainderK ^ 5 % C.modulus := by
+        rw [C.blockBase_pow_mod_eq_remainderK_pow_mod]
+      _ = 4 := by
+        rw [hremainderK, hmodulus]
+        norm_num
+  rw [C.stateAlignments_remainderIn_eq_longDivisionRemainder
+      hgood requestedBlocks lookaheadBlocks 1 h1,
+    C.stateAlignments_remainderIn_eq_longDivisionRemainder
+      hgood requestedBlocks lookaheadBlocks 5 h5,
+    hrem1, hrem5]
+
+/-- Finite obstruction theorem for the `N = 68`, `k = 4` family: once the
+window contains positions `1` and `5`, the arithmetic repeated remainder state
+from `4^1 ≡ 4^5 (mod 68)` combines with the unequal raw coefficients
+`4q` and `1024q` to refute remainder-to-coefficient functionality. -/
+theorem BlockCoordinate.not_coefficientFunctional_one_five_of_modulus_eq_sixty_eight
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks : ℕ)
+    (h1 : 1 < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length)
+    (h5 : 5 < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length)
+    (hmodulus : C.modulus = 68)
+    (hremainderK : C.remainderK = 4) :
+    ¬ List.FunctionalOnFst
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact C.not_coefficientFunctional_one_five_of_remainderK_eq_four
+    hgood requestedBlocks lookaheadBlocks h1 h5
+    (C.stateAlignments_remainderIn_one_eq_five_of_modulus_eq_sixty_eight
+      hgood requestedBlocks lookaheadBlocks h1 h5 hmodulus hremainderK)
+    hremainderK
+    (C.quotientQ_pos_of_goodMode hgood)
+
+/-- If the modulus is `68` and the block base is congruent to `4` modulo `68`,
+then the coordinate remainder is exactly `k = 4`. -/
+theorem BlockCoordinate.remainderK_eq_four_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    (C : BlockCoordinate)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4) :
+    C.remainderK = 4 := by
+  rw [BlockCoordinate.remainderK, hmodulus, hblockBase]
+
+/-- In the `N = 68`, `B ≡ 4 (mod 68)` family, the canonical incoming carry at
+position `1` is zero. This is an infinite-tail arithmetic statement, not yet a
+finite-lookahead statement about a particular traced window. -/
+theorem BlockCoordinate.incomingCarry_one_eq_zero_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4) :
+    C.incomingCarry 1 = 0 := by
+  rw [C.incomingCarry_formula]
+  have hk : C.remainderK = 4 :=
+    C.remainderK_eq_four_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hmodulus hblockBase
+  have hgap := C.quotientQ_mul_modulus_eq_blockBase_sub_remainderK
+  rw [hmodulus, hk] at hgap
+  rw [hk, ← hgap]
+  have hqpos : 0 < C.quotientQ := C.quotientQ_pos_of_goodMode hgood
+  rw [Nat.mul_div_mul_left _ _ hqpos]
+  native_decide
+
+/-- In the `N = 68`, `B ≡ 4 (mod 68)` family, the canonical incoming carry at
+position `5` is exactly `60`. -/
+theorem BlockCoordinate.incomingCarry_five_eq_sixty_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4) :
+    C.incomingCarry 5 = 60 := by
+  rw [C.incomingCarry_formula]
+  have hk : C.remainderK = 4 :=
+    C.remainderK_eq_four_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hmodulus hblockBase
+  have hgap := C.quotientQ_mul_modulus_eq_blockBase_sub_remainderK
+  rw [hmodulus, hk] at hgap
+  rw [hk, ← hgap]
+  have hqpos : 0 < C.quotientQ := C.quotientQ_pos_of_goodMode hgood
+  rw [Nat.mul_div_mul_left _ _ hqpos]
+  native_decide
+
+/-- In the `N = 68`, `B ≡ 4 (mod 68)` family, the canonical incoming carry at
+position `7` is exactly `963`. This is the infinite-tail upper bound used to
+control arbitrary extra finite lookahead. -/
+theorem BlockCoordinate.incomingCarry_seven_eq_nine_hundred_sixty_three_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4) :
+    C.incomingCarry 7 = 963 := by
+  rw [C.incomingCarry_formula]
+  have hk : C.remainderK = 4 :=
+    C.remainderK_eq_four_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hmodulus hblockBase
+  have hgap := C.quotientQ_mul_modulus_eq_blockBase_sub_remainderK
+  rw [hmodulus, hk] at hgap
+  rw [hk, ← hgap]
+  have hqpos : 0 < C.quotientQ := C.quotientQ_pos_of_goodMode hgood
+  rw [Nat.mul_div_mul_left _ _ hqpos]
+  native_decide
+
+/-- The first conflicting raw coefficient still fits below the block base
+throughout the good `N = 68`, `B ≡ 4 (mod 68)` family. -/
+theorem BlockCoordinate.rawCoefficient_one_lt_blockBase_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4) :
+    C.rawCoefficient 1 < C.blockBase := by
+  have hk : C.remainderK = 4 :=
+    C.remainderK_eq_four_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hmodulus hblockBase
+  have hB := C.blockBase_eq_quotientQ_mul_modulus_add_remainderK
+  rw [hmodulus, hk] at hB
+  have hqpos : 0 < C.quotientQ := C.quotientQ_pos_of_goodMode hgood
+  simp [BlockCoordinate.rawCoefficient, hk, hB]
+  omega
+
+/-- The `position 5` raw coefficient plus the canonical carry `60` has the
+same block-base residue as the `position 1` raw coefficient. This is the exact
+arithmetic behind the hidden-output shape. -/
+theorem BlockCoordinate.rawCoefficient_five_add_sixty_mod_blockBase_eq_rawCoefficient_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4) :
+    (C.rawCoefficient 5 + 60) % C.blockBase = C.rawCoefficient 1 := by
+  have hk : C.remainderK = 4 :=
+    C.remainderK_eq_four_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hmodulus hblockBase
+  have hB := C.blockBase_eq_quotientQ_mul_modulus_add_remainderK
+  rw [hmodulus, hk] at hB
+  have hbalance :
+      C.rawCoefficient 5 + 60 = 15 * C.blockBase + C.rawCoefficient 1 := by
+    simp [BlockCoordinate.rawCoefficient, hk, hB]
+    ring_nf
+  have hlt :
+      C.rawCoefficient 1 < C.blockBase :=
+    C.rawCoefficient_one_lt_blockBase_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hgood hmodulus hblockBase
+  rw [hbalance]
+  rw [Nat.mul_add_mod_self_right]
+  exact Nat.mod_eq_of_lt hlt
+
+/-- The canonical incoming-carry outputs at positions `1` and `5` are hidden:
+after adding the exact incoming carries and reducing modulo the block base, the
+two positions emit the same block value. The remaining finite-window condition
+is to know that a chosen traced window has these canonical incoming carries. -/
+theorem BlockCoordinate.incomingCarry_hiddenOutput_one_five_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4) :
+    (C.rawCoefficient 1 + C.incomingCarry 1) % C.blockBase =
+      (C.rawCoefficient 5 + C.incomingCarry 5) % C.blockBase := by
+  have hcarry1 :
+      C.incomingCarry 1 = 0 :=
+    C.incomingCarry_one_eq_zero_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hgood hmodulus hblockBase
+  have hcarry5 :
+      C.incomingCarry 5 = 60 :=
+    C.incomingCarry_five_eq_sixty_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hgood hmodulus hblockBase
+  have hlt :
+      C.rawCoefficient 1 < C.blockBase :=
+    C.rawCoefficient_one_lt_blockBase_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hgood hmodulus hblockBase
+  rw [hcarry1, hcarry5]
+  rw [add_zero, Nat.mod_eq_of_lt hlt]
+  symm
+  exact
+    C.rawCoefficient_five_add_sixty_mod_blockBase_eq_rawCoefficient_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hgood hmodulus hblockBase
+
+theorem BlockCoordinate.stateAlignments_carryIn_eq_of_visibleCarryTrace_carryIn_eq
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks i value : ℕ)
+    (hi : i < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length)
+    (hiVisible : i < (C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks).length)
+    (hcarry :
+      ((C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks)[i]'hiVisible).carryIn =
+        value) :
+    ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[i]'hi).carryIn = value := by
+  have hmap := C.stateAlignments_map_carryIn hgood requestedBlocks lookaheadBlocks
+  have hget :
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks).map StateAlignment.carryIn)[i]? =
+        ((C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks).map
+          CarryTraceStep.carryIn)[i]? := by
+    exact congrArg (fun word => word[i]?) hmap
+  have hleft :
+      i < ((C.stateAlignments hgood requestedBlocks lookaheadBlocks).map
+        StateAlignment.carryIn).length := by
+    simpa using hi
+  have hright :
+      i < ((C.visibleCarryTrace hgood requestedBlocks lookaheadBlocks).map
+        CarryTraceStep.carryIn).length := by
+    simpa using hiVisible
+  rw [List.getElem?_eq_getElem hleft, List.getElem?_eq_getElem hright] at hget
+  simpa [hcarry] using hget
+
+theorem BlockCoordinate.rawCoefficientWord_nine_eq_of_remainderK_eq_four
+    (C : BlockCoordinate) (hremainderK : C.remainderK = 4) :
+    C.rawCoefficientWord 9 =
+      [C.quotientQ, C.quotientQ * 4, C.quotientQ * 16, C.quotientQ * 64,
+        C.quotientQ * 256, C.quotientQ * 1024, C.quotientQ * 4096,
+        C.quotientQ * 16384, C.quotientQ * 65536] := by
+  unfold BlockCoordinate.rawCoefficientWord BlockCoordinate.rawCoefficient
+  rw [hremainderK]
+  repeat rw [List.range_succ]
+  simp
+
+theorem BlockCoordinate.rawCoefficientWord_eight_eq_of_remainderK_eq_four
+    (C : BlockCoordinate) (hremainderK : C.remainderK = 4) :
+    C.rawCoefficientWord 8 =
+      [C.quotientQ, C.quotientQ * 4, C.quotientQ * 16, C.quotientQ * 64,
+        C.quotientQ * 256, C.quotientQ * 1024, C.quotientQ * 4096,
+        C.quotientQ * 16384] := by
+  unfold BlockCoordinate.rawCoefficientWord BlockCoordinate.rawCoefficient
+  rw [hremainderK]
+  repeat rw [List.range_succ]
+  simp
+
+theorem composite68_suffixCarry_five_eq_sixty_of_tailCarry_le_nine_hundred_sixty_three
+    (q tailCarry : ℕ) (hq : 0 < q) (htailCarry : tailCarry ≤ 963) :
+    (q * 4096 + (q * 16384 + tailCarry) / (q * 68 + 4)) / (q * 68 + 4) =
+      60 := by
+  have hBpos : 0 < q * 68 + 4 := by omega
+  let carryIntoSix := (q * 16384 + tailCarry) / (q * 68 + 4)
+  have hcarryIntoSix_le : carryIntoSix ≤ 240 := by
+    rw [Nat.div_le_iff_le_mul hBpos]
+    omega
+  have hcarryIntoSix_ge : 224 ≤ carryIntoSix := by
+    rw [Nat.le_div_iff_mul_le hBpos]
+    omega
+  apply Nat.div_eq_of_lt_le
+  · omega
+  · omega
+
+theorem composite68_suffixCarry_one_eq_zero_of_tailCarry_le_nine_hundred_sixty_three
+    (q tailCarry : ℕ) (hq : 0 < q) (htailCarry : tailCarry ≤ 963) :
+    (q * 16 +
+        (q * 64 +
+            (q * 256 +
+                (q * 1024 + (q * 4096 + (q * 16384 + tailCarry) / (q * 68 + 4)) /
+                      (q * 68 + 4)) /
+                  (q * 68 + 4)) /
+              (q * 68 + 4)) /
+          (q * 68 + 4)) /
+      (q * 68 + 4) = 0 := by
+  have hBpos : 0 < q * 68 + 4 := by omega
+  rw [composite68_suffixCarry_five_eq_sixty_of_tailCarry_le_nine_hundred_sixty_three
+    q tailCarry hq htailCarry]
+  apply Nat.div_eq_of_lt
+  have h4_le : (q * 1024 + 60) / (q * 68 + 4) ≤ 15 := by
+    rw [Nat.div_le_iff_le_mul hBpos]
+    omega
+  have h3_le :
+      (q * 256 + (q * 1024 + 60) / (q * 68 + 4)) / (q * 68 + 4) ≤ 3 := by
+    rw [Nat.div_le_iff_le_mul hBpos]
+    omega
+  have h2_eq :
+      (q * 64 + (q * 256 + (q * 1024 + 60) / (q * 68 + 4)) / (q * 68 + 4)) /
+          (q * 68 + 4) = 0 := by
+    apply Nat.div_eq_of_lt
+    omega
+  rw [h2_eq]
+  omega
+
+theorem composite68_eight_zero_suffixCarry_five_eq_sixty
+    (q : ℕ) (hq : 0 < q) :
+    (q * 4096 + q * 16384 / (q * 68 + 4)) / (q * 68 + 4) = 60 := by
+  simpa using
+    composite68_suffixCarry_five_eq_sixty_of_tailCarry_le_nine_hundred_sixty_three
+      q 0 hq (by norm_num)
+
+theorem composite68_eight_zero_suffixCarry_one_eq_zero
+    (q : ℕ) (hq : 0 < q) :
+    (q * 16 +
+        (q * 64 +
+            (q * 256 +
+                (q * 1024 + (q * 4096 + q * 16384 / (q * 68 + 4)) / (q * 68 + 4)) /
+                  (q * 68 + 4)) /
+              (q * 68 + 4)) /
+          (q * 68 + 4)) /
+      (q * 68 + 4) = 0 := by
+  simpa using
+    composite68_suffixCarry_one_eq_zero_of_tailCarry_le_nine_hundred_sixty_three
+      q 0 hq (by norm_num)
+
+theorem composite68_eight_one_suffixCarry_five_eq_sixty
+    (q : ℕ) (hq : 0 < q) :
+    (q * 4096 + (q * 16384 + q * 65536 / (q * 68 + 4)) / (q * 68 + 4)) /
+        (q * 68 + 4) = 60 := by
+  have hBpos : 0 < q * 68 + 4 := by omega
+  have htailCarry : q * 65536 / (q * 68 + 4) ≤ 963 := by
+    rw [Nat.div_le_iff_le_mul hBpos]
+    omega
+  exact
+    composite68_suffixCarry_five_eq_sixty_of_tailCarry_le_nine_hundred_sixty_three
+      q (q * 65536 / (q * 68 + 4)) hq htailCarry
+
+theorem composite68_eight_one_suffixCarry_one_eq_zero
+    (q : ℕ) (hq : 0 < q) :
+    (q * 16 +
+        (q * 64 +
+            (q * 256 +
+                (q * 1024 +
+                    (q * 4096 + (q * 16384 + q * 65536 / (q * 68 + 4)) / (q * 68 + 4)) /
+                      (q * 68 + 4)) /
+                  (q * 68 + 4)) /
+            (q * 68 + 4)) /
+          (q * 68 + 4)) /
+      (q * 68 + 4) = 0 := by
+  have hBpos : 0 < q * 68 + 4 := by omega
+  have htailCarry : q * 65536 / (q * 68 + 4) ≤ 963 := by
+    rw [Nat.div_le_iff_le_mul hBpos]
+    omega
+  exact
+    composite68_suffixCarry_one_eq_zero_of_tailCarry_le_nine_hundred_sixty_three
+      q (q * 65536 / (q * 68 + 4)) hq htailCarry
+
+theorem BlockCoordinate.visibleCarryTrace_carryIn_one_eq_zero_eight_zero_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4) :
+    ((C.visibleCarryTrace hgood 8 0)[1]'(by rw [C.visibleCarryTrace_length]; decide)).carryIn =
+      0 := by
+  have hk : C.remainderK = 4 :=
+    C.remainderK_eq_four_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hmodulus hblockBase
+  have hB := C.blockBase_eq_quotientQ_mul_modulus_add_remainderK
+  rw [hmodulus, hk] at hB
+  have hqpos : 0 < C.quotientQ := C.quotientQ_pos_of_goodMode hgood
+  have hword := C.rawCoefficientWord_eight_eq_of_remainderK_eq_four hk
+  have hvisible : C.visibleCarryTrace hgood 8 0 = C.traceRawWord hgood 8 := by
+    unfold BlockCoordinate.visibleCarryTrace
+    simp
+  have htrace :
+      ((C.visibleCarryTrace hgood 8 0)[1]'(by rw [C.visibleCarryTrace_length]; decide)).carryIn =
+        (C.quotientQ * 16 +
+            (C.quotientQ * 64 +
+                (C.quotientQ * 256 +
+                    (C.quotientQ * 1024 +
+                        (C.quotientQ * 4096 + C.quotientQ * 16384 / C.blockBase) /
+                          C.blockBase) /
+                      C.blockBase) /
+                  C.blockBase) /
+              C.blockBase) /
+          C.blockBase := by
+    simp [hvisible, BlockCoordinate.traceRawWord, hword,
+      BlockCoordinate.carryTransducer, CarryTransducer.traceBlocks,
+      CarryTransducer.traceReversed, CarryTransducer.traceReversedAux,
+      CarryTransducer.mkTraceStep, CarryTransducer.step]
+  rw [htrace, hB]
+  exact composite68_eight_zero_suffixCarry_one_eq_zero C.quotientQ hqpos
+
+theorem BlockCoordinate.visibleCarryTrace_carryIn_five_eq_sixty_eight_zero_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4) :
+    ((C.visibleCarryTrace hgood 8 0)[5]'(by rw [C.visibleCarryTrace_length]; decide)).carryIn =
+      60 := by
+  have hk : C.remainderK = 4 :=
+    C.remainderK_eq_four_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hmodulus hblockBase
+  have hB := C.blockBase_eq_quotientQ_mul_modulus_add_remainderK
+  rw [hmodulus, hk] at hB
+  have hqpos : 0 < C.quotientQ := C.quotientQ_pos_of_goodMode hgood
+  have hword := C.rawCoefficientWord_eight_eq_of_remainderK_eq_four hk
+  have hvisible : C.visibleCarryTrace hgood 8 0 = C.traceRawWord hgood 8 := by
+    unfold BlockCoordinate.visibleCarryTrace
+    simp
+  have htrace :
+      ((C.visibleCarryTrace hgood 8 0)[5]'(by rw [C.visibleCarryTrace_length]; decide)).carryIn =
+        (C.quotientQ * 4096 + C.quotientQ * 16384 / C.blockBase) / C.blockBase := by
+    simp [hvisible, BlockCoordinate.traceRawWord, hword,
+      BlockCoordinate.carryTransducer, CarryTransducer.traceBlocks,
+      CarryTransducer.traceReversed, CarryTransducer.traceReversedAux,
+      CarryTransducer.mkTraceStep, CarryTransducer.step]
+  rw [htrace, hB]
+  exact composite68_eight_zero_suffixCarry_five_eq_sixty C.quotientQ hqpos
+
+theorem BlockCoordinate.visibleCarryTrace_carryIn_one_eq_zero_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4) :
+    ((C.visibleCarryTrace hgood 8 1)[1]'(by rw [C.visibleCarryTrace_length]; decide)).carryIn =
+      0 := by
+  have hk : C.remainderK = 4 :=
+    C.remainderK_eq_four_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hmodulus hblockBase
+  have hB := C.blockBase_eq_quotientQ_mul_modulus_add_remainderK
+  rw [hmodulus, hk] at hB
+  have hqpos : 0 < C.quotientQ := C.quotientQ_pos_of_goodMode hgood
+  have hword := C.rawCoefficientWord_nine_eq_of_remainderK_eq_four hk
+  have hvisible : C.visibleCarryTrace hgood 8 1 = (C.traceRawWord hgood 9).take 8 := by
+    unfold BlockCoordinate.visibleCarryTrace
+    exact List.rdrop_eq_take_of_length_eq (by rw [C.traceRawWord_length])
+  have htrace :
+      ((C.visibleCarryTrace hgood 8 1)[1]'(by rw [C.visibleCarryTrace_length]; decide)).carryIn =
+        (C.quotientQ * 16 +
+            (C.quotientQ * 64 +
+                (C.quotientQ * 256 +
+                    (C.quotientQ * 1024 +
+                        (C.quotientQ * 4096 +
+                            (C.quotientQ * 16384 + C.quotientQ * 65536 / C.blockBase) /
+                              C.blockBase) /
+                          C.blockBase) /
+                      C.blockBase) /
+                  C.blockBase) /
+              C.blockBase) /
+          C.blockBase := by
+    simp [hvisible, BlockCoordinate.traceRawWord, hword,
+      BlockCoordinate.carryTransducer, CarryTransducer.traceBlocks,
+      CarryTransducer.traceReversed, CarryTransducer.traceReversedAux,
+      CarryTransducer.mkTraceStep, CarryTransducer.step]
+  rw [htrace, hB]
+  exact composite68_eight_one_suffixCarry_one_eq_zero C.quotientQ hqpos
+
+theorem BlockCoordinate.visibleCarryTrace_carryIn_five_eq_sixty_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4) :
+    ((C.visibleCarryTrace hgood 8 1)[5]'(by rw [C.visibleCarryTrace_length]; decide)).carryIn =
+      60 := by
+  have hk : C.remainderK = 4 :=
+    C.remainderK_eq_four_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hmodulus hblockBase
+  have hB := C.blockBase_eq_quotientQ_mul_modulus_add_remainderK
+  rw [hmodulus, hk] at hB
+  have hqpos : 0 < C.quotientQ := C.quotientQ_pos_of_goodMode hgood
+  have hword := C.rawCoefficientWord_nine_eq_of_remainderK_eq_four hk
+  have hvisible : C.visibleCarryTrace hgood 8 1 = (C.traceRawWord hgood 9).take 8 := by
+    unfold BlockCoordinate.visibleCarryTrace
+    exact List.rdrop_eq_take_of_length_eq (by rw [C.traceRawWord_length])
+  have htrace :
+      ((C.visibleCarryTrace hgood 8 1)[5]'(by rw [C.visibleCarryTrace_length]; decide)).carryIn =
+        (C.quotientQ * 4096 +
+            (C.quotientQ * 16384 + C.quotientQ * 65536 / C.blockBase) / C.blockBase) /
+          C.blockBase := by
+    simp [hvisible, BlockCoordinate.traceRawWord, hword,
+      BlockCoordinate.carryTransducer, CarryTransducer.traceBlocks,
+      CarryTransducer.traceReversed, CarryTransducer.traceReversedAux,
+      CarryTransducer.mkTraceStep, CarryTransducer.step]
+  rw [htrace, hB]
+  exact composite68_eight_one_suffixCarry_five_eq_sixty C.quotientQ hqpos
+
+/-- The finite carry entering position `5` is preserved for every extra
+lookahead length in the good `N = 68`, `B ≡ 4 (mod 68)` family. The proof uses
+the generic finite-carry upper bound at position `7`, where the canonical
+incoming carry is `963`. -/
+theorem BlockCoordinate.visibleCarryTrace_carryIn_five_eq_sixty_eight_any_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (lookaheadBlocks : ℕ)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4) :
+    ((C.visibleCarryTrace hgood 8 lookaheadBlocks)[5]'(by rw [C.visibleCarryTrace_length]; decide)).carryIn =
+      60 := by
+  have hk : C.remainderK = 4 :=
+    C.remainderK_eq_four_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hmodulus hblockBase
+  have hB := C.blockBase_eq_quotientQ_mul_modulus_add_remainderK
+  rw [hmodulus, hk] at hB
+  have hqpos : 0 < C.quotientQ := C.quotientQ_pos_of_goodMode hgood
+  have htailLe :
+      ((C.visibleCarryTrace hgood 8 lookaheadBlocks)[7]'(by rw [C.visibleCarryTrace_length]; decide)).carryIn ≤
+        963 := by
+    have hbound := C.visibleCarryTrace_carryIn_le_incomingCarry hgood 8 lookaheadBlocks 7
+      (by rw [C.visibleCarryTrace_length]; decide)
+    rw [C.incomingCarry_seven_eq_nine_hundred_sixty_three_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hgood hmodulus hblockBase] at hbound
+    exact hbound
+  have h6 :
+      ((C.visibleCarryTrace hgood 8 lookaheadBlocks)[6]'(by rw [C.visibleCarryTrace_length]; decide)).carryIn =
+        ((C.visibleCarryTrace hgood 8 lookaheadBlocks)[7]'(by rw [C.visibleCarryTrace_length]; decide)).carryOut := by
+    exact C.visibleCarryTrace_carryIn_eq_next_carryOut hgood 8 lookaheadBlocks 6 (by decide)
+  have h7out :
+      ((C.visibleCarryTrace hgood 8 lookaheadBlocks)[7]'(by rw [C.visibleCarryTrace_length]; decide)).carryOut =
+        (C.rawCoefficient 7 +
+          ((C.visibleCarryTrace hgood 8 lookaheadBlocks)[7]'(by rw [C.visibleCarryTrace_length]; decide)).carryIn) /
+          C.blockBase := by
+    rw [C.visibleCarryTrace_carryOut_eq_div_of_pos hgood 8 lookaheadBlocks 7 (by decide) (by decide)]
+    rw [C.visibleCarryTrace_coefficient_eq_rawCoefficient hgood 8 lookaheadBlocks 7 (by decide)]
+  have h5 :
+      ((C.visibleCarryTrace hgood 8 lookaheadBlocks)[5]'(by rw [C.visibleCarryTrace_length]; decide)).carryIn =
+        ((C.visibleCarryTrace hgood 8 lookaheadBlocks)[6]'(by rw [C.visibleCarryTrace_length]; decide)).carryOut := by
+    exact C.visibleCarryTrace_carryIn_eq_next_carryOut hgood 8 lookaheadBlocks 5 (by decide)
+  have h6out :
+      ((C.visibleCarryTrace hgood 8 lookaheadBlocks)[6]'(by rw [C.visibleCarryTrace_length]; decide)).carryOut =
+        (C.rawCoefficient 6 +
+          ((C.visibleCarryTrace hgood 8 lookaheadBlocks)[6]'(by rw [C.visibleCarryTrace_length]; decide)).carryIn) /
+          C.blockBase := by
+    rw [C.visibleCarryTrace_carryOut_eq_div_of_pos hgood 8 lookaheadBlocks 6 (by decide) (by decide)]
+    rw [C.visibleCarryTrace_coefficient_eq_rawCoefficient hgood 8 lookaheadBlocks 6 (by decide)]
+  rw [h5, h6out, h6, h7out]
+  have hraw6 : C.rawCoefficient 6 = C.quotientQ * 4096 := by
+    simp [BlockCoordinate.rawCoefficient, hk]
+  have hraw7 : C.rawCoefficient 7 = C.quotientQ * 16384 := by
+    simp [BlockCoordinate.rawCoefficient, hk]
+  rw [hraw6, hraw7, hB]
+  exact composite68_suffixCarry_five_eq_sixty_of_tailCarry_le_nine_hundred_sixty_three
+    C.quotientQ
+    (((C.visibleCarryTrace hgood 8 lookaheadBlocks)[7]'(by
+      rw [C.visibleCarryTrace_length]
+      decide)).carryIn)
+    hqpos htailLe
+
+theorem BlockCoordinate.stateAlignments_carryIn_one_eq_zero_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4) :
+    ((C.stateAlignments hgood 8 1)[1]'(by rw [C.stateAlignments_length]; decide)).carryIn =
+      0 := by
+  exact C.stateAlignments_carryIn_eq_of_visibleCarryTrace_carryIn_eq
+    hgood 8 1 1 0
+    (by rw [C.stateAlignments_length]; decide)
+    (by rw [C.visibleCarryTrace_length]; decide)
+    (C.visibleCarryTrace_carryIn_one_eq_zero_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hgood hmodulus hblockBase)
+
+theorem BlockCoordinate.stateAlignments_carryIn_five_eq_sixty_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4) :
+    ((C.stateAlignments hgood 8 1)[5]'(by rw [C.stateAlignments_length]; decide)).carryIn =
+      60 := by
+  exact C.stateAlignments_carryIn_eq_of_visibleCarryTrace_carryIn_eq
+    hgood 8 1 5 60
+    (by rw [C.stateAlignments_length]; decide)
+    (by rw [C.visibleCarryTrace_length]; decide)
+    (C.visibleCarryTrace_carryIn_five_eq_sixty_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hgood hmodulus hblockBase)
+
+theorem BlockCoordinate.stateAlignments_carryIn_one_eq_zero_eight_zero_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4) :
+    ((C.stateAlignments hgood 8 0)[1]'(by rw [C.stateAlignments_length]; decide)).carryIn =
+      0 := by
+  exact C.stateAlignments_carryIn_eq_of_visibleCarryTrace_carryIn_eq
+    hgood 8 0 1 0
+    (by rw [C.stateAlignments_length]; decide)
+    (by rw [C.visibleCarryTrace_length]; decide)
+    (C.visibleCarryTrace_carryIn_one_eq_zero_eight_zero_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hgood hmodulus hblockBase)
+
+theorem BlockCoordinate.stateAlignments_carryIn_five_eq_sixty_eight_zero_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4) :
+    ((C.stateAlignments hgood 8 0)[5]'(by rw [C.stateAlignments_length]; decide)).carryIn =
+      60 := by
+  exact C.stateAlignments_carryIn_eq_of_visibleCarryTrace_carryIn_eq
+    hgood 8 0 5 60
+    (by rw [C.stateAlignments_length]; decide)
+    (by rw [C.visibleCarryTrace_length]; decide)
+    (C.visibleCarryTrace_carryIn_five_eq_sixty_eight_zero_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hgood hmodulus hblockBase)
+
+/-- Family-level finite-trace bridge for the `N = 68`, `B ≡ 4 (mod 68)`
+obstruction shape: once a bounded state-alignment trace has certified finite
+carry states `0` and `60` at positions `1` and `5`, those finite states are the
+canonical incoming carries. This packages the exact finite carry-state
+certificate needed by worked windows; it does not assert that every lookahead
+certificate automatically supplies those carry states. -/
+theorem BlockCoordinate.stateAlignments_carryIn_one_five_eq_incomingCarry_of_carry_states_zero_sixty
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks : ℕ)
+    (h1 : 1 < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length)
+    (h5 : 5 < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4)
+    (hcarry1 :
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[1]'h1).carryIn = 0)
+    (hcarry5 :
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[5]'h5).carryIn = 60) :
+    ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[1]'h1).carryIn =
+        C.incomingCarry 1 ∧
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[5]'h5).carryIn =
+        C.incomingCarry 5 := by
+  constructor
+  · rw [hcarry1,
+      C.incomingCarry_one_eq_zero_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+        hgood hmodulus hblockBase]
+  · rw [hcarry5,
+      C.incomingCarry_five_eq_sixty_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+        hgood hmodulus hblockBase]
+
+theorem BlockCoordinate.stateAlignments_carryIn_one_five_eq_incomingCarry_eight_zero_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4) :
+    ((C.stateAlignments hgood 8 0)[1]'(by rw [C.stateAlignments_length]; decide)).carryIn =
+        C.incomingCarry 1 ∧
+      ((C.stateAlignments hgood 8 0)[5]'(by rw [C.stateAlignments_length]; decide)).carryIn =
+        C.incomingCarry 5 := by
+  exact C.stateAlignments_carryIn_one_five_eq_incomingCarry_of_carry_states_zero_sixty
+    hgood 8 0
+    (by rw [C.stateAlignments_length]; decide)
+    (by rw [C.stateAlignments_length]; decide)
+    hmodulus
+    hblockBase
+    (C.stateAlignments_carryIn_one_eq_zero_eight_zero_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hgood hmodulus hblockBase)
+    (C.stateAlignments_carryIn_five_eq_sixty_eight_zero_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hgood hmodulus hblockBase)
+
+theorem BlockCoordinate.stateAlignments_carryIn_one_five_eq_incomingCarry_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4) :
+    ((C.stateAlignments hgood 8 1)[1]'(by rw [C.stateAlignments_length]; decide)).carryIn =
+        C.incomingCarry 1 ∧
+      ((C.stateAlignments hgood 8 1)[5]'(by rw [C.stateAlignments_length]; decide)).carryIn =
+        C.incomingCarry 5 := by
+  exact C.stateAlignments_carryIn_one_five_eq_incomingCarry_of_carry_states_zero_sixty
+    hgood 8 1
+    (by rw [C.stateAlignments_length]; decide)
+    (by rw [C.stateAlignments_length]; decide)
+    hmodulus
+    hblockBase
+    (C.stateAlignments_carryIn_one_eq_zero_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hgood hmodulus hblockBase)
+    (C.stateAlignments_carryIn_five_eq_sixty_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hgood hmodulus hblockBase)
+
+/-- Universal finite carry-state preservation for the good `N = 68`,
+`B ≡ 4 (mod 68)` eight-block coordinate family: any finite extra-lookahead
+suffix still realizes the canonical incoming carries at the two obstruction
+positions. This is a finite carry-state theorem only; it does not assert
+global factorization. -/
+theorem BlockCoordinate.stateAlignments_carryIn_one_five_eq_incomingCarry_eight_any_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (lookaheadBlocks : ℕ)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4) :
+    ((C.stateAlignments hgood 8 lookaheadBlocks)[1]'(by rw [C.stateAlignments_length]; decide)).carryIn =
+        C.incomingCarry 1 ∧
+      ((C.stateAlignments hgood 8 lookaheadBlocks)[5]'(by rw [C.stateAlignments_length]; decide)).carryIn =
+        C.incomingCarry 5 := by
+  have hcarry1 :
+      ((C.stateAlignments hgood 8 lookaheadBlocks)[1]'(by
+        rw [C.stateAlignments_length]
+        decide)).carryIn = 0 := by
+    have hle := C.stateAlignments_carryIn_le_incomingCarry hgood 8 lookaheadBlocks 1
+      (by rw [C.stateAlignments_length]; decide)
+    rw [C.incomingCarry_one_eq_zero_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hgood hmodulus hblockBase] at hle
+    exact Nat.eq_zero_of_le_zero hle
+  have hcarry5 :
+      ((C.stateAlignments hgood 8 lookaheadBlocks)[5]'(by
+        rw [C.stateAlignments_length]
+        decide)).carryIn = 60 := by
+    exact C.stateAlignments_carryIn_eq_of_visibleCarryTrace_carryIn_eq
+      hgood 8 lookaheadBlocks 5 60
+      (by rw [C.stateAlignments_length]; decide)
+      (by rw [C.visibleCarryTrace_length]; decide)
+      (C.visibleCarryTrace_carryIn_five_eq_sixty_eight_any_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+        hgood lookaheadBlocks hmodulus hblockBase)
+  exact C.stateAlignments_carryIn_one_five_eq_incomingCarry_of_carry_states_zero_sixty
+    hgood 8 lookaheadBlocks
+    (by rw [C.stateAlignments_length]; decide)
+    (by rw [C.stateAlignments_length]; decide)
+    hmodulus
+    hblockBase
+    hcarry1
+    hcarry5
+
+/-- Congruence-family finite obstruction theorem for `N = 68`: a good finite
+state window containing positions `1` and `5` is enough to refute
+remainder-to-coefficient functionality whenever `B ≡ 4 (mod 68)`. -/
+theorem BlockCoordinate.not_coefficientFunctional_one_five_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks : ℕ)
+    (h1 : 1 < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length)
+    (h5 : 5 < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4) :
+    ¬ List.FunctionalOnFst
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact C.not_coefficientFunctional_one_five_of_modulus_eq_sixty_eight
+    hgood requestedBlocks lookaheadBlocks h1 h5 hmodulus
+    (C.remainderK_eq_four_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hmodulus hblockBase)
+
+/-- In the good `N = 68`, `B ≡ 4 (mod 68)` family, the one-lookahead
+eight-block gap numerator has a closed form once `q ≥ 75`. This is the exact
+arithmetic threshold behind the base-10 and base-30 certified obstruction
+windows. -/
+theorem BlockCoordinate.lookaheadGapNumerator_eight_one_eq_quotientQ_mul_sixteen_add_three_thousand_eight_hundred_fifty_six_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_ge_seventy_five
+    (C : BlockCoordinate)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4)
+    (hquotient : 75 ≤ C.quotientQ) :
+    C.lookaheadGapNumerator 8 1 = C.quotientQ * 16 + 3856 := by
+  have hk : C.remainderK = 4 :=
+    C.remainderK_eq_four_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hmodulus hblockBase
+  have hB : C.blockBase = C.quotientQ * 68 + 4 := by
+    have h := C.blockBase_eq_quotientQ_mul_modulus_add_remainderK
+    rw [hmodulus, hk] at h
+    exact h
+  have hraw :
+      C.rawCoefficient 8 = C.quotientQ * 65536 := by
+    simp [BlockCoordinate.rawCoefficient, hk]
+  have hrem_lt : C.quotientQ * 52 - 3852 < C.blockBase := by
+    rw [hB]
+    omega
+  have hraw_mod :
+      C.rawCoefficient 8 % C.blockBase = C.quotientQ * 52 - 3852 := by
+    have hdecomp :
+        C.quotientQ * 65536 =
+          963 * C.blockBase + (C.quotientQ * 52 - 3852) := by
+      rw [hB]
+      omega
+    rw [hraw, hdecomp]
+    rw [Nat.add_comm, Nat.mul_comm 963 C.blockBase, Nat.add_mul_mod_self_left]
+    exact Nat.mod_eq_of_lt hrem_lt
+  unfold BlockCoordinate.lookaheadGapNumerator
+  rw [C.truncatedVisiblePrefixRemainder_one_eq_rawCoefficient_mod_blockBase, hraw_mod, pow_one]
+  have hrem_ne : C.quotientQ * 52 - 3852 ≠ 0 := by
+    omega
+  simp [hrem_ne]
+  rw [hB]
+  omega
+
+/-- One-lookahead certificate threshold for the obstruction family: if
+`q ≥ 75`, then the `8/1` finite window satisfies the exact lookahead
+certificate throughout the good `N = 68`, `B ≡ 4 (mod 68)` family. -/
+theorem BlockCoordinate.lookaheadCertificateHolds_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_ge_seventy_five
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4)
+    (hquotient : 75 ≤ C.quotientQ) :
+    C.lookaheadCertificateHolds 8 1 := by
+  rw [C.lookaheadCertificateHolds_iff_tail_lt_gapModulus hgood]
+  have hk : C.remainderK = 4 :=
+    C.remainderK_eq_four_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hmodulus hblockBase
+  have hgap :
+      C.lookaheadGapNumerator 8 1 = C.quotientQ * 16 + 3856 :=
+    C.lookaheadGapNumerator_eight_one_eq_quotientQ_mul_sixteen_add_three_thousand_eight_hundred_fifty_six_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_ge_seventy_five
+      hmodulus hblockBase hquotient
+  rw [hk, hmodulus, hgap]
+  norm_num
+  omega
+
+/-- Boundary obstruction at the first failed one-lookahead quotient: for
+`q = 74`, the same good `N = 68`, `B ≡ 4 (mod 68)` family does not satisfy the
+`8/1` exact lookahead certificate. This marks the cliff below the `q ≥ 75`
+positive theorem, not a global visibility obstruction. -/
+theorem BlockCoordinate.not_lookaheadCertificateHolds_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_eq_seventy_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4)
+    (hquotient : C.quotientQ = 74) :
+    ¬ C.lookaheadCertificateHolds 8 1 := by
+  rw [C.lookaheadCertificateHolds_iff_tail_lt_gapModulus hgood]
+  have hk : C.remainderK = 4 :=
+    C.remainderK_eq_four_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hmodulus hblockBase
+  have hB : C.blockBase = 5036 := by
+    have h := C.blockBase_eq_quotientQ_mul_modulus_add_remainderK
+    rw [hmodulus, hk, hquotient] at h
+    norm_num at h
+    exact h
+  have hgap : C.lookaheadGapNumerator 8 1 = 4 := by
+    unfold BlockCoordinate.lookaheadGapNumerator BlockCoordinate.truncatedVisiblePrefixRemainder
+      BlockCoordinate.bodyTerm
+    rw [hB, hmodulus, hk]
+    native_decide
+  rw [hk, hmodulus, hgap]
+  norm_num
+
+/-- Zero-lookahead failure for the obstruction family: with `k = 4` and
+`N = 68`, the coarse `8/0` certificate would require `4^8 < 68`, so it never
+holds. -/
+theorem BlockCoordinate.not_lookaheadCertificateHolds_eight_zero_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4) :
+    ¬ C.lookaheadCertificateHolds 8 0 := by
+  rw [C.lookaheadCertificateHolds_zero_iff_remainderK_pow_lt_modulus hgood]
+  have hk : C.remainderK = 4 :=
+    C.remainderK_eq_four_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hmodulus hblockBase
+  rw [hk, hmodulus]
+  norm_num
+
+/-- Full one-lookahead negative side for the obstruction family: every quotient
+below the positive threshold fails the `8/1` exact certificate. -/
+theorem BlockCoordinate.not_lookaheadCertificateHolds_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_le_seventy_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4)
+    (hquotient : C.quotientQ ≤ 74) :
+    ¬ C.lookaheadCertificateHolds 8 1 := by
+  rw [C.lookaheadCertificateHolds_iff_tail_lt_gapModulus hgood]
+  have hk : C.remainderK = 4 :=
+    C.remainderK_eq_four_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hmodulus hblockBase
+  have hB : C.blockBase = C.quotientQ * 68 + 4 := by
+    have h := C.blockBase_eq_quotientQ_mul_modulus_add_remainderK
+    rw [hmodulus, hk] at h
+    exact h
+  rw [hk, hmodulus]
+  have hgap_upper : C.lookaheadGapNumerator 8 1 ≤ 3855 := by
+    by_cases hsmall : C.quotientQ ≤ 56
+    · have hgap_le_B : C.lookaheadGapNumerator 8 1 ≤ C.blockBase := by
+        simpa [pow_one] using C.lookaheadGapNumerator_le_blockBasePow 8 1
+      have hB_le : C.blockBase ≤ 3812 := by
+        rw [hB]
+        omega
+      exact le_trans hgap_le_B (le_trans hB_le (by norm_num))
+    · have hqge : 57 ≤ C.quotientQ := by omega
+      let rem := C.quotientQ * 120 - 3848
+      have hraw : C.rawCoefficient 8 = C.quotientQ * 65536 := by
+        simp [BlockCoordinate.rawCoefficient, hk]
+      have hrem_pos : 0 < rem := by
+        dsimp [rem]
+        omega
+      have hrem_lt : rem < C.blockBase := by
+        rw [hB]
+        dsimp [rem]
+        omega
+      have hraw_mod : C.rawCoefficient 8 % C.blockBase = rem := by
+        have hdecomp :
+            C.quotientQ * 65536 = 962 * C.blockBase + rem := by
+          rw [hB]
+          dsimp [rem]
+          omega
+        rw [hraw, hdecomp]
+        rw [Nat.add_comm, Nat.mul_comm 962 C.blockBase, Nat.add_mul_mod_self_left]
+        exact Nat.mod_eq_of_lt hrem_lt
+      unfold BlockCoordinate.lookaheadGapNumerator
+      rw [C.truncatedVisiblePrefixRemainder_one_eq_rawCoefficient_mod_blockBase,
+        hraw_mod, pow_one]
+      have hrem_ne : rem ≠ 0 := Nat.ne_of_gt hrem_pos
+      simp [hrem_ne]
+      rw [hB]
+      dsimp [rem]
+      omega
+  intro hcert
+  have hprod : C.lookaheadGapNumerator 8 1 * 68 ≤ 3855 * 68 :=
+    Nat.mul_le_mul_right 68 hgap_upper
+  norm_num at hcert hprod
+  omega
+
+/-- Exact one-lookahead threshold for the obstruction family. -/
+theorem BlockCoordinate.lookaheadCertificateHolds_eight_one_iff_quotientQ_ge_seventy_five_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4) :
+    C.lookaheadCertificateHolds 8 1 ↔ 75 ≤ C.quotientQ := by
+  constructor
+  · intro hcert
+    by_contra hnot
+    have hle : C.quotientQ ≤ 74 := by omega
+    exact (C.not_lookaheadCertificateHolds_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_le_seventy_four
+      hgood hmodulus hblockBase hle) hcert
+  · intro hquotient
+    exact
+      C.lookaheadCertificateHolds_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_ge_seventy_five
+        hgood hmodulus hblockBase hquotient
+
+/-- First exact two-lookahead obstruction point: `q = 1` fails the `8/2`
+certificate. -/
+theorem BlockCoordinate.not_lookaheadCertificateHolds_eight_two_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_eq_one
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4)
+    (hquotient : C.quotientQ = 1) :
+    ¬ C.lookaheadCertificateHolds 8 2 := by
+  rw [C.lookaheadCertificateHolds_iff_tail_lt_gapModulus hgood]
+  have hk : C.remainderK = 4 :=
+    C.remainderK_eq_four_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hmodulus hblockBase
+  have hB : C.blockBase = 72 := by
+    have h := C.blockBase_eq_quotientQ_mul_modulus_add_remainderK
+    rw [hmodulus, hk, hquotient] at h
+    norm_num at h
+    exact h
+  have hgap : C.lookaheadGapNumerator 8 2 = 1088 := by
+    unfold BlockCoordinate.lookaheadGapNumerator BlockCoordinate.truncatedVisiblePrefixRemainder
+      BlockCoordinate.bodyTerm
+    rw [hB, hmodulus, hk]
+    native_decide
+  rw [hk, hmodulus, hgap]
+  norm_num
+
+/-- Second exact two-lookahead obstruction point: `q = 2` fails the `8/2`
+certificate. -/
+theorem BlockCoordinate.not_lookaheadCertificateHolds_eight_two_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_eq_two
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4)
+    (hquotient : C.quotientQ = 2) :
+    ¬ C.lookaheadCertificateHolds 8 2 := by
+  rw [C.lookaheadCertificateHolds_iff_tail_lt_gapModulus hgood]
+  have hk : C.remainderK = 4 :=
+    C.remainderK_eq_four_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hmodulus hblockBase
+  have hB : C.blockBase = 140 := by
+    have h := C.blockBase_eq_quotientQ_mul_modulus_add_remainderK
+    rw [hmodulus, hk, hquotient] at h
+    norm_num at h
+    exact h
+  have hgap : C.lookaheadGapNumerator 8 2 = 432 := by
+    unfold BlockCoordinate.lookaheadGapNumerator BlockCoordinate.truncatedVisiblePrefixRemainder
+      BlockCoordinate.bodyTerm
+    rw [hB, hmodulus, hk]
+    native_decide
+  rw [hk, hmodulus, hgap]
+  norm_num
+
+/-- Full two-lookahead negative side for the obstruction family: the only good
+quotients below the positive threshold are `q = 1` and `q = 2`, and both fail
+the `8/2` exact certificate. -/
+theorem BlockCoordinate.not_lookaheadCertificateHolds_eight_two_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_le_two
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4)
+    (hquotient : C.quotientQ ≤ 2) :
+    ¬ C.lookaheadCertificateHolds 8 2 := by
+  have hqpos : 0 < C.quotientQ := C.quotientQ_pos_of_goodMode hgood
+  have hcases : C.quotientQ = 1 ∨ C.quotientQ = 2 := by omega
+  rcases hcases with hq | hq
+  · exact
+      C.not_lookaheadCertificateHolds_eight_two_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_eq_one
+        hgood hmodulus hblockBase hq
+  · exact
+      C.not_lookaheadCertificateHolds_eight_two_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_eq_two
+        hgood hmodulus hblockBase hq
+
+/-- Two-lookahead certificate slice for the obstruction family: if `q ≥ 3`,
+then the `8/2` finite window satisfies the exact lookahead certificate
+throughout the good `N = 68`, `B ≡ 4 (mod 68)` family. This covers the small
+quotients below the one-lookahead threshold without asserting minimality. -/
+theorem BlockCoordinate.lookaheadCertificateHolds_eight_two_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_ge_three
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4)
+    (hquotient : 3 ≤ C.quotientQ) :
+    C.lookaheadCertificateHolds 8 2 := by
+  rw [C.lookaheadCertificateHolds_iff_tail_lt_gapModulus hgood]
+  have hk : C.remainderK = 4 :=
+    C.remainderK_eq_four_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hmodulus hblockBase
+  have hB : C.blockBase = C.quotientQ * 68 + 4 := by
+    have h := C.blockBase_eq_quotientQ_mul_modulus_add_remainderK
+    rw [hmodulus, hk] at h
+    exact h
+  let q := C.quotientQ
+  let basePoly := q * 3536 * q + q * 416
+  let rem := basePoly - 15408
+  have hbase_gt : 15408 < basePoly := by
+    dsimp [basePoly, q]
+    nlinarith
+  have hbase_ge : 15408 ≤ basePoly := Nat.le_of_lt hbase_gt
+  have hrem_add : rem + 15408 = basePoly := by
+    exact Nat.sub_add_cancel hbase_ge
+  have hrem_lt : rem < C.blockBase ^ 2 := by
+    have hstrong : basePoly < (q * 68 + 4) ^ 2 := by
+      dsimp [basePoly]
+      nlinarith
+    have hrem_le : rem ≤ basePoly := by
+      dsimp [rem]
+      exact Nat.sub_le _ _
+    rw [hB]
+    exact lt_of_le_of_lt hrem_le hstrong
+  have hraw8 : C.rawCoefficient 8 = q * 65536 := by
+    dsimp [q]
+    simp [BlockCoordinate.rawCoefficient, hk]
+  have hraw9 : C.rawCoefficient 9 = q * 262144 := by
+    dsimp [q]
+    simp [BlockCoordinate.rawCoefficient, hk]
+  have hdecomp :
+      C.rawCoefficient 8 * C.blockBase + C.rawCoefficient 9 =
+        rem + C.blockBase ^ 2 * 963 := by
+    rw [hraw8, hraw9, hB]
+    dsimp [rem, basePoly, q] at hrem_add ⊢
+    have hsum :
+        C.quotientQ * 65536 * (C.quotientQ * 68 + 4) + C.quotientQ * 262144 +
+            15408 =
+          (C.quotientQ * 3536 * C.quotientQ + C.quotientQ * 416) +
+            (C.quotientQ * 68 + 4) ^ 2 * 963 := by
+      ring_nf
+    omega
+  have hraw_mod :
+      (C.rawCoefficient 8 * C.blockBase + C.rawCoefficient 9) % C.blockBase ^ 2 =
+        rem := by
+    rw [hdecomp]
+    rw [Nat.add_mul_mod_self_left]
+    exact Nat.mod_eq_of_lt hrem_lt
+  have hgap_lower : 25600 ≤ C.lookaheadGapNumerator 8 2 := by
+    unfold BlockCoordinate.lookaheadGapNumerator
+    rw [C.truncatedVisiblePrefixRemainder_two_eq_rawCoefficient_suffix_mod_blockBase_sq,
+      hraw_mod]
+    have hrem_ne : rem ≠ 0 := by
+      exact Nat.ne_of_gt (Nat.sub_pos_of_lt hbase_gt)
+    simp [hrem_ne]
+    rw [hB]
+    have hdiff : basePoly + 10192 ≤ (q * 68 + 4) ^ 2 := by
+      dsimp [basePoly]
+      nlinarith
+    have hle_sub : 25600 + rem ≤ (q * 68 + 4) ^ 2 := by
+      omega
+    exact Nat.le_sub_of_add_le hle_sub
+  rw [hk, hmodulus]
+  have : 1048576 < C.lookaheadGapNumerator 8 2 * 68 := by
+    nlinarith
+  norm_num at this ⊢
+  exact this
+
+/-- Exact two-lookahead threshold for the obstruction family. -/
+theorem BlockCoordinate.lookaheadCertificateHolds_eight_two_iff_quotientQ_ge_three_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4) :
+    C.lookaheadCertificateHolds 8 2 ↔ 3 ≤ C.quotientQ := by
+  constructor
+  · intro hcert
+    by_contra hnot
+    have hle : C.quotientQ ≤ 2 := by omega
+    exact (C.not_lookaheadCertificateHolds_eight_two_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_le_two
+      hgood hmodulus hblockBase hle) hcert
+  · intro hquotient
+    exact
+      C.lookaheadCertificateHolds_eight_two_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_ge_three
+        hgood hmodulus hblockBase hquotient
+
+/-- Three-lookahead certificate slice for the obstruction family: every good
+`N = 68`, `B ≡ 4 (mod 68)` coordinate satisfies the `8/3` exact lookahead
+certificate. This is still a fixed-window theorem below the open global
+visibility and carry-factorization frontiers. -/
+theorem BlockCoordinate.lookaheadCertificateHolds_eight_three_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4) :
+    C.lookaheadCertificateHolds 8 3 := by
+  rw [C.lookaheadCertificateHolds_iff_tail_lt_gapModulus hgood]
+  have hk : C.remainderK = 4 :=
+    C.remainderK_eq_four_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hmodulus hblockBase
+  have hB : C.blockBase = C.quotientQ * 68 + 4 := by
+    have h := C.blockBase_eq_quotientQ_mul_modulus_add_remainderK
+    rw [hmodulus, hk] at h
+    exact h
+  have hqpos : 0 < C.quotientQ := by
+    exact C.quotientQ_pos_of_goodMode hgood
+  let q := C.quotientQ
+  let basePoly := q * 240448 * q * q + q * 42432 * q + q * 2496
+  let rem := basePoly - 61632
+  have hbase_gt : 61632 < basePoly := by
+    dsimp [basePoly, q]
+    nlinarith [Nat.mul_le_mul_right
+      (240448 * C.quotientQ * C.quotientQ + 42432 * C.quotientQ + 2496) hqpos]
+  have hbase_ge : 61632 ≤ basePoly := Nat.le_of_lt hbase_gt
+  have hrem_add : rem + 61632 = basePoly := by
+    exact Nat.sub_add_cancel hbase_ge
+  have hrem_lt : rem < C.blockBase ^ 3 := by
+    have hstrong : basePoly < (q * 68 + 4) ^ 3 := by
+      dsimp [basePoly]
+      ring_nf
+      nlinarith
+    have hrem_le : rem ≤ basePoly := by
+      dsimp [rem]
+      exact Nat.sub_le _ _
+    rw [hB]
+    exact lt_of_le_of_lt hrem_le hstrong
+  have hraw8 : C.rawCoefficient 8 = q * 65536 := by
+    dsimp [q]
+    simp [BlockCoordinate.rawCoefficient, hk]
+  have hraw9 : C.rawCoefficient 9 = q * 262144 := by
+    dsimp [q]
+    simp [BlockCoordinate.rawCoefficient, hk]
+  have hraw10 : C.rawCoefficient 10 = q * 1048576 := by
+    dsimp [q]
+    simp [BlockCoordinate.rawCoefficient, hk]
+  have hdecomp :
+      C.rawCoefficient 8 * C.blockBase ^ 2 +
+          C.rawCoefficient 9 * C.blockBase + C.rawCoefficient 10 =
+        rem + C.blockBase ^ 3 * 963 := by
+    rw [hraw8, hraw9, hraw10, hB]
+    dsimp [rem, basePoly, q] at hrem_add ⊢
+    have hsum :
+        C.quotientQ * 65536 * (C.quotientQ * 68 + 4) ^ 2 +
+            C.quotientQ * 262144 * (C.quotientQ * 68 + 4) +
+            C.quotientQ * 1048576 + 61632 =
+          (C.quotientQ * 240448 * C.quotientQ * C.quotientQ +
+              C.quotientQ * 42432 * C.quotientQ + C.quotientQ * 2496) +
+            (C.quotientQ * 68 + 4) ^ 3 * 963 := by
+      ring_nf
+    omega
+  have hraw_mod :
+      (C.rawCoefficient 8 * C.blockBase ^ 2 +
+          C.rawCoefficient 9 * C.blockBase + C.rawCoefficient 10) % C.blockBase ^ 3 =
+        rem := by
+    rw [hdecomp]
+    rw [Nat.add_mul_mod_self_left]
+    exact Nat.mod_eq_of_lt hrem_lt
+  have hgap_lower : 149504 ≤ C.lookaheadGapNumerator 8 3 := by
+    unfold BlockCoordinate.lookaheadGapNumerator
+    rw [C.truncatedVisiblePrefixRemainder_three_eq_rawCoefficient_suffix_mod_blockBase_cu,
+      hraw_mod]
+    have hrem_ne : rem ≠ 0 := by
+      exact Nat.ne_of_gt (Nat.sub_pos_of_lt hbase_gt)
+    simp [hrem_ne]
+    rw [hB]
+    have hdiff : basePoly + 87872 ≤ (q * 68 + 4) ^ 3 := by
+      dsimp [basePoly]
+      ring_nf
+      nlinarith [hqpos]
+    have hle_sub : 149504 + rem ≤ (q * 68 + 4) ^ 3 := by
+      omega
+    exact Nat.le_sub_of_add_le hle_sub
+  rw [hk, hmodulus]
+  have : 4194304 < C.lookaheadGapNumerator 8 3 * 68 := by
+    nlinarith
+  norm_num at this ⊢
+  exact this
+
+/-- Minimal one-lookahead branch of the fixed `8/L` certificate staircase for
+the obstruction family. -/
+theorem BlockCoordinate.isMinimalLookaheadCertificate_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_ge_seventy_five
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4)
+    (hquotient : 75 ≤ C.quotientQ) :
+    C.isMinimalLookaheadCertificate 8 1 := by
+  constructor
+  · exact
+      C.lookaheadCertificateHolds_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_ge_seventy_five
+        hgood hmodulus hblockBase hquotient
+  · intro earlierLookahead hearlier
+    have hzero : earlierLookahead = 0 := by omega
+    subst earlierLookahead
+    exact
+      C.not_lookaheadCertificateHolds_eight_zero_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+        hgood hmodulus hblockBase
+
+/-- Minimal two-lookahead branch of the fixed `8/L` certificate staircase for
+the obstruction family. -/
+theorem BlockCoordinate.isMinimalLookaheadCertificate_eight_two_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_ge_three_and_lt_seventy_five
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4)
+    (hquotient_ge : 3 ≤ C.quotientQ)
+    (hquotient_lt : C.quotientQ < 75) :
+    C.isMinimalLookaheadCertificate 8 2 := by
+  constructor
+  · exact
+      C.lookaheadCertificateHolds_eight_two_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_ge_three
+        hgood hmodulus hblockBase hquotient_ge
+  · intro earlierLookahead hearlier
+    interval_cases earlierLookahead
+    · exact
+        C.not_lookaheadCertificateHolds_eight_zero_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+          hgood hmodulus hblockBase
+    · exact
+        C.not_lookaheadCertificateHolds_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_le_seventy_four
+          hgood hmodulus hblockBase (by omega)
+
+/-- Minimal three-lookahead branch of the fixed `8/L` certificate staircase for
+the obstruction family. -/
+theorem BlockCoordinate.isMinimalLookaheadCertificate_eight_three_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_eq_one_or_two
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4)
+    (hquotient : C.quotientQ = 1 ∨ C.quotientQ = 2) :
+    C.isMinimalLookaheadCertificate 8 3 := by
+  have hle2 : C.quotientQ ≤ 2 := by omega
+  have hle74 : C.quotientQ ≤ 74 := by omega
+  constructor
+  · exact
+      C.lookaheadCertificateHolds_eight_three_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+        hgood hmodulus hblockBase
+  · intro earlierLookahead hearlier
+    interval_cases earlierLookahead
+    · exact
+        C.not_lookaheadCertificateHolds_eight_zero_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+          hgood hmodulus hblockBase
+    · exact
+        C.not_lookaheadCertificateHolds_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_le_seventy_four
+          hgood hmodulus hblockBase hle74
+    · exact
+        C.not_lookaheadCertificateHolds_eight_two_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_le_two
+          hgood hmodulus hblockBase hle2
+
+/-- Selector theorem for the fixed `8/L` certificate staircase in the good
+`N = 68`, `B ≡ 4 (mod 68)` family. It packages the minimal certified lookahead
+as `1` for `q ≥ 75`, `2` for `3 ≤ q < 75`, and `3` for `q = 1` or `q = 2`.
+This is still fixed-window support below the open global visibility and
+factorization claims. -/
+theorem BlockCoordinate.minimalLookaheadCertificate_eight_selector_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4) :
+    (75 ≤ C.quotientQ ∧ C.isMinimalLookaheadCertificate 8 1) ∨
+      (3 ≤ C.quotientQ ∧ C.quotientQ < 75 ∧ C.isMinimalLookaheadCertificate 8 2) ∨
+        ((C.quotientQ = 1 ∨ C.quotientQ = 2) ∧
+          C.isMinimalLookaheadCertificate 8 3) := by
+  by_cases hseventy_five : 75 ≤ C.quotientQ
+  · left
+    exact ⟨hseventy_five,
+      C.isMinimalLookaheadCertificate_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_ge_seventy_five
+        hgood hmodulus hblockBase hseventy_five⟩
+  · right
+    by_cases hthree : 3 ≤ C.quotientQ
+    · left
+      have hlt : C.quotientQ < 75 := by omega
+      exact ⟨hthree, hlt,
+        C.isMinimalLookaheadCertificate_eight_two_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_ge_three_and_lt_seventy_five
+          hgood hmodulus hblockBase hthree hlt⟩
+    · right
+      have hqpos : 0 < C.quotientQ := C.quotientQ_pos_of_goodMode hgood
+      have hsmall : C.quotientQ = 1 ∨ C.quotientQ = 2 := by omega
+      exact ⟨hsmall,
+        C.isMinimalLookaheadCertificate_eight_three_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_eq_one_or_two
+          hgood hmodulus hblockBase hsmall⟩
+
+/-- Obstruction-first finite visibility theorem for the good `N = 68`,
+`B ≡ 4 (mod 68)` family: on the eight-block state-alignment window, positions
+`1` and `5` share the observed remainder input and the carried block output,
+but have unequal raw coefficients. The finite carries at those positions are
+the canonical incoming carries, and the remainder-to-coefficient map is not
+functional. This is a finite-window obstruction theorem only; it does not
+assert global output agreement or factorization. -/
+theorem BlockCoordinate.stateAlignments_one_five_hiddenCoefficientConflict_eight_any_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (lookaheadBlocks : ℕ)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4) :
+    ((C.stateAlignments hgood 8 lookaheadBlocks)[1]'(by
+      rw [C.stateAlignments_length]
+      decide)).remainderIn =
+        ((C.stateAlignments hgood 8 lookaheadBlocks)[5]'(by
+          rw [C.stateAlignments_length]
+          decide)).remainderIn ∧
+      ((C.stateAlignments hgood 8 lookaheadBlocks)[1]'(by
+        rw [C.stateAlignments_length]
+        decide)).coefficient ≠
+          ((C.stateAlignments hgood 8 lookaheadBlocks)[5]'(by
+            rw [C.stateAlignments_length]
+            decide)).coefficient ∧
+      ((C.stateAlignments hgood 8 lookaheadBlocks)[1]'(by
+        rw [C.stateAlignments_length]
+        decide)).carryIn =
+          C.incomingCarry 1 ∧
+      ((C.stateAlignments hgood 8 lookaheadBlocks)[5]'(by
+        rw [C.stateAlignments_length]
+        decide)).carryIn =
+          C.incomingCarry 5 ∧
+      ((C.stateAlignments hgood 8 lookaheadBlocks)[1]'(by
+        rw [C.stateAlignments_length]
+        decide)).carryBlockValue =
+          ((C.stateAlignments hgood 8 lookaheadBlocks)[5]'(by
+            rw [C.stateAlignments_length]
+            decide)).carryBlockValue ∧
+      ¬ List.FunctionalOnFst
+        ((C.stateAlignments hgood 8 lookaheadBlocks).map
+          (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have h1 : 1 < (C.stateAlignments hgood 8 lookaheadBlocks).length := by
+    rw [C.stateAlignments_length]
+    decide
+  have h5 : 5 < (C.stateAlignments hgood 8 lookaheadBlocks).length := by
+    rw [C.stateAlignments_length]
+    decide
+  have hk : C.remainderK = 4 :=
+    C.remainderK_eq_four_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hmodulus hblockBase
+  have hrem :
+      ((C.stateAlignments hgood 8 lookaheadBlocks)[1]'h1).remainderIn =
+        ((C.stateAlignments hgood 8 lookaheadBlocks)[5]'h5).remainderIn :=
+    C.stateAlignments_remainderIn_one_eq_five_of_modulus_eq_sixty_eight
+      hgood 8 lookaheadBlocks h1 h5 hmodulus hk
+  have hcoeff1 :
+      ((C.stateAlignments hgood 8 lookaheadBlocks)[1]'h1).coefficient =
+        C.rawCoefficient 1 :=
+    C.stateAlignments_coefficient_eq_rawCoefficient hgood 8 lookaheadBlocks 1 h1
+  have hcoeff5 :
+      ((C.stateAlignments hgood 8 lookaheadBlocks)[5]'h5).coefficient =
+        C.rawCoefficient 5 :=
+    C.stateAlignments_coefficient_eq_rawCoefficient hgood 8 lookaheadBlocks 5 h5
+  have hrawCoeffNe : C.rawCoefficient 1 ≠ C.rawCoefficient 5 := by
+    intro hraw
+    have hmul : C.quotientQ * 4 = C.quotientQ * 1024 := by
+      simpa [BlockCoordinate.rawCoefficient, hk] using hraw
+    exact (Nat.ne_of_lt
+      (Nat.mul_lt_mul_of_pos_left (by native_decide : 4 < 1024)
+        (C.quotientQ_pos_of_goodMode hgood))) hmul
+  have hcoeffNe :
+      ((C.stateAlignments hgood 8 lookaheadBlocks)[1]'h1).coefficient ≠
+        ((C.stateAlignments hgood 8 lookaheadBlocks)[5]'h5).coefficient := by
+    intro hcoeff
+    exact hrawCoeffNe (by rw [← hcoeff1, ← hcoeff5]; exact hcoeff)
+  have hcarry :
+      ((C.stateAlignments hgood 8 lookaheadBlocks)[1]'h1).carryIn =
+          C.incomingCarry 1 ∧
+        ((C.stateAlignments hgood 8 lookaheadBlocks)[5]'h5).carryIn =
+          C.incomingCarry 5 := by
+    simpa using
+      C.stateAlignments_carryIn_one_five_eq_incomingCarry_eight_any_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+        hgood lookaheadBlocks hmodulus hblockBase
+  have hblock1 :
+      ((C.stateAlignments hgood 8 lookaheadBlocks)[1]'h1).carryBlockValue =
+        (((C.stateAlignments hgood 8 lookaheadBlocks)[1]'h1).coefficient +
+          ((C.stateAlignments hgood 8 lookaheadBlocks)[1]'h1).carryIn) %
+          C.blockBase :=
+    C.stateAlignments_carryBlockValue_eq_mod_of_pos hgood 8 lookaheadBlocks 1 h1
+      (by decide)
+  have hblock5 :
+      ((C.stateAlignments hgood 8 lookaheadBlocks)[5]'h5).carryBlockValue =
+        (((C.stateAlignments hgood 8 lookaheadBlocks)[5]'h5).coefficient +
+          ((C.stateAlignments hgood 8 lookaheadBlocks)[5]'h5).carryIn) %
+          C.blockBase :=
+    C.stateAlignments_carryBlockValue_eq_mod_of_pos hgood 8 lookaheadBlocks 5 h5
+      (by decide)
+  have hhidden :
+      (C.rawCoefficient 1 + C.incomingCarry 1) % C.blockBase =
+        (C.rawCoefficient 5 + C.incomingCarry 5) % C.blockBase :=
+    C.incomingCarry_hiddenOutput_one_five_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hgood hmodulus hblockBase
+  have hblockEq :
+      ((C.stateAlignments hgood 8 lookaheadBlocks)[1]'h1).carryBlockValue =
+        ((C.stateAlignments hgood 8 lookaheadBlocks)[5]'h5).carryBlockValue := by
+    calc
+      ((C.stateAlignments hgood 8 lookaheadBlocks)[1]'h1).carryBlockValue
+          =
+            (((C.stateAlignments hgood 8 lookaheadBlocks)[1]'h1).coefficient +
+              ((C.stateAlignments hgood 8 lookaheadBlocks)[1]'h1).carryIn) %
+              C.blockBase := hblock1
+      _ = (C.rawCoefficient 1 + C.incomingCarry 1) % C.blockBase := by
+            rw [hcoeff1, hcarry.1]
+      _ = (C.rawCoefficient 5 + C.incomingCarry 5) % C.blockBase := hhidden
+      _ =
+            (((C.stateAlignments hgood 8 lookaheadBlocks)[5]'h5).coefficient +
+              ((C.stateAlignments hgood 8 lookaheadBlocks)[5]'h5).carryIn) %
+              C.blockBase := by
+            rw [hcoeff5, hcarry.2]
+      _ = ((C.stateAlignments hgood 8 lookaheadBlocks)[5]'h5).carryBlockValue :=
+            hblock5.symm
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩
+  · simpa using hrem
+  · simpa using hcoeffNe
+  · simpa using hcarry.1
+  · simpa using hcarry.2
+  · simpa using hblockEq
+  · exact C.not_coefficientFunctional_one_five_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hgood 8 lookaheadBlocks h1 h5 hmodulus hblockBase
+
+/-- Certified wrapper for the obstruction-first finite visibility theorem:
+when the same eight-block window also satisfies the exact lookahead
+certificate, the two hidden carried outputs are identified with the emitted
+long-division/remainder block values at positions `1` and `5`. This adds
+finite output agreement only; it still does not close the global factorization
+frontier. -/
+theorem BlockCoordinate.stateAlignments_one_five_certifiedVisibilityObstruction_eight_of_lookaheadCertificate_and_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (lookaheadBlocks : ℕ)
+    (hcert : C.lookaheadCertificateHolds 8 lookaheadBlocks)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4) :
+    (((C.stateAlignments hgood 8 lookaheadBlocks)[1]'(by
+      rw [C.stateAlignments_length]
+      decide)).remainderIn =
+        ((C.stateAlignments hgood 8 lookaheadBlocks)[5]'(by
+          rw [C.stateAlignments_length]
+          decide)).remainderIn ∧
+      ((C.stateAlignments hgood 8 lookaheadBlocks)[1]'(by
+        rw [C.stateAlignments_length]
+        decide)).coefficient ≠
+          ((C.stateAlignments hgood 8 lookaheadBlocks)[5]'(by
+            rw [C.stateAlignments_length]
+            decide)).coefficient ∧
+      ((C.stateAlignments hgood 8 lookaheadBlocks)[1]'(by
+        rw [C.stateAlignments_length]
+        decide)).carryIn =
+          C.incomingCarry 1 ∧
+      ((C.stateAlignments hgood 8 lookaheadBlocks)[5]'(by
+        rw [C.stateAlignments_length]
+        decide)).carryIn =
+          C.incomingCarry 5 ∧
+      ((C.stateAlignments hgood 8 lookaheadBlocks)[1]'(by
+        rw [C.stateAlignments_length]
+        decide)).carryBlockValue =
+          ((C.stateAlignments hgood 8 lookaheadBlocks)[5]'(by
+            rw [C.stateAlignments_length]
+            decide)).carryBlockValue ∧
+      ¬ List.FunctionalOnFst
+        ((C.stateAlignments hgood 8 lookaheadBlocks).map
+          (fun alignment => (alignment.remainderIn, alignment.coefficient)))) ∧
+      ((C.stateAlignments hgood 8 lookaheadBlocks)[1]'(by
+        rw [C.stateAlignments_length]
+        decide)).carryBlockValue =
+        ((C.stateAlignments hgood 8 lookaheadBlocks)[1]'(by
+          rw [C.stateAlignments_length]
+          decide)).remainderBlockValue ∧
+      ((C.stateAlignments hgood 8 lookaheadBlocks)[5]'(by
+        rw [C.stateAlignments_length]
+        decide)).carryBlockValue =
+        ((C.stateAlignments hgood 8 lookaheadBlocks)[5]'(by
+          rw [C.stateAlignments_length]
+          decide)).remainderBlockValue := by
+  have hmod : 1 < C.modulus := by
+    rw [hmodulus]
+    norm_num
+  refine ⟨?_, ?_, ?_⟩
+  · exact
+      C.stateAlignments_one_five_hiddenCoefficientConflict_eight_any_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+        hgood lookaheadBlocks hmodulus hblockBase
+  · exact C.stateAlignments_carryBlockValue_eq_remainderBlockValue_of_lookaheadCertificate
+      hgood hmod 8 lookaheadBlocks hcert 1 (by rw [C.stateAlignments_length]; decide)
+  · exact C.stateAlignments_carryBlockValue_eq_remainderBlockValue_of_lookaheadCertificate
+      hgood hmod 8 lookaheadBlocks hcert 5 (by rw [C.stateAlignments_length]; decide)
+
+/-- Reusable record shape for a certified hidden coefficient conflict between
+two indexed rows of a finite state-alignment window. It packages same observed
+remainder input, unequal raw coefficients, canonical carry-state witnesses,
+hidden carried-output agreement, nonfunctionality of the observed
+remainder-to-coefficient map, and certified agreement with the emitted
+remainder block values at both rows. -/
+structure BlockCoordinate.StateAlignmentCertifiedConflict
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (requestedBlocks lookaheadBlocks left right : ℕ)
+    (hleft : left < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length)
+    (hright : right < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length) : Prop where
+  remainderIn_eq :
+    ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[left]'hleft).remainderIn =
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[right]'hright).remainderIn
+  coefficient_ne :
+    ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[left]'hleft).coefficient ≠
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[right]'hright).coefficient
+  left_carryIn_eq_incomingCarry :
+    ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[left]'hleft).carryIn =
+      C.incomingCarry left
+  right_carryIn_eq_incomingCarry :
+    ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[right]'hright).carryIn =
+      C.incomingCarry right
+  carryBlockValue_eq :
+    ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[left]'hleft).carryBlockValue =
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[right]'hright).carryBlockValue
+  remainderToCoefficient_not_functional :
+    ¬ List.FunctionalOnFst
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient)))
+  left_carryBlockValue_eq_remainderBlockValue :
+    ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[left]'hleft).carryBlockValue =
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[left]'hleft).remainderBlockValue
+  right_carryBlockValue_eq_remainderBlockValue :
+    ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[right]'hright).carryBlockValue =
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[right]'hright).remainderBlockValue
+
+/-- Convenience projection: a certified conflict immediately refutes
+functionality of the observed remainder-to-coefficient map on its window. -/
+theorem BlockCoordinate.StateAlignmentCertifiedConflict.not_remainderToCoefficientFunctional
+    {C : BlockCoordinate} {hgood : C.goodMode}
+    {requestedBlocks lookaheadBlocks left right : ℕ}
+    {hleft : left < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length}
+    {hright : right < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length}
+    (hconflict :
+      C.StateAlignmentCertifiedConflict hgood requestedBlocks lookaheadBlocks
+        left right hleft hright) :
+    ¬ List.FunctionalOnFst
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) :=
+  hconflict.remainderToCoefficient_not_functional
+
+/-- Convenience projection: a certified conflict is also a two-point
+factor-through obstruction from observed remainder input to raw coefficient. -/
+theorem BlockCoordinate.StateAlignmentCertifiedConflict.not_remainderToCoefficientFactorsThrough
+    {C : BlockCoordinate} {hgood : C.goodMode}
+    {requestedBlocks lookaheadBlocks left right : ℕ}
+    {hleft : left < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length}
+    {hright : right < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length}
+    (hconflict :
+      C.StateAlignmentCertifiedConflict hgood requestedBlocks lookaheadBlocks
+        left right hleft hright) :
+    ¬ FactorsThrough
+      (fun side : Bool =>
+        if side then
+          ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[left]'hleft).remainderIn
+        else
+          ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[right]'hright).remainderIn)
+      (fun side : Bool =>
+        if side then
+          ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[left]'hleft).coefficient
+        else
+          ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[right]'hright).coefficient) := by
+  exact
+    not_factorsThrough_of_collision (i := true) (j := false)
+      (by simpa using hconflict.remainderIn_eq)
+      (by simpa using hconflict.coefficient_ne)
+
+/-- Convenience projection: the two conflicting rows have the same carried
+output block. -/
+theorem BlockCoordinate.StateAlignmentCertifiedConflict.carriedOutput_eq
+    {C : BlockCoordinate} {hgood : C.goodMode}
+    {requestedBlocks lookaheadBlocks left right : ℕ}
+    {hleft : left < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length}
+    {hright : right < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length}
+    (hconflict :
+      C.StateAlignmentCertifiedConflict hgood requestedBlocks lookaheadBlocks
+        left right hleft hright) :
+    ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[left]'hleft).carryBlockValue =
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[right]'hright).carryBlockValue :=
+  hconflict.carryBlockValue_eq
+
+/-- Convenience projection: the left row's carried output is certified to agree
+with the emitted/remainder block value. -/
+theorem BlockCoordinate.StateAlignmentCertifiedConflict.left_output_agreement
+    {C : BlockCoordinate} {hgood : C.goodMode}
+    {requestedBlocks lookaheadBlocks left right : ℕ}
+    {hleft : left < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length}
+    {hright : right < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length}
+    (hconflict :
+      C.StateAlignmentCertifiedConflict hgood requestedBlocks lookaheadBlocks
+        left right hleft hright) :
+    ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[left]'hleft).carryBlockValue =
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[left]'hleft).remainderBlockValue :=
+  hconflict.left_carryBlockValue_eq_remainderBlockValue
+
+/-- Convenience projection: the right row's carried output is certified to
+agree with the emitted/remainder block value. -/
+theorem BlockCoordinate.StateAlignmentCertifiedConflict.right_output_agreement
+    {C : BlockCoordinate} {hgood : C.goodMode}
+    {requestedBlocks lookaheadBlocks left right : ℕ}
+    {hleft : left < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length}
+    {hright : right < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length}
+    (hconflict :
+      C.StateAlignmentCertifiedConflict hgood requestedBlocks lookaheadBlocks
+        left right hleft hright) :
+    ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[right]'hright).carryBlockValue =
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[right]'hright).remainderBlockValue :=
+  hconflict.right_carryBlockValue_eq_remainderBlockValue
+
+/-- Convenience projection: both conflicting rows have certified output
+agreement with their emitted/remainder block values. -/
+theorem BlockCoordinate.StateAlignmentCertifiedConflict.output_agreement
+    {C : BlockCoordinate} {hgood : C.goodMode}
+    {requestedBlocks lookaheadBlocks left right : ℕ}
+    {hleft : left < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length}
+    {hright : right < (C.stateAlignments hgood requestedBlocks lookaheadBlocks).length}
+    (hconflict :
+      C.StateAlignmentCertifiedConflict hgood requestedBlocks lookaheadBlocks
+        left right hleft hright) :
+    ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[left]'hleft).carryBlockValue =
+        ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[left]'hleft).remainderBlockValue ∧
+      ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[right]'hright).carryBlockValue =
+        ((C.stateAlignments hgood requestedBlocks lookaheadBlocks)[right]'hright).remainderBlockValue :=
+  ⟨hconflict.left_output_agreement, hconflict.right_output_agreement⟩
+
+/-- Predicate form of the certified one/five visibility obstruction on an
+eight-block finite state-alignment window. This specializes the reusable
+certified-conflict record to positions `1` and `5`, keeping selector theorems
+from duplicating the full conflict payload. -/
+def BlockCoordinate.stateAlignmentsOneFiveCertifiedVisibilityObstruction
+    (C : BlockCoordinate) (hgood : C.goodMode) (lookaheadBlocks : ℕ) : Prop :=
+  C.StateAlignmentCertifiedConflict hgood 8 lookaheadBlocks 1 5
+    (by rw [C.stateAlignments_length]; decide)
+    (by rw [C.stateAlignments_length]; decide)
+
+/-- Compact record-returning wrapper for the certified one/five visibility
+obstruction in the good `N = 68`, `B ≡ 4 (mod 68)` family. This is the
+reusable cross-base payload theorem; the older predicate wrapper below is its
+positions-`1/5` alias. -/
+theorem BlockCoordinate.stateAlignments_one_five_certifiedConflict_eight_of_lookaheadCertificate_and_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (lookaheadBlocks : ℕ)
+    (hcert : C.lookaheadCertificateHolds 8 lookaheadBlocks)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4) :
+    C.StateAlignmentCertifiedConflict hgood 8 lookaheadBlocks 1 5
+      (by rw [C.stateAlignments_length]; decide)
+      (by rw [C.stateAlignments_length]; decide) := by
+  have hcertified :=
+    C.stateAlignments_one_five_certifiedVisibilityObstruction_eight_of_lookaheadCertificate_and_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hgood lookaheadBlocks hcert hmodulus hblockBase
+  exact
+    { remainderIn_eq := hcertified.1.1
+      coefficient_ne := hcertified.1.2.1
+      left_carryIn_eq_incomingCarry := hcertified.1.2.2.1
+      right_carryIn_eq_incomingCarry := hcertified.1.2.2.2.1
+      carryBlockValue_eq := hcertified.1.2.2.2.2.1
+      remainderToCoefficient_not_functional := hcertified.1.2.2.2.2.2
+      left_carryBlockValue_eq_remainderBlockValue := hcertified.2.1
+      right_carryBlockValue_eq_remainderBlockValue := hcertified.2.2 }
+
+/-- Predicate-form wrapper for the certified one/five visibility obstruction. -/
+theorem BlockCoordinate.stateAlignmentsOneFiveCertifiedVisibilityObstruction_of_lookaheadCertificate
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (lookaheadBlocks : ℕ)
+    (hcert : C.lookaheadCertificateHolds 8 lookaheadBlocks)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4) :
+    C.stateAlignmentsOneFiveCertifiedVisibilityObstruction hgood lookaheadBlocks := by
+  simpa [BlockCoordinate.stateAlignmentsOneFiveCertifiedVisibilityObstruction] using
+    C.stateAlignments_one_five_certifiedConflict_eight_of_lookaheadCertificate_and_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hgood lookaheadBlocks hcert hmodulus hblockBase
+
+/-- The minimal certified lookahead selected by the fixed `8/L` staircase still
+exposes the certified hidden coefficient conflict. This packages the selector
+with the obstruction wrapper and remains a fixed-window theorem only. -/
+theorem BlockCoordinate.minimalLookaheadCertificate_eight_selector_certifiedVisibilityObstruction_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hmodulus : C.modulus = 68)
+    (hblockBase : C.blockBase % 68 = 4) :
+    (75 ≤ C.quotientQ ∧
+        C.isMinimalLookaheadCertificate 8 1 ∧
+        C.stateAlignmentsOneFiveCertifiedVisibilityObstruction hgood 1) ∨
+      (3 ≤ C.quotientQ ∧ C.quotientQ < 75 ∧
+        C.isMinimalLookaheadCertificate 8 2 ∧
+        C.stateAlignmentsOneFiveCertifiedVisibilityObstruction hgood 2) ∨
+        ((C.quotientQ = 1 ∨ C.quotientQ = 2) ∧
+          C.isMinimalLookaheadCertificate 8 3 ∧
+          C.stateAlignmentsOneFiveCertifiedVisibilityObstruction hgood 3) := by
+  have hselector :=
+    C.minimalLookaheadCertificate_eight_selector_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      hgood hmodulus hblockBase
+  rcases hselector with hone | hrest
+  · rcases hone with ⟨hquotient, hmin⟩
+    left
+    exact ⟨hquotient, hmin,
+      C.stateAlignmentsOneFiveCertifiedVisibilityObstruction_of_lookaheadCertificate
+        hgood 1 hmin.1 hmodulus hblockBase⟩
+  · rcases hrest with htwo | hthree
+    · rcases htwo with ⟨hge, hlt, hmin⟩
+      right
+      left
+      exact ⟨hge, hlt, hmin,
+        C.stateAlignmentsOneFiveCertifiedVisibilityObstruction_of_lookaheadCertificate
+          hgood 2 hmin.1 hmodulus hblockBase⟩
+    · rcases hthree with ⟨hquotient, hmin⟩
+      right
+      right
+      exact ⟨hquotient, hmin,
+        C.stateAlignmentsOneFiveCertifiedVisibilityObstruction_of_lookaheadCertificate
+          hgood 3 hmin.1 hmodulus hblockBase⟩
 
 theorem BlockCoordinate.remainderK_pow_lt_modulus_of_le
     (C : BlockCoordinate) (hmod : 1 < C.modulus)

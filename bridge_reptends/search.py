@@ -31,6 +31,23 @@ from .composite import (
     canonical_composite_family_case_studies,
     crt_period_profile,
 )
+from .certificates import (
+    certificate_first_scaffold_mapping_lint_payload,
+    certificate_fixture_mapping_lint_payload,
+    certificate_lean_fixture_payload,
+    certificate_lean_stub_payload,
+    certificate_workbench_rows,
+    observability_atlas_rows,
+    observability_instrument_comparison_rows,
+    observability_mod_stable_carry_loss_rows,
+    observability_next_source_shape_family_rows,
+    observability_program_atlas_rows,
+    observability_shape13_k4_mod_stable_carry_loss_rows,
+    observability_shape187_k188_family_rows,
+    observability_shape17_k4_family_rows,
+    observability_target_signature_rows,
+    observability_target_split_rows,
+)
 from .orbit_weave import factorize, find_good_modes, skeleton_vs_actual, strip_base_factors
 from .registry import (
     STATUS_ORDER,
@@ -63,6 +80,12 @@ from .transducer import (
     state_merging_same_core_rows,
 )
 from .visibility import (
+    certified_positive_lookahead_coefficient_conflict_atlas_rows,
+    certified_positive_lookahead_coefficient_conflict_family_rows,
+    certified_positive_lookahead_coefficient_conflict_rows,
+    certified_positive_lookahead_state_window_rows,
+    composite68_congruence_family_rows,
+    composite68_cross_base_obstruction_sweep_rows,
     canonical_visibility_case_studies,
     canonical_visibility_family_studies,
     chart_invariance_rows,
@@ -1686,6 +1709,223 @@ def main() -> None:
     visibility_counterexample_parser.add_argument("--blocks", type=int, default=8)
     visibility_counterexample_parser.add_argument("--output", type=str, default=None)
 
+    visibility_certified_lookahead_parser = subparsers.add_parser(
+        "visibility-certified-lookahead",
+        help="Export certified positive-lookahead state windows with coefficient-functionality diagnostics",
+    )
+    visibility_certified_lookahead_parser.add_argument("--max", type=int, default=1200)
+    visibility_certified_lookahead_parser.add_argument("--base", type=int, default=10)
+    visibility_certified_lookahead_parser.add_argument("--blocks", type=int, default=8)
+    visibility_certified_lookahead_parser.add_argument("--output", type=str, default=None)
+
+    visibility_coefficient_conflicts_parser = subparsers.add_parser(
+        "visibility-coefficient-conflicts",
+        help="Export first remainder-to-coefficient conflicts inside certified positive-lookahead windows",
+    )
+    visibility_coefficient_conflicts_parser.add_argument("--max", type=int, default=1200)
+    visibility_coefficient_conflicts_parser.add_argument("--base", type=int, default=10)
+    visibility_coefficient_conflicts_parser.add_argument("--blocks", type=int, default=8)
+    visibility_coefficient_conflicts_parser.add_argument("--top", type=int, default=20)
+    visibility_coefficient_conflicts_parser.add_argument("--output", type=str, default=None)
+
+    visibility_coefficient_conflict_atlas_parser = subparsers.add_parser(
+        "visibility-coefficient-conflict-atlas",
+        help="Compare certified positive-lookahead coefficient conflicts across base instruments",
+    )
+    visibility_coefficient_conflict_atlas_parser.add_argument("--max", type=int, default=1200)
+    visibility_coefficient_conflict_atlas_parser.add_argument("--bases", type=str, default="7,10,12,30")
+    visibility_coefficient_conflict_atlas_parser.add_argument("--blocks", type=int, default=8)
+    visibility_coefficient_conflict_atlas_parser.add_argument("--top", type=int, default=20)
+    visibility_coefficient_conflict_atlas_parser.add_argument("--output", type=str, default=None)
+
+    visibility_coefficient_conflict_families_parser = subparsers.add_parser(
+        "visibility-coefficient-conflict-families",
+        help="Mine recurring hidden-output coefficient-conflict shape families across base instruments",
+    )
+    visibility_coefficient_conflict_families_parser.add_argument("--max", type=int, default=1200)
+    visibility_coefficient_conflict_families_parser.add_argument("--bases", type=str, default="7,10,12,30")
+    visibility_coefficient_conflict_families_parser.add_argument("--blocks", type=int, default=8)
+    visibility_coefficient_conflict_families_parser.add_argument("--top", type=int, default=20)
+    visibility_coefficient_conflict_families_parser.add_argument("--output", type=str, default=None)
+
+    visibility_composite68_base_sweep_parser = subparsers.add_parser(
+        "visibility-composite68-base-sweep",
+        help="Sweep base instruments for the Composite68 hidden-output coefficient-conflict shape",
+    )
+    visibility_composite68_base_sweep_parser.add_argument("--max-base", type=int, default=120)
+    visibility_composite68_base_sweep_parser.add_argument("--blocks", type=int, default=8)
+    visibility_composite68_base_sweep_parser.add_argument("--top", type=int, default=20)
+    visibility_composite68_base_sweep_parser.add_argument("--output", type=str, default=None)
+
+    visibility_composite68_congruence_family_parser = subparsers.add_parser(
+        "visibility-composite68-congruence-family",
+        help="Enumerate Composite68 coordinates with B congruent to 4 modulo 68",
+    )
+    visibility_composite68_congruence_family_parser.add_argument("--max-base", type=int, default=120)
+    visibility_composite68_congruence_family_parser.add_argument("--max-m", type=int, default=8)
+    visibility_composite68_congruence_family_parser.add_argument("--blocks", type=int, default=8)
+    visibility_composite68_congruence_family_parser.add_argument("--top", type=int, default=0)
+    visibility_composite68_congruence_family_parser.add_argument("--output", type=str, default=None)
+
+    visibility_certificate_workbench_parser = subparsers.add_parser(
+        "visibility-certificate-workbench",
+        help="Export empirical Certificate Workbench rows for Lean-shaped visibility certificates",
+    )
+    visibility_certificate_workbench_parser.add_argument("--max", type=int, default=1200)
+    visibility_certificate_workbench_parser.add_argument("--bases", type=str, default="7,10,12,30")
+    visibility_certificate_workbench_parser.add_argument("--blocks", type=int, default=8)
+    visibility_certificate_workbench_parser.add_argument("--top", type=int, default=20)
+    visibility_certificate_workbench_parser.add_argument("--output", type=str, default=None)
+
+    observability_atlas_parser = subparsers.add_parser(
+        "observability-atlas",
+        help="Project Certificate Workbench rows into empirical observability-boundary classes",
+    )
+    observability_atlas_parser.add_argument("--max", type=int, default=1200)
+    observability_atlas_parser.add_argument("--bases", type=str, default="7,10,12,30")
+    observability_atlas_parser.add_argument("--blocks", type=int, default=8)
+    observability_atlas_parser.add_argument("--top", type=int, default=50)
+    observability_atlas_parser.add_argument("--output", type=str, default=None)
+
+    observability_program_atlas_parser = subparsers.add_parser(
+        "observability-program-atlas",
+        help="Summarize observability-boundary lanes and positive reconstruction candidates",
+    )
+    observability_program_atlas_parser.add_argument("--max", type=int, default=1200)
+    observability_program_atlas_parser.add_argument("--bases", type=str, default="7,10,12,30")
+    observability_program_atlas_parser.add_argument("--blocks", type=int, default=8)
+    observability_program_atlas_parser.add_argument("--top", type=int, default=50)
+    observability_program_atlas_parser.add_argument("--output", type=str, default=None)
+
+    observability_target_split_parser = subparsers.add_parser(
+        "observability-target-split",
+        help="Expand observability atlas cases into empirical factor-through target rows",
+    )
+    observability_target_split_parser.add_argument("--max", type=int, default=1200)
+    observability_target_split_parser.add_argument("--bases", type=str, default="7,10,12,30")
+    observability_target_split_parser.add_argument("--blocks", type=int, default=8)
+    observability_target_split_parser.add_argument("--top", type=int, default=50)
+    observability_target_split_parser.add_argument("--output", type=str, default=None)
+
+    observability_target_signatures_parser = subparsers.add_parser(
+        "observability-target-signatures",
+        help="Group observability atlas cases by empirical target-status signature",
+    )
+    observability_target_signatures_parser.add_argument("--max", type=int, default=1200)
+    observability_target_signatures_parser.add_argument("--bases", type=str, default="7,10,12,30")
+    observability_target_signatures_parser.add_argument("--blocks", type=int, default=8)
+    observability_target_signatures_parser.add_argument("--top", type=int, default=20)
+    observability_target_signatures_parser.add_argument("--output", type=str, default=None)
+
+    observability_mod_stable_carry_loss_parser = subparsers.add_parser(
+        "observability-mod-stable-carry-loss",
+        help=(
+            "Mine hidden-output cases where raw coefficients fail, "
+            "coefficient modulo B stays functional, and carry state fails"
+        ),
+    )
+    observability_mod_stable_carry_loss_parser.add_argument("--max", type=int, default=1200)
+    observability_mod_stable_carry_loss_parser.add_argument("--bases", type=str, default="7,10,12,30")
+    observability_mod_stable_carry_loss_parser.add_argument("--blocks", type=int, default=8)
+    observability_mod_stable_carry_loss_parser.add_argument("--top", type=int, default=20)
+    observability_mod_stable_carry_loss_parser.add_argument("--output", type=str, default=None)
+
+    observability_instrument_compare_parser = subparsers.add_parser(
+        "observability-instrument-compare",
+        help="Group observability hidden-conflict shapes and compare base instruments",
+    )
+    observability_instrument_compare_parser.add_argument("--max", type=int, default=1200)
+    observability_instrument_compare_parser.add_argument("--bases", type=str, default="7,10,12,30")
+    observability_instrument_compare_parser.add_argument("--blocks", type=int, default=8)
+    observability_instrument_compare_parser.add_argument("--top", type=int, default=20)
+    observability_instrument_compare_parser.add_argument("--output", type=str, default=None)
+
+    observability_shape13_k4_mod_stable_carry_loss_parser = subparsers.add_parser(
+        "observability-shape13-k4-mod-stable-carry-loss",
+        help=(
+            "Classify the first mod-stable carry-loss source shape "
+            "periodic_modulus=13;k=4;position_gap=6"
+        ),
+    )
+    observability_shape13_k4_mod_stable_carry_loss_parser.add_argument("--max", type=int, default=1200)
+    observability_shape13_k4_mod_stable_carry_loss_parser.add_argument("--bases", type=str, default="7,10,12,30")
+    observability_shape13_k4_mod_stable_carry_loss_parser.add_argument("--blocks", type=int, default=8)
+    observability_shape13_k4_mod_stable_carry_loss_parser.add_argument("--top", type=int, default=20)
+    observability_shape13_k4_mod_stable_carry_loss_parser.add_argument("--output", type=str, default=None)
+
+    observability_shape17_k4_family_parser = subparsers.add_parser(
+        "observability-shape17-k4-family",
+        help="Classify the first observability source-shape family periodic_modulus=17;k=4;position_gap=4",
+    )
+    observability_shape17_k4_family_parser.add_argument("--max", type=int, default=1200)
+    observability_shape17_k4_family_parser.add_argument("--bases", type=str, default="7,10,12,30")
+    observability_shape17_k4_family_parser.add_argument("--blocks", type=int, default=8)
+    observability_shape17_k4_family_parser.add_argument("--top", type=int, default=20)
+    observability_shape17_k4_family_parser.add_argument("--output", type=str, default=None)
+
+    observability_next_source_shape_family_parser = subparsers.add_parser(
+        "observability-next-source-shape-family",
+        help="Classify the next unresolved observability source-shape family after settled shapes",
+    )
+    observability_next_source_shape_family_parser.add_argument("--max", type=int, default=1200)
+    observability_next_source_shape_family_parser.add_argument("--bases", type=str, default="7,10,12,30")
+    observability_next_source_shape_family_parser.add_argument("--blocks", type=int, default=8)
+    observability_next_source_shape_family_parser.add_argument("--top", type=int, default=20)
+    observability_next_source_shape_family_parser.add_argument("--output", type=str, default=None)
+
+    observability_shape187_k188_family_parser = subparsers.add_parser(
+        "observability-shape187-k188-family",
+        help="Classify the Shape187/K188 same-position scaling source-shape family",
+    )
+    observability_shape187_k188_family_parser.add_argument("--max", type=int, default=1200)
+    observability_shape187_k188_family_parser.add_argument("--bases", type=str, default="7,10,12,30")
+    observability_shape187_k188_family_parser.add_argument("--blocks", type=int, default=8)
+    observability_shape187_k188_family_parser.add_argument("--top", type=int, default=20)
+    observability_shape187_k188_family_parser.add_argument("--output", type=str, default=None)
+
+    visibility_certificate_lean_fixtures_parser = subparsers.add_parser(
+        "visibility-certificate-lean-fixtures",
+        help="Export source-pinned JSON fixtures from Lean-ready Certificate Workbench rows",
+    )
+    visibility_certificate_lean_fixtures_parser.add_argument("--max", type=int, default=1200)
+    visibility_certificate_lean_fixtures_parser.add_argument("--bases", type=str, default="7,10,12,30")
+    visibility_certificate_lean_fixtures_parser.add_argument("--blocks", type=int, default=8)
+    visibility_certificate_lean_fixtures_parser.add_argument("--top", type=int, default=20)
+    visibility_certificate_lean_fixtures_parser.add_argument("--output", type=str, default=None)
+
+    visibility_certificate_lean_stubs_parser = subparsers.add_parser(
+        "visibility-certificate-lean-stubs",
+        help="Export copyable Lean stub scaffold/lint JSON from source-pinned fixture records",
+    )
+    visibility_certificate_lean_stubs_parser.add_argument("--max", type=int, default=1200)
+    visibility_certificate_lean_stubs_parser.add_argument("--bases", type=str, default="7,10,12,30")
+    visibility_certificate_lean_stubs_parser.add_argument("--blocks", type=int, default=8)
+    visibility_certificate_lean_stubs_parser.add_argument("--top", type=int, default=20)
+    visibility_certificate_lean_stubs_parser.add_argument("--candidate-base", type=int, default=None)
+    visibility_certificate_lean_stubs_parser.add_argument("--candidate-n", type=int, default=None)
+    visibility_certificate_lean_stubs_parser.add_argument("--candidate-m", type=int, default=None)
+    visibility_certificate_lean_stubs_parser.add_argument("--namespace", type=str, default=None)
+    visibility_certificate_lean_stubs_parser.add_argument(
+        "--first-scaffold-only",
+        action="store_true",
+        help=(
+            "Auto-select the first scaffold-ready, non-source-ready mapping "
+            "candidate instead of passing --candidate-base/--candidate-n"
+        ),
+    )
+    visibility_certificate_lean_stubs_parser.add_argument(
+        "--namespace-prefix",
+        type=str,
+        default="QRTour.Future",
+        help="Prefix used to derive a namespace when --first-scaffold-only omits --namespace",
+    )
+    visibility_certificate_lean_stubs_parser.add_argument(
+        "--module-path",
+        type=str,
+        default="lean/QRTour/Examples.lean",
+    )
+    visibility_certificate_lean_stubs_parser.add_argument("--output", type=str, default=None)
+
     visibility_optics_parser = subparsers.add_parser(
         "visibility-optics",
         help="Rank finite-window Visibility Optics evidence across visibility, carry, and state-map observables",
@@ -2010,6 +2250,178 @@ def main() -> None:
             base=args.base,
             n_blocks=args.blocks,
         )
+    elif args.command == "visibility-certified-lookahead":
+        rows = certified_positive_lookahead_state_window_rows(
+            args.max,
+            base=args.base,
+            n_blocks=args.blocks,
+        )
+    elif args.command == "visibility-coefficient-conflicts":
+        rows = certified_positive_lookahead_coefficient_conflict_rows(
+            args.max,
+            base=args.base,
+            n_blocks=args.blocks,
+            top=args.top,
+        )
+    elif args.command == "visibility-coefficient-conflict-atlas":
+        rows = certified_positive_lookahead_coefficient_conflict_atlas_rows(
+            args.max,
+            bases=tuple(int(piece) for piece in args.bases.split(",") if piece.strip()),
+            n_blocks=args.blocks,
+            top=args.top,
+        )
+    elif args.command == "visibility-coefficient-conflict-families":
+        rows = certified_positive_lookahead_coefficient_conflict_family_rows(
+            args.max,
+            bases=tuple(int(piece) for piece in args.bases.split(",") if piece.strip()),
+            n_blocks=args.blocks,
+            top=args.top,
+        )
+    elif args.command == "visibility-composite68-base-sweep":
+        rows = composite68_cross_base_obstruction_sweep_rows(
+            args.max_base,
+            n_blocks=args.blocks,
+            top=args.top,
+        )
+    elif args.command == "visibility-composite68-congruence-family":
+        rows = composite68_congruence_family_rows(
+            args.max_base,
+            max_m=args.max_m,
+            n_blocks=args.blocks,
+            top=args.top,
+        )
+    elif args.command == "visibility-certificate-workbench":
+        rows = certificate_workbench_rows(
+            max_n=args.max,
+            bases=tuple(int(piece) for piece in args.bases.split(",") if piece.strip()),
+            n_blocks=args.blocks,
+            top=args.top,
+        )
+    elif args.command == "observability-atlas":
+        rows = observability_atlas_rows(
+            max_n=args.max,
+            bases=tuple(int(piece) for piece in args.bases.split(",") if piece.strip()),
+            n_blocks=args.blocks,
+            top=args.top,
+        )
+    elif args.command == "observability-program-atlas":
+        rows = observability_program_atlas_rows(
+            max_n=args.max,
+            bases=tuple(int(piece) for piece in args.bases.split(",") if piece.strip()),
+            n_blocks=args.blocks,
+            top=args.top,
+        )
+    elif args.command == "observability-target-split":
+        rows = observability_target_split_rows(
+            max_n=args.max,
+            bases=tuple(int(piece) for piece in args.bases.split(",") if piece.strip()),
+            n_blocks=args.blocks,
+            top=args.top,
+        )
+    elif args.command == "observability-target-signatures":
+        rows = observability_target_signature_rows(
+            max_n=args.max,
+            bases=tuple(int(piece) for piece in args.bases.split(",") if piece.strip()),
+            n_blocks=args.blocks,
+            top=args.top,
+        )
+    elif args.command == "observability-mod-stable-carry-loss":
+        rows = observability_mod_stable_carry_loss_rows(
+            max_n=args.max,
+            bases=tuple(int(piece) for piece in args.bases.split(",") if piece.strip()),
+            n_blocks=args.blocks,
+            top=args.top,
+        )
+    elif args.command == "observability-instrument-compare":
+        rows = observability_instrument_comparison_rows(
+            max_n=args.max,
+            bases=tuple(int(piece) for piece in args.bases.split(",") if piece.strip()),
+            n_blocks=args.blocks,
+            top=args.top,
+        )
+    elif args.command == "observability-shape13-k4-mod-stable-carry-loss":
+        rows = observability_shape13_k4_mod_stable_carry_loss_rows(
+            max_n=args.max,
+            bases=tuple(int(piece) for piece in args.bases.split(",") if piece.strip()),
+            n_blocks=args.blocks,
+            top=args.top,
+        )
+    elif args.command == "observability-shape17-k4-family":
+        rows = observability_shape17_k4_family_rows(
+            max_n=args.max,
+            bases=tuple(int(piece) for piece in args.bases.split(",") if piece.strip()),
+            n_blocks=args.blocks,
+            top=args.top,
+        )
+    elif args.command == "observability-next-source-shape-family":
+        rows = observability_next_source_shape_family_rows(
+            max_n=args.max,
+            bases=tuple(int(piece) for piece in args.bases.split(",") if piece.strip()),
+            n_blocks=args.blocks,
+            top=args.top,
+        )
+    elif args.command == "observability-shape187-k188-family":
+        rows = observability_shape187_k188_family_rows(
+            max_n=args.max,
+            bases=tuple(int(piece) for piece in args.bases.split(",") if piece.strip()),
+            n_blocks=args.blocks,
+            top=args.top,
+        )
+    elif args.command == "visibility-certificate-lean-fixtures":
+        payload = certificate_lean_fixture_payload(
+            max_n=args.max,
+            bases=tuple(int(piece) for piece in args.bases.split(",") if piece.strip()),
+            n_blocks=args.blocks,
+            top=args.top,
+        )
+        if args.output:
+            _write_json(args.output, payload)
+        else:
+            print(json.dumps(payload, indent=2, sort_keys=True))
+        return
+    elif args.command == "visibility-certificate-lean-stubs":
+        parsed_bases = tuple(int(piece) for piece in args.bases.split(",") if piece.strip())
+        if args.first_scaffold_only:
+            if args.candidate_base is not None or args.candidate_n is not None:
+                raise SystemExit(
+                    "--first-scaffold-only selects the candidate automatically; "
+                    "omit --candidate-base and --candidate-n"
+                )
+            payload = certificate_first_scaffold_mapping_lint_payload(
+                namespace=args.namespace,
+                namespace_prefix=args.namespace_prefix,
+                module_path=args.module_path,
+                max_n=args.max,
+                bases=parsed_bases,
+                n_blocks=args.blocks,
+            )
+        elif args.namespace is not None:
+            if args.candidate_base is None or args.candidate_n is None:
+                raise SystemExit(
+                    "--namespace requires --candidate-base and --candidate-n"
+                )
+            payload = certificate_fixture_mapping_lint_payload(
+                candidate_base=args.candidate_base,
+                candidate_n=args.candidate_n,
+                candidate_m=args.candidate_m,
+                namespace=args.namespace,
+                module_path=args.module_path,
+                max_n=args.max,
+                bases=parsed_bases,
+                n_blocks=args.blocks,
+            )
+        else:
+            payload = certificate_lean_stub_payload(
+                max_n=args.max,
+                bases=parsed_bases,
+                n_blocks=args.blocks,
+                top=args.top,
+            )
+        if args.output:
+            _write_json(args.output, payload)
+        else:
+            print(json.dumps(payload, indent=2, sort_keys=True))
+        return
     elif args.command == "visibility-optics":
         rows = visibility_optics_workbench_rows(
             args.max,
@@ -2141,7 +2553,23 @@ def main() -> None:
         )
     elif args.output:
         _write_csv(args.output, rows)
-    elif args.command == "orbit-carry-trace":
+    elif args.command in {
+        "orbit-carry-trace",
+        "visibility-certified-lookahead",
+        "visibility-coefficient-conflicts",
+        "visibility-coefficient-conflict-atlas",
+        "visibility-coefficient-conflict-families",
+        "visibility-composite68-base-sweep",
+        "visibility-composite68-congruence-family",
+        "visibility-certificate-workbench",
+        "observability-atlas",
+        "observability-program-atlas",
+        "observability-instrument-compare",
+        "observability-shape13-k4-mod-stable-carry-loss",
+        "observability-shape17-k4-family",
+        "observability-next-source-shape-family",
+        "observability-shape187-k188-family",
+    }:
         for row in rows:
             print(row)
     else:

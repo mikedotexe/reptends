@@ -13,7 +13,7 @@ import QRTour.Visibility
 import QRTour.CarryComparison
 
 /-!
-# Worked Examples: prime 19, prime 97, composite 21, composite 249, and same-core composite 996 over 249
+# Worked Examples: prime 19, prime 97, composite 21, composite 249, same-core composite 996 over 249, and the empirical composite-68 obstruction hook
 
 This module packages the five canonical Lean witness families used across the
 repo's current theorem surface:
@@ -30,6 +30,34 @@ repo's current theorem surface:
   special `q = 1` bridge case
 - the same-core composite tuple `(base=10, N=996, core=249, stride=3,
   B=1000, q=1, k=4)`, where the base-prime support factor is exactly `k^1`
+
+It also packages `QRTour.FutureBase10N98` as a finite positive reconstruction
+hook. Separately, it packages `QRTour.Composite68`,
+`QRTour.Composite68Base30`,
+`QRTour.FutureBase10N17`, `QRTour.FutureBase10N34`,
+`QRTour.FutureBase30N13`, `QRTour.FutureBase30N26`, and the
+scaffolded `QRTour.FutureBase30N7` / `QRTour.FutureBase30N14` /
+`QRTour.FutureBase30N28` / `QRTour.FutureBase12N10` /
+`QRTour.FutureBase10N102` / `QRTour.FutureBase7N5` /
+`QRTour.FutureBase12N5` / `QRTour.FutureBase30N34` /
+`QRTour.FutureBase30N374` / `QRTour.FutureBase30N748` /
+`QRTour.FutureBase7N93` / `QRTour.FutureBase10N39` /
+`QRTour.FutureBase10N78` / `QRTour.FutureBase10N96` /
+`QRTour.FutureBase12N35` / `QRTour.FutureBase12N31` finite examples as empirical/open-boundary
+obstruction hooks. Those namespaces record concrete certified finite windows
+where output agreement hides a repeated remainder state with incompatible raw
+coefficients; they do not promote `small_k_visibility_threshold` or
+`carry_dfa_factorization`.
+
+`QRTour.Shape17K4` packages the finite Shape17/K4 shift witness tying the
+base-10 `N = 17` shifted `[0,4]` conflict to the base-10 `N = 34` and
+`N = 68` Composite68-style `[1,5]` windows. It is a finite comparison hook,
+not a global same-core classification theorem.
+
+`QRTour.Shape13K4` packages the finite Shape13/K4 mod-stable carry-loss shift
+witness tying the base-30 `N = 13` `[0,6]` conflict to the base-30 `N = 26`
+`[1,7]` window. It is a finite comparison hook and a named same-core
+carried-output criterion instantiation, not a global observability theorem.
 
 The first namespace gives the canonical small prime witness for decimal digit
 periodicity. The second namespace gives the canonical prime witness for the QR
@@ -795,6 +823,83 @@ theorem coordinate_stateAlignments_output_agreement_pointwise_six_three
   exact coordinate.stateAlignments_output_agreement_pointwise_of_lookaheadCertificate
     coordinate_goodMode (by native_decide) 6 3 coordinate_lookaheadCertificate_six_three i hi
 
+/-! ### Positive Reconstruction Exemplar
+
+The default observability-program atlas classifies the prime-`97` `8/2`
+window as a positive reconstruction candidate: the observed finite
+`remainderIn` state determines the raw coefficient on this window. The first
+theorem keeps the older list-functional surface explicit; the second translates
+it through the generic `FactorsThrough` bridge used by the observability lens.
+-/
+
+/-- On the default prime-`97` observability window, the observed `remainderIn`
+states are exactly the first eight powers of the remainder `3`, reduced modulo
+`97`. -/
+theorem coordinate_stateAlignments_remainderIn_window_eight_two :
+    ((coordinate.stateAlignments coordinate_goodMode 8 2).map
+      (fun alignment => alignment.remainderIn)) = [1, 3, 9, 27, 81, 49, 50, 53] := by
+  have h0 : coordinate.longDivisionRemainder 0 = 1 := by rfl
+  have h1 : coordinate.longDivisionRemainder 1 = 3 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h2 : coordinate.longDivisionRemainder 2 = 9 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h3 : coordinate.longDivisionRemainder 3 = 27 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h4 : coordinate.longDivisionRemainder 4 = 81 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h5 : coordinate.longDivisionRemainder 5 = 49 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h6 : coordinate.longDivisionRemainder 6 = 50 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h7 : coordinate.longDivisionRemainder 7 = 53 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  exact coordinate.stateAlignments_remainderIn_window_eight_eq_of_longDivisionRemainders
+    coordinate_goodMode 2 h0 h1 h2 h3 h4 h5 h6 h7
+
+/-- On the default prime-`97` observability window, the observed `remainderIn`
+states are pairwise distinct. -/
+theorem coordinate_stateAlignments_remainderIn_nodup_eight_two :
+    ((coordinate.stateAlignments coordinate_goodMode 8 2).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact coordinate.stateAlignments_remainderIn_nodup_of_window_eq
+    coordinate_goodMode 8 2
+    coordinate_stateAlignments_remainderIn_window_eight_two
+    (by norm_num)
+
+/-- On the default prime-`97` observability window, the finite
+`remainderIn ↦ raw coefficient` map is functional by finite injective readout. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFunctional_eight_two :
+    List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 2).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderIn_nodup
+      coordinate_goodMode 8 2 coordinate_stateAlignments_remainderIn_nodup_eight_two
+
+/-- Positive reconstruction exemplar for prime `97`: on the finite `8/2`
+state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_two :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 2).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderIn_nodup
+      coordinate_goodMode 8 2
+      coordinate_stateAlignments_remainderIn_nodup_eight_two
+
 /-! ### Digit Examples
 
 The reptend digits of 1/97 in base 10.
@@ -807,6 +912,4910 @@ example : digit 97 10 2 = 0 := by native_decide  -- 3 × 10 = 30 < 97
 example : digit 97 10 3 = 3 := by native_decide  -- 30 × 10 = 300, 300/97 = 3
 
 end QRTour.Prime97
+
+namespace QRTour.FutureBase10N98
+
+/-! ### Positive reconstruction example: base 10, N = 98
+
+This packages the smallest-gap positive reconstruction candidate currently
+emitted by the observability program atlas:
+`(base, N, m, B, q, k, L, gap) = (10, 98, 2, 100, 1, 2, 1, 44)`.
+It is a finite `8/1` proof hook only; it does not add a registry claim,
+theorem-witness record, atlas status change, or global factorization theorem.
+-/
+
+/-- The candidate coordinate `(base=10, N=98, stride=2)`. -/
+def coordinate : BlockCoordinate where
+  base := 10
+  modulus := 98
+  stride := 2
+  modulus_pos := by decide
+
+/-- The base-supported preperiod has length one for denominator `98`. -/
+theorem denominator_preperiodSteps_eq_one : preperiodSteps 10 98 = 1 := by
+  native_decide
+
+/-- Stripping the base-supported factor leaves periodic modulus `49`. -/
+theorem denominator_strippedPeriodModulus_eq_forty_nine :
+    strippedPeriodModulus 10 98 = 49 := by
+  native_decide
+
+/-- The coordinate is a good mode: `98 < 100`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `100`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 100 := by
+  native_decide
+
+/-- The quotient in `100 = q*98 + k` is `q = 1`. -/
+theorem coordinate_quotientQ_eq_one : coordinate.quotientQ = 1 := by
+  native_decide
+
+/-- The remainder in `100 = q*98 + k` is `k = 2`. -/
+theorem coordinate_remainderK_eq_two : coordinate.remainderK = 2 := by
+  native_decide
+
+/-- On the candidate window, the exact lookahead gap numerator is `44`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 44 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- On the base-10 `98` candidate window, the observed `remainderIn` states are
+exactly the first eight powers of the remainder `2`, reduced modulo `98`. -/
+theorem coordinate_stateAlignments_remainderIn_window_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)) = [1, 2, 4, 8, 16, 32, 64, 30] := by
+  have h0 : coordinate.longDivisionRemainder 0 = 1 := by rfl
+  have h1 : coordinate.longDivisionRemainder 1 = 2 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h2 : coordinate.longDivisionRemainder 2 = 4 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h3 : coordinate.longDivisionRemainder 3 = 8 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h4 : coordinate.longDivisionRemainder 4 = 16 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h5 : coordinate.longDivisionRemainder 5 = 32 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h6 : coordinate.longDivisionRemainder 6 = 64 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h7 : coordinate.longDivisionRemainder 7 = 30 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  exact coordinate.stateAlignments_remainderIn_window_eight_eq_of_longDivisionRemainders
+    coordinate_goodMode 1 h0 h1 h2 h3 h4 h5 h6 h7
+
+/-- On the base-10 `98` candidate window, the observed `remainderIn` states are
+pairwise distinct. -/
+theorem coordinate_stateAlignments_remainderIn_nodup_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact coordinate.stateAlignments_remainderIn_nodup_of_window_eq
+    coordinate_goodMode 8 1
+    coordinate_stateAlignments_remainderIn_window_eight_one
+    (by norm_num)
+
+/-- On the base-10 `98` candidate window, the finite
+`remainderIn ↦ raw coefficient` map is functional by finite injective readout. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one :
+    List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderIn_nodup
+      coordinate_goodMode 8 1 coordinate_stateAlignments_remainderIn_nodup_eight_one
+
+/-- Positive reconstruction exemplar for denominator `98`: on the finite `8/1`
+state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderIn_nodup
+      coordinate_goodMode 8 1
+      coordinate_stateAlignments_remainderIn_nodup_eight_one
+
+end QRTour.FutureBase10N98
+
+namespace QRTour.FutureBase12N142
+
+/-! ### Positive Reconstruction Candidate: base 12, N = 142
+
+This packages the first remaining empirical positive reconstruction candidate
+emitted by the observability program atlas after the base-10 `98` hook:
+`(base, N, m, B, q, k, L, gap) = (12, 142, 2, 144, 1, 2, 1, 32)`.
+It is a finite `8/1` proof hook only; it does not add a registry claim,
+theorem-witness record, atlas status change, or global factorization theorem.
+-/
+
+/-- The candidate coordinate `(base=12, N=142, stride=2)`. -/
+def coordinate : BlockCoordinate where
+  base := 12
+  modulus := 142
+  stride := 2
+  modulus_pos := by decide
+
+/-- The base-supported preperiod has length one for denominator `142` in base `12`. -/
+theorem denominator_preperiodSteps_eq_one : preperiodSteps 12 142 = 1 := by
+  native_decide
+
+/-- Stripping the base-supported factor leaves periodic modulus `71`. -/
+theorem denominator_strippedPeriodModulus_eq_seventy_one :
+    strippedPeriodModulus 12 142 = 71 := by
+  native_decide
+
+/-- The coordinate is a good mode: `142 < 144`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `144`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 144 := by
+  native_decide
+
+/-- The quotient in `144 = q*142 + k` is `q = 1`. -/
+theorem coordinate_quotientQ_eq_one : coordinate.quotientQ = 1 := by
+  native_decide
+
+/-- The remainder in `144 = q*142 + k` is `k = 2`. -/
+theorem coordinate_remainderK_eq_two : coordinate.remainderK = 2 := by
+  native_decide
+
+/-- On the candidate window, the exact lookahead gap numerator is `32`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 32 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- On the base-12 `142` candidate window, the observed `remainderIn` states
+are exactly the first eight powers of the remainder `2`, reduced modulo `142`. -/
+theorem coordinate_stateAlignments_remainderIn_window_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)) = [1, 2, 4, 8, 16, 32, 64, 128] := by
+  have h0 : coordinate.longDivisionRemainder 0 = 1 := by rfl
+  have h1 : coordinate.longDivisionRemainder 1 = 2 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h2 : coordinate.longDivisionRemainder 2 = 4 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h3 : coordinate.longDivisionRemainder 3 = 8 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h4 : coordinate.longDivisionRemainder 4 = 16 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h5 : coordinate.longDivisionRemainder 5 = 32 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h6 : coordinate.longDivisionRemainder 6 = 64 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h7 : coordinate.longDivisionRemainder 7 = 128 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  exact coordinate.stateAlignments_remainderIn_window_eight_eq_of_longDivisionRemainders
+    coordinate_goodMode 1 h0 h1 h2 h3 h4 h5 h6 h7
+
+/-- On the base-12 `142` candidate window, the observed `remainderIn` states
+are pairwise distinct. -/
+theorem coordinate_stateAlignments_remainderIn_nodup_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact coordinate.stateAlignments_remainderIn_nodup_of_window_eq
+    coordinate_goodMode 8 1
+    coordinate_stateAlignments_remainderIn_window_eight_one
+    (by norm_num)
+
+/-- On the base-12 `142` candidate window, the finite
+`remainderIn ↦ raw coefficient` map is functional by finite injective readout. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one :
+    List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderIn_nodup
+      coordinate_goodMode 8 1 coordinate_stateAlignments_remainderIn_nodup_eight_one
+
+/-- Positive reconstruction exemplar for denominator `142`: on the finite
+`8/1` state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderIn_nodup
+      coordinate_goodMode 8 1
+      coordinate_stateAlignments_remainderIn_nodup_eight_one
+
+end QRTour.FutureBase12N142
+
+namespace QRTour.FutureBase7N47
+
+/-! ### Positive Reconstruction Candidate: base 7, N = 47
+
+This packages the next empirical positive reconstruction candidate emitted by
+the observability program atlas after the base-12 `142` hook:
+`(base, N, m, B, q, k, L, gap) = (7, 47, 2, 49, 1, 2, 1, 38)`.
+It is a finite `8/1` proof hook only; it does not add a registry claim,
+theorem-witness record, atlas status change, or global factorization theorem.
+-/
+
+/-- The candidate coordinate `(base=7, N=47, stride=2)`. -/
+def coordinate : BlockCoordinate where
+  base := 7
+  modulus := 47
+  stride := 2
+  modulus_pos := by decide
+
+/-- The base-supported preperiod has length zero for denominator `47` in base `7`. -/
+theorem denominator_preperiodSteps_eq_zero : preperiodSteps 7 47 = 0 := by
+  native_decide
+
+/-- Stripping base-supported factors leaves periodic modulus `47`. -/
+theorem denominator_strippedPeriodModulus_eq_forty_seven :
+    strippedPeriodModulus 7 47 = 47 := by
+  native_decide
+
+/-- The coordinate is a good mode: `47 < 49`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `49`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 49 := by
+  native_decide
+
+/-- The quotient in `49 = q*47 + k` is `q = 1`. -/
+theorem coordinate_quotientQ_eq_one : coordinate.quotientQ = 1 := by
+  native_decide
+
+/-- The remainder in `49 = q*47 + k` is `k = 2`. -/
+theorem coordinate_remainderK_eq_two : coordinate.remainderK = 2 := by
+  native_decide
+
+/-- On the candidate window, the exact lookahead gap numerator is `38`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 38 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- On the base-7 `47` candidate window, the observed `remainderIn` states
+are exactly the first eight powers of the remainder `2`, reduced modulo `47`. -/
+theorem coordinate_stateAlignments_remainderIn_window_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)) = [1, 2, 4, 8, 16, 32, 17, 34] := by
+  have h0 : coordinate.longDivisionRemainder 0 = 1 := by rfl
+  have h1 : coordinate.longDivisionRemainder 1 = 2 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h2 : coordinate.longDivisionRemainder 2 = 4 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h3 : coordinate.longDivisionRemainder 3 = 8 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h4 : coordinate.longDivisionRemainder 4 = 16 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h5 : coordinate.longDivisionRemainder 5 = 32 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h6 : coordinate.longDivisionRemainder 6 = 17 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h7 : coordinate.longDivisionRemainder 7 = 34 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  exact coordinate.stateAlignments_remainderIn_window_eight_eq_of_longDivisionRemainders
+    coordinate_goodMode 1 h0 h1 h2 h3 h4 h5 h6 h7
+
+/-- On the base-7 `47` candidate window, the observed `remainderIn` states are
+pairwise distinct. -/
+theorem coordinate_stateAlignments_remainderIn_nodup_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact coordinate.stateAlignments_remainderIn_nodup_of_window_eq
+    coordinate_goodMode 8 1
+    coordinate_stateAlignments_remainderIn_window_eight_one
+    (by norm_num)
+
+/-- On the base-7 `47` candidate window, the finite
+`remainderIn ↦ raw coefficient` map is functional by finite injective readout. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one :
+    List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderIn_nodup
+      coordinate_goodMode 8 1 coordinate_stateAlignments_remainderIn_nodup_eight_one
+
+/-- Positive reconstruction exemplar for denominator `47`: on the finite `8/1`
+state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderIn_nodup
+      coordinate_goodMode 8 1
+      coordinate_stateAlignments_remainderIn_nodup_eight_one
+
+end QRTour.FutureBase7N47
+
+namespace QRTour.FutureBase12N71
+
+/-! ### Positive Reconstruction Candidate: base 12, N = 71
+
+This packages the next empirical positive reconstruction candidate emitted by
+the observability program atlas after the base-7 `47` hook:
+`(base, N, m, B, q, k, L, gap) = (12, 71, 2, 144, 2, 2, 1, 64)`.
+It is a finite `8/1` proof hook only; it does not add a registry claim,
+theorem-witness record, atlas status change, or global factorization theorem.
+-/
+
+/-- The candidate coordinate `(base=12, N=71, stride=2)`. -/
+def coordinate : BlockCoordinate where
+  base := 12
+  modulus := 71
+  stride := 2
+  modulus_pos := by decide
+
+/-- The base-supported preperiod has length zero for denominator `71` in base `12`. -/
+theorem denominator_preperiodSteps_eq_zero : preperiodSteps 12 71 = 0 := by
+  native_decide
+
+/-- Stripping base-supported factors leaves periodic modulus `71`. -/
+theorem denominator_strippedPeriodModulus_eq_seventy_one :
+    strippedPeriodModulus 12 71 = 71 := by
+  native_decide
+
+/-- The coordinate is a good mode: `71 < 144`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `144`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 144 := by
+  native_decide
+
+/-- The quotient in `144 = q*71 + k` is `q = 2`. -/
+theorem coordinate_quotientQ_eq_two : coordinate.quotientQ = 2 := by
+  native_decide
+
+/-- The remainder in `144 = q*71 + k` is `k = 2`. -/
+theorem coordinate_remainderK_eq_two : coordinate.remainderK = 2 := by
+  native_decide
+
+/-- On the candidate window, the exact lookahead gap numerator is `64`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 64 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- On the base-12 `71` candidate window, the observed `remainderIn` states
+are exactly the first eight powers of the remainder `2`, reduced modulo `71`. -/
+theorem coordinate_stateAlignments_remainderIn_window_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)) = [1, 2, 4, 8, 16, 32, 64, 57] := by
+  have h0 : coordinate.longDivisionRemainder 0 = 1 := by rfl
+  have h1 : coordinate.longDivisionRemainder 1 = 2 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h2 : coordinate.longDivisionRemainder 2 = 4 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h3 : coordinate.longDivisionRemainder 3 = 8 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h4 : coordinate.longDivisionRemainder 4 = 16 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h5 : coordinate.longDivisionRemainder 5 = 32 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h6 : coordinate.longDivisionRemainder 6 = 64 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h7 : coordinate.longDivisionRemainder 7 = 57 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  exact coordinate.stateAlignments_remainderIn_window_eight_eq_of_longDivisionRemainders
+    coordinate_goodMode 1 h0 h1 h2 h3 h4 h5 h6 h7
+
+/-- On the base-12 `71` candidate window, the observed `remainderIn` states
+are pairwise distinct. -/
+theorem coordinate_stateAlignments_remainderIn_nodup_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact coordinate.stateAlignments_remainderIn_nodup_of_window_eq
+    coordinate_goodMode 8 1
+    coordinate_stateAlignments_remainderIn_window_eight_one
+    (by norm_num)
+
+/-- On the base-12 `71` candidate window, the finite
+`remainderIn ↦ raw coefficient` map is functional by finite injective readout. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one :
+    List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderIn_nodup
+      coordinate_goodMode 8 1 coordinate_stateAlignments_remainderIn_nodup_eight_one
+
+/-- Positive reconstruction exemplar for denominator `71`: on the finite `8/1`
+state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderIn_nodup
+      coordinate_goodMode 8 1
+      coordinate_stateAlignments_remainderIn_nodup_eight_one
+
+end QRTour.FutureBase12N71
+
+namespace QRTour.FutureBase10N49
+
+/-! ### Positive Reconstruction Candidate: base 10, N = 49
+
+This packages the next empirical positive reconstruction candidate emitted by
+the observability program atlas after the base-12 `71` hook:
+`(base, N, m, B, q, k, L, gap) = (10, 49, 2, 100, 2, 2, 1, 88)`.
+It is a finite `8/1` proof hook only; it does not add a registry claim,
+theorem-witness record, atlas status change, or global factorization theorem.
+-/
+
+/-- The candidate coordinate `(base=10, N=49, stride=2)`. -/
+def coordinate : BlockCoordinate where
+  base := 10
+  modulus := 49
+  stride := 2
+  modulus_pos := by decide
+
+/-- The base-supported preperiod has length zero for denominator `49` in base `10`. -/
+theorem denominator_preperiodSteps_eq_zero : preperiodSteps 10 49 = 0 := by
+  native_decide
+
+/-- Stripping base-supported factors leaves periodic modulus `49`. -/
+theorem denominator_strippedPeriodModulus_eq_forty_nine :
+    strippedPeriodModulus 10 49 = 49 := by
+  native_decide
+
+/-- The coordinate is a good mode: `49 < 100`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `100`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 100 := by
+  native_decide
+
+/-- The quotient in `100 = q*49 + k` is `q = 2`. -/
+theorem coordinate_quotientQ_eq_two : coordinate.quotientQ = 2 := by
+  native_decide
+
+/-- The remainder in `100 = q*49 + k` is `k = 2`. -/
+theorem coordinate_remainderK_eq_two : coordinate.remainderK = 2 := by
+  native_decide
+
+/-- On the candidate window, the exact lookahead gap numerator is `88`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 88 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- On the base-10 `49` candidate window, the observed `remainderIn` states
+are exactly the first eight powers of the remainder `2`, reduced modulo `49`. -/
+theorem coordinate_stateAlignments_remainderIn_window_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)) = [1, 2, 4, 8, 16, 32, 15, 30] := by
+  have h0 : coordinate.longDivisionRemainder 0 = 1 := by rfl
+  have h1 : coordinate.longDivisionRemainder 1 = 2 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h2 : coordinate.longDivisionRemainder 2 = 4 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h3 : coordinate.longDivisionRemainder 3 = 8 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h4 : coordinate.longDivisionRemainder 4 = 16 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h5 : coordinate.longDivisionRemainder 5 = 32 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h6 : coordinate.longDivisionRemainder 6 = 15 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h7 : coordinate.longDivisionRemainder 7 = 30 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  exact coordinate.stateAlignments_remainderIn_window_eight_eq_of_longDivisionRemainders
+    coordinate_goodMode 1 h0 h1 h2 h3 h4 h5 h6 h7
+
+/-- On the base-10 `49` candidate window, the observed `remainderIn` states
+are pairwise distinct. -/
+theorem coordinate_stateAlignments_remainderIn_nodup_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact coordinate.stateAlignments_remainderIn_nodup_of_window_eq
+    coordinate_goodMode 8 1
+    coordinate_stateAlignments_remainderIn_window_eight_one
+    (by norm_num)
+
+/-- On the base-10 `49` candidate window, the finite
+`remainderIn ↦ raw coefficient` map is functional by finite injective readout. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one :
+    List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderIn_nodup
+      coordinate_goodMode 8 1 coordinate_stateAlignments_remainderIn_nodup_eight_one
+
+/-- Positive reconstruction exemplar for denominator `49`: on the finite `8/1`
+state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderIn_nodup
+      coordinate_goodMode 8 1
+      coordinate_stateAlignments_remainderIn_nodup_eight_one
+
+end QRTour.FutureBase10N49
+
+namespace QRTour.FutureBase30N299
+
+/-! ### Positive Reconstruction Candidate: base 30, N = 299
+
+This packages the next empirical positive reconstruction candidate emitted by
+the observability program atlas after the base-10 `49` hook:
+`(base, N, m, B, q, k, L, gap) = (30, 299, 2, 900, 3, 3, 1, 117)`.
+It is a finite `8/1` proof hook only; it does not add a registry claim,
+theorem-witness record, atlas status change, or global factorization theorem.
+-/
+
+/-- The candidate coordinate `(base=30, N=299, stride=2)`. -/
+def coordinate : BlockCoordinate where
+  base := 30
+  modulus := 299
+  stride := 2
+  modulus_pos := by decide
+
+/-- The base-supported preperiod has length zero for denominator `299` in base `30`. -/
+theorem denominator_preperiodSteps_eq_zero : preperiodSteps 30 299 = 0 := by
+  native_decide
+
+/-- Stripping base-supported factors leaves periodic modulus `299`. -/
+theorem denominator_strippedPeriodModulus_eq_two_hundred_ninety_nine :
+    strippedPeriodModulus 30 299 = 299 := by
+  native_decide
+
+/-- The coordinate is a good mode: `299 < 900`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `900`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 900 := by
+  native_decide
+
+/-- The quotient in `900 = q*299 + k` is `q = 3`. -/
+theorem coordinate_quotientQ_eq_three : coordinate.quotientQ = 3 := by
+  native_decide
+
+/-- The remainder in `900 = q*299 + k` is `k = 3`. -/
+theorem coordinate_remainderK_eq_three : coordinate.remainderK = 3 := by
+  native_decide
+
+/-- On the candidate window, the exact lookahead gap numerator is `117`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 117 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- On the base-30 `299` candidate window, the observed `remainderIn` states
+are exactly the first eight powers of the remainder `3`, reduced modulo `299`. -/
+theorem coordinate_stateAlignments_remainderIn_window_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)) = [1, 3, 9, 27, 81, 243, 131, 94] := by
+  have h0 : coordinate.longDivisionRemainder 0 = 1 := by rfl
+  have h1 : coordinate.longDivisionRemainder 1 = 3 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h2 : coordinate.longDivisionRemainder 2 = 9 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h3 : coordinate.longDivisionRemainder 3 = 27 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h4 : coordinate.longDivisionRemainder 4 = 81 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h5 : coordinate.longDivisionRemainder 5 = 243 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h6 : coordinate.longDivisionRemainder 6 = 131 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  have h7 : coordinate.longDivisionRemainder 7 = 94 := by
+    rw [coordinate.longDivisionRemainder_eq_pow_mod]
+    norm_num [coordinate, BlockCoordinate.blockBase]
+  exact coordinate.stateAlignments_remainderIn_window_eight_eq_of_longDivisionRemainders
+    coordinate_goodMode 1 h0 h1 h2 h3 h4 h5 h6 h7
+
+/-- On the base-30 `299` candidate window, the observed `remainderIn` states
+are pairwise distinct. -/
+theorem coordinate_stateAlignments_remainderIn_nodup_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact coordinate.stateAlignments_remainderIn_nodup_of_window_eq
+    coordinate_goodMode 8 1
+    coordinate_stateAlignments_remainderIn_window_eight_one
+    (by norm_num)
+
+/-- On the base-30 `299` candidate window, the finite
+`remainderIn ↦ raw coefficient` map is functional by finite injective readout. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one :
+    List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderIn_nodup
+      coordinate_goodMode 8 1 coordinate_stateAlignments_remainderIn_nodup_eight_one
+
+/-- Positive reconstruction exemplar for denominator `299`: on the finite `8/1`
+state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderIn_nodup
+      coordinate_goodMode 8 1
+      coordinate_stateAlignments_remainderIn_nodup_eight_one
+
+end QRTour.FutureBase30N299
+
+namespace QRTour.FutureBase7N170
+
+/-! ### Positive Reconstruction Candidate: base 7, N = 170
+
+This packages the first empirical positive reconstruction candidate emitted by
+the observability program atlas after the base-30 `299` hook:
+`(base, N, m, B, q, k, L, gap) = (7, 170, 3, 343, 2, 3, 1, 255)`.
+It uses the finite power-residue no-collision criterion on `(k^j % N)`, and
+remains a finite `8/1` proof hook only: no registry claim, theorem-witness
+record, atlas status change, or global factorization theorem is added.
+-/
+
+/-- The candidate coordinate `(base=7, N=170, stride=3)`. -/
+def coordinate : BlockCoordinate where
+  base := 7
+  modulus := 170
+  stride := 3
+  modulus_pos := by decide
+
+/-- The base-supported preperiod has length zero for denominator `170` in base `7`. -/
+theorem denominator_preperiodSteps_eq_zero : preperiodSteps 7 170 = 0 := by
+  native_decide
+
+/-- Stripping base-supported factors leaves periodic modulus `170`. -/
+theorem denominator_strippedPeriodModulus_eq_one_hundred_seventy :
+    strippedPeriodModulus 7 170 = 170 := by
+  native_decide
+
+/-- The coordinate is a good mode: `170 < 343`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `343`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 343 := by
+  native_decide
+
+/-- The quotient in `343 = q*170 + k` is `q = 2`. -/
+theorem coordinate_quotientQ_eq_two : coordinate.quotientQ = 2 := by
+  native_decide
+
+/-- The remainder in `343 = q*170 + k` is `k = 3`. -/
+theorem coordinate_remainderK_eq_three : coordinate.remainderK = 3 := by
+  native_decide
+
+/-- On the candidate window, the exact lookahead gap numerator is `255`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 255 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- On the base-7 `170` candidate window, the first eight power residues
+`k^j % N` are explicit. -/
+theorem coordinate_remainderK_powerResidues_window_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)) =
+        [1, 3, 9, 27, 81, 73, 49, 147] := by
+  native_decide
+
+/-- The base-7 `170` candidate has no collision in its eight-entry
+power-residue window. -/
+theorem coordinate_remainderK_powerResidues_nodup_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)).Nodup := by
+  rw [coordinate_remainderK_powerResidues_window_eight]
+  norm_num
+
+/-- On the base-7 `170` candidate window, the observed `remainderIn` states
+are pairwise distinct by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderIn_nodup_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact coordinate.stateAlignments_remainderIn_nodup_of_remainderK_powerResidues_nodup
+    coordinate_goodMode 8 1
+    coordinate_remainderK_powerResidues_nodup_eight
+
+/-- On the base-7 `170` candidate window, the finite
+`remainderIn ↦ raw coefficient` map is functional by the power-residue
+no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one :
+    List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+/-- Positive reconstruction exemplar for denominator `170`: on the finite
+`8/1` state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+end QRTour.FutureBase7N170
+
+namespace QRTour.Base7K3PositiveReconstruction
+
+/-! ### Base-7, remainder-k = 3 positive reconstruction family
+
+This packages the first family-level response to the P1 positive reconstruction
+frontier. The observability program atlas identifies `(base, N, m, B, q, k, L,
+gap) = (7, 340, 3, 343, 1, 3, 1, 299)` as the first unpinned
+power-residue no-collision seed after the source-pinned `N = 170` hook.
+
+Rather than adding another copied finite source pin, this namespace proves an
+explicit divisor-family criterion for the shared `(base, B, k) = (7, 343, 3)`
+coordinate family. It remains finite-window support only: no registry claim,
+theorem-witness record, atlas status change, `small_k_visibility_threshold`
+closure, or `carry_dfa_factorization` closure is added.
+-/
+
+/-- The base-7, stride-3 moduli in the `B = 343`, `k = 3` divisor family whose
+eight-entry power-residue window is collision-free. Smaller divisors of
+`B-k = 340`, such as `4`, `5`, `10`, and `20`, fail this finite criterion. -/
+def moduli : List ℕ := [17, 34, 68, 85, 170, 340]
+
+/-- Explicit no-collision criterion for the base-7, stride-3 divisor family:
+for the listed moduli, the first eight full-modulus power residues
+`3^j % N` are pairwise distinct. -/
+theorem remainderK_powerResidues_nodup_eight_of_mem
+    (C : BlockCoordinate) (hbase : C.base = 7) (hstride : C.stride = 3)
+    (hmod : C.modulus ∈ moduli) :
+    ((List.range 8).map
+      (fun j => C.remainderK ^ j % C.modulus)).Nodup := by
+  simp [moduli] at hmod
+  rcases hmod with hmod | hmod | hmod | hmod | hmod | hmod
+  · have hrem : C.remainderK = 3 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 3 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 3 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 3 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 3 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 3 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+
+/-- The base-7, stride-3 divisor-family no-collision criterion gives
+functional finite raw-coefficient reconstruction on every `8/L`
+state-alignment window for a good coordinate in the listed family. -/
+theorem stateAlignments_remainderToCoefficientFunctional_eight_of_mem
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hbase : C.base = 7) (hstride : C.stride = 3)
+    (hmod : C.modulus ∈ moduli)
+    (lookaheadBlocks : ℕ) :
+    List.FunctionalOnFst
+      ((C.stateAlignments hgood 8 lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact C.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+    hgood 8 lookaheadBlocks
+    (remainderK_powerResidues_nodup_eight_of_mem C hbase hstride hmod)
+
+/-- The base-7, stride-3 divisor-family no-collision criterion gives finite
+factor-through reconstruction on every `8/L` state-alignment window for a good
+coordinate in the listed family. -/
+theorem stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hbase : C.base = 7) (hstride : C.stride = 3)
+    (hmod : C.modulus ∈ moduli)
+    (lookaheadBlocks : ℕ) :
+    let pairs :=
+      (C.stateAlignments hgood 8 lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact C.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+    hgood 8 lookaheadBlocks
+    (remainderK_powerResidues_nodup_eight_of_mem C hbase hstride hmod)
+
+/-- The source-pinned `N = 170` hook and the first unpinned `N = 340` seed sit
+inside the same explicit no-collision divisor family. -/
+theorem n170_n340_powerResidues_nodup_eight_pair :
+    ((List.range 8).map
+      (fun j => FutureBase7N170.coordinate.remainderK ^ j %
+        FutureBase7N170.coordinate.modulus)).Nodup ∧
+    ((List.range 8).map (fun j => 3 ^ j % 340)).Nodup := by
+  constructor
+  · exact FutureBase7N170.coordinate_remainderK_powerResidues_nodup_eight
+  · native_decide
+
+end QRTour.Base7K3PositiveReconstruction
+
+namespace QRTour.Base30K3PositiveReconstruction
+
+/-! ### Base-30, remainder-k = 3 positive reconstruction family
+
+The observability program atlas next exposes `(base, N, m, B, q, k, L, gap) =
+(30, 897, 2, 900, 1, 3, 1, 639)` as the first source-unpinned and
+family-uncovered power-residue no-collision row after the source-pinned
+`N = 299` hook.
+
+This namespace proves the finite same-base/block-remainder response for the
+shared `(base, B, k) = (30, 900, 3)` divisor family. It remains finite-window
+support only: no registry claim, theorem-witness record, atlas status change,
+`small_k_visibility_threshold` closure, or `carry_dfa_factorization` closure is
+added.
+-/
+
+/-- The base-30, stride-2 moduli in the `B = 900`, `k = 3` divisor family whose
+eight-entry power-residue window is collision-free. Divisors of `B-k = 897`
+such as `1`, `3`, `13`, and `39` fail this finite criterion. -/
+def moduli : List ℕ := [23, 69, 299, 897]
+
+/-- Explicit no-collision criterion for the base-30, stride-2 divisor family:
+for the listed moduli, the first eight full-modulus power residues
+`3^j % N` are pairwise distinct. -/
+theorem remainderK_powerResidues_nodup_eight_of_mem
+    (C : BlockCoordinate) (hbase : C.base = 30) (hstride : C.stride = 2)
+    (hmod : C.modulus ∈ moduli) :
+    ((List.range 8).map
+      (fun j => C.remainderK ^ j % C.modulus)).Nodup := by
+  simp [moduli] at hmod
+  rcases hmod with hmod | hmod | hmod | hmod
+  · have hrem : C.remainderK = 3 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 3 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 3 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 3 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+
+/-- The base-30, stride-2 divisor-family no-collision criterion gives
+functional finite raw-coefficient reconstruction on every `8/L`
+state-alignment window for a good coordinate in the listed family. -/
+theorem stateAlignments_remainderToCoefficientFunctional_eight_of_mem
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hbase : C.base = 30) (hstride : C.stride = 2)
+    (hmod : C.modulus ∈ moduli)
+    (lookaheadBlocks : ℕ) :
+    List.FunctionalOnFst
+      ((C.stateAlignments hgood 8 lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact C.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+    hgood 8 lookaheadBlocks
+    (remainderK_powerResidues_nodup_eight_of_mem C hbase hstride hmod)
+
+/-- The base-30, stride-2 divisor-family no-collision criterion gives finite
+factor-through reconstruction on every `8/L` state-alignment window for a good
+coordinate in the listed family. -/
+theorem stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hbase : C.base = 30) (hstride : C.stride = 2)
+    (hmod : C.modulus ∈ moduli)
+    (lookaheadBlocks : ℕ) :
+    let pairs :=
+      (C.stateAlignments hgood 8 lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact C.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+    hgood 8 lookaheadBlocks
+    (remainderK_powerResidues_nodup_eight_of_mem C hbase hstride hmod)
+
+/-- The source-pinned `N = 299` hook and the first uncovered `N = 897` seed
+sit inside the same explicit no-collision divisor family. -/
+theorem n299_n897_powerResidues_nodup_eight_pair :
+    ((List.range 8).map
+      (fun j => FutureBase30N299.coordinate.remainderK ^ j %
+        FutureBase30N299.coordinate.modulus)).Nodup ∧
+    ((List.range 8).map (fun j => 3 ^ j % 897)).Nodup := by
+  constructor
+  · exact
+      remainderK_powerResidues_nodup_eight_of_mem
+        FutureBase30N299.coordinate rfl rfl (by simp [moduli, FutureBase30N299.coordinate])
+  · native_decide
+
+end QRTour.Base30K3PositiveReconstruction
+
+namespace QRTour.Base10K4PositiveReconstruction
+
+/-! ### Base-10, remainder-k = 4 positive reconstruction family
+
+The observability program atlas next exposes `(base, N, m, B, q, k, L, gap) =
+(10, 498, 3, 1000, 2, 4, 1, 928)` as the first source-unpinned and
+family-uncovered power-residue no-collision row after the source-pinned
+`N = 996` hook.
+
+This namespace proves the finite same-base/block-remainder response for the
+shared `(base, B, k) = (10, 1000, 4)` divisor family. It remains finite-window
+support only: no registry claim, theorem-witness record, atlas status change,
+`small_k_visibility_threshold` closure, or `carry_dfa_factorization` closure is
+added.
+-/
+
+/-- The base-10, stride-3 moduli in the `B = 1000`, `k = 4` divisor family
+whose eight-entry power-residue window is collision-free. Divisors of
+`B-k = 996` such as `1`, `2`, `3`, `4`, `6`, and `12` fail this finite
+criterion. -/
+def moduli : List ℕ := [83, 166, 249, 332, 498, 996]
+
+/-- Explicit no-collision criterion for the base-10, stride-3 divisor family:
+for the listed moduli, the first eight full-modulus power residues
+`4^j % N` are pairwise distinct. -/
+theorem remainderK_powerResidues_nodup_eight_of_mem
+    (C : BlockCoordinate) (hbase : C.base = 10) (hstride : C.stride = 3)
+    (hmod : C.modulus ∈ moduli) :
+    ((List.range 8).map
+      (fun j => C.remainderK ^ j % C.modulus)).Nodup := by
+  simp [moduli] at hmod
+  rcases hmod with hmod | hmod | hmod | hmod | hmod | hmod
+  · have hrem : C.remainderK = 4 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 4 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 4 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 4 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 4 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 4 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+
+/-- The base-10, stride-3 divisor-family no-collision criterion gives
+functional finite raw-coefficient reconstruction on every `8/L`
+state-alignment window for a good coordinate in the listed family. -/
+theorem stateAlignments_remainderToCoefficientFunctional_eight_of_mem
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hbase : C.base = 10) (hstride : C.stride = 3)
+    (hmod : C.modulus ∈ moduli)
+    (lookaheadBlocks : ℕ) :
+    List.FunctionalOnFst
+      ((C.stateAlignments hgood 8 lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact C.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+    hgood 8 lookaheadBlocks
+    (remainderK_powerResidues_nodup_eight_of_mem C hbase hstride hmod)
+
+/-- The base-10, stride-3 divisor-family no-collision criterion gives finite
+factor-through reconstruction on every `8/L` state-alignment window for a good
+coordinate in the listed family. -/
+theorem stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hbase : C.base = 10) (hstride : C.stride = 3)
+    (hmod : C.modulus ∈ moduli)
+    (lookaheadBlocks : ℕ) :
+    let pairs :=
+      (C.stateAlignments hgood 8 lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact C.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+    hgood 8 lookaheadBlocks
+    (remainderK_powerResidues_nodup_eight_of_mem C hbase hstride hmod)
+
+/-- The first uncovered `N = 498` seed and the source-pinned `N = 996` hook
+sit inside the same explicit no-collision divisor family. -/
+theorem n498_n996_powerResidues_nodup_eight_pair :
+    ((List.range 8).map (fun j => 4 ^ j % 498)).Nodup ∧
+    ((List.range 8).map (fun j => 4 ^ j % 996)).Nodup := by
+  constructor <;> native_decide
+
+end QRTour.Base10K4PositiveReconstruction
+
+namespace QRTour.Base10Stride4K4PositiveReconstruction
+
+/-! ### Base-10, stride-4, remainder-k = 4 positive reconstruction family
+
+The observability program atlas next exposes `(base, N, m, B, q, k, L, gap) =
+(10, 714, 4, 10000, 14, 4, 1, 2496)` as the first source-unpinned and
+family-uncovered power-residue no-collision row after the source-pinned
+`N = 294` hook.
+
+This namespace proves the finite same-base/block-remainder response for the
+shared `(base, B, k) = (10, 10000, 4)` divisor family. It remains finite-window
+support only: no registry claim, theorem-witness record, atlas status change,
+`small_k_visibility_threshold` closure, or `carry_dfa_factorization` closure is
+added.
+-/
+
+/-- The base-10, stride-4 moduli in the `B = 10000`, `k = 4` divisor family
+whose eight-entry power-residue window is collision-free. Divisors of
+`B-k = 9996` such as `6`, `7`, `12`, `14`, `17`, and `34` fail this finite
+criterion. -/
+def moduli : List ℕ := [49, 98, 119, 147, 196, 238, 294, 357, 476, 588, 714, 833]
+
+/-- Explicit no-collision criterion for the base-10, stride-4 divisor family:
+for the listed moduli, the first eight full-modulus power residues
+`4^j % N` are pairwise distinct. -/
+theorem remainderK_powerResidues_nodup_eight_of_mem
+    (C : BlockCoordinate) (hbase : C.base = 10) (hstride : C.stride = 4)
+    (hmod : C.modulus ∈ moduli) :
+    ((List.range 8).map
+      (fun j => C.remainderK ^ j % C.modulus)).Nodup := by
+  simp [moduli] at hmod
+  rcases hmod with
+    hmod | hmod | hmod | hmod | hmod | hmod |
+    hmod | hmod | hmod | hmod | hmod | hmod
+  · have hrem : C.remainderK = 4 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 4 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 4 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 4 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 4 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 4 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 4 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 4 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 4 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 4 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 4 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 4 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+
+/-- The base-10, stride-4 divisor-family no-collision criterion gives
+functional finite raw-coefficient reconstruction on every `8/L`
+state-alignment window for a good coordinate in the listed family. -/
+theorem stateAlignments_remainderToCoefficientFunctional_eight_of_mem
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hbase : C.base = 10) (hstride : C.stride = 4)
+    (hmod : C.modulus ∈ moduli)
+    (lookaheadBlocks : ℕ) :
+    List.FunctionalOnFst
+      ((C.stateAlignments hgood 8 lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact C.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+    hgood 8 lookaheadBlocks
+    (remainderK_powerResidues_nodup_eight_of_mem C hbase hstride hmod)
+
+/-- The base-10, stride-4 divisor-family no-collision criterion gives finite
+factor-through reconstruction on every `8/L` state-alignment window for a good
+coordinate in the listed family. -/
+theorem stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hbase : C.base = 10) (hstride : C.stride = 4)
+    (hmod : C.modulus ∈ moduli)
+    (lookaheadBlocks : ℕ) :
+    let pairs :=
+      (C.stateAlignments hgood 8 lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact C.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+    hgood 8 lookaheadBlocks
+    (remainderK_powerResidues_nodup_eight_of_mem C hbase hstride hmod)
+
+/-- The source-pinned `N = 294` hook and the first uncovered `N = 714` seed
+sit inside the same explicit no-collision divisor family. -/
+theorem n294_n714_powerResidues_nodup_eight_pair :
+    ((List.range 8).map (fun j => 4 ^ j % 294)).Nodup ∧
+    ((List.range 8).map (fun j => 4 ^ j % 714)).Nodup := by
+  constructor <;> native_decide
+
+end QRTour.Base10Stride4K4PositiveReconstruction
+
+namespace QRTour.Base10Stride5K6PositiveReconstruction
+
+/-! ### Base-10, stride-5, remainder-k = 6 positive reconstruction family
+
+The observability program atlas next exposes `(base, N, m, B, q, k, L, gap) =
+(10, 289, 5, 100000, 346, 6, 1, 52864)` as the first source-unpinned and
+family-uncovered power-residue no-collision row after the source-pinned
+`N = 578` hook.
+
+This namespace proves the finite same-base/block-remainder response for the
+shared `(base, B, k) = (10, 100000, 6)` divisor family. It remains
+finite-window support only: no registry claim, theorem-witness record, atlas
+status change, `small_k_visibility_threshold` closure, or
+`carry_dfa_factorization` closure is added.
+-/
+
+/-- The base-10, stride-5 moduli in the `B = 100000`, `k = 6` divisor family
+whose eight-entry power-residue window is collision-free. Divisors of
+`B-k = 99994`, namely `1` and `2`, fail this finite criterion. -/
+def moduli : List ℕ :=
+  [17, 34, 173, 289, 346, 578, 2941, 5882, 49997, 99994]
+
+/-- Explicit no-collision criterion for the base-10, stride-5 divisor family:
+for the listed moduli, the first eight full-modulus power residues
+`6^j % N` are pairwise distinct. -/
+theorem powerResidues_nodup_eight_of_mem
+    {N : ℕ} (hmod : N ∈ moduli) :
+    ((List.range 8).map (fun j => 6 ^ j % N)).Nodup := by
+  simp [moduli] at hmod
+  rcases hmod with
+    hmod | hmod | hmod | hmod | hmod | hmod | hmod | hmod | hmod | hmod
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+
+/-- Explicit no-collision criterion for the base-10, stride-5 divisor family:
+for the listed coordinate moduli, the first eight full-modulus power residues
+`C.remainderK^j % C.modulus` are pairwise distinct. -/
+theorem remainderK_powerResidues_nodup_eight_of_mem
+    (C : BlockCoordinate) (hbase : C.base = 10) (hstride : C.stride = 5)
+    (hmod : C.modulus ∈ moduli) :
+    ((List.range 8).map
+      (fun j => C.remainderK ^ j % C.modulus)).Nodup := by
+  have hmod' := hmod
+  have hrem : C.remainderK = 6 := by
+    simp [moduli] at hmod'
+    rcases hmod' with
+      hmod' | hmod' | hmod' | hmod' | hmod' | hmod' | hmod' | hmod' | hmod' | hmod'
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+  rw [hrem]
+  exact powerResidues_nodup_eight_of_mem hmod
+
+/-- The base-10, stride-5 divisor-family no-collision criterion gives
+functional finite raw-coefficient reconstruction on every `8/L`
+state-alignment window for a good coordinate in the listed family. -/
+theorem stateAlignments_remainderToCoefficientFunctional_eight_of_mem
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hbase : C.base = 10) (hstride : C.stride = 5)
+    (hmod : C.modulus ∈ moduli)
+    (lookaheadBlocks : ℕ) :
+    List.FunctionalOnFst
+      ((C.stateAlignments hgood 8 lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact C.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+    hgood 8 lookaheadBlocks
+    (remainderK_powerResidues_nodup_eight_of_mem C hbase hstride hmod)
+
+/-- The base-10, stride-5 divisor-family no-collision criterion gives finite
+factor-through reconstruction on every `8/L` state-alignment window for a good
+coordinate in the listed family. -/
+theorem stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hbase : C.base = 10) (hstride : C.stride = 5)
+    (hmod : C.modulus ∈ moduli)
+    (lookaheadBlocks : ℕ) :
+    let pairs :=
+      (C.stateAlignments hgood 8 lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact C.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+    hgood 8 lookaheadBlocks
+    (remainderK_powerResidues_nodup_eight_of_mem C hbase hstride hmod)
+
+/-- The first uncovered `N = 289` seed and the source-pinned `N = 578` hook
+sit inside the same explicit no-collision divisor family. -/
+theorem n289_n578_powerResidues_nodup_eight_pair :
+    ((List.range 8).map (fun j => 6 ^ j % 289)).Nodup ∧
+    ((List.range 8).map (fun j => 6 ^ j % 578)).Nodup := by
+  constructor <;> native_decide
+
+end QRTour.Base10Stride5K6PositiveReconstruction
+
+namespace QRTour.Base10Stride5K4PositiveReconstruction
+
+/-! ### Base-10, stride-5, remainder-k = 4 positive reconstruction family
+
+The observability program atlas next exposes `(base, N, m, B, q, k, L, gap) =
+(10, 641, 5, 100000, 156, 4, 1, 76384)` as the first source-unpinned and
+family-uncovered power-residue no-collision row after the base-12 stride-5
+`k = 3` family theorem.
+
+This namespace proves the finite same-base/block-remainder response for the
+shared `(base, B, k) = (10, 100000, 4)` divisor family. It remains
+finite-window support only: no registry claim, theorem-witness record, atlas
+status change, `small_k_visibility_threshold` closure, or
+`carry_dfa_factorization` closure is added.
+-/
+
+/-- The base-10, stride-5 moduli in the `B = 100000`, `k = 4` divisor family
+whose eight-entry power-residue window is collision-free. Good divisors of
+`B-k = 99996`, namely `6, 12, 13, 26, 39, 52, 78, 156`, fail this finite
+criterion; divisors `1, 2, 3, 4` are not good coordinates. -/
+def moduli : List ℕ :=
+  [641, 1282, 1923, 2564, 3846, 7692, 8333, 16666, 24999, 33332, 49998, 99996]
+
+/-- Explicit no-collision criterion for the base-10, stride-5 divisor family:
+for the listed moduli, the first eight full-modulus power residues
+`4^j % N` are pairwise distinct. -/
+theorem powerResidues_nodup_eight_of_mem
+    {N : ℕ} (hmod : N ∈ moduli) :
+    ((List.range 8).map (fun j => 4 ^ j % N)).Nodup := by
+  simp [moduli] at hmod
+  rcases hmod with
+    hmod | hmod | hmod | hmod | hmod | hmod | hmod | hmod | hmod | hmod | hmod | hmod
+  all_goals
+    rw [hmod]
+    native_decide
+
+/-- Explicit no-collision criterion for the base-10, stride-5 divisor family:
+for the listed coordinate moduli, the first eight full-modulus power residues
+`C.remainderK^j % C.modulus` are pairwise distinct. -/
+theorem remainderK_powerResidues_nodup_eight_of_mem
+    (C : BlockCoordinate) (hbase : C.base = 10) (hstride : C.stride = 5)
+    (hmod : C.modulus ∈ moduli) :
+    ((List.range 8).map
+      (fun j => C.remainderK ^ j % C.modulus)).Nodup := by
+  have hmod' := hmod
+  have hrem : C.remainderK = 4 := by
+    simp [moduli] at hmod'
+    rcases hmod' with
+      hmod' | hmod' | hmod' | hmod' | hmod' | hmod' |
+      hmod' | hmod' | hmod' | hmod' | hmod' | hmod'
+    all_goals
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+  rw [hrem]
+  exact powerResidues_nodup_eight_of_mem hmod
+
+/-- The base-10, stride-5 divisor-family no-collision criterion gives
+functional finite raw-coefficient reconstruction on every `8/L`
+state-alignment window for a good coordinate in the listed family. -/
+theorem stateAlignments_remainderToCoefficientFunctional_eight_of_mem
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hbase : C.base = 10) (hstride : C.stride = 5)
+    (hmod : C.modulus ∈ moduli)
+    (lookaheadBlocks : ℕ) :
+    List.FunctionalOnFst
+      ((C.stateAlignments hgood 8 lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact C.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+    hgood 8 lookaheadBlocks
+    (remainderK_powerResidues_nodup_eight_of_mem C hbase hstride hmod)
+
+/-- The base-10, stride-5 divisor-family no-collision criterion gives finite
+factor-through reconstruction on every `8/L` state-alignment window for a good
+coordinate in the listed family. -/
+theorem stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hbase : C.base = 10) (hstride : C.stride = 5)
+    (hmod : C.modulus ∈ moduli)
+    (lookaheadBlocks : ℕ) :
+    let pairs :=
+      (C.stateAlignments hgood 8 lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact C.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+    hgood 8 lookaheadBlocks
+    (remainderK_powerResidues_nodup_eight_of_mem C hbase hstride hmod)
+
+/-- The first uncovered `N = 641` seed and the paired `N = 1282` member sit
+inside the same explicit no-collision divisor family. -/
+theorem n641_n1282_powerResidues_nodup_eight_pair :
+    ((List.range 8).map (fun j => 4 ^ j % 641)).Nodup ∧
+    ((List.range 8).map (fun j => 4 ^ j % 1282)).Nodup := by
+  constructor <;> native_decide
+
+end QRTour.Base10Stride5K4PositiveReconstruction
+
+namespace QRTour.Base12Stride5K3PositiveReconstruction
+
+/-! ### Base-12, stride-5, remainder-k = 3 positive reconstruction family
+
+The observability program atlas next exposes `(base, N, m, B, q, k, L, gap) =
+(12, 289, 5, 248832, 861, 3, 1, 74115)` as the first source-unpinned and
+family-uncovered power-residue no-collision row after the no-wrap
+`N = 149` hook.
+
+This namespace proves the finite same-base/block-remainder response for the
+shared `(base, B, k) = (12, 248832, 3)` divisor family. It remains
+finite-window support only: no registry claim, theorem-witness record, atlas
+status change, `small_k_visibility_threshold` closure, or
+`carry_dfa_factorization` closure is added.
+-/
+
+/-- The base-12, stride-5 moduli in the `B = 248832`, `k = 3` divisor family
+whose eight-entry power-residue window is collision-free. Divisors of
+`B-k = 248829`, namely `7` and `21`, fail this finite criterion. -/
+def moduli : List ℕ :=
+  [17, 41, 51, 119, 123, 287, 289, 357, 697, 861, 867, 2023, 2091,
+    4879, 6069, 11849, 14637, 35547, 82943, 248829]
+
+/-- Explicit no-collision criterion for the base-12, stride-5 divisor family:
+for the listed moduli, the first eight full-modulus power residues
+`3^j % N` are pairwise distinct. -/
+theorem powerResidues_nodup_eight_of_mem
+    {N : ℕ} (hmod : N ∈ moduli) :
+    ((List.range 8).map (fun j => 3 ^ j % N)).Nodup := by
+  simp [moduli] at hmod
+  rcases hmod with
+    hmod | hmod | hmod | hmod | hmod | hmod | hmod | hmod | hmod | hmod |
+    hmod | hmod | hmod | hmod | hmod | hmod | hmod | hmod | hmod | hmod
+  all_goals
+    rw [hmod]
+    native_decide
+
+/-- Explicit no-collision criterion for the base-12, stride-5 divisor family:
+for the listed coordinate moduli, the first eight full-modulus power residues
+`C.remainderK^j % C.modulus` are pairwise distinct. -/
+theorem remainderK_powerResidues_nodup_eight_of_mem
+    (C : BlockCoordinate) (hbase : C.base = 12) (hstride : C.stride = 5)
+    (hmod : C.modulus ∈ moduli) :
+    ((List.range 8).map
+      (fun j => C.remainderK ^ j % C.modulus)).Nodup := by
+  have hmod' := hmod
+  have hrem : C.remainderK = 3 := by
+    simp [moduli] at hmod'
+    rcases hmod' with
+      hmod' | hmod' | hmod' | hmod' | hmod' | hmod' | hmod' | hmod' | hmod' | hmod' |
+      hmod' | hmod' | hmod' | hmod' | hmod' | hmod' | hmod' | hmod' | hmod' | hmod'
+    all_goals
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+  rw [hrem]
+  exact powerResidues_nodup_eight_of_mem hmod
+
+/-- The base-12, stride-5 divisor-family no-collision criterion gives
+functional finite raw-coefficient reconstruction on every `8/L`
+state-alignment window for a good coordinate in the listed family. -/
+theorem stateAlignments_remainderToCoefficientFunctional_eight_of_mem
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hbase : C.base = 12) (hstride : C.stride = 5)
+    (hmod : C.modulus ∈ moduli)
+    (lookaheadBlocks : ℕ) :
+    List.FunctionalOnFst
+      ((C.stateAlignments hgood 8 lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact C.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+    hgood 8 lookaheadBlocks
+    (remainderK_powerResidues_nodup_eight_of_mem C hbase hstride hmod)
+
+/-- The base-12, stride-5 divisor-family no-collision criterion gives finite
+factor-through reconstruction on every `8/L` state-alignment window for a good
+coordinate in the listed family. -/
+theorem stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hbase : C.base = 12) (hstride : C.stride = 5)
+    (hmod : C.modulus ∈ moduli)
+    (lookaheadBlocks : ℕ) :
+    let pairs :=
+      (C.stateAlignments hgood 8 lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact C.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+    hgood 8 lookaheadBlocks
+    (remainderK_powerResidues_nodup_eight_of_mem C hbase hstride hmod)
+
+/-- The first uncovered `N = 289` seed and the paired `N = 861` member sit
+inside the same explicit no-collision divisor family. -/
+theorem n289_n861_powerResidues_nodup_eight_pair :
+    ((List.range 8).map (fun j => 3 ^ j % 289)).Nodup ∧
+    ((List.range 8).map (fun j => 3 ^ j % 861)).Nodup := by
+  constructor <;> native_decide
+
+end QRTour.Base12Stride5K3PositiveReconstruction
+
+namespace QRTour.Base12K3PositiveReconstruction
+
+/-! ### Base-12, remainder-k = 3 positive reconstruction family
+
+The observability program atlas next exposes `(base, N, m, B, q, k, L, gap) =
+(12, 75, 3, 1728, 23, 3, 1, 1161)` as the first source-unpinned and
+family-uncovered power-residue no-collision row after the source-pinned
+`N = 575` hook.
+
+This namespace proves the finite same-base/block-remainder response for the
+shared `(base, B, k) = (12, 1728, 3)` divisor family. It remains finite-window
+support only: no registry claim, theorem-witness record, atlas status change,
+`small_k_visibility_threshold` closure, or `carry_dfa_factorization` closure is
+added.
+-/
+
+/-- The base-12, stride-3 moduli in the `B = 1728`, `k = 3` divisor family
+whose eight-entry power-residue window is collision-free. Divisors of
+`B-k = 1725` such as `1`, `3`, `5`, and `15` fail this finite criterion. -/
+def moduli : List ℕ := [23, 25, 69, 75, 115, 345, 575, 1725]
+
+/-- Explicit no-collision criterion for the base-12, stride-3 divisor family:
+for the listed moduli, the first eight full-modulus power residues
+`3^j % N` are pairwise distinct. -/
+theorem remainderK_powerResidues_nodup_eight_of_mem
+    (C : BlockCoordinate) (hbase : C.base = 12) (hstride : C.stride = 3)
+    (hmod : C.modulus ∈ moduli) :
+    ((List.range 8).map
+      (fun j => C.remainderK ^ j % C.modulus)).Nodup := by
+  simp [moduli] at hmod
+  rcases hmod with hmod | hmod | hmod | hmod | hmod | hmod | hmod | hmod
+  · have hrem : C.remainderK = 3 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 3 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 3 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 3 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 3 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 3 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 3 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 3 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+
+/-- The base-12, stride-3 divisor-family no-collision criterion gives
+functional finite raw-coefficient reconstruction on every `8/L`
+state-alignment window for a good coordinate in the listed family. -/
+theorem stateAlignments_remainderToCoefficientFunctional_eight_of_mem
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hbase : C.base = 12) (hstride : C.stride = 3)
+    (hmod : C.modulus ∈ moduli)
+    (lookaheadBlocks : ℕ) :
+    List.FunctionalOnFst
+      ((C.stateAlignments hgood 8 lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact C.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+    hgood 8 lookaheadBlocks
+    (remainderK_powerResidues_nodup_eight_of_mem C hbase hstride hmod)
+
+/-- The base-12, stride-3 divisor-family no-collision criterion gives finite
+factor-through reconstruction on every `8/L` state-alignment window for a good
+coordinate in the listed family. -/
+theorem stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hbase : C.base = 12) (hstride : C.stride = 3)
+    (hmod : C.modulus ∈ moduli)
+    (lookaheadBlocks : ℕ) :
+    let pairs :=
+      (C.stateAlignments hgood 8 lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact C.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+    hgood 8 lookaheadBlocks
+    (remainderK_powerResidues_nodup_eight_of_mem C hbase hstride hmod)
+
+/-- The first uncovered `N = 75` seed and the source-pinned `N = 575` hook
+sit inside the same explicit no-collision divisor family. -/
+theorem n75_n575_powerResidues_nodup_eight_pair :
+    ((List.range 8).map (fun j => 3 ^ j % 75)).Nodup ∧
+    ((List.range 8).map (fun j => 3 ^ j % 575)).Nodup := by
+  constructor <;> native_decide
+
+end QRTour.Base12K3PositiveReconstruction
+
+namespace QRTour.FutureBase10N997
+
+/-! ### Positive Reconstruction Candidate: base 10, N = 997
+
+This packages the first source-unpinned and family-uncovered
+power-residue no-collision row emitted by the observability program atlas after
+the base-7, stride-3 divisor-family criterion:
+`(base, N, m, B, q, k, L, gap) = (10, 997, 3, 1000, 1, 3, 1, 439)`.
+It uses the finite power-residue no-collision criterion on `(k^j % N)`, and
+remains a finite `8/1` proof hook only: no registry claim, theorem-witness
+record, atlas status change, or global factorization theorem is added.
+-/
+
+/-- The candidate coordinate `(base=10, N=997, stride=3)`. -/
+def coordinate : BlockCoordinate where
+  base := 10
+  modulus := 997
+  stride := 3
+  modulus_pos := by decide
+
+/-- The base-supported preperiod has length zero for denominator `997` in base `10`. -/
+theorem denominator_preperiodSteps_eq_zero : preperiodSteps 10 997 = 0 := by
+  native_decide
+
+/-- Stripping base-supported factors leaves periodic modulus `997`. -/
+theorem denominator_strippedPeriodModulus_eq_nine_hundred_ninety_seven :
+    strippedPeriodModulus 10 997 = 997 := by
+  native_decide
+
+/-- The coordinate is a good mode: `997 < 1000`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `1000`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 1000 := by
+  native_decide
+
+/-- The quotient in `1000 = q*997 + k` is `q = 1`. -/
+theorem coordinate_quotientQ_eq_one : coordinate.quotientQ = 1 := by
+  native_decide
+
+/-- The remainder in `1000 = q*997 + k` is `k = 3`. -/
+theorem coordinate_remainderK_eq_three : coordinate.remainderK = 3 := by
+  native_decide
+
+/-- On the candidate window, the exact lookahead gap numerator is `439`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 439 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- On the base-10 `997` candidate window, the first eight power residues
+`k^j % N` are explicit. -/
+theorem coordinate_remainderK_powerResidues_window_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)) =
+        [1, 3, 9, 27, 81, 243, 729, 193] := by
+  native_decide
+
+/-- The base-10 `997` candidate has no collision in its eight-entry
+power-residue window. -/
+theorem coordinate_remainderK_powerResidues_nodup_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)).Nodup := by
+  rw [coordinate_remainderK_powerResidues_window_eight]
+  norm_num
+
+/-- On the base-10 `997` candidate window, the observed `remainderIn` states
+are pairwise distinct by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderIn_nodup_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact coordinate.stateAlignments_remainderIn_nodup_of_remainderK_powerResidues_nodup
+    coordinate_goodMode 8 1
+    coordinate_remainderK_powerResidues_nodup_eight
+
+/-- On the base-10 `997` candidate window, the finite
+`remainderIn ↦ raw coefficient` map is functional by the power-residue
+no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one :
+    List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+/-- Positive reconstruction exemplar for denominator `997`: on the finite
+`8/1` state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+end QRTour.FutureBase10N997
+
+namespace QRTour.FutureBase12N575
+
+/-! ### Positive Reconstruction Candidate: base 12, N = 575
+
+This packages the first source-unpinned and family-uncovered standalone
+power-residue no-collision row emitted by the observability program atlas after
+the base-10, stride-3 `k = 4` divisor-family criterion:
+`(base, N, m, B, q, k, L, gap) = (12, 575, 3, 1728, 3, 3, 1, 1053)`.
+It uses the finite power-residue no-collision criterion on `(k^j % N)`, and
+remains a finite `8/1` proof hook only: no registry claim, theorem-witness
+record, atlas status change, or global factorization theorem is added.
+-/
+
+/-- The candidate coordinate `(base=12, N=575, stride=3)`. -/
+def coordinate : BlockCoordinate where
+  base := 12
+  modulus := 575
+  stride := 3
+  modulus_pos := by decide
+
+/-- The base-supported preperiod has length zero for denominator `575` in base `12`. -/
+theorem denominator_preperiodSteps_eq_zero : preperiodSteps 12 575 = 0 := by
+  native_decide
+
+/-- Stripping base-supported factors leaves periodic modulus `575`. -/
+theorem denominator_strippedPeriodModulus_eq_five_hundred_seventy_five :
+    strippedPeriodModulus 12 575 = 575 := by
+  native_decide
+
+/-- The coordinate is a good mode: `575 < 1728`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `1728`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 1728 := by
+  native_decide
+
+/-- The quotient in `1728 = q*575 + k` is `q = 3`. -/
+theorem coordinate_quotientQ_eq_three : coordinate.quotientQ = 3 := by
+  native_decide
+
+/-- The remainder in `1728 = q*575 + k` is `k = 3`. -/
+theorem coordinate_remainderK_eq_three : coordinate.remainderK = 3 := by
+  native_decide
+
+/-- On the candidate window, the exact lookahead gap numerator is `1053`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 1053 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- On the base-12 `575` candidate window, the first eight power residues
+`k^j % N` are explicit. -/
+theorem coordinate_remainderK_powerResidues_window_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)) =
+        [1, 3, 9, 27, 81, 243, 154, 462] := by
+  native_decide
+
+/-- The base-12 `575` candidate has no collision in its eight-entry
+power-residue window. -/
+theorem coordinate_remainderK_powerResidues_nodup_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)).Nodup := by
+  rw [coordinate_remainderK_powerResidues_window_eight]
+  norm_num
+
+/-- On the base-12 `575` candidate window, the observed `remainderIn` states
+are pairwise distinct by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderIn_nodup_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact coordinate.stateAlignments_remainderIn_nodup_of_remainderK_powerResidues_nodup
+    coordinate_goodMode 8 1
+    coordinate_remainderK_powerResidues_nodup_eight
+
+/-- On the base-12 `575` candidate window, the finite
+`remainderIn ↦ raw coefficient` map is functional by the power-residue
+no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one :
+    List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+/-- Positive reconstruction exemplar for denominator `575`: on the finite
+`8/1` state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+end QRTour.FutureBase12N575
+
+namespace QRTour.FutureBase7N1199
+
+/-! ### Positive Reconstruction Candidate: base 7, N = 1199
+
+This packages the first source-unpinned and family-uncovered standalone
+power-residue no-collision row emitted by the observability program atlas after
+the base-12, stride-3 `k = 3` divisor-family criterion:
+`(base, N, m, B, q, k, L, gap) = (7, 1199, 4, 2401, 2, 3, 1, 1284)`.
+It uses the finite power-residue no-collision criterion on `(k^j % N)`, and
+remains a finite `8/1` proof hook only: no registry claim, theorem-witness
+record, atlas status change, or global factorization theorem is added.
+-/
+
+/-- The candidate coordinate `(base=7, N=1199, stride=4)`. -/
+def coordinate : BlockCoordinate where
+  base := 7
+  modulus := 1199
+  stride := 4
+  modulus_pos := by decide
+
+/-- The base-supported preperiod has length zero for denominator `1199` in base `7`. -/
+theorem denominator_preperiodSteps_eq_zero : preperiodSteps 7 1199 = 0 := by
+  native_decide
+
+/-- Stripping base-supported factors leaves periodic modulus `1199`. -/
+theorem denominator_strippedPeriodModulus_eq_one_thousand_one_hundred_ninety_nine :
+    strippedPeriodModulus 7 1199 = 1199 := by
+  native_decide
+
+/-- The coordinate is a good mode: `1199 < 2401`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `2401`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 2401 := by
+  native_decide
+
+/-- The quotient in `2401 = q*1199 + k` is `q = 2`. -/
+theorem coordinate_quotientQ_eq_two : coordinate.quotientQ = 2 := by
+  native_decide
+
+/-- The remainder in `2401 = q*1199 + k` is `k = 3`. -/
+theorem coordinate_remainderK_eq_three : coordinate.remainderK = 3 := by
+  native_decide
+
+/-- On the candidate window, the exact lookahead gap numerator is `1284`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 1284 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- On the base-7 `1199` candidate window, the first eight power residues
+`k^j % N` are explicit. -/
+theorem coordinate_remainderK_powerResidues_window_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)) =
+        [1, 3, 9, 27, 81, 243, 729, 988] := by
+  native_decide
+
+/-- The base-7 `1199` candidate has no collision in its eight-entry
+power-residue window. -/
+theorem coordinate_remainderK_powerResidues_nodup_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)).Nodup := by
+  rw [coordinate_remainderK_powerResidues_window_eight]
+  norm_num
+
+/-- On the base-7 `1199` candidate window, the observed `remainderIn` states
+are pairwise distinct by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderIn_nodup_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact coordinate.stateAlignments_remainderIn_nodup_of_remainderK_powerResidues_nodup
+    coordinate_goodMode 8 1
+    coordinate_remainderK_powerResidues_nodup_eight
+
+/-- On the base-7 `1199` candidate window, the finite
+`remainderIn ↦ raw coefficient` map is functional by the power-residue
+no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one :
+    List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+/-- Positive reconstruction exemplar for denominator `1199`: on the finite
+`8/1` state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+end QRTour.FutureBase7N1199
+
+namespace QRTour.FutureBase10N294
+
+/-! ### Positive Reconstruction Candidate: base 10, N = 294
+
+This packages the first source-unpinned and family-uncovered standalone
+power-residue no-collision row emitted by the observability program atlas after
+the base-7 denominator-`1199` hook:
+`(base, N, m, B, q, k, L, gap) = (10, 294, 4, 10000, 34, 4, 1, 1776)`.
+It uses the finite power-residue no-collision criterion on `(k^j % N)`, and
+remains a finite `8/1` proof hook only: no registry claim, theorem-witness
+record, atlas status change, or global factorization theorem is added.
+-/
+
+/-- The candidate coordinate `(base=10, N=294, stride=4)`. -/
+def coordinate : BlockCoordinate where
+  base := 10
+  modulus := 294
+  stride := 4
+  modulus_pos := by decide
+
+/-- The base-supported preperiod has length one for denominator `294` in base `10`. -/
+theorem denominator_preperiodSteps_eq_one : preperiodSteps 10 294 = 1 := by
+  native_decide
+
+/-- Stripping the base-supported factor leaves periodic modulus `147`. -/
+theorem denominator_strippedPeriodModulus_eq_one_hundred_forty_seven :
+    strippedPeriodModulus 10 294 = 147 := by
+  native_decide
+
+/-- The coordinate is a good mode: `294 < 10000`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `10000`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 10000 := by
+  native_decide
+
+/-- The quotient in `10000 = q*294 + k` is `q = 34`. -/
+theorem coordinate_quotientQ_eq_thirty_four : coordinate.quotientQ = 34 := by
+  native_decide
+
+/-- The remainder in `10000 = q*294 + k` is `k = 4`. -/
+theorem coordinate_remainderK_eq_four : coordinate.remainderK = 4 := by
+  native_decide
+
+/-- On the candidate window, the exact lookahead gap numerator is `1776`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 1776 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- On the base-10 `294` candidate window, the first eight power residues
+`k^j % N` are explicit. -/
+theorem coordinate_remainderK_powerResidues_window_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)) =
+        [1, 4, 16, 64, 256, 142, 274, 214] := by
+  native_decide
+
+/-- The base-10 `294` candidate has no collision in its eight-entry
+power-residue window. -/
+theorem coordinate_remainderK_powerResidues_nodup_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)).Nodup := by
+  rw [coordinate_remainderK_powerResidues_window_eight]
+  norm_num
+
+/-- On the base-10 `294` candidate window, the observed `remainderIn` states
+are pairwise distinct by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderIn_nodup_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact coordinate.stateAlignments_remainderIn_nodup_of_remainderK_powerResidues_nodup
+    coordinate_goodMode 8 1
+    coordinate_remainderK_powerResidues_nodup_eight
+
+/-- On the base-10 `294` candidate window, the finite
+`remainderIn ↦ raw coefficient` map is functional by the power-residue
+no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one :
+    List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+/-- Positive reconstruction exemplar for denominator `294`: on the finite
+`8/1` state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+end QRTour.FutureBase10N294
+
+namespace QRTour.Base7Stride4K3PositiveReconstruction
+
+/-! ### Base-7, stride-4, remainder-k = 3 positive reconstruction family
+
+The observability program atlas next exposes `(base, N, m, B, q, k, L, gap) =
+(7, 109, 4, 2401, 22, 3, 1, 2119)` as the first source-unpinned and
+family-uncovered power-residue no-collision row after the source-pinned
+`N = 1199` hook.
+
+This namespace proves the finite same-base/block-remainder response for the
+shared `(base, B, k) = (7, 2401, 3)` divisor family. It remains finite-window
+support only: no registry claim, theorem-witness record, atlas status change,
+`small_k_visibility_threshold` closure, or `carry_dfa_factorization` closure is
+added.
+-/
+
+/-- The base-7, stride-4 moduli in the `B = 2401`, `k = 3` divisor family whose
+eight-entry power-residue window is collision-free. Smaller divisors of
+`B-k = 2398`, such as `1`, `2`, `11`, and `22`, fail this finite criterion. -/
+def moduli : List ℕ := [109, 218, 1199, 2398]
+
+/-- Explicit no-collision criterion for the base-7, stride-4 divisor family:
+for the listed moduli, the first eight full-modulus power residues
+`3^j % N` are pairwise distinct. -/
+theorem remainderK_powerResidues_nodup_eight_of_mem
+    (C : BlockCoordinate) (hbase : C.base = 7) (hstride : C.stride = 4)
+    (hmod : C.modulus ∈ moduli) :
+    ((List.range 8).map
+      (fun j => C.remainderK ^ j % C.modulus)).Nodup := by
+  simp [moduli] at hmod
+  rcases hmod with hmod | hmod | hmod | hmod
+  · have hrem : C.remainderK = 3 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 3 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 3 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 3 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+
+/-- The base-7, stride-4 divisor-family no-collision criterion gives
+functional finite raw-coefficient reconstruction on every `8/L`
+state-alignment window for a good coordinate in the listed family. -/
+theorem stateAlignments_remainderToCoefficientFunctional_eight_of_mem
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hbase : C.base = 7) (hstride : C.stride = 4)
+    (hmod : C.modulus ∈ moduli)
+    (lookaheadBlocks : ℕ) :
+    List.FunctionalOnFst
+      ((C.stateAlignments hgood 8 lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact C.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+    hgood 8 lookaheadBlocks
+    (remainderK_powerResidues_nodup_eight_of_mem C hbase hstride hmod)
+
+/-- The base-7, stride-4 divisor-family no-collision criterion gives finite
+factor-through reconstruction on every `8/L` state-alignment window for a good
+coordinate in the listed family. -/
+theorem stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hbase : C.base = 7) (hstride : C.stride = 4)
+    (hmod : C.modulus ∈ moduli)
+    (lookaheadBlocks : ℕ) :
+    let pairs :=
+      (C.stateAlignments hgood 8 lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact C.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+    hgood 8 lookaheadBlocks
+    (remainderK_powerResidues_nodup_eight_of_mem C hbase hstride hmod)
+
+/-- The first uncovered `N = 109` seed and the source-pinned `N = 1199` hook sit
+inside the same explicit no-collision divisor family. -/
+theorem n109_n1199_powerResidues_nodup_eight_pair :
+    ((List.range 8).map (fun j => 3 ^ j % 109)).Nodup ∧
+    ((List.range 8).map
+      (fun j => FutureBase7N1199.coordinate.remainderK ^ j %
+        FutureBase7N1199.coordinate.modulus)).Nodup := by
+  constructor
+  · native_decide
+  · exact FutureBase7N1199.coordinate_remainderK_powerResidues_nodup_eight
+
+end QRTour.Base7Stride4K3PositiveReconstruction
+
+namespace QRTour.FutureBase7N46
+
+/-! ### Positive Reconstruction Candidate: base 7, N = 46
+
+This packages the previously source-unpinned and family-uncovered standalone
+power-residue no-collision row emitted by the observability program atlas:
+`(base, N, m, B, q, k, L, gap) = (7, 46, 2, 49, 1, 3, 2, 2171)`.
+It uses the finite power-residue no-collision criterion on `(k^j % N)`, and
+remains a finite `8/2` proof hook only: no registry claim, theorem-witness
+record, atlas status change, or global factorization theorem is added.
+-/
+
+/-- The candidate coordinate `(base=7, N=46, stride=2)`. -/
+def coordinate : BlockCoordinate where
+  base := 7
+  modulus := 46
+  stride := 2
+  modulus_pos := by decide
+
+/-- The coordinate is a good mode: `46 < 49`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `49`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 49 := by
+  native_decide
+
+/-- The quotient in `49 = q*46 + k` is `q = 1`. -/
+theorem coordinate_quotientQ_eq_one : coordinate.quotientQ = 1 := by
+  native_decide
+
+/-- The remainder in `49 = q*46 + k` is `k = 3`. -/
+theorem coordinate_remainderK_eq_three : coordinate.remainderK = 3 := by
+  native_decide
+
+/-- On the candidate window, the exact lookahead gap numerator is `2171`. -/
+theorem coordinate_lookaheadGapNumerator_eight_two :
+    coordinate.lookaheadGapNumerator 8 2 = 2171 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- Two blocks of lookahead certify the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_two :
+    coordinate.lookaheadCertificateHolds 8 2 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- On the base-7 `46` candidate window, the first eight power residues
+`k^j % N` are explicit. -/
+theorem coordinate_remainderK_powerResidues_window_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)) =
+        [1, 3, 9, 27, 35, 13, 39, 25] := by
+  native_decide
+
+/-- The base-7 `46` candidate has no collision in its eight-entry
+power-residue window. -/
+theorem coordinate_remainderK_powerResidues_nodup_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)).Nodup := by
+  rw [coordinate_remainderK_powerResidues_window_eight]
+  norm_num
+
+/-- On the base-7 `46` candidate window, the observed `remainderIn` states
+are pairwise distinct by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderIn_nodup_eight_two :
+    ((coordinate.stateAlignments coordinate_goodMode 8 2).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact coordinate.stateAlignments_remainderIn_nodup_of_remainderK_powerResidues_nodup
+    coordinate_goodMode 8 2
+    coordinate_remainderK_powerResidues_nodup_eight
+
+/-- On the base-7 `46` candidate window, the finite
+`remainderIn ↦ raw coefficient` map is functional by the power-residue
+no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFunctional_eight_two :
+    List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 2).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 2
+      coordinate_remainderK_powerResidues_nodup_eight
+
+/-- Positive reconstruction exemplar for denominator `46`: on the finite
+`8/2` state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_two :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 2).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 2
+      coordinate_remainderK_powerResidues_nodup_eight
+
+end QRTour.FutureBase7N46
+
+namespace QRTour.FutureBase12N47
+
+/-! ### Positive Reconstruction Candidate: base 12, N = 47
+
+This packages the previously source-unpinned and family-uncovered standalone
+power-residue no-collision row emitted by the observability program atlas:
+`(base, N, m, B, q, k, L, gap) = (12, 47, 2, 144, 3, 3, 2, 9639)`.
+It uses the finite power-residue no-collision criterion on `(k^j % N)`, and
+remains a finite `8/2` proof hook only: no registry claim, theorem-witness
+record, atlas status change, or global factorization theorem is added.
+-/
+
+/-- The candidate coordinate `(base=12, N=47, stride=2)`. -/
+def coordinate : BlockCoordinate where
+  base := 12
+  modulus := 47
+  stride := 2
+  modulus_pos := by decide
+
+/-- The coordinate is a good mode: `47 < 144`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `144`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 144 := by
+  native_decide
+
+/-- The quotient in `144 = q*47 + k` is `q = 3`. -/
+theorem coordinate_quotientQ_eq_three : coordinate.quotientQ = 3 := by
+  native_decide
+
+/-- The remainder in `144 = q*47 + k` is `k = 3`. -/
+theorem coordinate_remainderK_eq_three : coordinate.remainderK = 3 := by
+  native_decide
+
+/-- On the candidate window, the exact lookahead gap numerator is `9639`. -/
+theorem coordinate_lookaheadGapNumerator_eight_two :
+    coordinate.lookaheadGapNumerator 8 2 = 9639 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- Two blocks of lookahead certify the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_two :
+    coordinate.lookaheadCertificateHolds 8 2 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- On the base-12 `47` candidate window, the first eight power residues
+`k^j % N` are explicit. -/
+theorem coordinate_remainderK_powerResidues_window_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)) =
+        [1, 3, 9, 27, 34, 8, 24, 25] := by
+  native_decide
+
+/-- The base-12 `47` candidate has no collision in its eight-entry
+power-residue window. -/
+theorem coordinate_remainderK_powerResidues_nodup_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)).Nodup := by
+  rw [coordinate_remainderK_powerResidues_window_eight]
+  norm_num
+
+/-- On the base-12 `47` candidate window, the observed `remainderIn` states
+are pairwise distinct by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderIn_nodup_eight_two :
+    ((coordinate.stateAlignments coordinate_goodMode 8 2).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact coordinate.stateAlignments_remainderIn_nodup_of_remainderK_powerResidues_nodup
+    coordinate_goodMode 8 2
+    coordinate_remainderK_powerResidues_nodup_eight
+
+/-- On the base-12 `47` candidate window, the finite
+`remainderIn ↦ raw coefficient` map is functional by the power-residue
+no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFunctional_eight_two :
+    List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 2).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 2
+      coordinate_remainderK_powerResidues_nodup_eight
+
+/-- Positive reconstruction exemplar for denominator `47`: on the finite
+`8/2` state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_two :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 2).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 2
+      coordinate_remainderK_powerResidues_nodup_eight
+
+end QRTour.FutureBase12N47
+
+namespace QRTour.Base12Stride2K3PositiveReconstruction
+
+/-! ### Base-12, stride-2, remainder-k = 3 positive reconstruction family
+
+The observability program atlas next exposes `(base, N, m, B, q, k, L, gap) =
+(12, 141, 2, 144, 1, 3, 2, 10125)` as the first source-unpinned and
+theorem-uncovered power-residue no-collision row after the source-pinned
+`N = 47` hook.
+
+This namespace proves the finite same-base/block-remainder response for the
+shared `(base, B, k) = (12, 144, 3)` divisor family. It remains finite-window
+support only: no registry claim, theorem-witness record, atlas status change,
+`small_k_visibility_threshold` closure, or `carry_dfa_factorization` closure is
+added.
+-/
+
+/-- The base-12, stride-2 moduli in the `B = 144`, `k = 3` divisor family whose
+eight-entry power-residue window is collision-free. The smaller divisors `1`
+and `3` of `B-k = 141` fail this finite criterion. -/
+def moduli : List ℕ := [47, 141]
+
+/-- Explicit no-collision criterion for the base-12, stride-2 divisor family:
+for the listed coordinate moduli, the first eight full-modulus power residues
+`C.remainderK^j % C.modulus` are pairwise distinct. -/
+theorem remainderK_powerResidues_nodup_eight_of_mem
+    (C : BlockCoordinate) (hbase : C.base = 12) (hstride : C.stride = 2)
+    (hmod : C.modulus ∈ moduli) :
+    ((List.range 8).map
+      (fun j => C.remainderK ^ j % C.modulus)).Nodup := by
+  simp [moduli] at hmod
+  rcases hmod with hmod | hmod
+  · have hrem : C.remainderK = 3 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 3 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+
+/-- The base-12, stride-2 divisor-family no-collision criterion gives
+functional finite raw-coefficient reconstruction on every `8/L`
+state-alignment window for a good coordinate in the listed family. -/
+theorem stateAlignments_remainderToCoefficientFunctional_eight_of_mem
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hbase : C.base = 12) (hstride : C.stride = 2)
+    (hmod : C.modulus ∈ moduli)
+    (lookaheadBlocks : ℕ) :
+    List.FunctionalOnFst
+      ((C.stateAlignments hgood 8 lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact C.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+    hgood 8 lookaheadBlocks
+    (remainderK_powerResidues_nodup_eight_of_mem C hbase hstride hmod)
+
+/-- The base-12, stride-2 divisor-family no-collision criterion gives finite
+factor-through reconstruction on every `8/L` state-alignment window for a good
+coordinate in the listed family. -/
+theorem stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hbase : C.base = 12) (hstride : C.stride = 2)
+    (hmod : C.modulus ∈ moduli)
+    (lookaheadBlocks : ℕ) :
+    let pairs :=
+      (C.stateAlignments hgood 8 lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact C.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+    hgood 8 lookaheadBlocks
+    (remainderK_powerResidues_nodup_eight_of_mem C hbase hstride hmod)
+
+/-- The source-pinned `N = 47` hook and the first uncovered `N = 141` seed sit
+inside the same explicit no-collision divisor family. -/
+theorem n47_n141_powerResidues_nodup_eight_pair :
+    ((List.range 8).map
+      (fun j => FutureBase12N47.coordinate.remainderK ^ j %
+        FutureBase12N47.coordinate.modulus)).Nodup ∧
+    ((List.range 8).map (fun j => 3 ^ j % 141)).Nodup := by
+  constructor
+  · exact FutureBase12N47.coordinate_remainderK_powerResidues_nodup_eight
+  · native_decide
+
+end QRTour.Base12Stride2K3PositiveReconstruction
+
+namespace QRTour.FutureBase7N141
+
+/-! ### Positive Reconstruction Candidate: base 7, N = 141
+
+This packages the previous source-unpinned and family-uncovered standalone
+power-residue no-collision row emitted by the observability program atlas:
+`(base, N, m, B, q, k, L, gap) = (7, 141, 4, 2401, 17, 4, 1, 2353)`.
+It uses the finite power-residue no-collision criterion on `(k^j % N)`, and
+remains a finite `8/1` proof hook only: no registry claim, theorem-witness
+record, atlas status change, or global factorization theorem is added.
+-/
+
+/-- The candidate coordinate `(base=7, N=141, stride=4)`. -/
+def coordinate : BlockCoordinate where
+  base := 7
+  modulus := 141
+  stride := 4
+  modulus_pos := by decide
+
+/-- The coordinate is a good mode: `141 < 2401`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `2401`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 2401 := by
+  native_decide
+
+/-- The quotient in `2401 = q*141 + k` is `q = 17`. -/
+theorem coordinate_quotientQ_eq_seventeen : coordinate.quotientQ = 17 := by
+  native_decide
+
+/-- The remainder in `2401 = q*141 + k` is `k = 4`. -/
+theorem coordinate_remainderK_eq_four : coordinate.remainderK = 4 := by
+  native_decide
+
+/-- On the candidate window, the exact lookahead gap numerator is `2353`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 2353 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- On the base-7 `141` candidate window, the first eight power residues
+`k^j % N` are explicit. -/
+theorem coordinate_remainderK_powerResidues_window_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)) =
+        [1, 4, 16, 64, 115, 37, 7, 28] := by
+  native_decide
+
+/-- The base-7 `141` candidate has no collision in its eight-entry
+power-residue window. -/
+theorem coordinate_remainderK_powerResidues_nodup_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)).Nodup := by
+  rw [coordinate_remainderK_powerResidues_window_eight]
+  norm_num
+
+/-- On the base-7 `141` candidate window, the observed `remainderIn` states
+are pairwise distinct by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderIn_nodup_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact coordinate.stateAlignments_remainderIn_nodup_of_remainderK_powerResidues_nodup
+    coordinate_goodMode 8 1
+    coordinate_remainderK_powerResidues_nodup_eight
+
+/-- On the base-7 `141` candidate window, the finite
+`remainderIn ↦ raw coefficient` map is functional by the power-residue
+no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one :
+    List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+/-- Positive reconstruction exemplar for denominator `141`: on the finite
+`8/1` state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+end QRTour.FutureBase7N141
+
+namespace QRTour.FutureBase12N146
+
+/-! ### Positive Reconstruction Candidate: base 12, N = 146
+
+This packages the current source-unpinned and family-uncovered standalone
+power-residue no-collision row emitted by the observability program atlas:
+`(base, N, m, B, q, k, L, gap) = (12, 146, 4, 20736, 142, 4, 1, 4352)`.
+It uses the finite power-residue no-collision criterion on `(k^j % N)`, and
+remains a finite `8/1` proof hook only: no registry claim, theorem-witness
+record, atlas status change, or global factorization theorem is added.
+-/
+
+/-- The candidate coordinate `(base=12, N=146, stride=4)`. -/
+def coordinate : BlockCoordinate where
+  base := 12
+  modulus := 146
+  stride := 4
+  modulus_pos := by decide
+
+/-- The base-supported preperiod has length one for denominator `146` in base `12`. -/
+theorem denominator_preperiodSteps_eq_one : preperiodSteps 12 146 = 1 := by
+  native_decide
+
+/-- Stripping the base-supported factor leaves periodic modulus `73`. -/
+theorem denominator_strippedPeriodModulus_eq_seventy_three :
+    strippedPeriodModulus 12 146 = 73 := by
+  native_decide
+
+/-- The coordinate is a good mode: `146 < 20736`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `20736`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 20736 := by
+  native_decide
+
+/-- The quotient in `20736 = q*146 + k` is `q = 142`. -/
+theorem coordinate_quotientQ_eq_one_hundred_forty_two : coordinate.quotientQ = 142 := by
+  native_decide
+
+/-- The remainder in `20736 = q*146 + k` is `k = 4`. -/
+theorem coordinate_remainderK_eq_four : coordinate.remainderK = 4 := by
+  native_decide
+
+/-- On the candidate window, the exact lookahead gap numerator is `4352`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 4352 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- On the base-12 `146` candidate window, the first eight power residues
+`k^j % N` are explicit. -/
+theorem coordinate_remainderK_powerResidues_window_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)) =
+        [1, 4, 16, 64, 110, 2, 8, 32] := by
+  native_decide
+
+/-- The base-12 `146` candidate has no collision in its eight-entry
+power-residue window. -/
+theorem coordinate_remainderK_powerResidues_nodup_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)).Nodup := by
+  rw [coordinate_remainderK_powerResidues_window_eight]
+  norm_num
+
+/-- On the base-12 `146` candidate window, the observed `remainderIn` states
+are pairwise distinct by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderIn_nodup_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact coordinate.stateAlignments_remainderIn_nodup_of_remainderK_powerResidues_nodup
+    coordinate_goodMode 8 1
+    coordinate_remainderK_powerResidues_nodup_eight
+
+/-- On the base-12 `146` candidate window, the finite
+`remainderIn ↦ raw coefficient` map is functional by the power-residue
+no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one :
+    List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+/-- Positive reconstruction exemplar for denominator `146`: on the finite
+`8/1` state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+end QRTour.FutureBase12N146
+
+namespace QRTour.Base12Stride4K4PositiveReconstruction
+
+/-! ### Base-12, stride-4, remainder-k = 4 positive reconstruction family
+
+The observability program atlas next exposes `(base, N, m, B, q, k, L, gap) =
+(12, 73, 4, 20736, 284, 4, 1, 8704)` as the first source-unpinned and
+theorem-uncovered power-residue no-collision row after the source-pinned
+`N = 146` hook.
+
+This namespace proves the finite same-base/block-remainder response for the
+shared `(base, B, k) = (12, 20736, 4)` divisor family. It remains finite-window
+support only: no registry claim, theorem-witness record, atlas status change,
+`small_k_visibility_threshold` closure, or `carry_dfa_factorization` closure is
+added.
+-/
+
+/-- The base-12, stride-4 moduli in the `B = 20736`, `k = 4` divisor family
+whose eight-entry power-residue window is collision-free. The small divisors
+`1`, `2`, and `4` of `B-k = 20732` fail this finite criterion. -/
+def moduli : List ℕ := [71, 73, 142, 146, 284, 292, 5183, 10366, 20732]
+
+/-- Explicit no-collision criterion for the base-12, stride-4 divisor family:
+for the listed coordinate moduli, the first eight full-modulus power residues
+`C.remainderK^j % C.modulus` are pairwise distinct. -/
+theorem remainderK_powerResidues_nodup_eight_of_mem
+    (C : BlockCoordinate) (hbase : C.base = 12) (hstride : C.stride = 4)
+    (hmod : C.modulus ∈ moduli) :
+    ((List.range 8).map
+      (fun j => C.remainderK ^ j % C.modulus)).Nodup := by
+  simp [moduli] at hmod
+  rcases hmod with
+    hmod | hmod | hmod | hmod | hmod | hmod | hmod | hmod | hmod
+  · have hrem : C.remainderK = 4 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 4 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 4 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 4 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 4 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 4 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 4 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 4 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+  · have hrem : C.remainderK = 4 := by
+      simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod]
+    rw [hrem, hmod]
+    native_decide
+
+/-- The base-12, stride-4 divisor-family no-collision criterion gives
+functional finite raw-coefficient reconstruction on every `8/L`
+state-alignment window for a good coordinate in the listed family. -/
+theorem stateAlignments_remainderToCoefficientFunctional_eight_of_mem
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hbase : C.base = 12) (hstride : C.stride = 4)
+    (hmod : C.modulus ∈ moduli)
+    (lookaheadBlocks : ℕ) :
+    List.FunctionalOnFst
+      ((C.stateAlignments hgood 8 lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact C.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+    hgood 8 lookaheadBlocks
+    (remainderK_powerResidues_nodup_eight_of_mem C hbase hstride hmod)
+
+/-- The base-12, stride-4 divisor-family no-collision criterion gives finite
+factor-through reconstruction on every `8/L` state-alignment window for a good
+coordinate in the listed family. -/
+theorem stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hbase : C.base = 12) (hstride : C.stride = 4)
+    (hmod : C.modulus ∈ moduli)
+    (lookaheadBlocks : ℕ) :
+    let pairs :=
+      (C.stateAlignments hgood 8 lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact C.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+    hgood 8 lookaheadBlocks
+    (remainderK_powerResidues_nodup_eight_of_mem C hbase hstride hmod)
+
+/-- The first uncovered `N = 73` seed and the source-pinned `N = 146` hook sit
+inside the same explicit no-collision divisor family. -/
+theorem n73_n146_powerResidues_nodup_eight_pair :
+    ((List.range 8).map (fun j => 4 ^ j % 73)).Nodup ∧
+    ((List.range 8).map
+      (fun j => FutureBase12N146.coordinate.remainderK ^ j %
+        FutureBase12N146.coordinate.modulus)).Nodup := by
+  constructor
+  · native_decide
+  · exact FutureBase12N146.coordinate_remainderK_powerResidues_nodup_eight
+
+end QRTour.Base12Stride4K4PositiveReconstruction
+
+namespace QRTour.FutureBase10N769
+
+/-! ### Positive Reconstruction Candidate: base 10, N = 769
+
+This packages the current source-unpinned and family-uncovered standalone
+power-residue no-collision row emitted by the observability program atlas:
+`(base, N, m, B, q, k, L, gap) = (10, 769, 4, 10000, 13, 3, 1, 4707)`.
+It uses the finite power-residue no-collision criterion on `(k^j % N)`, and
+remains a finite `8/1` proof hook only: no registry claim, theorem-witness
+record, atlas status change, or global factorization theorem is added.
+-/
+
+/-- The candidate coordinate `(base=10, N=769, stride=4)`. -/
+def coordinate : BlockCoordinate where
+  base := 10
+  modulus := 769
+  stride := 4
+  modulus_pos := by decide
+
+/-- The base-supported preperiod is zero for denominator `769` in base `10`. -/
+theorem denominator_preperiodSteps_eq_zero : preperiodSteps 10 769 = 0 := by
+  native_decide
+
+/-- Stripping base-supported factors leaves periodic modulus `769`. -/
+theorem denominator_strippedPeriodModulus_eq_seven_hundred_sixty_nine :
+    strippedPeriodModulus 10 769 = 769 := by
+  native_decide
+
+/-- The coordinate is a good mode: `769 < 10000`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `10000`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 10000 := by
+  native_decide
+
+/-- The quotient in `10000 = q*769 + k` is `q = 13`. -/
+theorem coordinate_quotientQ_eq_thirteen : coordinate.quotientQ = 13 := by
+  native_decide
+
+/-- The remainder in `10000 = q*769 + k` is `k = 3`. -/
+theorem coordinate_remainderK_eq_three : coordinate.remainderK = 3 := by
+  native_decide
+
+/-- On the candidate window, the exact lookahead gap numerator is `4707`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 4707 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- On the base-10 `769` candidate window, the first eight power residues
+`k^j % N` are explicit. -/
+theorem coordinate_remainderK_powerResidues_window_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)) =
+        [1, 3, 9, 27, 81, 243, 729, 649] := by
+  native_decide
+
+/-- The base-10 `769` candidate has no collision in its eight-entry
+power-residue window. -/
+theorem coordinate_remainderK_powerResidues_nodup_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)).Nodup := by
+  rw [coordinate_remainderK_powerResidues_window_eight]
+  norm_num
+
+/-- On the base-10 `769` candidate window, the observed `remainderIn` states
+are pairwise distinct by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderIn_nodup_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact coordinate.stateAlignments_remainderIn_nodup_of_remainderK_powerResidues_nodup
+    coordinate_goodMode 8 1
+    coordinate_remainderK_powerResidues_nodup_eight
+
+/-- On the base-10 `769` candidate window, the finite
+`remainderIn ↦ raw coefficient` map is functional by the power-residue
+no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one :
+    List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+/-- Positive reconstruction exemplar for denominator `769`: on the finite
+`8/1` state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+end QRTour.FutureBase10N769
+
+namespace QRTour.FutureBase7N345
+
+/-! ### Positive Reconstruction Candidate: base 7, N = 345
+
+This packages the current source-unpinned and family-uncovered standalone
+power-residue no-collision row emitted by the observability program atlas:
+`(base, N, m, B, q, k, L, gap) = (7, 345, 6, 117649, 341, 4, 1, 5534)`.
+It uses the finite power-residue no-collision criterion on `(k^j % N)`, and
+remains a finite `8/1` proof hook only: no registry claim, theorem-witness
+record, atlas status change, or global factorization theorem is added.
+-/
+
+/-- The candidate coordinate `(base=7, N=345, stride=6)`. -/
+def coordinate : BlockCoordinate where
+  base := 7
+  modulus := 345
+  stride := 6
+  modulus_pos := by decide
+
+/-- The base-supported preperiod is zero for denominator `345` in base `7`. -/
+theorem denominator_preperiodSteps_eq_zero : preperiodSteps 7 345 = 0 := by
+  native_decide
+
+/-- Stripping base-supported factors leaves periodic modulus `345`. -/
+theorem denominator_strippedPeriodModulus_eq_three_hundred_forty_five :
+    strippedPeriodModulus 7 345 = 345 := by
+  native_decide
+
+/-- The coordinate is a good mode: `345 < 117649`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `117649`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 117649 := by
+  native_decide
+
+/-- The quotient in `117649 = q*345 + k` is `q = 341`. -/
+theorem coordinate_quotientQ_eq_three_hundred_forty_one : coordinate.quotientQ = 341 := by
+  native_decide
+
+/-- The remainder in `117649 = q*345 + k` is `k = 4`. -/
+theorem coordinate_remainderK_eq_four : coordinate.remainderK = 4 := by
+  native_decide
+
+/-- On the candidate window, the exact lookahead gap numerator is `5534`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 5534 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- On the base-7 `345` candidate window, the first eight power residues
+`k^j % N` are explicit. -/
+theorem coordinate_remainderK_powerResidues_window_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)) =
+        [1, 4, 16, 64, 256, 334, 301, 169] := by
+  native_decide
+
+/-- The base-7 `345` candidate has no collision in its eight-entry
+power-residue window. -/
+theorem coordinate_remainderK_powerResidues_nodup_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)).Nodup := by
+  rw [coordinate_remainderK_powerResidues_window_eight]
+  norm_num
+
+/-- On the base-7 `345` candidate window, the observed `remainderIn` states
+are pairwise distinct by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderIn_nodup_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact coordinate.stateAlignments_remainderIn_nodup_of_remainderK_powerResidues_nodup
+    coordinate_goodMode 8 1
+    coordinate_remainderK_powerResidues_nodup_eight
+
+/-- On the base-7 `345` candidate window, the finite
+`remainderIn ↦ raw coefficient` map is functional by the power-residue
+no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one :
+    List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+/-- Positive reconstruction exemplar for denominator `345`: on the finite
+`8/1` state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+end QRTour.FutureBase7N345
+
+namespace QRTour.Base7Stride6K4PositiveReconstruction
+
+/-! ### Base-7, stride-6, remainder-k = 4 positive reconstruction family
+
+The observability program atlas next exposes `(base, N, m, B, q, k, L, gap) =
+(7, 465, 6, 117649, 253, 4, 1, 7901)` as the first source-unpinned and
+family-uncovered power-residue no-collision row after the source-pinned
+`N = 345` hook.
+
+This namespace proves the finite same-base/block-remainder response for the
+shared `(base, B, k) = (7, 117649, 4)` divisor family. It remains finite-window
+support only: no registry claim, theorem-witness record, atlas status change,
+`small_k_visibility_threshold` closure, or `carry_dfa_factorization` closure is
+added.
+-/
+
+/-- The base-7, stride-6 moduli in the `B = 117649`, `k = 4` divisor family
+whose eight-entry power-residue window is collision-free. Divisors of
+`B-k = 117645` such as `1`, `3`, `5`, `11`, `15`, `31`, `33`, `93`, `341`,
+and `1023` fail this finite criterion. -/
+def moduli : List ℕ :=
+  [23, 55, 69, 115, 155, 165, 253, 345, 465, 713, 759, 1265, 1705, 2139, 3565,
+    3795, 5115, 7843, 10695, 23529, 39215, 117645]
+
+/-- Explicit no-collision criterion for the base-7, stride-6 divisor family:
+for the listed moduli, the first eight full-modulus power residues
+`4^j % N` are pairwise distinct. -/
+theorem powerResidues_nodup_eight_of_mem
+    {N : ℕ} (hmod : N ∈ moduli) :
+    ((List.range 8).map (fun j => 4 ^ j % N)).Nodup := by
+  simp [moduli] at hmod
+  rcases hmod with
+    hmod | hmod | hmod | hmod | hmod | hmod | hmod | hmod | hmod | hmod |
+    hmod | hmod | hmod | hmod | hmod | hmod | hmod | hmod | hmod | hmod |
+    hmod | hmod
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+
+/-- Explicit no-collision criterion for the base-7, stride-6 divisor family:
+for the listed coordinate moduli, the first eight full-modulus power residues
+`C.remainderK^j % C.modulus` are pairwise distinct. -/
+theorem remainderK_powerResidues_nodup_eight_of_mem
+    (C : BlockCoordinate) (hbase : C.base = 7) (hstride : C.stride = 6)
+    (hmod : C.modulus ∈ moduli) :
+    ((List.range 8).map
+      (fun j => C.remainderK ^ j % C.modulus)).Nodup := by
+  have hmod' := hmod
+  have hrem : C.remainderK = 4 := by
+    simp [moduli] at hmod'
+    rcases hmod' with
+      hmod' | hmod' | hmod' | hmod' | hmod' | hmod' | hmod' | hmod' | hmod' |
+      hmod' | hmod' | hmod' | hmod' | hmod' | hmod' | hmod' | hmod' | hmod' |
+      hmod' | hmod' | hmod' | hmod'
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+  rw [hrem]
+  exact powerResidues_nodup_eight_of_mem hmod
+
+/-- The base-7, stride-6 divisor-family no-collision criterion gives
+functional finite raw-coefficient reconstruction on every `8/L`
+state-alignment window for a good coordinate in the listed family. -/
+theorem stateAlignments_remainderToCoefficientFunctional_eight_of_mem
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hbase : C.base = 7) (hstride : C.stride = 6)
+    (hmod : C.modulus ∈ moduli)
+    (lookaheadBlocks : ℕ) :
+    List.FunctionalOnFst
+      ((C.stateAlignments hgood 8 lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact C.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+    hgood 8 lookaheadBlocks
+    (remainderK_powerResidues_nodup_eight_of_mem C hbase hstride hmod)
+
+/-- The base-7, stride-6 divisor-family no-collision criterion gives finite
+factor-through reconstruction on every `8/L` state-alignment window for a good
+coordinate in the listed family. -/
+theorem stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hbase : C.base = 7) (hstride : C.stride = 6)
+    (hmod : C.modulus ∈ moduli)
+    (lookaheadBlocks : ℕ) :
+    let pairs :=
+      (C.stateAlignments hgood 8 lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact C.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+    hgood 8 lookaheadBlocks
+    (remainderK_powerResidues_nodup_eight_of_mem C hbase hstride hmod)
+
+/-- The source-pinned `N = 345` hook and the first uncovered `N = 465` seed sit
+inside the same explicit no-collision divisor family. -/
+theorem n345_n465_powerResidues_nodup_eight_pair :
+    ((List.range 8).map
+      (fun j => FutureBase7N345.coordinate.remainderK ^ j %
+        FutureBase7N345.coordinate.modulus)).Nodup ∧
+    ((List.range 8).map (fun j => 4 ^ j % 465)).Nodup := by
+  constructor
+  · exact FutureBase7N345.coordinate_remainderK_powerResidues_nodup_eight
+  · native_decide
+
+end QRTour.Base7Stride6K4PositiveReconstruction
+
+namespace QRTour.FutureBase7N542
+
+/-! ### Positive Reconstruction Candidate: base 7, N = 542
+
+This packages the current source-unpinned and family-uncovered standalone
+power-residue no-collision row emitted by the observability program atlas:
+`(base, N, m, B, q, k, L, gap) = (7, 542, 5, 16807, 31, 5, 1, 8472)`.
+It uses the finite power-residue no-collision criterion on `(k^j % N)`, and
+remains a finite `8/1` proof hook only: no registry claim, theorem-witness
+record, atlas status change, or global factorization theorem is added.
+-/
+
+/-- The candidate coordinate `(base=7, N=542, stride=5)`. -/
+def coordinate : BlockCoordinate where
+  base := 7
+  modulus := 542
+  stride := 5
+  modulus_pos := by decide
+
+/-- The base-supported preperiod is zero for denominator `542` in base `7`. -/
+theorem denominator_preperiodSteps_eq_zero : preperiodSteps 7 542 = 0 := by
+  native_decide
+
+/-- Stripping base-supported factors leaves periodic modulus `542`. -/
+theorem denominator_strippedPeriodModulus_eq_five_hundred_forty_two :
+    strippedPeriodModulus 7 542 = 542 := by
+  native_decide
+
+/-- The coordinate is a good mode: `542 < 16807`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `16807`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 16807 := by
+  native_decide
+
+/-- The quotient in `16807 = q*542 + k` is `q = 31`. -/
+theorem coordinate_quotientQ_eq_thirty_one : coordinate.quotientQ = 31 := by
+  native_decide
+
+/-- The remainder in `16807 = q*542 + k` is `k = 5`. -/
+theorem coordinate_remainderK_eq_five : coordinate.remainderK = 5 := by
+  native_decide
+
+/-- On the candidate window, the exact lookahead gap numerator is `8472`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 8472 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- On the base-7 `542` candidate window, the first eight power residues
+`k^j % N` are explicit. -/
+theorem coordinate_remainderK_powerResidues_window_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)) =
+        [1, 5, 25, 125, 83, 415, 449, 77] := by
+  native_decide
+
+/-- The base-7 `542` candidate has no collision in its eight-entry
+power-residue window. -/
+theorem coordinate_remainderK_powerResidues_nodup_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)).Nodup := by
+  rw [coordinate_remainderK_powerResidues_window_eight]
+  norm_num
+
+/-- On the base-7 `542` candidate window, the observed `remainderIn` states
+are pairwise distinct by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderIn_nodup_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact coordinate.stateAlignments_remainderIn_nodup_of_remainderK_powerResidues_nodup
+    coordinate_goodMode 8 1
+    coordinate_remainderK_powerResidues_nodup_eight
+
+/-- On the base-7 `542` candidate window, the finite
+`remainderIn ↦ raw coefficient` map is functional by the power-residue
+no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one :
+    List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+/-- Positive reconstruction exemplar for denominator `542`: on the finite
+`8/1` state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+end QRTour.FutureBase7N542
+
+namespace QRTour.FutureBase30N794
+
+/-! ### Positive Reconstruction Candidate: base 30, N = 794
+
+This packages the current source-unpinned and family-uncovered standalone
+power-residue no-collision row emitted by the observability program atlas:
+`(base, N, m, B, q, k, L, gap) = (30, 794, 3, 27000, 34, 4, 1, 12776)`.
+It uses the finite power-residue no-collision criterion on `(k^j % N)`, and
+remains a finite `8/1` proof hook only: no registry claim, theorem-witness
+record, atlas status change, or global factorization theorem is added.
+-/
+
+/-- The candidate coordinate `(base=30, N=794, stride=3)`. -/
+def coordinate : BlockCoordinate where
+  base := 30
+  modulus := 794
+  stride := 3
+  modulus_pos := by decide
+
+/-- The base-supported preperiod has length one for denominator `794` in base `30`. -/
+theorem denominator_preperiodSteps_eq_one : preperiodSteps 30 794 = 1 := by
+  native_decide
+
+/-- Stripping base-supported factors leaves periodic modulus `397`. -/
+theorem denominator_strippedPeriodModulus_eq_three_hundred_ninety_seven :
+    strippedPeriodModulus 30 794 = 397 := by
+  native_decide
+
+/-- The coordinate is a good mode: `794 < 27000`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `27000`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 27000 := by
+  native_decide
+
+/-- The quotient in `27000 = q*794 + k` is `q = 34`. -/
+theorem coordinate_quotientQ_eq_thirty_four : coordinate.quotientQ = 34 := by
+  native_decide
+
+/-- The remainder in `27000 = q*794 + k` is `k = 4`. -/
+theorem coordinate_remainderK_eq_four : coordinate.remainderK = 4 := by
+  native_decide
+
+/-- On the candidate window, the exact lookahead gap numerator is `12776`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 12776 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- On the base-30 `794` candidate window, the first eight power residues
+`k^j % N` are explicit. -/
+theorem coordinate_remainderK_powerResidues_window_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)) =
+        [1, 4, 16, 64, 256, 230, 126, 504] := by
+  native_decide
+
+/-- The base-30 `794` candidate has no collision in its eight-entry
+power-residue window. -/
+theorem coordinate_remainderK_powerResidues_nodup_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)).Nodup := by
+  rw [coordinate_remainderK_powerResidues_window_eight]
+  norm_num
+
+/-- On the base-30 `794` candidate window, the observed `remainderIn` states
+are pairwise distinct by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderIn_nodup_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact coordinate.stateAlignments_remainderIn_nodup_of_remainderK_powerResidues_nodup
+    coordinate_goodMode 8 1
+    coordinate_remainderK_powerResidues_nodup_eight
+
+/-- On the base-30 `794` candidate window, the finite
+`remainderIn ↦ raw coefficient` map is functional by the power-residue
+no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one :
+    List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+/-- Positive reconstruction exemplar for denominator `794`: on the finite
+`8/1` state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+end QRTour.FutureBase30N794
+
+namespace QRTour.Base30Stride3K4PositiveReconstruction
+
+/-! ### Base-30, stride-3, remainder-k = 4 positive reconstruction family
+
+The observability program atlas next exposes `(base, N, m, B, q, k, L, gap) =
+(30, 397, 3, 27000, 68, 4, 1, 25552)` as the first source-unpinned and
+family-uncovered power-residue no-collision row after the source-pinned
+`N = 794` hook.
+
+This namespace proves the finite same-base/block-remainder response for the
+shared `(base, B, k) = (30, 27000, 4)` divisor family. It remains finite-window
+support only: no registry claim, theorem-witness record, atlas status change,
+`small_k_visibility_threshold` closure, or `carry_dfa_factorization` closure is
+added.
+-/
+
+/-- The base-30, stride-3 moduli in the `B = 27000`, `k = 4` divisor family
+whose eight-entry power-residue window is collision-free. Divisors of
+`B-k = 26996` such as `1`, `2`, `4`, `17`, `34`, and `68` fail this finite
+criterion. -/
+def moduli : List ℕ := [397, 794, 1588, 6749, 13498, 26996]
+
+/-- Explicit no-collision criterion for the base-30, stride-3 divisor family:
+for the listed moduli, the first eight full-modulus power residues
+`4^j % N` are pairwise distinct. -/
+theorem powerResidues_nodup_eight_of_mem
+    {N : ℕ} (hmod : N ∈ moduli) :
+    ((List.range 8).map (fun j => 4 ^ j % N)).Nodup := by
+  simp [moduli] at hmod
+  rcases hmod with hmod | hmod | hmod | hmod | hmod | hmod
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+
+/-- Explicit no-collision criterion for the base-30, stride-3 divisor family:
+for the listed coordinate moduli, the first eight full-modulus power residues
+`C.remainderK^j % C.modulus` are pairwise distinct. -/
+theorem remainderK_powerResidues_nodup_eight_of_mem
+    (C : BlockCoordinate) (hbase : C.base = 30) (hstride : C.stride = 3)
+    (hmod : C.modulus ∈ moduli) :
+    ((List.range 8).map
+      (fun j => C.remainderK ^ j % C.modulus)).Nodup := by
+  have hmod' := hmod
+  have hrem : C.remainderK = 4 := by
+    simp [moduli] at hmod'
+    rcases hmod' with hmod' | hmod' | hmod' | hmod' | hmod' | hmod'
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+  rw [hrem]
+  exact powerResidues_nodup_eight_of_mem hmod
+
+/-- The base-30, stride-3 divisor-family no-collision criterion gives
+functional finite raw-coefficient reconstruction on every `8/L`
+state-alignment window for a good coordinate in the listed family. -/
+theorem stateAlignments_remainderToCoefficientFunctional_eight_of_mem
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hbase : C.base = 30) (hstride : C.stride = 3)
+    (hmod : C.modulus ∈ moduli)
+    (lookaheadBlocks : ℕ) :
+    List.FunctionalOnFst
+      ((C.stateAlignments hgood 8 lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact C.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+    hgood 8 lookaheadBlocks
+    (remainderK_powerResidues_nodup_eight_of_mem C hbase hstride hmod)
+
+/-- The base-30, stride-3 divisor-family no-collision criterion gives finite
+factor-through reconstruction on every `8/L` state-alignment window for a good
+coordinate in the listed family. -/
+theorem stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hbase : C.base = 30) (hstride : C.stride = 3)
+    (hmod : C.modulus ∈ moduli)
+    (lookaheadBlocks : ℕ) :
+    let pairs :=
+      (C.stateAlignments hgood 8 lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact C.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+    hgood 8 lookaheadBlocks
+    (remainderK_powerResidues_nodup_eight_of_mem C hbase hstride hmod)
+
+/-- The first uncovered `N = 397` seed and the source-pinned `N = 794` hook
+sit inside the same explicit no-collision divisor family. -/
+theorem n397_n794_powerResidues_nodup_eight_pair :
+    ((List.range 8).map (fun j => 4 ^ j % 397)).Nodup ∧
+    ((List.range 8).map
+      (fun j => FutureBase30N794.coordinate.remainderK ^ j %
+        FutureBase30N794.coordinate.modulus)).Nodup := by
+  constructor
+  · native_decide
+  · exact FutureBase30N794.coordinate_remainderK_powerResidues_nodup_eight
+
+end QRTour.Base30Stride3K4PositiveReconstruction
+
+namespace QRTour.FutureBase10N578
+
+/-! ### Positive Reconstruction Candidate: base 10, N = 578
+
+This packages the previous source-unpinned and family-uncovered standalone
+power-residue no-collision row emitted by the observability program atlas:
+`(base, N, m, B, q, k, L, gap) = (10, 578, 5, 100000, 173, 6, 1, 26432)`.
+It uses the finite power-residue no-collision criterion on `(k^j % N)`, and
+remains a finite `8/1` proof hook only: no registry claim, theorem-witness
+record, atlas status change, or global factorization theorem is added.
+-/
+
+/-- The candidate coordinate `(base=10, N=578, stride=5)`. -/
+def coordinate : BlockCoordinate where
+  base := 10
+  modulus := 578
+  stride := 5
+  modulus_pos := by decide
+
+/-- The base-supported preperiod has length one for denominator `578` in base `10`. -/
+theorem denominator_preperiodSteps_eq_one : preperiodSteps 10 578 = 1 := by
+  native_decide
+
+/-- Stripping base-supported factors leaves periodic modulus `289`. -/
+theorem denominator_strippedPeriodModulus_eq_two_hundred_eighty_nine :
+    strippedPeriodModulus 10 578 = 289 := by
+  native_decide
+
+/-- The coordinate is a good mode: `578 < 100000`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `100000`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 100000 := by
+  native_decide
+
+/-- The quotient in `100000 = q*578 + k` is `q = 173`. -/
+theorem coordinate_quotientQ_eq_one_hundred_seventy_three :
+    coordinate.quotientQ = 173 := by
+  native_decide
+
+/-- The remainder in `100000 = q*578 + k` is `k = 6`. -/
+theorem coordinate_remainderK_eq_six : coordinate.remainderK = 6 := by
+  native_decide
+
+/-- On the candidate window, the exact lookahead gap numerator is `26432`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 26432 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- On the base-10 `578` candidate window, the first eight power residues
+`k^j % N` are explicit. -/
+theorem coordinate_remainderK_powerResidues_window_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)) =
+        [1, 6, 36, 216, 140, 262, 416, 184] := by
+  native_decide
+
+/-- The base-10 `578` candidate has no collision in its eight-entry
+power-residue window. -/
+theorem coordinate_remainderK_powerResidues_nodup_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)).Nodup := by
+  rw [coordinate_remainderK_powerResidues_window_eight]
+  norm_num
+
+/-- On the base-10 `578` candidate window, the observed `remainderIn` states
+are pairwise distinct by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderIn_nodup_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact coordinate.stateAlignments_remainderIn_nodup_of_remainderK_powerResidues_nodup
+    coordinate_goodMode 8 1
+    coordinate_remainderK_powerResidues_nodup_eight
+
+/-- On the base-10 `578` candidate window, the finite
+`remainderIn ↦ raw coefficient` map is functional by the power-residue
+no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one :
+    List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+/-- Positive reconstruction exemplar for denominator `578`: on the finite
+`8/1` state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+end QRTour.FutureBase10N578
+
+namespace QRTour.FutureBase10N277
+
+/-! ### Positive Reconstruction Candidate: base 10, N = 277
+
+This packages the previous source-unpinned and family-uncovered standalone
+power-residue no-collision row emitted by the observability program atlas:
+`(base, N, m, B, q, k, L, gap) = (10, 277, 5, 100000, 361, 3, 1, 31479)`.
+It uses the finite power-residue no-collision criterion on `(k^j % N)`, and
+remains a finite `8/1` proof hook only: no registry claim, theorem-witness
+record, atlas status change, or global factorization theorem is added.
+-/
+
+/-- The candidate coordinate `(base=10, N=277, stride=5)`. -/
+def coordinate : BlockCoordinate where
+  base := 10
+  modulus := 277
+  stride := 5
+  modulus_pos := by decide
+
+/-- The base-supported preperiod has length zero for denominator `277` in base `10`. -/
+theorem denominator_preperiodSteps_eq_zero : preperiodSteps 10 277 = 0 := by
+  native_decide
+
+/-- Stripping base-supported factors leaves periodic modulus `277`. -/
+theorem denominator_strippedPeriodModulus_eq_two_hundred_seventy_seven :
+    strippedPeriodModulus 10 277 = 277 := by
+  native_decide
+
+/-- The coordinate is a good mode: `277 < 100000`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `100000`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 100000 := by
+  native_decide
+
+/-- The quotient in `100000 = q*277 + k` is `q = 361`. -/
+theorem coordinate_quotientQ_eq_three_hundred_sixty_one :
+    coordinate.quotientQ = 361 := by
+  native_decide
+
+/-- The remainder in `100000 = q*277 + k` is `k = 3`. -/
+theorem coordinate_remainderK_eq_three : coordinate.remainderK = 3 := by
+  native_decide
+
+/-- On the candidate window, the exact lookahead gap numerator is `31479`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 31479 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- On the base-10 `277` candidate window, the first eight power residues
+`k^j % N` are explicit. -/
+theorem coordinate_remainderK_powerResidues_window_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)) =
+        [1, 3, 9, 27, 81, 243, 175, 248] := by
+  native_decide
+
+/-- The base-10 `277` candidate has no collision in its eight-entry
+power-residue window. -/
+theorem coordinate_remainderK_powerResidues_nodup_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)).Nodup := by
+  rw [coordinate_remainderK_powerResidues_window_eight]
+  norm_num
+
+/-- On the base-10 `277` candidate window, the observed `remainderIn` states
+are pairwise distinct by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderIn_nodup_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact coordinate.stateAlignments_remainderIn_nodup_of_remainderK_powerResidues_nodup
+    coordinate_goodMode 8 1
+    coordinate_remainderK_powerResidues_nodup_eight
+
+/-- On the base-10 `277` candidate window, the finite
+`remainderIn ↦ raw coefficient` map is functional by the power-residue
+no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one :
+    List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+/-- Positive reconstruction exemplar for denominator `277`: on the finite
+`8/1` state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+end QRTour.FutureBase10N277
+
+namespace QRTour.FutureBase7N669
+
+/-! ### Positive Reconstruction Candidate: base 7, N = 669
+
+This packages the previous source-unpinned and family-uncovered standalone
+power-residue no-collision row emitted by the observability program atlas:
+`(base, N, m, B, q, k, L, gap) = (7, 669, 7, 823543, 1231, 4, 1, 32398)`.
+It uses the finite power-residue no-collision criterion on `(k^j % N)`, and
+remains a finite `8/1` proof hook only: no registry claim, theorem-witness
+record, atlas status change, or global factorization theorem is added.
+-/
+
+/-- The candidate coordinate `(base=7, N=669, stride=7)`. -/
+def coordinate : BlockCoordinate where
+  base := 7
+  modulus := 669
+  stride := 7
+  modulus_pos := by decide
+
+/-- The base-supported preperiod has length zero for denominator `669` in base `7`. -/
+theorem denominator_preperiodSteps_eq_zero : preperiodSteps 7 669 = 0 := by
+  native_decide
+
+/-- Stripping base-supported factors leaves periodic modulus `669`. -/
+theorem denominator_strippedPeriodModulus_eq_six_hundred_sixty_nine :
+    strippedPeriodModulus 7 669 = 669 := by
+  native_decide
+
+/-- The coordinate is a good mode: `669 < 823543`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `823543`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 823543 := by
+  native_decide
+
+/-- The quotient in `823543 = q*669 + k` is `q = 1231`. -/
+theorem coordinate_quotientQ_eq_one_thousand_two_hundred_thirty_one :
+    coordinate.quotientQ = 1231 := by
+  native_decide
+
+/-- The remainder in `823543 = q*669 + k` is `k = 4`. -/
+theorem coordinate_remainderK_eq_four : coordinate.remainderK = 4 := by
+  native_decide
+
+/-- On the candidate window, the exact lookahead gap numerator is `32398`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 32398 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- On the base-7 `669` candidate window, the first eight power residues
+`k^j % N` are explicit. -/
+theorem coordinate_remainderK_powerResidues_window_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)) =
+        [1, 4, 16, 64, 256, 355, 82, 328] := by
+  native_decide
+
+/-- The base-7 `669` candidate has no collision in its eight-entry
+power-residue window. -/
+theorem coordinate_remainderK_powerResidues_nodup_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)).Nodup := by
+  rw [coordinate_remainderK_powerResidues_window_eight]
+  norm_num
+
+/-- On the base-7 `669` candidate window, the observed `remainderIn` states are
+pairwise distinct by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderIn_nodup_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact coordinate.stateAlignments_remainderIn_nodup_of_remainderK_powerResidues_nodup
+    coordinate_goodMode 8 1
+    coordinate_remainderK_powerResidues_nodup_eight
+
+/-- On the base-7 `669` candidate window, the finite
+`remainderIn ↦ raw coefficient` map is functional by the power-residue
+no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one :
+    List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+/-- Positive reconstruction exemplar for denominator `669`: on the finite
+`8/1` state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+end QRTour.FutureBase7N669
+
+namespace QRTour.FutureBase7N71
+
+/-! ### Positive Reconstruction Candidate: base 7, N = 71
+
+This packages the previous source-unpinned and family-uncovered standalone
+power-residue no-collision row emitted by the observability program atlas:
+`(base, N, m, B, q, k, L, gap) = (7, 71, 6, 117649, 1657, 2, 1, 46404)`.
+It uses the finite power-residue no-collision criterion on `(k^j % N)`, and
+remains a finite `8/1` proof hook only: no registry claim, theorem-witness
+record, atlas status change, or global factorization theorem is added.
+-/
+
+/-- The candidate coordinate `(base=7, N=71, stride=6)`. -/
+def coordinate : BlockCoordinate where
+  base := 7
+  modulus := 71
+  stride := 6
+  modulus_pos := by decide
+
+/-- The base-supported preperiod has length zero for denominator `71` in base `7`. -/
+theorem denominator_preperiodSteps_eq_zero : preperiodSteps 7 71 = 0 := by
+  native_decide
+
+/-- Stripping base-supported factors leaves periodic modulus `71`. -/
+theorem denominator_strippedPeriodModulus_eq_seventy_one :
+    strippedPeriodModulus 7 71 = 71 := by
+  native_decide
+
+/-- The coordinate is a good mode: `71 < 117649`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `117649`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 117649 := by
+  native_decide
+
+/-- The quotient in `117649 = q*71 + k` is `q = 1657`. -/
+theorem coordinate_quotientQ_eq_one_thousand_six_hundred_fifty_seven :
+    coordinate.quotientQ = 1657 := by
+  native_decide
+
+/-- The remainder in `117649 = q*71 + k` is `k = 2`. -/
+theorem coordinate_remainderK_eq_two : coordinate.remainderK = 2 := by
+  native_decide
+
+/-- On the candidate window, the exact lookahead gap numerator is `46404`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 46404 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- On the base-7 `71` candidate window, the first eight power residues
+`k^j % N` are explicit. -/
+theorem coordinate_remainderK_powerResidues_window_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)) =
+        [1, 2, 4, 8, 16, 32, 64, 57] := by
+  native_decide
+
+/-- The base-7 `71` candidate has no collision in its eight-entry
+power-residue window. -/
+theorem coordinate_remainderK_powerResidues_nodup_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)).Nodup := by
+  rw [coordinate_remainderK_powerResidues_window_eight]
+  norm_num
+
+/-- On the base-7 `71` candidate window, the observed `remainderIn` states are
+pairwise distinct by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderIn_nodup_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact coordinate.stateAlignments_remainderIn_nodup_of_remainderK_powerResidues_nodup
+    coordinate_goodMode 8 1
+    coordinate_remainderK_powerResidues_nodup_eight
+
+/-- On the base-7 `71` candidate window, the finite
+`remainderIn ↦ raw coefficient` map is functional by the power-residue
+no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one :
+    List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+/-- Positive reconstruction exemplar for denominator `71`: on the finite
+`8/1` state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+end QRTour.FutureBase7N71
+
+namespace QRTour.FutureBase7N118
+
+/-! ### Positive Reconstruction Candidate: base 7, N = 118
+
+This packages the previous source-unpinned and family-uncovered standalone
+power-residue no-collision row emitted by the observability program atlas:
+`(base, N, m, B, q, k, L, gap) = (7, 118, 6, 117649, 997, 3, 1, 47027)`.
+It uses the finite power-residue no-collision criterion on `(k^j % N)`, and
+remains a finite `8/1` proof hook only: no registry claim, theorem-witness
+record, atlas status change, or global factorization theorem is added.
+-/
+
+/-- The candidate coordinate `(base=7, N=118, stride=6)`. -/
+def coordinate : BlockCoordinate where
+  base := 7
+  modulus := 118
+  stride := 6
+  modulus_pos := by decide
+
+/-- The base-supported preperiod has length zero for denominator `118` in base `7`. -/
+theorem denominator_preperiodSteps_eq_zero : preperiodSteps 7 118 = 0 := by
+  native_decide
+
+/-- Stripping base-supported factors leaves periodic modulus `118`. -/
+theorem denominator_strippedPeriodModulus_eq_one_hundred_eighteen :
+    strippedPeriodModulus 7 118 = 118 := by
+  native_decide
+
+/-- The coordinate is a good mode: `118 < 117649`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `117649`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 117649 := by
+  native_decide
+
+/-- The quotient in `117649 = q*118 + k` is `q = 997`. -/
+theorem coordinate_quotientQ_eq_nine_hundred_ninety_seven :
+    coordinate.quotientQ = 997 := by
+  native_decide
+
+/-- The remainder in `117649 = q*118 + k` is `k = 3`. -/
+theorem coordinate_remainderK_eq_three : coordinate.remainderK = 3 := by
+  native_decide
+
+/-- On the candidate window, the exact lookahead gap numerator is `47027`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 47027 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- On the base-7 `118` candidate window, the first eight power residues
+`k^j % N` are explicit. -/
+theorem coordinate_remainderK_powerResidues_window_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)) =
+        [1, 3, 9, 27, 81, 7, 21, 63] := by
+  native_decide
+
+/-- The base-7 `118` candidate has no collision in its eight-entry
+power-residue window. -/
+theorem coordinate_remainderK_powerResidues_nodup_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)).Nodup := by
+  rw [coordinate_remainderK_powerResidues_window_eight]
+  norm_num
+
+/-- On the base-7 `118` candidate window, the observed `remainderIn` states
+are pairwise distinct by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderIn_nodup_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact coordinate.stateAlignments_remainderIn_nodup_of_remainderK_powerResidues_nodup
+    coordinate_goodMode 8 1
+    coordinate_remainderK_powerResidues_nodup_eight
+
+/-- On the base-7 `118` candidate window, the finite
+`remainderIn ↦ raw coefficient` map is functional by the power-residue
+no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one :
+    List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+/-- Positive reconstruction exemplar for denominator `118`: on the finite
+`8/1` state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+end QRTour.FutureBase7N118
+
+namespace QRTour.Base7Stride6K3PositiveReconstruction
+
+/-! ### Base-7, stride-6, remainder-k = 3 positive reconstruction family
+
+The observability program atlas next exposes `(base, N, m, B, q, k, L, gap) =
+(7, 997, 6, 117649, 118, 3, 1, 49345)` as the first source-unpinned and
+family-uncovered power-residue no-collision row after the source-pinned
+`N = 118` hook.
+
+This namespace proves the finite same-base/block-remainder response for the
+shared `(base, B, k) = (7, 117649, 3)` divisor family. It remains
+finite-window support only: no registry claim, theorem-witness record, atlas
+status change, `small_k_visibility_threshold` closure, or
+`carry_dfa_factorization` closure is added.
+-/
+
+/-- The base-7, stride-6 moduli in the `B = 117649`, `k = 3` divisor family
+whose eight-entry power-residue window is collision-free. Divisors of
+`B-k = 117646`, namely `1` and `2`, fail this finite criterion. -/
+def moduli : List ℕ := [59, 118, 997, 1994, 58823, 117646]
+
+/-- Explicit no-collision criterion for the base-7, stride-6 divisor family:
+for the listed moduli, the first eight full-modulus power residues
+`3^j % N` are pairwise distinct. -/
+theorem powerResidues_nodup_eight_of_mem
+    {N : ℕ} (hmod : N ∈ moduli) :
+    ((List.range 8).map (fun j => 3 ^ j % N)).Nodup := by
+  simp [moduli] at hmod
+  rcases hmod with hmod | hmod | hmod | hmod | hmod | hmod
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+  · rw [hmod]
+    native_decide
+
+/-- Explicit no-collision criterion for the base-7, stride-6 divisor family:
+for the listed coordinate moduli, the first eight full-modulus power residues
+`C.remainderK^j % C.modulus` are pairwise distinct. -/
+theorem remainderK_powerResidues_nodup_eight_of_mem
+    (C : BlockCoordinate) (hbase : C.base = 7) (hstride : C.stride = 6)
+    (hmod : C.modulus ∈ moduli) :
+    ((List.range 8).map
+      (fun j => C.remainderK ^ j % C.modulus)).Nodup := by
+  have hmod' := hmod
+  have hrem : C.remainderK = 3 := by
+    simp [moduli] at hmod'
+    rcases hmod' with hmod' | hmod' | hmod' | hmod' | hmod' | hmod'
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+    · simp [BlockCoordinate.remainderK, BlockCoordinate.blockBase, hbase, hstride, hmod']
+  rw [hrem]
+  exact powerResidues_nodup_eight_of_mem hmod
+
+/-- The base-7, stride-6 divisor-family no-collision criterion gives
+functional finite raw-coefficient reconstruction on every `8/L`
+state-alignment window for a good coordinate in the listed family. -/
+theorem stateAlignments_remainderToCoefficientFunctional_eight_of_mem
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hbase : C.base = 7) (hstride : C.stride = 6)
+    (hmod : C.modulus ∈ moduli)
+    (lookaheadBlocks : ℕ) :
+    List.FunctionalOnFst
+      ((C.stateAlignments hgood 8 lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact C.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+    hgood 8 lookaheadBlocks
+    (remainderK_powerResidues_nodup_eight_of_mem C hbase hstride hmod)
+
+/-- The base-7, stride-6 divisor-family no-collision criterion gives finite
+factor-through reconstruction on every `8/L` state-alignment window for a good
+coordinate in the listed family. -/
+theorem stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem
+    (C : BlockCoordinate) (hgood : C.goodMode)
+    (hbase : C.base = 7) (hstride : C.stride = 6)
+    (hmod : C.modulus ∈ moduli)
+    (lookaheadBlocks : ℕ) :
+    let pairs :=
+      (C.stateAlignments hgood 8 lookaheadBlocks).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact C.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+    hgood 8 lookaheadBlocks
+    (remainderK_powerResidues_nodup_eight_of_mem C hbase hstride hmod)
+
+/-- The source-pinned `N = 118` hook and the first uncovered `N = 997` seed sit
+inside the same explicit no-collision divisor family. -/
+theorem n118_n997_powerResidues_nodup_eight_pair :
+    ((List.range 8).map
+      (fun j => FutureBase7N118.coordinate.remainderK ^ j %
+        FutureBase7N118.coordinate.modulus)).Nodup ∧
+    ((List.range 8).map (fun j => 3 ^ j % 997)).Nodup := by
+  constructor
+  · exact FutureBase7N118.coordinate_remainderK_powerResidues_nodup_eight
+  · native_decide
+
+end QRTour.Base7Stride6K3PositiveReconstruction
+
+namespace QRTour.FutureBase7N113
+
+/-! ### Positive Reconstruction Candidate: base 7, N = 113
+
+This packages the previous source-unpinned and family-uncovered standalone
+power-residue no-collision row emitted by the observability program atlas:
+`(base, N, m, B, q, k, L, gap) = (7, 113, 3, 343, 3, 4, 2, 13444)`.
+It uses the finite power-residue no-collision criterion on `(k^j % N)`, and
+remains a finite `8/2` proof hook only: no registry claim, theorem-witness
+record, atlas status change, or global factorization theorem is added.
+-/
+
+/-- The candidate coordinate `(base=7, N=113, stride=3)`. -/
+def coordinate : BlockCoordinate where
+  base := 7
+  modulus := 113
+  stride := 3
+  modulus_pos := by decide
+
+/-- The base-supported preperiod has length zero for denominator `113` in base `7`. -/
+theorem denominator_preperiodSteps_eq_zero : preperiodSteps 7 113 = 0 := by
+  native_decide
+
+/-- Stripping base-supported factors leaves periodic modulus `113`. -/
+theorem denominator_strippedPeriodModulus_eq_one_hundred_thirteen :
+    strippedPeriodModulus 7 113 = 113 := by
+  native_decide
+
+/-- The coordinate is a good mode: `113 < 343`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `343`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 343 := by
+  native_decide
+
+/-- The quotient in `343 = q*113 + k` is `q = 3`. -/
+theorem coordinate_quotientQ_eq_three : coordinate.quotientQ = 3 := by
+  native_decide
+
+/-- The remainder in `343 = q*113 + k` is `k = 4`. -/
+theorem coordinate_remainderK_eq_four : coordinate.remainderK = 4 := by
+  native_decide
+
+/-- On the candidate window, the exact lookahead gap numerator is `13444`. -/
+theorem coordinate_lookaheadGapNumerator_eight_two :
+    coordinate.lookaheadGapNumerator 8 2 = 13444 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- Two blocks of lookahead certify the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_two :
+    coordinate.lookaheadCertificateHolds 8 2 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- On the base-7 `113` candidate window, the first eight power residues
+`k^j % N` are explicit. -/
+theorem coordinate_remainderK_powerResidues_window_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)) =
+        [1, 4, 16, 64, 30, 7, 28, 112] := by
+  native_decide
+
+/-- The base-7 `113` candidate has no collision in its eight-entry
+power-residue window. -/
+theorem coordinate_remainderK_powerResidues_nodup_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)).Nodup := by
+  rw [coordinate_remainderK_powerResidues_window_eight]
+  norm_num
+
+/-- On the base-7 `113` candidate window, the observed `remainderIn` states
+are pairwise distinct by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderIn_nodup_eight_two :
+    ((coordinate.stateAlignments coordinate_goodMode 8 2).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact coordinate.stateAlignments_remainderIn_nodup_of_remainderK_powerResidues_nodup
+    coordinate_goodMode 8 2
+    coordinate_remainderK_powerResidues_nodup_eight
+
+/-- On the base-7 `113` candidate window, the finite
+`remainderIn ↦ raw coefficient` map is functional by the power-residue
+no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFunctional_eight_two :
+    List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 2).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 2
+      coordinate_remainderK_powerResidues_nodup_eight
+
+/-- Positive reconstruction exemplar for denominator `113`: on the finite
+`8/2` state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_two :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 2).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 2
+      coordinate_remainderK_powerResidues_nodup_eight
+
+end QRTour.FutureBase7N113
+
+namespace QRTour.FutureBase12N691
+
+/-! ### Positive Reconstruction Candidate: base 12, N = 691
+
+This packages the current source-unpinned and family-uncovered standalone
+power-residue no-collision row emitted by the observability program atlas:
+`(base, N, m, B, q, k, L, gap) = (12, 691, 4, 20736, 30, 6, 1, 20736)`.
+It uses the finite power-residue no-collision criterion on `(k^j % N)`, and
+remains a finite `8/1` proof hook only: no registry claim, theorem-witness
+record, atlas status change, or global factorization theorem is added.
+-/
+
+/-- The candidate coordinate `(base=12, N=691, stride=4)`. -/
+def coordinate : BlockCoordinate where
+  base := 12
+  modulus := 691
+  stride := 4
+  modulus_pos := by decide
+
+/-- The base-supported preperiod has length zero for denominator `691` in base `12`. -/
+theorem denominator_preperiodSteps_eq_zero : preperiodSteps 12 691 = 0 := by
+  native_decide
+
+/-- Stripping base-supported factors leaves periodic modulus `691`. -/
+theorem denominator_strippedPeriodModulus_eq_six_hundred_ninety_one :
+    strippedPeriodModulus 12 691 = 691 := by
+  native_decide
+
+/-- The coordinate is a good mode: `691 < 20736`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `20736`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 20736 := by
+  native_decide
+
+/-- The quotient in `20736 = q*691 + k` is `q = 30`. -/
+theorem coordinate_quotientQ_eq_thirty : coordinate.quotientQ = 30 := by
+  native_decide
+
+/-- The remainder in `20736 = q*691 + k` is `k = 6`. -/
+theorem coordinate_remainderK_eq_six : coordinate.remainderK = 6 := by
+  native_decide
+
+/-- On the candidate window, the exact lookahead gap numerator is `20736`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 20736 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- On the base-12 `691` candidate window, the first eight power residues
+`k^j % N` are explicit. -/
+theorem coordinate_remainderK_powerResidues_window_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)) =
+        [1, 6, 36, 216, 605, 175, 359, 81] := by
+  native_decide
+
+/-- The base-12 `691` candidate has no collision in its eight-entry
+power-residue window. -/
+theorem coordinate_remainderK_powerResidues_nodup_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)).Nodup := by
+  rw [coordinate_remainderK_powerResidues_window_eight]
+  norm_num
+
+/-- On the base-12 `691` candidate window, the observed `remainderIn` states
+are pairwise distinct by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderIn_nodup_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact coordinate.stateAlignments_remainderIn_nodup_of_remainderK_powerResidues_nodup
+    coordinate_goodMode 8 1
+    coordinate_remainderK_powerResidues_nodup_eight
+
+/-- On the base-12 `691` candidate window, the finite
+`remainderIn ↦ raw coefficient` map is functional by the power-residue
+no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one :
+    List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+/-- Positive reconstruction exemplar for denominator `691`: on the finite
+`8/1` state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+end QRTour.FutureBase12N691
+
+namespace QRTour.FutureBase12N226
+
+/-! ### Positive Reconstruction Candidate: base 12, N = 226
+
+This packages the current source-unpinned and family-uncovered standalone
+power-residue no-collision row emitted by the observability program atlas:
+`(base, N, m, B, q, k, L, gap) = (12, 226, 5, 248832, 1101, 6, 1, 62208)`.
+It uses the finite power-residue no-collision criterion on `(k^j % N)`, and
+remains a finite `8/1` proof hook only: no registry claim, theorem-witness
+record, atlas status change, or global factorization theorem is added.
+-/
+
+/-- The candidate coordinate `(base=12, N=226, stride=5)`. -/
+def coordinate : BlockCoordinate where
+  base := 12
+  modulus := 226
+  stride := 5
+  modulus_pos := by decide
+
+/-- The base-supported preperiod has length one for denominator `226` in base `12`. -/
+theorem denominator_preperiodSteps_eq_one : preperiodSteps 12 226 = 1 := by
+  native_decide
+
+/-- Stripping the base-supported factor leaves periodic modulus `113`. -/
+theorem denominator_strippedPeriodModulus_eq_one_hundred_thirteen :
+    strippedPeriodModulus 12 226 = 113 := by
+  native_decide
+
+/-- The coordinate is a good mode: `226 < 248832`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `248832`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 248832 := by
+  native_decide
+
+/-- The quotient in `248832 = q*226 + k` is `q = 1101`. -/
+theorem coordinate_quotientQ_eq_one_thousand_one_hundred_one :
+    coordinate.quotientQ = 1101 := by
+  native_decide
+
+/-- The remainder in `248832 = q*226 + k` is `k = 6`. -/
+theorem coordinate_remainderK_eq_six : coordinate.remainderK = 6 := by
+  native_decide
+
+/-- On the candidate window, the exact lookahead gap numerator is `62208`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 62208 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- On the base-12 `226` candidate window, the first eight power residues
+`k^j % N` are explicit. -/
+theorem coordinate_remainderK_powerResidues_window_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)) =
+        [1, 6, 36, 216, 166, 92, 100, 148] := by
+  native_decide
+
+/-- The base-12 `226` candidate has no collision in its eight-entry
+power-residue window. -/
+theorem coordinate_remainderK_powerResidues_nodup_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)).Nodup := by
+  rw [coordinate_remainderK_powerResidues_window_eight]
+  norm_num
+
+/-- On the base-12 `226` candidate window, the observed `remainderIn` states
+are pairwise distinct by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderIn_nodup_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact coordinate.stateAlignments_remainderIn_nodup_of_remainderK_powerResidues_nodup
+    coordinate_goodMode 8 1
+    coordinate_remainderK_powerResidues_nodup_eight
+
+/-- On the base-12 `226` candidate window, the finite
+`remainderIn ↦ raw coefficient` map is functional by the power-residue
+no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one :
+    List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+/-- Positive reconstruction exemplar for denominator `226`: on the finite
+`8/1` state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 1
+      coordinate_remainderK_powerResidues_nodup_eight
+
+end QRTour.FutureBase12N226
+
+namespace QRTour.FutureBase7N338
+
+/-! ### Positive Reconstruction Candidate: base 7, N = 338
+
+This packages the current source-unpinned and family-uncovered standalone
+power-residue no-collision row emitted by the observability program atlas:
+`(base, N, m, B, q, k, L, gap) = (7, 338, 3, 343, 1, 5, 2, 64744)`.
+It uses the finite power-residue no-collision criterion on `(k^j % N)`, and
+remains a finite `8/2` proof hook only: no registry claim, theorem-witness
+record, atlas status change, or global factorization theorem is added.
+-/
+
+/-- The candidate coordinate `(base=7, N=338, stride=3)`. -/
+def coordinate : BlockCoordinate where
+  base := 7
+  modulus := 338
+  stride := 3
+  modulus_pos := by decide
+
+/-- Denominator `338` has no base-supported preperiod in base `7`. -/
+theorem denominator_preperiodSteps_eq_zero : preperiodSteps 7 338 = 0 := by
+  native_decide
+
+/-- Stripping base-supported factors leaves periodic modulus `338`. -/
+theorem denominator_strippedPeriodModulus_eq_three_hundred_thirty_eight :
+    strippedPeriodModulus 7 338 = 338 := by
+  native_decide
+
+/-- The coordinate is a good mode: `338 < 343`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `343`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 343 := by
+  native_decide
+
+/-- The quotient in `343 = q*338 + k` is `q = 1`. -/
+theorem coordinate_quotientQ_eq_one : coordinate.quotientQ = 1 := by
+  native_decide
+
+/-- The remainder in `343 = q*338 + k` is `k = 5`. -/
+theorem coordinate_remainderK_eq_five : coordinate.remainderK = 5 := by
+  native_decide
+
+/-- On the candidate window, the exact lookahead gap numerator is `64744`. -/
+theorem coordinate_lookaheadGapNumerator_eight_two :
+    coordinate.lookaheadGapNumerator 8 2 = 64744 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- Two blocks of lookahead certify the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_two :
+    coordinate.lookaheadCertificateHolds 8 2 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- On the base-7 `338` candidate window, the first eight power residues
+`k^j % N` are explicit. -/
+theorem coordinate_remainderK_powerResidues_window_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)) =
+        [1, 5, 25, 125, 287, 83, 77, 47] := by
+  native_decide
+
+/-- The base-7 `338` candidate has no collision in its eight-entry
+power-residue window. -/
+theorem coordinate_remainderK_powerResidues_nodup_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)).Nodup := by
+  rw [coordinate_remainderK_powerResidues_window_eight]
+  norm_num
+
+/-- On the base-7 `338` candidate window, the observed `remainderIn` states
+are pairwise distinct by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderIn_nodup_eight_two :
+    ((coordinate.stateAlignments coordinate_goodMode 8 2).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact coordinate.stateAlignments_remainderIn_nodup_of_remainderK_powerResidues_nodup
+    coordinate_goodMode 8 2
+    coordinate_remainderK_powerResidues_nodup_eight
+
+/-- On the base-7 `338` candidate window, the finite
+`remainderIn ↦ raw coefficient` map is functional by the power-residue
+no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFunctional_eight_two :
+    List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 2).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 2
+      coordinate_remainderK_powerResidues_nodup_eight
+
+/-- Positive reconstruction exemplar for denominator `338`: on the finite
+`8/2` state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state by the power-residue no-collision criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_two :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 2).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup
+      coordinate_goodMode 8 2
+      coordinate_remainderK_powerResidues_nodup_eight
+
+end QRTour.FutureBase7N338
+
+namespace QRTour.FutureBase12N149
+
+/-! ### Positive Reconstruction Candidate: base 12, N = 149
+
+This packages the current source-unpinned and family-uncovered standalone
+power-residue no-collision row emitted by the observability program atlas:
+`(base, N, m, B, q, k, L, gap) = (12, 149, 5, 248832, 1670, 2, 1, 70144)`.
+It uses the sharper finite no-wrap criterion: the first eight powers
+`2^j` are already below `149`, so the residue window is collision-free before
+any modular wrap occurs. This remains a finite `8/1` proof hook only: no
+registry claim, theorem-witness record, atlas status change, or global
+factorization theorem is added.
+-/
+
+/-- The candidate coordinate `(base=12, N=149, stride=5)`. -/
+def coordinate : BlockCoordinate where
+  base := 12
+  modulus := 149
+  stride := 5
+  modulus_pos := by decide
+
+/-- Denominator `149` has no base-supported preperiod in base `12`. -/
+theorem denominator_preperiodSteps_eq_zero : preperiodSteps 12 149 = 0 := by
+  native_decide
+
+/-- Stripping base-supported factors leaves periodic modulus `149`. -/
+theorem denominator_strippedPeriodModulus_eq_one_hundred_forty_nine :
+    strippedPeriodModulus 12 149 = 149 := by
+  native_decide
+
+/-- The coordinate is a good mode: `149 < 248832`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `248832`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 248832 := by
+  native_decide
+
+/-- The quotient in `248832 = q*149 + k` is `q = 1670`. -/
+theorem coordinate_quotientQ_eq_one_thousand_six_hundred_seventy :
+    coordinate.quotientQ = 1670 := by
+  native_decide
+
+/-- The remainder in `248832 = q*149 + k` is `k = 2`. -/
+theorem coordinate_remainderK_eq_two : coordinate.remainderK = 2 := by
+  native_decide
+
+/-- The remainder `k = 2` is greater than one, so powers of `k` are strictly
+increasing in the exponent. -/
+theorem coordinate_one_lt_remainderK : 1 < coordinate.remainderK := by
+  rw [coordinate_remainderK_eq_two]
+  norm_num
+
+/-- On the candidate window, the exact lookahead gap numerator is `70144`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 70144 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- On the base-12 `149` candidate window, the first eight powers of
+`k = 2` have not wrapped modulo `149`. -/
+theorem coordinate_remainderK_pow_lt_modulus_eight :
+    ∀ j ∈ List.range 8, coordinate.remainderK ^ j < coordinate.modulus := by
+  intro j hj
+  have hjlt : j < 8 := by
+    simpa using List.mem_range.mp hj
+  interval_cases j <;> native_decide
+
+/-- On the base-12 `149` candidate window, the first eight power residues
+`k^j % N` are explicit and are exactly the unwrapped powers. -/
+theorem coordinate_remainderK_powerResidues_window_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)) =
+        [1, 2, 4, 8, 16, 32, 64, 128] := by
+  native_decide
+
+/-- The base-12 `149` candidate has no collision in its eight-entry
+power-residue window by the no-wrap criterion. -/
+theorem coordinate_remainderK_powerResidues_nodup_eight :
+    ((List.range 8).map
+      (fun j => coordinate.remainderK ^ j % coordinate.modulus)).Nodup := by
+  exact coordinate.remainderK_powerResidues_nodup_of_remainderK_pow_lt_modulus
+    8 coordinate_one_lt_remainderK coordinate_remainderK_pow_lt_modulus_eight
+
+/-- On the base-12 `149` candidate window, the observed `remainderIn` states
+are pairwise distinct by the no-wrap power-residue criterion. -/
+theorem coordinate_stateAlignments_remainderIn_nodup_eight_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact coordinate.stateAlignments_remainderIn_nodup_of_remainderK_pow_lt_modulus
+    coordinate_goodMode 8 1
+    coordinate_one_lt_remainderK
+    coordinate_remainderK_pow_lt_modulus_eight
+
+/-- On the base-12 `149` candidate window, the finite
+`remainderIn ↦ raw coefficient` map is functional by the no-wrap
+power-residue criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one :
+    List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderK_pow_lt_modulus
+      coordinate_goodMode 8 1
+      coordinate_one_lt_remainderK
+      coordinate_remainderK_pow_lt_modulus_eight
+
+/-- Positive reconstruction exemplar for denominator `149`: on the finite
+`8/1` state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state by the no-wrap power-residue criterion. -/
+theorem coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_pow_lt_modulus
+      coordinate_goodMode 8 1
+      coordinate_one_lt_remainderK
+      coordinate_remainderK_pow_lt_modulus_eight
+
+end QRTour.FutureBase12N149
 
 namespace QRTour.Composite21
 
@@ -1039,6 +6048,3350 @@ theorem coordinate_firstVisibleMismatchPosition_eq_three :
   exact firstVisibleMismatchPosition_self 3
 
 end QRTour.Composite249
+
+namespace QRTour.Composite68
+
+/-! ### Empirical Obstruction Hook: 68
+
+This packages the current first base-10 certified positive-lookahead
+coefficient-functionality obstruction. It is a worked-example hook beneath the
+open visibility/factorization boundary, not a new atlas claim.
+-/
+
+/-- The obstruction coordinate `(base=10, N=68, stride=4)`. -/
+def coordinate : BlockCoordinate where
+  base := 10
+  modulus := 68
+  stride := 4
+  modulus_pos := by decide
+
+/-- The obstruction coordinate is a good mode: `68 < 10^4`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The block base for the obstruction coordinate is `10000`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 10000 := by
+  native_decide
+
+/-- The obstruction coordinate lands in the congruence family `B ≡ 4 (mod 68)`. -/
+theorem coordinate_blockBase_mod_68_eq_four : coordinate.blockBase % 68 = 4 := by
+  native_decide
+
+/-- The quotient in `10000 = q*68 + k` is `q = 147`. -/
+theorem coordinate_quotientQ_eq_147 : coordinate.quotientQ = 147 := by
+  native_decide
+
+/-- The quotient lies past the one-lookahead certificate threshold `q ≥ 75`. -/
+theorem coordinate_quotientQ_ge_seventy_five : 75 ≤ coordinate.quotientQ := by
+  native_decide
+
+/-- The remainder in `10000 = q*68 + k` is `k = 4`. -/
+theorem coordinate_remainderK_eq_four : coordinate.remainderK = 4 := by
+  native_decide
+
+/-- The canonical incoming carry at position `1` vanishes throughout the
+congruence-family arithmetic, and in particular on this coordinate. -/
+theorem coordinate_incomingCarry_one_eq_zero : coordinate.incomingCarry 1 = 0 := by
+  exact coordinate.incomingCarry_one_eq_zero_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    coordinate_goodMode (by rfl) coordinate_blockBase_mod_68_eq_four
+
+/-- The canonical incoming carry at position `5` is `60` on this coordinate. -/
+theorem coordinate_incomingCarry_five_eq_sixty : coordinate.incomingCarry 5 = 60 := by
+  exact coordinate.incomingCarry_five_eq_sixty_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    coordinate_goodMode (by rfl) coordinate_blockBase_mod_68_eq_four
+
+/-- The arithmetic incoming-carry layer already explains the hidden output:
+positions `1` and `5` emit the same block after adding their canonical incoming
+carries and reducing modulo the block base. -/
+theorem coordinate_incomingCarry_hiddenOutput_one_five :
+    (coordinate.rawCoefficient 1 + coordinate.incomingCarry 1) % coordinate.blockBase =
+      (coordinate.rawCoefficient 5 + coordinate.incomingCarry 5) % coordinate.blockBase := by
+  exact coordinate.incomingCarry_hiddenOutput_one_five_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    coordinate_goodMode (by rfl) coordinate_blockBase_mod_68_eq_four
+
+/-- On the obstruction window, the exact lookahead gap numerator is `6208`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 6208 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  exact
+    coordinate.lookaheadCertificateHolds_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_ge_seventy_five
+      coordinate_goodMode (by rfl) coordinate_blockBase_mod_68_eq_four
+      coordinate_quotientQ_ge_seventy_five
+
+/-- The same obstruction coordinate also satisfies the two-lookahead family
+certificate. -/
+theorem coordinate_lookaheadCertificate_eight_two :
+    coordinate.lookaheadCertificateHolds 8 2 := by
+  exact
+    coordinate.lookaheadCertificateHolds_eight_two_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_ge_three
+      coordinate_goodMode (by rfl) coordinate_blockBase_mod_68_eq_four
+      (by native_decide)
+
+/-- Three blocks of lookahead certify every good member of the `N = 68`,
+`B ≡ 4 (mod 68)` family, and therefore this coordinate. -/
+theorem coordinate_lookaheadCertificate_eight_three :
+    coordinate.lookaheadCertificateHolds 8 3 := by
+  exact
+    coordinate.lookaheadCertificateHolds_eight_three_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      coordinate_goodMode (by rfl) coordinate_blockBase_mod_68_eq_four
+
+/-- The certified obstruction window still has finite output agreement. -/
+theorem coordinate_visibleCarryWord_eq_emittedBlockWord_eight_one :
+    coordinate.visibleCarryWord coordinate_goodMode 8 1 = coordinate.emittedBlockWord 8 := by
+  exact coordinate.visibleCarryWord_eq_emittedBlockWord_of_lookaheadCertificate
+    coordinate_goodMode (by native_decide) 8 1 coordinate_lookaheadCertificate_eight_one
+
+/-- Positions `1` and `5` share the same observed remainder state `4`. -/
+theorem coordinate_conflict_remainder_state_one_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).remainderIn = 4 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)).remainderIn = 4 := by
+  native_decide
+
+/-- The same two positions have incompatible raw coefficients `588` and `150528`. -/
+theorem coordinate_conflict_coefficients_one_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).coefficient = 588 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)).coefficient = 150528 := by
+  native_decide
+
+/-- The conflicting positions receive incoming carry states `0` and `60`. -/
+theorem coordinate_conflict_carry_states_one_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).carryIn = 0 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)).carryIn = 60 := by
+  native_decide
+
+/-- On the certified `8/1` trace, the finite carry state at position `1`
+matches the canonical incoming-carry formula. -/
+theorem coordinate_stateAlignments_carryIn_one_eq_incomingCarry_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).carryIn =
+      coordinate.incomingCarry 1 := by
+  simpa using
+    (coordinate.stateAlignments_carryIn_one_five_eq_incomingCarry_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      coordinate_goodMode (by rfl) coordinate_blockBase_mod_68_eq_four).1
+
+/-- On the certified `8/1` trace, the finite carry state at position `5`
+matches the canonical incoming-carry formula. -/
+theorem coordinate_stateAlignments_carryIn_five_eq_incomingCarry_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)).carryIn =
+      coordinate.incomingCarry 5 := by
+  simpa using
+    (coordinate.stateAlignments_carryIn_one_five_eq_incomingCarry_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      coordinate_goodMode (by rfl) coordinate_blockBase_mod_68_eq_four).2
+
+/-- The certified finite trace realizes the canonical incoming carries at the
+two obstruction positions. -/
+theorem coordinate_stateAlignments_carryIn_one_five_eq_incomingCarry :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).carryIn =
+        coordinate.incomingCarry 1 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)).carryIn =
+        coordinate.incomingCarry 5 := by
+  simpa using
+    coordinate.stateAlignments_carryIn_one_five_eq_incomingCarry_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      coordinate_goodMode (by rfl) coordinate_blockBase_mod_68_eq_four
+
+/-- Even without positive lookahead, the eight-block finite trace already
+realizes the canonical incoming carries at the two obstruction positions. This
+is a carry-state certificate only; it is not the certified output-agreement
+window used by the obstruction hook. -/
+theorem coordinate_stateAlignments_carryIn_one_five_eq_incomingCarry_eight_zero :
+    ((coordinate.stateAlignments coordinate_goodMode 8 0)[1]'(by native_decide)).carryIn =
+        coordinate.incomingCarry 1 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 0)[5]'(by native_decide)).carryIn =
+        coordinate.incomingCarry 5 := by
+  simpa using
+    coordinate.stateAlignments_carryIn_one_five_eq_incomingCarry_eight_zero_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      coordinate_goodMode (by rfl) coordinate_blockBase_mod_68_eq_four
+
+/-- The displayed carried block is hidden: both conflicting positions emit `588`. -/
+theorem coordinate_conflict_carried_blocks_one_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).carryBlockValue = 588 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)).carryBlockValue = 588 := by
+  native_decide
+
+/-- The obstruction-first family theorem specializes to the certified `8/1`
+window for the base-10 `Composite68` coordinate. -/
+theorem coordinate_stateAlignments_one_five_hiddenCoefficientConflict_eight_one :
+    let row1 := (coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)
+    let row5 := (coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)
+    row1.remainderIn = row5.remainderIn ∧
+      row1.coefficient ≠ row5.coefficient ∧
+      row1.carryIn = coordinate.incomingCarry 1 ∧
+      row5.carryIn = coordinate.incomingCarry 5 ∧
+      row1.carryBlockValue = row5.carryBlockValue ∧
+      ¬ List.FunctionalOnFst
+        ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+          (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  simpa using
+    coordinate.stateAlignments_one_five_hiddenCoefficientConflict_eight_any_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      coordinate_goodMode 1 (by rfl) coordinate_blockBase_mod_68_eq_four
+
+/-- The certified obstruction wrapper identifies the hidden carried outputs
+with the emitted remainder blocks on the base-10 `Composite68` `8/1` window. -/
+theorem coordinate_stateAlignments_one_five_certifiedVisibilityObstruction_eight_one :
+    let row1 := (coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)
+    let row5 := (coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)
+    (row1.remainderIn = row5.remainderIn ∧
+      row1.coefficient ≠ row5.coefficient ∧
+      row1.carryIn = coordinate.incomingCarry 1 ∧
+      row5.carryIn = coordinate.incomingCarry 5 ∧
+      row1.carryBlockValue = row5.carryBlockValue ∧
+      ¬ List.FunctionalOnFst
+        ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+          (fun alignment => (alignment.remainderIn, alignment.coefficient)))) ∧
+      row1.carryBlockValue = row1.remainderBlockValue ∧
+      row5.carryBlockValue = row5.remainderBlockValue := by
+  simpa using
+    coordinate.stateAlignments_one_five_certifiedVisibilityObstruction_eight_of_lookaheadCertificate_and_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      coordinate_goodMode 1 coordinate_lookaheadCertificate_eight_one
+      (by rfl) coordinate_blockBase_mod_68_eq_four
+
+/-- The compact cross-base certified-conflict record specializes to the
+base-10 `Composite68` `8/1` window. -/
+theorem coordinate_stateAlignments_one_five_certifiedConflict_eight_one :
+    coordinate.StateAlignmentCertifiedConflict coordinate_goodMode 8 1 1 5
+      (by rw [coordinate.stateAlignments_length]; decide)
+      (by rw [coordinate.stateAlignments_length]; decide) := by
+  exact
+    coordinate.stateAlignments_one_five_certifiedConflict_eight_of_lookaheadCertificate_and_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      coordinate_goodMode 1 coordinate_lookaheadCertificate_eight_one
+      (by rfl) coordinate_blockBase_mod_68_eq_four
+
+/-- Proof-style exemplar for the recommended obstruction-record path:
+family wrapper -> record -> projection accessor. -/
+theorem coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_one :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord :
+      coordinate.StateAlignmentCertifiedConflict coordinate_goodMode 8 1 1 5
+        (by rw [coordinate.stateAlignments_length]; decide)
+        (by rw [coordinate.stateAlignments_length]; decide) :=
+    coordinate.stateAlignments_one_five_certifiedConflict_eight_of_lookaheadCertificate_and_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      coordinate_goodMode 1 coordinate_lookaheadCertificate_eight_one
+      (by rfl) coordinate_blockBase_mod_68_eq_four
+  exact hrecord.not_remainderToCoefficientFunctional
+
+/-- Proof-style exemplar for the factor-through obstruction path:
+family wrapper -> record -> factor-through projection accessor. -/
+theorem coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFactorsThrough_eight_one :
+    ¬ FactorsThrough
+      (fun side : Bool =>
+        if side then
+          ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by
+            rw [coordinate.stateAlignments_length]
+            decide)).remainderIn
+        else
+          ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by
+            rw [coordinate.stateAlignments_length]
+            decide)).remainderIn)
+      (fun side : Bool =>
+        if side then
+          ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by
+            rw [coordinate.stateAlignments_length]
+            decide)).coefficient
+        else
+          ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by
+            rw [coordinate.stateAlignments_length]
+            decide)).coefficient) := by
+  have hrecord :
+      coordinate.StateAlignmentCertifiedConflict coordinate_goodMode 8 1 1 5
+        (by rw [coordinate.stateAlignments_length]; decide)
+        (by rw [coordinate.stateAlignments_length]; decide) :=
+    coordinate.stateAlignments_one_five_certifiedConflict_eight_of_lookaheadCertificate_and_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      coordinate_goodMode 1 coordinate_lookaheadCertificate_eight_one
+      (by rfl) coordinate_blockBase_mod_68_eq_four
+  exact hrecord.not_remainderToCoefficientFactorsThrough
+
+/-- Proof-style exemplar for the full finite-window factor-through obstruction:
+window nonfunctionality -> state-alignment factor-through corollary. -/
+theorem coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFactorsThrough_fullWindow_eight_one :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    ¬ FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_not_remainderToCoefficientFactorsThrough_of_not_remainderToCoefficientFunctional
+      coordinate_goodMode 8 1
+      coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_one
+
+/-- The selector-certified family theorem specializes to the concrete first
+branch on this worked example: the minimal certified lookahead is `1`, and
+that minimal window still exposes the certified hidden coefficient conflict. -/
+theorem coordinate_minimalLookaheadCertificate_selector_certifiedVisibilityObstruction_eight_one :
+    coordinate.isMinimalLookaheadCertificate 8 1 ∧
+      coordinate.stateAlignmentsOneFiveCertifiedVisibilityObstruction coordinate_goodMode 1 := by
+  have hselector :=
+    coordinate.minimalLookaheadCertificate_eight_selector_certifiedVisibilityObstruction_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      coordinate_goodMode (by rfl) coordinate_blockBase_mod_68_eq_four
+  simpa [coordinate_quotientQ_eq_147] using hselector
+
+/-- The observed repeated remainder state hides incompatible raw coefficients,
+so the finite remainder-to-coefficient map is not functional on this certified
+window. This is a finite obstruction hook only; it does not close either open
+global claim. -/
+theorem coordinate_not_coefficientFunctional_eight_one :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate_stateAlignments_one_five_certifiedConflict_eight_one.not_remainderToCoefficientFunctional
+
+end QRTour.Composite68
+
+namespace QRTour.Composite68Base30
+
+/-! ### Empirical Obstruction Hook: 68 in base 30
+
+This packages the base-30 member of the same hidden-output obstruction shape
+as `QRTour.Composite68`. It is a finite worked-example hook only; it does not
+promote a new atlas claim or close either open frontier claim.
+-/
+
+/-- The obstruction coordinate `(base=30, N=68, stride=3)`. -/
+def coordinate : BlockCoordinate where
+  base := 30
+  modulus := 68
+  stride := 3
+  modulus_pos := by decide
+
+/-- The obstruction coordinate is a good mode: `68 < 30^3`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The block base for the obstruction coordinate is `27000`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 27000 := by
+  native_decide
+
+/-- The base-30 obstruction coordinate also lands in `B ≡ 4 (mod 68)`. -/
+theorem coordinate_blockBase_mod_68_eq_four : coordinate.blockBase % 68 = 4 := by
+  native_decide
+
+/-- The quotient in `27000 = q*68 + k` is `q = 397`. -/
+theorem coordinate_quotientQ_eq_397 : coordinate.quotientQ = 397 := by
+  native_decide
+
+/-- The quotient lies past the one-lookahead certificate threshold `q ≥ 75`. -/
+theorem coordinate_quotientQ_ge_seventy_five : 75 ≤ coordinate.quotientQ := by
+  native_decide
+
+/-- The quotient is positive, so this is a good-mode coordinate. -/
+theorem coordinate_quotientQ_pos : 0 < coordinate.quotientQ := by
+  native_decide
+
+/-- The remainder in `27000 = q*68 + k` is `k = 4`. -/
+theorem coordinate_remainderK_eq_four : coordinate.remainderK = 4 := by
+  native_decide
+
+/-- The canonical incoming carry at position `1` vanishes throughout the
+congruence-family arithmetic, and in particular on this coordinate. -/
+theorem coordinate_incomingCarry_one_eq_zero : coordinate.incomingCarry 1 = 0 := by
+  exact coordinate.incomingCarry_one_eq_zero_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    coordinate_goodMode (by rfl) coordinate_blockBase_mod_68_eq_four
+
+/-- The canonical incoming carry at position `5` is `60` on this coordinate. -/
+theorem coordinate_incomingCarry_five_eq_sixty : coordinate.incomingCarry 5 = 60 := by
+  exact coordinate.incomingCarry_five_eq_sixty_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    coordinate_goodMode (by rfl) coordinate_blockBase_mod_68_eq_four
+
+/-- The arithmetic incoming-carry layer already explains the hidden output:
+positions `1` and `5` emit the same block after adding their canonical incoming
+carries and reducing modulo the block base. -/
+theorem coordinate_incomingCarry_hiddenOutput_one_five :
+    (coordinate.rawCoefficient 1 + coordinate.incomingCarry 1) % coordinate.blockBase =
+      (coordinate.rawCoefficient 5 + coordinate.incomingCarry 5) % coordinate.blockBase := by
+  exact coordinate.incomingCarry_hiddenOutput_one_five_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+    coordinate_goodMode (by rfl) coordinate_blockBase_mod_68_eq_four
+
+/-- On the obstruction window, the exact lookahead gap numerator is `10208`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 10208 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  exact
+    coordinate.lookaheadCertificateHolds_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_ge_seventy_five
+      coordinate_goodMode (by rfl) coordinate_blockBase_mod_68_eq_four
+      coordinate_quotientQ_ge_seventy_five
+
+/-- The same base-30 obstruction coordinate also satisfies the two-lookahead
+family certificate. -/
+theorem coordinate_lookaheadCertificate_eight_two :
+    coordinate.lookaheadCertificateHolds 8 2 := by
+  exact
+    coordinate.lookaheadCertificateHolds_eight_two_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_ge_three
+      coordinate_goodMode (by rfl) coordinate_blockBase_mod_68_eq_four
+      (by native_decide)
+
+/-- Three blocks of lookahead certify every good member of the `N = 68`,
+`B ≡ 4 (mod 68)` family, and therefore this base-30 coordinate. -/
+theorem coordinate_lookaheadCertificate_eight_three :
+    coordinate.lookaheadCertificateHolds 8 3 := by
+  exact
+    coordinate.lookaheadCertificateHolds_eight_three_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      coordinate_goodMode (by rfl) coordinate_blockBase_mod_68_eq_four
+
+/-- The certified base-30 obstruction window still has finite output agreement. -/
+theorem coordinate_visibleCarryWord_eq_emittedBlockWord_eight_one :
+    coordinate.visibleCarryWord coordinate_goodMode 8 1 = coordinate.emittedBlockWord 8 := by
+  exact coordinate.visibleCarryWord_eq_emittedBlockWord_of_lookaheadCertificate
+    coordinate_goodMode (by native_decide) 8 1 coordinate_lookaheadCertificate_eight_one
+
+/-- Positions `1` and `5` share the same observed remainder state `4`. -/
+theorem coordinate_conflict_remainder_state_one_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).remainderIn = 4 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)).remainderIn = 4 := by
+  native_decide
+
+/-- The same two positions have incompatible raw coefficients `1588` and `406528`. -/
+theorem coordinate_conflict_coefficients_one_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).coefficient = 1588 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)).coefficient = 406528 := by
+  native_decide
+
+/-- The conflicting positions receive incoming carry states `0` and `60`. -/
+theorem coordinate_conflict_carry_states_one_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).carryIn = 0 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)).carryIn = 60 := by
+  native_decide
+
+/-- On the certified `8/1` trace, the finite carry state at position `1`
+matches the canonical incoming-carry formula. -/
+theorem coordinate_stateAlignments_carryIn_one_eq_incomingCarry_one :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).carryIn =
+      coordinate.incomingCarry 1 := by
+  simpa using
+    (coordinate.stateAlignments_carryIn_one_five_eq_incomingCarry_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      coordinate_goodMode (by rfl) coordinate_blockBase_mod_68_eq_four).1
+
+/-- On the certified `8/1` trace, the finite carry state at position `5`
+matches the canonical incoming-carry formula. -/
+theorem coordinate_stateAlignments_carryIn_five_eq_incomingCarry_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)).carryIn =
+      coordinate.incomingCarry 5 := by
+  simpa using
+    (coordinate.stateAlignments_carryIn_one_five_eq_incomingCarry_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      coordinate_goodMode (by rfl) coordinate_blockBase_mod_68_eq_four).2
+
+/-- The certified finite trace realizes the canonical incoming carries at the
+two obstruction positions. -/
+theorem coordinate_stateAlignments_carryIn_one_five_eq_incomingCarry :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).carryIn =
+        coordinate.incomingCarry 1 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)).carryIn =
+        coordinate.incomingCarry 5 := by
+  simpa using
+    coordinate.stateAlignments_carryIn_one_five_eq_incomingCarry_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      coordinate_goodMode (by rfl) coordinate_blockBase_mod_68_eq_four
+
+/-- Even without positive lookahead, the eight-block finite trace already
+realizes the canonical incoming carries at the two obstruction positions. This
+is a carry-state certificate only; it is not the certified output-agreement
+window used by the obstruction hook. -/
+theorem coordinate_stateAlignments_carryIn_one_five_eq_incomingCarry_eight_zero :
+    ((coordinate.stateAlignments coordinate_goodMode 8 0)[1]'(by native_decide)).carryIn =
+        coordinate.incomingCarry 1 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 0)[5]'(by native_decide)).carryIn =
+        coordinate.incomingCarry 5 := by
+  simpa using
+    coordinate.stateAlignments_carryIn_one_five_eq_incomingCarry_eight_zero_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      coordinate_goodMode (by rfl) coordinate_blockBase_mod_68_eq_four
+
+/-- The displayed carried block is hidden: both conflicting positions emit `1588`. -/
+theorem coordinate_conflict_carried_blocks_one_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).carryBlockValue = 1588 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)).carryBlockValue = 1588 := by
+  native_decide
+
+/-- The obstruction-first family theorem specializes to the certified `8/1`
+window for the base-30 `Composite68` coordinate. -/
+theorem coordinate_stateAlignments_one_five_hiddenCoefficientConflict_eight_one :
+    let row1 := (coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)
+    let row5 := (coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)
+    row1.remainderIn = row5.remainderIn ∧
+      row1.coefficient ≠ row5.coefficient ∧
+      row1.carryIn = coordinate.incomingCarry 1 ∧
+      row5.carryIn = coordinate.incomingCarry 5 ∧
+      row1.carryBlockValue = row5.carryBlockValue ∧
+      ¬ List.FunctionalOnFst
+        ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+          (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  simpa using
+    coordinate.stateAlignments_one_five_hiddenCoefficientConflict_eight_any_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      coordinate_goodMode 1 (by rfl) coordinate_blockBase_mod_68_eq_four
+
+/-- The certified obstruction wrapper identifies the hidden carried outputs
+with the emitted remainder blocks on the base-30 `Composite68` `8/1` window. -/
+theorem coordinate_stateAlignments_one_five_certifiedVisibilityObstruction_eight_one :
+    let row1 := (coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)
+    let row5 := (coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)
+    (row1.remainderIn = row5.remainderIn ∧
+      row1.coefficient ≠ row5.coefficient ∧
+      row1.carryIn = coordinate.incomingCarry 1 ∧
+      row5.carryIn = coordinate.incomingCarry 5 ∧
+      row1.carryBlockValue = row5.carryBlockValue ∧
+      ¬ List.FunctionalOnFst
+        ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+          (fun alignment => (alignment.remainderIn, alignment.coefficient)))) ∧
+      row1.carryBlockValue = row1.remainderBlockValue ∧
+      row5.carryBlockValue = row5.remainderBlockValue := by
+  simpa using
+    coordinate.stateAlignments_one_five_certifiedVisibilityObstruction_eight_of_lookaheadCertificate_and_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      coordinate_goodMode 1 coordinate_lookaheadCertificate_eight_one
+      (by rfl) coordinate_blockBase_mod_68_eq_four
+
+/-- The compact cross-base certified-conflict record specializes to the
+base-30 `Composite68` `8/1` window. -/
+theorem coordinate_stateAlignments_one_five_certifiedConflict_eight_one :
+    coordinate.StateAlignmentCertifiedConflict coordinate_goodMode 8 1 1 5
+      (by rw [coordinate.stateAlignments_length]; decide)
+      (by rw [coordinate.stateAlignments_length]; decide) := by
+  exact
+    coordinate.stateAlignments_one_five_certifiedConflict_eight_of_lookaheadCertificate_and_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      coordinate_goodMode 1 coordinate_lookaheadCertificate_eight_one
+      (by rfl) coordinate_blockBase_mod_68_eq_four
+
+/-- Proof-style exemplar for the recommended obstruction-record path:
+family wrapper -> record -> projection accessor. -/
+theorem coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_one :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord :
+      coordinate.StateAlignmentCertifiedConflict coordinate_goodMode 8 1 1 5
+        (by rw [coordinate.stateAlignments_length]; decide)
+        (by rw [coordinate.stateAlignments_length]; decide) :=
+    coordinate.stateAlignments_one_five_certifiedConflict_eight_of_lookaheadCertificate_and_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      coordinate_goodMode 1 coordinate_lookaheadCertificate_eight_one
+      (by rfl) coordinate_blockBase_mod_68_eq_four
+  exact hrecord.not_remainderToCoefficientFunctional
+
+/-- Proof-style exemplar for the factor-through obstruction path:
+family wrapper -> record -> factor-through projection accessor. -/
+theorem coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFactorsThrough_eight_one :
+    ¬ FactorsThrough
+      (fun side : Bool =>
+        if side then
+          ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by
+            rw [coordinate.stateAlignments_length]
+            decide)).remainderIn
+        else
+          ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by
+            rw [coordinate.stateAlignments_length]
+            decide)).remainderIn)
+      (fun side : Bool =>
+        if side then
+          ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by
+            rw [coordinate.stateAlignments_length]
+            decide)).coefficient
+        else
+          ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by
+            rw [coordinate.stateAlignments_length]
+            decide)).coefficient) := by
+  have hrecord :
+      coordinate.StateAlignmentCertifiedConflict coordinate_goodMode 8 1 1 5
+        (by rw [coordinate.stateAlignments_length]; decide)
+        (by rw [coordinate.stateAlignments_length]; decide) :=
+    coordinate.stateAlignments_one_five_certifiedConflict_eight_of_lookaheadCertificate_and_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      coordinate_goodMode 1 coordinate_lookaheadCertificate_eight_one
+      (by rfl) coordinate_blockBase_mod_68_eq_four
+  exact hrecord.not_remainderToCoefficientFactorsThrough
+
+/-- Proof-style exemplar for the full finite-window factor-through obstruction:
+window nonfunctionality -> state-alignment factor-through corollary. -/
+theorem coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFactorsThrough_fullWindow_eight_one :
+    let pairs :=
+      (coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    ¬ FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    coordinate.stateAlignments_not_remainderToCoefficientFactorsThrough_of_not_remainderToCoefficientFunctional
+      coordinate_goodMode 8 1
+      coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_one
+
+/-- The selector-certified family theorem specializes to the concrete first
+branch on this base-30 worked example: the minimal certified lookahead is `1`,
+and that minimal window still exposes the certified hidden coefficient
+conflict. -/
+theorem coordinate_minimalLookaheadCertificate_selector_certifiedVisibilityObstruction_eight_one :
+    coordinate.isMinimalLookaheadCertificate 8 1 ∧
+      coordinate.stateAlignmentsOneFiveCertifiedVisibilityObstruction coordinate_goodMode 1 := by
+  have hselector :=
+    coordinate.minimalLookaheadCertificate_eight_selector_certifiedVisibilityObstruction_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four
+      coordinate_goodMode (by rfl) coordinate_blockBase_mod_68_eq_four
+  simpa [coordinate_quotientQ_eq_397] using hselector
+
+/-- The base-30 member has the same finite remainder-to-coefficient obstruction
+shape as the base-10 `Composite68` hook. -/
+theorem coordinate_not_coefficientFunctional_eight_one :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    coordinate_stateAlignments_one_five_certifiedConflict_eight_one.not_remainderToCoefficientFunctional
+
+end QRTour.Composite68Base30
+
+namespace QRTour.FutureBase10N17
+
+/-! ### Shape17/K4 shifted periodic-core example: base 10, N = 17
+
+This packages the shifted `N = 17` member of the first emitted
+Shape17/K4 observability family. It is a finite worked-example hook only: it
+proves the record-shaped obstruction on the certified `8/2` window and leaves
+global same-core classification, `small_k_visibility_threshold`, and
+`carry_dfa_factorization` open.
+-/
+
+/-- The shifted Shape17/K4 coordinate `(base=10, N=17, stride=4)`. -/
+def coordinate : BlockCoordinate where
+  base := 10
+  modulus := 17
+  stride := 4
+  modulus_pos := by decide
+
+/-- The shifted Shape17/K4 coordinate is a good mode: `17 < 10000`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `10000`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 10000 := by
+  native_decide
+
+/-- The quotient in `10000 = q*17 + k` is `q = 588`. -/
+theorem coordinate_quotientQ_eq_five_hundred_eighty_eight :
+    coordinate.quotientQ = 588 := by
+  native_decide
+
+/-- The remainder in `10000 = q*17 + k` is `k = 4`. -/
+theorem coordinate_remainderK_eq_four : coordinate.remainderK = 4 := by
+  native_decide
+
+/-- On the shifted Shape17/K4 window, the exact lookahead gap numerator is
+`94179328`. -/
+theorem coordinate_lookaheadGapNumerator_eight_two :
+    coordinate.lookaheadGapNumerator 8 2 = 94179328 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- Two blocks of lookahead certify the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_two :
+    coordinate.lookaheadCertificateHolds 8 2 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- Positions `0` and `4` share the same observed remainder state `1`. -/
+theorem coordinate_conflict_remainder_state_zero_four :
+    ((coordinate.stateAlignments coordinate_goodMode 8 2)[0]'(by native_decide)).remainderIn = 1 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 2)[4]'(by native_decide)).remainderIn = 1 := by
+  native_decide
+
+/-- The same two positions have incompatible raw coefficients `588` and
+`150528`. -/
+theorem coordinate_conflict_coefficients_zero_four :
+    ((coordinate.stateAlignments coordinate_goodMode 8 2)[0]'(by native_decide)).coefficient = 588 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 2)[4]'(by native_decide)).coefficient = 150528 := by
+  native_decide
+
+/-- The conflicting positions receive incoming carry states `0` and `60`. -/
+theorem coordinate_conflict_carry_states_zero_four :
+    ((coordinate.stateAlignments coordinate_goodMode 8 2)[0]'(by native_decide)).carryIn = 0 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 2)[4]'(by native_decide)).carryIn = 60 := by
+  native_decide
+
+/-- The displayed carried block is hidden: both conflicting positions emit
+`588`. -/
+theorem coordinate_conflict_carried_blocks_zero_four :
+    ((coordinate.stateAlignments coordinate_goodMode 8 2)[0]'(by native_decide)).carryBlockValue = 588 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 2)[4]'(by native_decide)).carryBlockValue = 588 := by
+  native_decide
+
+/-- The shifted Shape17/K4 finite obstruction record for the base-10 `N = 17`
+`8/2` window. -/
+theorem coordinate_stateAlignments_zero_four_certifiedConflict_eight_two :
+    coordinate.StateAlignmentCertifiedConflict coordinate_goodMode 8 2 0 4
+      (by rw [coordinate.stateAlignments_length]; decide)
+      (by rw [coordinate.stateAlignments_length]; decide) := by
+  exact
+    { remainderIn_eq := by native_decide
+      coefficient_ne := by native_decide
+      left_carryIn_eq_incomingCarry := by native_decide
+      right_carryIn_eq_incomingCarry := by native_decide
+      carryBlockValue_eq := by native_decide
+      remainderToCoefficient_not_functional := by native_decide
+      left_carryBlockValue_eq_remainderBlockValue := by native_decide
+      right_carryBlockValue_eq_remainderBlockValue := by native_decide }
+
+/-- Proof-style exemplar for the generated projection stub: record theorem ->
+projection accessor. -/
+theorem coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_two :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 2).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_zero_four_certifiedConflict_eight_two
+  exact hrecord.not_remainderToCoefficientFunctional
+
+/-- Copyable scaffold projection generated from
+`base10_n17_m4_blocks8_L2`. -/
+theorem base10_n17_m4_blocks8_L2_not_remainderToCoefficientFunctional :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 2).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_zero_four_certifiedConflict_eight_two
+  exact hrecord.not_remainderToCoefficientFunctional
+
+end QRTour.FutureBase10N17
+
+namespace QRTour.FutureBase10N34
+
+/-! ### Shape17/K4 doubled periodic-core example: base 10, N = 34
+
+This packages the doubled `N = 34` member of the first emitted Shape17/K4
+observability family. It is a finite worked-example hook only and does not add
+registry, theorem-witness, atlas, or global factorization claims.
+-/
+
+/-- The doubled Shape17/K4 coordinate `(base=10, N=34, stride=4)`. -/
+def coordinate : BlockCoordinate where
+  base := 10
+  modulus := 34
+  stride := 4
+  modulus_pos := by decide
+
+/-- The doubled Shape17/K4 coordinate is a good mode: `34 < 10000`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `10000`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 10000 := by
+  native_decide
+
+/-- The quotient in `10000 = q*34 + k` is `q = 294`. -/
+theorem coordinate_quotientQ_eq_two_hundred_ninety_four :
+    coordinate.quotientQ = 294 := by
+  native_decide
+
+/-- The remainder in `10000 = q*34 + k` is `k = 4`. -/
+theorem coordinate_remainderK_eq_four : coordinate.remainderK = 4 := by
+  native_decide
+
+/-- On the doubled Shape17/K4 window, the exact lookahead gap numerator is
+`47089664`. -/
+theorem coordinate_lookaheadGapNumerator_eight_two :
+    coordinate.lookaheadGapNumerator 8 2 = 47089664 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- Two blocks of lookahead certify the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_two :
+    coordinate.lookaheadCertificateHolds 8 2 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- Positions `1` and `5` share the same observed remainder state `4`. -/
+theorem coordinate_conflict_remainder_state_one_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 2)[1]'(by native_decide)).remainderIn = 4 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 2)[5]'(by native_decide)).remainderIn = 4 := by
+  native_decide
+
+/-- The same two positions have incompatible raw coefficients `1176` and
+`301056`. -/
+theorem coordinate_conflict_coefficients_one_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 2)[1]'(by native_decide)).coefficient = 1176 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 2)[5]'(by native_decide)).coefficient = 301056 := by
+  native_decide
+
+/-- The conflicting positions receive incoming carry states `0` and `120`. -/
+theorem coordinate_conflict_carry_states_one_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 2)[1]'(by native_decide)).carryIn = 0 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 2)[5]'(by native_decide)).carryIn = 120 := by
+  native_decide
+
+/-- The displayed carried block is hidden: both conflicting positions emit
+`1176`. -/
+theorem coordinate_conflict_carried_blocks_one_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 2)[1]'(by native_decide)).carryBlockValue = 1176 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 2)[5]'(by native_decide)).carryBlockValue = 1176 := by
+  native_decide
+
+/-- The doubled Shape17/K4 finite obstruction record for the base-10 `N = 34`
+`8/2` window. -/
+theorem coordinate_stateAlignments_one_five_certifiedConflict_eight_two :
+    coordinate.StateAlignmentCertifiedConflict coordinate_goodMode 8 2 1 5
+      (by rw [coordinate.stateAlignments_length]; decide)
+      (by rw [coordinate.stateAlignments_length]; decide) := by
+  exact
+    { remainderIn_eq := by native_decide
+      coefficient_ne := by native_decide
+      left_carryIn_eq_incomingCarry := by native_decide
+      right_carryIn_eq_incomingCarry := by native_decide
+      carryBlockValue_eq := by native_decide
+      remainderToCoefficient_not_functional := by native_decide
+      left_carryBlockValue_eq_remainderBlockValue := by native_decide
+      right_carryBlockValue_eq_remainderBlockValue := by native_decide }
+
+/-- Proof-style exemplar for the generated projection stub: record theorem ->
+projection accessor. -/
+theorem coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_two :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 2).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_one_five_certifiedConflict_eight_two
+  exact hrecord.not_remainderToCoefficientFunctional
+
+/-- Copyable scaffold projection generated from
+`base10_n34_m4_blocks8_L2`. -/
+theorem base10_n34_m4_blocks8_L2_not_remainderToCoefficientFunctional :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 2).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_one_five_certifiedConflict_eight_two
+  exact hrecord.not_remainderToCoefficientFunctional
+
+end QRTour.FutureBase10N34
+
+namespace QRTour.Shape17K4
+
+/-! ### Finite Shape17/K4 shift witness
+
+This namespace compares the concrete state-alignment rows behind the first
+emitted Shape17/K4 source-symmetry family. It proves a finite shift-and-scale
+payload only: the `N = 17` conflict is seen on `[0,4]`, while the `N = 34`
+and base-10 `N = 68` windows see the corresponding payload on `[1,5]`.
+-/
+
+/-- Left row of the shifted base-10 `N = 17` conflict. -/
+def base10N17Left : StateAlignment :=
+  (FutureBase10N17.coordinate.stateAlignments
+    FutureBase10N17.coordinate_goodMode 8 2)[0]'(by native_decide)
+
+/-- Right row of the shifted base-10 `N = 17` conflict. -/
+def base10N17Right : StateAlignment :=
+  (FutureBase10N17.coordinate.stateAlignments
+    FutureBase10N17.coordinate_goodMode 8 2)[4]'(by native_decide)
+
+/-- Left row of the doubled base-10 `N = 34` conflict. -/
+def base10N34Left : StateAlignment :=
+  (FutureBase10N34.coordinate.stateAlignments
+    FutureBase10N34.coordinate_goodMode 8 2)[1]'(by native_decide)
+
+/-- Right row of the doubled base-10 `N = 34` conflict. -/
+def base10N34Right : StateAlignment :=
+  (FutureBase10N34.coordinate.stateAlignments
+    FutureBase10N34.coordinate_goodMode 8 2)[5]'(by native_decide)
+
+/-- Left row of the base-10 `N = 68` Composite68 conflict. -/
+def base10N68Left : StateAlignment :=
+  (Composite68.coordinate.stateAlignments
+    Composite68.coordinate_goodMode 8 1)[1]'(by native_decide)
+
+/-- Right row of the base-10 `N = 68` Composite68 conflict. -/
+def base10N68Right : StateAlignment :=
+  (Composite68.coordinate.stateAlignments
+    Composite68.coordinate_goodMode 8 1)[5]'(by native_decide)
+
+/-- The shifted base-10 `N = 17` conflict has the same coefficient, carry, and
+hidden carried-output payload as the base-10 `N = 68` Composite68 conflict,
+but one position earlier and with observed remainder state `1` instead of
+`4`. -/
+theorem base10_core17_to_composite68_conflict_shift_exact :
+    base10N68Left.position = base10N17Left.position + 1 ∧
+      base10N68Right.position = base10N17Right.position + 1 ∧
+      base10N17Left.coefficient = base10N68Left.coefficient ∧
+      base10N17Right.coefficient = base10N68Right.coefficient ∧
+      base10N17Left.carryIn = base10N68Left.carryIn ∧
+      base10N17Right.carryIn = base10N68Right.carryIn ∧
+      base10N17Left.carryBlockValue = base10N68Left.carryBlockValue ∧
+      base10N17Right.carryBlockValue = base10N68Right.carryBlockValue ∧
+      base10N17Left.remainderIn = 1 ∧
+      base10N17Right.remainderIn = 1 ∧
+      base10N68Left.remainderIn = 4 ∧
+      base10N68Right.remainderIn = 4 := by
+  native_decide
+
+/-- The doubled base-10 `N = 34` conflict moves to the Composite68-style
+`[1,5]` window and scales the `N = 17` coefficient, carry, and carried-output
+payload by two. -/
+theorem base10_core17_to_double34_conflict_shift_scaled :
+    base10N34Left.position = base10N17Left.position + 1 ∧
+      base10N34Right.position = base10N17Right.position + 1 ∧
+      base10N34Left.coefficient = 2 * base10N17Left.coefficient ∧
+      base10N34Right.coefficient = 2 * base10N17Right.coefficient ∧
+      base10N34Left.carryIn = 2 * base10N17Left.carryIn ∧
+      base10N34Right.carryIn = 2 * base10N17Right.carryIn ∧
+      base10N34Left.carryBlockValue = 2 * base10N17Left.carryBlockValue ∧
+      base10N34Right.carryBlockValue = 2 * base10N17Right.carryBlockValue ∧
+      base10N17Left.remainderIn = 1 ∧
+      base10N17Right.remainderIn = 1 ∧
+      base10N34Left.remainderIn = 4 ∧
+      base10N34Right.remainderIn = 4 := by
+  native_decide
+
+/-- Arithmetic same-core criterion for the `17 -> 68` Shape17/K4 member: the
+base-supported factor is exactly `k`, so the hidden canonical carried-output
+equality at core positions `[0,4]` transports to actual positions `[1,5]`
+without scaling. -/
+theorem base10_n68_sameCore_scale_one_hiddenCarryBlockValue_shift :
+    (actualCoordinate 10 68 4 (by decide)).canonicalCarryBlockValue 1 =
+      (actualCoordinate 10 68 4 (by decide)).canonicalCarryBlockValue 5 := by
+  exact
+    sameCoreCompatible_hiddenCarryBlockValue_shift_scaled_one
+      (base := 10) (n := 68) (stride := 4) (scale := 1)
+      (left := 0) (right := 4) (hn := by decide)
+      (by
+        unfold actualCoordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+        native_decide)
+      (by
+        unfold sameCoreCompatible actualCoordinate strippedPeriodModulus
+          BlockCoordinate.remainderK BlockCoordinate.blockBase
+        native_decide)
+      (by native_decide)
+      (by native_decide) (by native_decide) (by native_decide)
+      (by native_decide) (by native_decide)
+
+/-- Arithmetic same-core criterion for the `17 -> 34` Shape17/K4 member: the
+base-supported factor is half of `k`, so the hidden canonical carried-output
+equality at core positions `[0,4]` transports to actual positions `[1,5]`
+with scale two, provided the scaled quotient and block remainders remain below
+their moduli. -/
+theorem base10_n34_sameCore_scale_two_hiddenCarryBlockValue_shift :
+    (actualCoordinate 10 34 4 (by decide)).canonicalCarryBlockValue 1 =
+      (actualCoordinate 10 34 4 (by decide)).canonicalCarryBlockValue 5 := by
+  exact
+    sameCoreCompatible_hiddenCarryBlockValue_shift_scaled_one
+      (base := 10) (n := 34) (stride := 4) (scale := 2)
+      (left := 0) (right := 4) (hn := by decide)
+      (by
+        unfold actualCoordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+        native_decide)
+      (by
+        unfold sameCoreCompatible actualCoordinate strippedPeriodModulus
+          BlockCoordinate.remainderK BlockCoordinate.blockBase
+        native_decide)
+      (by native_decide)
+      (by native_decide) (by native_decide) (by native_decide)
+      (by native_decide) (by native_decide)
+
+/-- Arithmetic same-core criterion for the base-30 `17 -> 68` Shape17/K4
+member: the base-supported factor is exactly `k`, so the hidden canonical
+carried-output equality transports from core positions `[0,4]` to actual
+positions `[1,5]` without scaling. -/
+theorem base30_n68_sameCore_scale_one_hiddenCarryBlockValue_shift :
+    (actualCoordinate 30 68 3 (by decide)).canonicalCarryBlockValue 1 =
+      (actualCoordinate 30 68 3 (by decide)).canonicalCarryBlockValue 5 := by
+  exact
+    sameCoreCompatible_hiddenCarryBlockValue_shift_scaled_one
+      (base := 30) (n := 68) (stride := 3) (scale := 1)
+      (left := 0) (right := 4) (hn := by decide)
+      (by
+        unfold actualCoordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+        native_decide)
+      (by
+        unfold sameCoreCompatible actualCoordinate strippedPeriodModulus
+          BlockCoordinate.remainderK BlockCoordinate.blockBase
+        native_decide)
+      (by native_decide)
+      (by native_decide) (by native_decide) (by native_decide)
+      (by native_decide) (by native_decide)
+
+/-- Arithmetic same-core criterion for the base-30 `17 -> 34` Shape17/K4
+member: the base-supported factor is half of `k`, so the hidden canonical
+carried-output equality transports from core positions `[0,4]` to actual
+positions `[1,5]` with scale two. -/
+theorem base30_n34_sameCore_scale_two_hiddenCarryBlockValue_shift :
+    (actualCoordinate 30 34 3 (by decide)).canonicalCarryBlockValue 1 =
+      (actualCoordinate 30 34 3 (by decide)).canonicalCarryBlockValue 5 := by
+  exact
+    sameCoreCompatible_hiddenCarryBlockValue_shift_scaled_one
+      (base := 30) (n := 34) (stride := 3) (scale := 2)
+      (left := 0) (right := 4) (hn := by decide)
+      (by
+        unfold actualCoordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+        native_decide)
+      (by
+        unfold sameCoreCompatible actualCoordinate strippedPeriodModulus
+          BlockCoordinate.remainderK BlockCoordinate.blockBase
+        native_decide)
+      (by native_decide)
+      (by native_decide) (by native_decide) (by native_decide)
+      (by native_decide) (by native_decide)
+
+end QRTour.Shape17K4
+
+namespace QRTour.FutureBase30N13
+
+/-! ### Shape13/K4 source-core example: base 30, N = 13
+
+This packages the source-core member of the first mod-stable carry-loss
+observability family. It proves the record-shaped obstruction on the certified
+`8/5` window and is used by `QRTour.Shape13K4` as the finite source row for the
+base-30 `13 -> 26` shift. This remains a worked finite package only.
+-/
+
+/-- The Shape13/K4 source-core coordinate `(base=30, N=13, stride=1)`. -/
+def coordinate : BlockCoordinate where
+  base := 30
+  modulus := 13
+  stride := 1
+  modulus_pos := by decide
+
+/-- The source-core coordinate is a good mode: `13 < 30`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `30`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 30 := by
+  native_decide
+
+/-- The quotient in `30 = q*13 + k` is `q = 2`. -/
+theorem coordinate_quotientQ_eq_two : coordinate.quotientQ = 2 := by
+  native_decide
+
+/-- The remainder in `30 = q*13 + k` is `k = 4`. -/
+theorem coordinate_remainderK_eq_four : coordinate.remainderK = 4 := by
+  native_decide
+
+/-- On the source-core window, the exact lookahead gap numerator is `23854528`. -/
+theorem coordinate_lookaheadGapNumerator_eight_five :
+    coordinate.lookaheadGapNumerator 8 5 = 23854528 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- Five blocks of lookahead certify the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_five :
+    coordinate.lookaheadCertificateHolds 8 5 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- Positions `0` and `6` share the same observed remainder state `1`. -/
+theorem coordinate_conflict_remainder_state_zero_six :
+    ((coordinate.stateAlignments coordinate_goodMode 8 5)[0]'(by native_decide)).remainderIn = 1 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 5)[6]'(by native_decide)).remainderIn = 1 := by
+  native_decide
+
+/-- The same two positions have incompatible raw coefficients `2` and `8192`. -/
+theorem coordinate_conflict_coefficients_zero_six :
+    ((coordinate.stateAlignments coordinate_goodMode 8 5)[0]'(by native_decide)).coefficient = 2 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 5)[6]'(by native_decide)).coefficient = 8192 := by
+  native_decide
+
+/-- The conflicting positions receive incoming carry states `0` and `1260`. -/
+theorem coordinate_conflict_carry_states_zero_six :
+    ((coordinate.stateAlignments coordinate_goodMode 8 5)[0]'(by native_decide)).carryIn = 0 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 5)[6]'(by native_decide)).carryIn = 1260 := by
+  native_decide
+
+/-- The displayed carried block is hidden: both conflicting positions emit `2`. -/
+theorem coordinate_conflict_carried_blocks_zero_six :
+    ((coordinate.stateAlignments coordinate_goodMode 8 5)[0]'(by native_decide)).carryBlockValue = 2 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 5)[6]'(by native_decide)).carryBlockValue = 2 := by
+  native_decide
+
+/-- The source-core canonical carried-output equality at positions `0` and `6`. -/
+theorem coordinate_canonicalCarryBlockValue_zero_six :
+    coordinate.canonicalCarryBlockValue 0 =
+      coordinate.canonicalCarryBlockValue 6 := by
+  native_decide
+
+/-- The finite obstruction record for the base-30 `N = 13` source-core `8/5`
+window. -/
+theorem coordinate_stateAlignments_zero_six_certifiedConflict_eight_five :
+    coordinate.StateAlignmentCertifiedConflict coordinate_goodMode 8 5 0 6
+      (by rw [coordinate.stateAlignments_length]; decide)
+      (by rw [coordinate.stateAlignments_length]; decide) := by
+  exact
+    { remainderIn_eq := by native_decide
+      coefficient_ne := by native_decide
+      left_carryIn_eq_incomingCarry := by native_decide
+      right_carryIn_eq_incomingCarry := by native_decide
+      carryBlockValue_eq := by native_decide
+      remainderToCoefficient_not_functional := by native_decide
+      left_carryBlockValue_eq_remainderBlockValue := by native_decide
+      right_carryBlockValue_eq_remainderBlockValue := by native_decide }
+
+/-- Proof-style exemplar for the generated projection stub: record theorem ->
+projection accessor. -/
+theorem coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_five :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 5).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_zero_six_certifiedConflict_eight_five
+  exact hrecord.not_remainderToCoefficientFunctional
+
+/-- Copyable scaffold projection generated from
+`base30_n13_m1_blocks8_L5`. -/
+theorem base30_n13_m1_blocks8_L5_not_remainderToCoefficientFunctional :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 5).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_zero_six_certifiedConflict_eight_five
+  exact hrecord.not_remainderToCoefficientFunctional
+
+end QRTour.FutureBase30N13
+
+namespace QRTour.FutureBase30N26
+
+/-! ### Shape13/K4 shifted example: base 30, N = 26
+
+This packages the shifted member of the first mod-stable carry-loss
+observability family. It proves the record-shaped obstruction on the certified
+`8/5` window and is paired with `QRTour.FutureBase30N13` in
+`QRTour.Shape13K4`.
+-/
+
+/-- The Shape13/K4 shifted coordinate `(base=30, N=26, stride=1)`. -/
+def coordinate : BlockCoordinate where
+  base := 30
+  modulus := 26
+  stride := 1
+  modulus_pos := by decide
+
+/-- The shifted coordinate is a good mode: `26 < 30`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `30`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 30 := by
+  native_decide
+
+/-- The quotient in `30 = q*26 + k` is `q = 1`. -/
+theorem coordinate_quotientQ_eq_one : coordinate.quotientQ = 1 := by
+  native_decide
+
+/-- The remainder in `30 = q*26 + k` is `k = 4`. -/
+theorem coordinate_remainderK_eq_four : coordinate.remainderK = 4 := by
+  native_decide
+
+/-- On the shifted window, the exact lookahead gap numerator is `11927264`. -/
+theorem coordinate_lookaheadGapNumerator_eight_five :
+    coordinate.lookaheadGapNumerator 8 5 = 11927264 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- Five blocks of lookahead certify the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_five :
+    coordinate.lookaheadCertificateHolds 8 5 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- Positions `1` and `7` share the same observed remainder state `4`. -/
+theorem coordinate_conflict_remainder_state_one_seven :
+    ((coordinate.stateAlignments coordinate_goodMode 8 5)[1]'(by native_decide)).remainderIn = 4 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 5)[7]'(by native_decide)).remainderIn = 4 := by
+  native_decide
+
+/-- The same two positions have incompatible raw coefficients `4` and `16384`. -/
+theorem coordinate_conflict_coefficients_one_seven :
+    ((coordinate.stateAlignments coordinate_goodMode 8 5)[1]'(by native_decide)).coefficient = 4 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 5)[7]'(by native_decide)).coefficient = 16384 := by
+  native_decide
+
+/-- The conflicting positions receive incoming carry states `0` and `2520`. -/
+theorem coordinate_conflict_carry_states_one_seven :
+    ((coordinate.stateAlignments coordinate_goodMode 8 5)[1]'(by native_decide)).carryIn = 0 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 5)[7]'(by native_decide)).carryIn = 2520 := by
+  native_decide
+
+/-- The displayed carried block is hidden: both conflicting positions emit `4`. -/
+theorem coordinate_conflict_carried_blocks_one_seven :
+    ((coordinate.stateAlignments coordinate_goodMode 8 5)[1]'(by native_decide)).carryBlockValue = 4 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 5)[7]'(by native_decide)).carryBlockValue = 4 := by
+  native_decide
+
+/-- The finite obstruction record for the base-30 `N = 26` shifted `8/5`
+window. -/
+theorem coordinate_stateAlignments_one_seven_certifiedConflict_eight_five :
+    coordinate.StateAlignmentCertifiedConflict coordinate_goodMode 8 5 1 7
+      (by rw [coordinate.stateAlignments_length]; decide)
+      (by rw [coordinate.stateAlignments_length]; decide) := by
+  exact
+    { remainderIn_eq := by native_decide
+      coefficient_ne := by native_decide
+      left_carryIn_eq_incomingCarry := by native_decide
+      right_carryIn_eq_incomingCarry := by native_decide
+      carryBlockValue_eq := by native_decide
+      remainderToCoefficient_not_functional := by native_decide
+      left_carryBlockValue_eq_remainderBlockValue := by native_decide
+      right_carryBlockValue_eq_remainderBlockValue := by native_decide }
+
+/-- Proof-style exemplar for the generated projection stub: record theorem ->
+projection accessor. -/
+theorem coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_five :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 5).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_one_seven_certifiedConflict_eight_five
+  exact hrecord.not_remainderToCoefficientFunctional
+
+/-- Copyable scaffold projection generated from
+`base30_n26_m1_blocks8_L5`. -/
+theorem base30_n26_m1_blocks8_L5_not_remainderToCoefficientFunctional :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 5).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_one_seven_certifiedConflict_eight_five
+  exact hrecord.not_remainderToCoefficientFunctional
+
+end QRTour.FutureBase30N26
+
+namespace QRTour.Shape13K4
+
+/-! ### Finite Shape13/K4 mod-stable carry-loss shift witness
+
+This namespace compares the concrete state-alignment rows behind the first
+mod-stable carry-loss source-shape family. It proves a finite shift-and-scale
+payload only: the base-30 `N = 13` conflict is seen on `[0,6]`, while the
+base-30 `N = 26` window sees the corresponding payload on `[1,7]`.
+-/
+
+/-- Left row of the base-30 `N = 13` source-core conflict. -/
+def base30N13Left : StateAlignment :=
+  (FutureBase30N13.coordinate.stateAlignments
+    FutureBase30N13.coordinate_goodMode 8 5)[0]'(by native_decide)
+
+/-- Right row of the base-30 `N = 13` source-core conflict. -/
+def base30N13Right : StateAlignment :=
+  (FutureBase30N13.coordinate.stateAlignments
+    FutureBase30N13.coordinate_goodMode 8 5)[6]'(by native_decide)
+
+/-- Left row of the base-30 `N = 26` shifted conflict. -/
+def base30N26Left : StateAlignment :=
+  (FutureBase30N26.coordinate.stateAlignments
+    FutureBase30N26.coordinate_goodMode 8 5)[1]'(by native_decide)
+
+/-- Right row of the base-30 `N = 26` shifted conflict. -/
+def base30N26Right : StateAlignment :=
+  (FutureBase30N26.coordinate.stateAlignments
+    FutureBase30N26.coordinate_goodMode 8 5)[7]'(by native_decide)
+
+/-- The base-30 `N = 26` conflict shifts the base-30 `N = 13` source-core
+window one position to the right and scales the coefficient, carry, and
+carried-output payload by two. -/
+theorem base30_core13_to_double26_conflict_shift_scaled :
+    base30N26Left.position = base30N13Left.position + 1 ∧
+      base30N26Right.position = base30N13Right.position + 1 ∧
+      base30N26Left.coefficient = 2 * base30N13Left.coefficient ∧
+      base30N26Right.coefficient = 2 * base30N13Right.coefficient ∧
+      base30N26Left.carryIn = 2 * base30N13Left.carryIn ∧
+      base30N26Right.carryIn = 2 * base30N13Right.carryIn ∧
+      base30N26Left.carryBlockValue = 2 * base30N13Left.carryBlockValue ∧
+      base30N26Right.carryBlockValue = 2 * base30N13Right.carryBlockValue ∧
+      base30N13Left.remainderIn = 1 ∧
+      base30N13Right.remainderIn = 1 ∧
+      base30N26Left.remainderIn = 4 ∧
+      base30N26Right.remainderIn = 4 := by
+  native_decide
+
+/-- Bundled Shape13/K4 scale-two hypotheses for the proof-covered base-30
+`13 -> 26` member. This is the Lean landing pad for the exported
+`shape13_k4_hyp_*` booleans. -/
+theorem base30_n26_scaleTwoHiddenCarryBlockValueHypotheses :
+    SameCoreScaleTwoHiddenCarryBlockValueHypotheses
+      30 26 1 0 6 (by decide) := by
+  exact
+    { goodMode := by
+        unfold actualCoordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+        native_decide
+      sameCoreCompatible_hyp := by
+        unfold sameCoreCompatible actualCoordinate strippedPeriodModulus
+          BlockCoordinate.remainderK BlockCoordinate.blockBase
+        native_decide
+      basePrimeSupportFactor_times_two_eq_k := by native_decide
+      left_scaled_quotient_remainder_lt_gap := by native_decide
+      right_scaled_quotient_remainder_lt_gap := by native_decide
+      left_scaled_block_remainder_lt_blockBase := by native_decide
+      right_scaled_block_remainder_lt_blockBase := by native_decide
+      source_core_hidden_carryBlockValue := by native_decide }
+
+/-- Arithmetic same-core criterion for the base-30 `13 -> 26` Shape13/K4
+member: the base-supported factor is half of `k`, so the hidden canonical
+carried-output equality at core positions `[0,6]` transports to actual
+positions `[1,7]` with scale two. -/
+theorem base30_n26_sameCore_scale_two_hiddenCarryBlockValue_shift :
+    (actualCoordinate 30 26 1 (by decide)).canonicalCarryBlockValue 1 =
+      (actualCoordinate 30 26 1 (by decide)).canonicalCarryBlockValue 7 := by
+  exact
+    sameCoreCompatible_hiddenCarryBlockValue_shift_scale_two_of_exportedHypotheses
+      (base := 30) (n := 26) (stride := 1)
+      (left := 0) (right := 6) (hn := by decide)
+      base30_n26_scaleTwoHiddenCarryBlockValueHypotheses
+
+/-- Compact wrapper for the default proof-covered base-30 Shape13/K4 shift
+payload and the same-core carried-output criterion. -/
+theorem base30_default_modStableCarryLoss_shift_pair :
+    base30N26Left.carryBlockValue = 2 * base30N13Left.carryBlockValue ∧
+      base30N26Right.carryBlockValue = 2 * base30N13Right.carryBlockValue ∧
+      (actualCoordinate 30 26 1 (by decide)).canonicalCarryBlockValue 1 =
+        (actualCoordinate 30 26 1 (by decide)).canonicalCarryBlockValue 7 := by
+  exact
+    ⟨base30_core13_to_double26_conflict_shift_scaled.2.2.2.2.2.2.1,
+      base30_core13_to_double26_conflict_shift_scaled.2.2.2.2.2.2.2.1,
+      base30_n26_sameCore_scale_two_hiddenCarryBlockValue_shift⟩
+
+end QRTour.Shape13K4
+
+namespace QRTour.FutureBase30N7
+
+/-! ### Scaffolded finite obstruction example: base 30, N = 7
+
+This packages the first non-`Composite68` scaffold candidate emitted by the
+Certificate Workbench. It is a finite worked-example hook only: it proves the
+record-shaped obstruction on the certified `8/2` window, but it does not add a
+registry claim, theorem-witness record, atlas status change, or global
+factorization theorem.
+-/
+
+/-- The scaffold coordinate `(base=30, N=7, stride=1)`. -/
+def coordinate : BlockCoordinate where
+  base := 30
+  modulus := 7
+  stride := 1
+  modulus_pos := by decide
+
+/-- The scaffold coordinate is a good mode: `7 < 30`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `30`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 30 := by
+  native_decide
+
+/-- The quotient in `30 = q*7 + k` is `q = 4`. -/
+theorem coordinate_quotientQ_eq_four : coordinate.quotientQ = 4 := by
+  native_decide
+
+/-- The remainder in `30 = q*7 + k` is `k = 2`. -/
+theorem coordinate_remainderK_eq_two : coordinate.remainderK = 2 := by
+  native_decide
+
+/-- On the scaffold window, the exact lookahead gap numerator is `532`. -/
+theorem coordinate_lookaheadGapNumerator_eight_two :
+    coordinate.lookaheadGapNumerator 8 2 = 532 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- Two blocks of lookahead certify the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_two :
+    coordinate.lookaheadCertificateHolds 8 2 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- Positions `0` and `3` share the same observed remainder state `1`. -/
+theorem coordinate_conflict_remainder_state_zero_three :
+    ((coordinate.stateAlignments coordinate_goodMode 8 2)[0]'(by native_decide)).remainderIn = 1 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 2)[3]'(by native_decide)).remainderIn = 1 := by
+  native_decide
+
+/-- The same two positions have incompatible raw coefficients `4` and `32`. -/
+theorem coordinate_conflict_coefficients_zero_three :
+    ((coordinate.stateAlignments coordinate_goodMode 8 2)[0]'(by native_decide)).coefficient = 4 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 2)[3]'(by native_decide)).coefficient = 32 := by
+  native_decide
+
+/-- The conflicting positions receive incoming carry states `0` and `2`. -/
+theorem coordinate_conflict_carry_states_zero_three :
+    ((coordinate.stateAlignments coordinate_goodMode 8 2)[0]'(by native_decide)).carryIn = 0 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 2)[3]'(by native_decide)).carryIn = 2 := by
+  native_decide
+
+/-- The displayed carried block is hidden: both conflicting positions emit `4`. -/
+theorem coordinate_conflict_carried_blocks_zero_three :
+    ((coordinate.stateAlignments coordinate_goodMode 8 2)[0]'(by native_decide)).carryBlockValue = 4 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 2)[3]'(by native_decide)).carryBlockValue = 4 := by
+  native_decide
+
+/-- The scaffolded finite obstruction record for the base-30 `N = 7` `8/2`
+window. This is the record theorem named by the certificate mapping recipe. -/
+theorem coordinate_stateAlignments_zero_three_certifiedConflict_eight_two :
+    coordinate.StateAlignmentCertifiedConflict coordinate_goodMode 8 2 0 3
+      (by rw [coordinate.stateAlignments_length]; decide)
+      (by rw [coordinate.stateAlignments_length]; decide) := by
+  exact
+    { remainderIn_eq := by native_decide
+      coefficient_ne := by native_decide
+      left_carryIn_eq_incomingCarry := by native_decide
+      right_carryIn_eq_incomingCarry := by native_decide
+      carryBlockValue_eq := by native_decide
+      remainderToCoefficient_not_functional := by native_decide
+      left_carryBlockValue_eq_remainderBlockValue := by native_decide
+      right_carryBlockValue_eq_remainderBlockValue := by native_decide }
+
+/-- Proof-style exemplar for the generated projection stub: record theorem ->
+projection accessor. -/
+theorem coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_two :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 2).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_zero_three_certifiedConflict_eight_two
+  exact hrecord.not_remainderToCoefficientFunctional
+
+/-- Copyable scaffold projection generated from
+`base30_n7_m1_blocks8_L2`. -/
+theorem base30_n7_m1_blocks8_L2_not_remainderToCoefficientFunctional :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 2).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_zero_three_certifiedConflict_eight_two
+  exact hrecord.not_remainderToCoefficientFunctional
+
+end QRTour.FutureBase30N7
+
+namespace QRTour.FutureBase30N14
+
+/-! ### Scaffolded finite obstruction example: base 30, N = 14
+
+This packages the next scaffold candidate emitted after
+`QRTour.FutureBase30N7` became source-ready. It is a finite worked-example hook
+only: it proves the record-shaped obstruction on the certified `8/2` window,
+but it does not add a registry claim, theorem-witness record, atlas status
+change, or global factorization theorem.
+-/
+
+/-- The scaffold coordinate `(base=30, N=14, stride=1)`. -/
+def coordinate : BlockCoordinate where
+  base := 30
+  modulus := 14
+  stride := 1
+  modulus_pos := by decide
+
+/-- The scaffold coordinate is a good mode: `14 < 30`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `30`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 30 := by
+  native_decide
+
+/-- The quotient in `30 = q*14 + k` is `q = 2`. -/
+theorem coordinate_quotientQ_eq_two : coordinate.quotientQ = 2 := by
+  native_decide
+
+/-- The remainder in `30 = q*14 + k` is `k = 2`. -/
+theorem coordinate_remainderK_eq_two : coordinate.remainderK = 2 := by
+  native_decide
+
+/-- On the scaffold window, the exact lookahead gap numerator is `716`. -/
+theorem coordinate_lookaheadGapNumerator_eight_two :
+    coordinate.lookaheadGapNumerator 8 2 = 716 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- Two blocks of lookahead certify the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_two :
+    coordinate.lookaheadCertificateHolds 8 2 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- Positions `1` and `4` share the same observed remainder state `2`. -/
+theorem coordinate_conflict_remainder_state_one_four :
+    ((coordinate.stateAlignments coordinate_goodMode 8 2)[1]'(by native_decide)).remainderIn = 2 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 2)[4]'(by native_decide)).remainderIn = 2 := by
+  native_decide
+
+/-- The same two positions have incompatible raw coefficients `4` and `32`. -/
+theorem coordinate_conflict_coefficients_one_four :
+    ((coordinate.stateAlignments coordinate_goodMode 8 2)[1]'(by native_decide)).coefficient = 4 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 2)[4]'(by native_decide)).coefficient = 32 := by
+  native_decide
+
+/-- The conflicting positions receive incoming carry states `0` and `2`. -/
+theorem coordinate_conflict_carry_states_one_four :
+    ((coordinate.stateAlignments coordinate_goodMode 8 2)[1]'(by native_decide)).carryIn = 0 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 2)[4]'(by native_decide)).carryIn = 2 := by
+  native_decide
+
+/-- The displayed carried block is hidden: both conflicting positions emit `4`. -/
+theorem coordinate_conflict_carried_blocks_one_four :
+    ((coordinate.stateAlignments coordinate_goodMode 8 2)[1]'(by native_decide)).carryBlockValue = 4 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 2)[4]'(by native_decide)).carryBlockValue = 4 := by
+  native_decide
+
+/-- The scaffolded finite obstruction record for the base-30 `N = 14` `8/2`
+window. This is the record theorem named by the certificate mapping recipe. -/
+theorem coordinate_stateAlignments_one_four_certifiedConflict_eight_two :
+    coordinate.StateAlignmentCertifiedConflict coordinate_goodMode 8 2 1 4
+      (by rw [coordinate.stateAlignments_length]; decide)
+      (by rw [coordinate.stateAlignments_length]; decide) := by
+  exact
+    { remainderIn_eq := by native_decide
+      coefficient_ne := by native_decide
+      left_carryIn_eq_incomingCarry := by native_decide
+      right_carryIn_eq_incomingCarry := by native_decide
+      carryBlockValue_eq := by native_decide
+      remainderToCoefficient_not_functional := by native_decide
+      left_carryBlockValue_eq_remainderBlockValue := by native_decide
+      right_carryBlockValue_eq_remainderBlockValue := by native_decide }
+
+/-- Proof-style exemplar for the generated projection stub: record theorem ->
+projection accessor. -/
+theorem coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_two :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 2).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_one_four_certifiedConflict_eight_two
+  exact hrecord.not_remainderToCoefficientFunctional
+
+/-- Copyable scaffold projection generated from
+`base30_n14_m1_blocks8_L2`. -/
+theorem base30_n14_m1_blocks8_L2_not_remainderToCoefficientFunctional :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 2).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_one_four_certifiedConflict_eight_two
+  exact hrecord.not_remainderToCoefficientFunctional
+
+end QRTour.FutureBase30N14
+
+namespace QRTour.FutureBase30N28
+
+/-! ### Scaffolded finite obstruction example: base 30, N = 28
+
+This packages the next scaffold candidate emitted after
+`QRTour.FutureBase30N14` became source-ready. It is a finite worked-example hook
+only: it proves the record-shaped obstruction on the certified `8/2` window,
+but it does not add a registry claim, theorem-witness record, atlas status
+change, or global factorization theorem.
+-/
+
+/-- The scaffold coordinate `(base=30, N=28, stride=1)`. -/
+def coordinate : BlockCoordinate where
+  base := 30
+  modulus := 28
+  stride := 1
+  modulus_pos := by decide
+
+/-- The scaffold coordinate is a good mode: `28 < 30`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `30`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 30 := by
+  native_decide
+
+/-- The quotient in `30 = q*28 + k` is `q = 1`. -/
+theorem coordinate_quotientQ_eq_one : coordinate.quotientQ = 1 := by
+  native_decide
+
+/-- The remainder in `30 = q*28 + k` is `k = 2`. -/
+theorem coordinate_remainderK_eq_two : coordinate.remainderK = 2 := by
+  native_decide
+
+/-- On the scaffold window, the exact lookahead gap numerator is `808`. -/
+theorem coordinate_lookaheadGapNumerator_eight_two :
+    coordinate.lookaheadGapNumerator 8 2 = 808 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- Two blocks of lookahead certify the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_two :
+    coordinate.lookaheadCertificateHolds 8 2 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- Positions `2` and `5` share the same observed remainder state `4`. -/
+theorem coordinate_conflict_remainder_state_two_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 2)[2]'(by native_decide)).remainderIn = 4 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 2)[5]'(by native_decide)).remainderIn = 4 := by
+  native_decide
+
+/-- The same two positions have incompatible raw coefficients `4` and `32`. -/
+theorem coordinate_conflict_coefficients_two_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 2)[2]'(by native_decide)).coefficient = 4 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 2)[5]'(by native_decide)).coefficient = 32 := by
+  native_decide
+
+/-- The conflicting positions receive incoming carry states `0` and `2`. -/
+theorem coordinate_conflict_carry_states_two_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 2)[2]'(by native_decide)).carryIn = 0 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 2)[5]'(by native_decide)).carryIn = 2 := by
+  native_decide
+
+/-- The displayed carried block is hidden: both conflicting positions emit `4`. -/
+theorem coordinate_conflict_carried_blocks_two_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 2)[2]'(by native_decide)).carryBlockValue = 4 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 2)[5]'(by native_decide)).carryBlockValue = 4 := by
+  native_decide
+
+/-- The scaffolded finite obstruction record for the base-30 `N = 28` `8/2`
+window. This is the record theorem named by the certificate mapping recipe. -/
+theorem coordinate_stateAlignments_two_five_certifiedConflict_eight_two :
+    coordinate.StateAlignmentCertifiedConflict coordinate_goodMode 8 2 2 5
+      (by rw [coordinate.stateAlignments_length]; decide)
+      (by rw [coordinate.stateAlignments_length]; decide) := by
+  exact
+    { remainderIn_eq := by native_decide
+      coefficient_ne := by native_decide
+      left_carryIn_eq_incomingCarry := by native_decide
+      right_carryIn_eq_incomingCarry := by native_decide
+      carryBlockValue_eq := by native_decide
+      remainderToCoefficient_not_functional := by native_decide
+      left_carryBlockValue_eq_remainderBlockValue := by native_decide
+      right_carryBlockValue_eq_remainderBlockValue := by native_decide }
+
+/-- Proof-style exemplar for the generated projection stub: record theorem ->
+projection accessor. -/
+theorem coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_two :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 2).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_two_five_certifiedConflict_eight_two
+  exact hrecord.not_remainderToCoefficientFunctional
+
+/-- Copyable scaffold projection generated from
+`base30_n28_m1_blocks8_L2`. -/
+theorem base30_n28_m1_blocks8_L2_not_remainderToCoefficientFunctional :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 2).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_two_five_certifiedConflict_eight_two
+  exact hrecord.not_remainderToCoefficientFunctional
+
+end QRTour.FutureBase30N28
+
+namespace QRTour.FutureBase12N10
+
+/-! ### Scaffolded finite obstruction example: base 12, N = 10
+
+This packages the next scaffold candidate emitted after
+`QRTour.FutureBase30N28` became source-ready. It is a finite worked-example hook
+only: it proves the record-shaped obstruction on the certified `8/3` window,
+but it does not add a registry claim, theorem-witness record, atlas status
+change, or global factorization theorem.
+-/
+
+/-- The scaffold coordinate `(base=12, N=10, stride=1)`. -/
+def coordinate : BlockCoordinate where
+  base := 12
+  modulus := 10
+  stride := 1
+  modulus_pos := by decide
+
+/-- The scaffold coordinate is a good mode: `10 < 12`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `12`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 12 := by
+  native_decide
+
+/-- The quotient in `12 = q*10 + k` is `q = 1`. -/
+theorem coordinate_quotientQ_eq_one : coordinate.quotientQ = 1 := by
+  native_decide
+
+/-- The remainder in `12 = q*10 + k` is `k = 2`. -/
+theorem coordinate_remainderK_eq_two : coordinate.remainderK = 2 := by
+  native_decide
+
+/-- On the scaffold window, the exact lookahead gap numerator is `896`. -/
+theorem coordinate_lookaheadGapNumerator_eight_three :
+    coordinate.lookaheadGapNumerator 8 3 = 896 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- Three blocks of lookahead certify the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_three :
+    coordinate.lookaheadCertificateHolds 8 3 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- Positions `1` and `5` share the same observed remainder state `2`. -/
+theorem coordinate_conflict_remainder_state_one_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 3)[1]'(by native_decide)).remainderIn = 2 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 3)[5]'(by native_decide)).remainderIn = 2 := by
+  native_decide
+
+/-- The same two positions have incompatible raw coefficients `2` and `32`. -/
+theorem coordinate_conflict_coefficients_one_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 3)[1]'(by native_decide)).coefficient = 2 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 3)[5]'(by native_decide)).coefficient = 32 := by
+  native_decide
+
+/-- The conflicting positions receive incoming carry states `0` and `6`. -/
+theorem coordinate_conflict_carry_states_one_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 3)[1]'(by native_decide)).carryIn = 0 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 3)[5]'(by native_decide)).carryIn = 6 := by
+  native_decide
+
+/-- The displayed carried block is hidden: both conflicting positions emit `2`. -/
+theorem coordinate_conflict_carried_blocks_one_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 3)[1]'(by native_decide)).carryBlockValue = 2 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 3)[5]'(by native_decide)).carryBlockValue = 2 := by
+  native_decide
+
+/-- The scaffolded finite obstruction record for the base-12 `N = 10` `8/3`
+window. This is the record theorem named by the certificate mapping recipe. -/
+theorem coordinate_stateAlignments_one_five_certifiedConflict_eight_three :
+    coordinate.StateAlignmentCertifiedConflict coordinate_goodMode 8 3 1 5
+      (by rw [coordinate.stateAlignments_length]; decide)
+      (by rw [coordinate.stateAlignments_length]; decide) := by
+  exact
+    { remainderIn_eq := by native_decide
+      coefficient_ne := by native_decide
+      left_carryIn_eq_incomingCarry := by native_decide
+      right_carryIn_eq_incomingCarry := by native_decide
+      carryBlockValue_eq := by native_decide
+      remainderToCoefficient_not_functional := by native_decide
+      left_carryBlockValue_eq_remainderBlockValue := by native_decide
+      right_carryBlockValue_eq_remainderBlockValue := by native_decide }
+
+/-- Proof-style exemplar for the generated projection stub: record theorem ->
+projection accessor. -/
+theorem coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_three :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 3).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_one_five_certifiedConflict_eight_three
+  exact hrecord.not_remainderToCoefficientFunctional
+
+/-- Copyable scaffold projection generated from
+`base12_n10_m1_blocks8_L3`. -/
+theorem base12_n10_m1_blocks8_L3_not_remainderToCoefficientFunctional :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 3).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_one_five_certifiedConflict_eight_three
+  exact hrecord.not_remainderToCoefficientFunctional
+
+end QRTour.FutureBase12N10
+
+namespace QRTour.FutureBase10N102
+
+/-! ### Scaffolded finite obstruction example: base 10, N = 102
+
+This packages the next scaffold candidate emitted after
+`QRTour.FutureBase12N10` became source-ready. It is a finite worked-example hook
+only: it proves the record-shaped obstruction on the certified `8/1` window,
+but it does not add a registry claim, theorem-witness record, atlas status
+change, or global factorization theorem.
+-/
+
+/-- The scaffold coordinate `(base=10, N=102, stride=4)`. -/
+def coordinate : BlockCoordinate where
+  base := 10
+  modulus := 102
+  stride := 4
+  modulus_pos := by decide
+
+/-- The scaffold coordinate is a good mode: `102 < 10000`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `10000`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 10000 := by
+  native_decide
+
+/-- The quotient in `10000 = q*102 + k` is `q = 98`. -/
+theorem coordinate_quotientQ_eq_ninety_eight : coordinate.quotientQ = 98 := by
+  native_decide
+
+/-- The remainder in `10000 = q*102 + k` is `k = 4`. -/
+theorem coordinate_remainderK_eq_four : coordinate.remainderK = 4 := by
+  native_decide
+
+/-- On the scaffold window, the exact lookahead gap numerator is `7472`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 7472 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- Positions `1` and `5` share the same observed remainder state `4`. -/
+theorem coordinate_conflict_remainder_state_one_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).remainderIn = 4 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)).remainderIn = 4 := by
+  native_decide
+
+/-- The same two positions have incompatible raw coefficients `392` and
+`100352`. -/
+theorem coordinate_conflict_coefficients_one_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).coefficient = 392 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)).coefficient = 100352 := by
+  native_decide
+
+/-- The conflicting positions receive incoming carry states `0` and `40`. -/
+theorem coordinate_conflict_carry_states_one_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).carryIn = 0 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)).carryIn = 40 := by
+  native_decide
+
+/-- The displayed carried block is hidden: both conflicting positions emit
+`392`. -/
+theorem coordinate_conflict_carried_blocks_one_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).carryBlockValue = 392 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)).carryBlockValue = 392 := by
+  native_decide
+
+/-- The scaffolded finite obstruction record for the base-10 `N = 102` `8/1`
+window. This is the record theorem named by the certificate mapping recipe. -/
+theorem coordinate_stateAlignments_one_five_certifiedConflict_eight_one :
+    coordinate.StateAlignmentCertifiedConflict coordinate_goodMode 8 1 1 5
+      (by rw [coordinate.stateAlignments_length]; decide)
+      (by rw [coordinate.stateAlignments_length]; decide) := by
+  exact
+    { remainderIn_eq := by native_decide
+      coefficient_ne := by native_decide
+      left_carryIn_eq_incomingCarry := by native_decide
+      right_carryIn_eq_incomingCarry := by native_decide
+      carryBlockValue_eq := by native_decide
+      remainderToCoefficient_not_functional := by native_decide
+      left_carryBlockValue_eq_remainderBlockValue := by native_decide
+      right_carryBlockValue_eq_remainderBlockValue := by native_decide }
+
+/-- Proof-style exemplar for the generated projection stub: record theorem ->
+projection accessor. -/
+theorem coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_one :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_one_five_certifiedConflict_eight_one
+  exact hrecord.not_remainderToCoefficientFunctional
+
+/-- Copyable scaffold projection generated from
+`base10_n102_m4_blocks8_L1`. -/
+theorem base10_n102_m4_blocks8_L1_not_remainderToCoefficientFunctional :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_one_five_certifiedConflict_eight_one
+  exact hrecord.not_remainderToCoefficientFunctional
+
+end QRTour.FutureBase10N102
+
+namespace QRTour.FutureBase7N5
+
+/-! ### Scaffolded finite obstruction example: base 7, N = 5
+
+This packages the next scaffold candidate emitted after
+`QRTour.FutureBase10N102` became source-ready. It is a finite worked-example
+hook only: it proves the record-shaped obstruction on the certified `8/5`
+window, but it does not add a registry claim, theorem-witness record, atlas
+status change, or global factorization theorem.
+-/
+
+/-- The scaffold coordinate `(base=7, N=5, stride=1)`. -/
+def coordinate : BlockCoordinate where
+  base := 7
+  modulus := 5
+  stride := 1
+  modulus_pos := by decide
+
+/-- The scaffold coordinate is a good mode: `5 < 7`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `7`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 7 := by
+  native_decide
+
+/-- The quotient in `7 = q*5 + k` is `q = 1`. -/
+theorem coordinate_quotientQ_eq_one : coordinate.quotientQ = 1 := by
+  native_decide
+
+/-- The remainder in `7 = q*5 + k` is `k = 2`. -/
+theorem coordinate_remainderK_eq_two : coordinate.remainderK = 2 := by
+  native_decide
+
+/-- On the scaffold window, the exact lookahead gap numerator is `15084`. -/
+theorem coordinate_lookaheadGapNumerator_eight_five :
+    coordinate.lookaheadGapNumerator 8 5 = 15084 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- Five blocks of lookahead certify the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_five :
+    coordinate.lookaheadCertificateHolds 8 5 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- Positions `0` and `4` share the same observed remainder state `1`. -/
+theorem coordinate_conflict_remainder_state_zero_four :
+    ((coordinate.stateAlignments coordinate_goodMode 8 5)[0]'(by native_decide)).remainderIn = 1 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 5)[4]'(by native_decide)).remainderIn = 1 := by
+  native_decide
+
+/-- The same two positions have incompatible raw coefficients `1` and `16`. -/
+theorem coordinate_conflict_coefficients_zero_four :
+    ((coordinate.stateAlignments coordinate_goodMode 8 5)[0]'(by native_decide)).coefficient = 1 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 5)[4]'(by native_decide)).coefficient = 16 := by
+  native_decide
+
+/-- The conflicting positions receive incoming carry states `0` and `6`. -/
+theorem coordinate_conflict_carry_states_zero_four :
+    ((coordinate.stateAlignments coordinate_goodMode 8 5)[0]'(by native_decide)).carryIn = 0 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 5)[4]'(by native_decide)).carryIn = 6 := by
+  native_decide
+
+/-- The displayed carried block is hidden: both conflicting positions emit `1`. -/
+theorem coordinate_conflict_carried_blocks_zero_four :
+    ((coordinate.stateAlignments coordinate_goodMode 8 5)[0]'(by native_decide)).carryBlockValue = 1 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 5)[4]'(by native_decide)).carryBlockValue = 1 := by
+  native_decide
+
+/-- The scaffolded finite obstruction record for the base-7 `N = 5` `8/5`
+window. This is the record theorem named by the certificate mapping recipe. -/
+theorem coordinate_stateAlignments_zero_four_certifiedConflict_eight_five :
+    coordinate.StateAlignmentCertifiedConflict coordinate_goodMode 8 5 0 4
+      (by rw [coordinate.stateAlignments_length]; decide)
+      (by rw [coordinate.stateAlignments_length]; decide) := by
+  exact
+    { remainderIn_eq := by native_decide
+      coefficient_ne := by native_decide
+      left_carryIn_eq_incomingCarry := by native_decide
+      right_carryIn_eq_incomingCarry := by native_decide
+      carryBlockValue_eq := by native_decide
+      remainderToCoefficient_not_functional := by native_decide
+      left_carryBlockValue_eq_remainderBlockValue := by native_decide
+      right_carryBlockValue_eq_remainderBlockValue := by native_decide }
+
+/-- Proof-style exemplar for the generated projection stub: record theorem ->
+projection accessor. -/
+theorem coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_five :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 5).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_zero_four_certifiedConflict_eight_five
+  exact hrecord.not_remainderToCoefficientFunctional
+
+/-- Copyable scaffold projection generated from
+`base7_n5_m1_blocks8_L5`. -/
+theorem base7_n5_m1_blocks8_L5_not_remainderToCoefficientFunctional :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 5).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_zero_four_certifiedConflict_eight_five
+  exact hrecord.not_remainderToCoefficientFunctional
+
+end QRTour.FutureBase7N5
+
+namespace QRTour.FutureBase12N5
+
+/-! ### Scaffolded finite obstruction example: base 12, N = 5
+
+This packages the next scaffold candidate emitted after
+`QRTour.FutureBase7N5` became source-ready. It is a finite worked-example hook
+only: it proves the record-shaped obstruction on the certified `8/4` window,
+but it does not add a registry claim, theorem-witness record, atlas status
+change, or global factorization theorem.
+-/
+
+/-- The scaffold coordinate `(base=12, N=5, stride=1)`. -/
+def coordinate : BlockCoordinate where
+  base := 12
+  modulus := 5
+  stride := 1
+  modulus_pos := by decide
+
+/-- The scaffold coordinate is a good mode: `5 < 12`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `12`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 12 := by
+  native_decide
+
+/-- The quotient in `12 = q*5 + k` is `q = 2`. -/
+theorem coordinate_quotientQ_eq_two : coordinate.quotientQ = 2 := by
+  native_decide
+
+/-- The remainder in `12 = q*5 + k` is `k = 2`. -/
+theorem coordinate_remainderK_eq_two : coordinate.remainderK = 2 := by
+  native_decide
+
+/-- On the scaffold window, the exact lookahead gap numerator is `17408`. -/
+theorem coordinate_lookaheadGapNumerator_eight_four :
+    coordinate.lookaheadGapNumerator 8 4 = 17408 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- Four blocks of lookahead certify the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_four :
+    coordinate.lookaheadCertificateHolds 8 4 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- Positions `0` and `4` share the same observed remainder state `1`. -/
+theorem coordinate_conflict_remainder_state_zero_four :
+    ((coordinate.stateAlignments coordinate_goodMode 8 4)[0]'(by native_decide)).remainderIn = 1 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 4)[4]'(by native_decide)).remainderIn = 1 := by
+  native_decide
+
+/-- The same two positions have incompatible raw coefficients `2` and `32`. -/
+theorem coordinate_conflict_coefficients_zero_four :
+    ((coordinate.stateAlignments coordinate_goodMode 8 4)[0]'(by native_decide)).coefficient = 2 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 4)[4]'(by native_decide)).coefficient = 32 := by
+  native_decide
+
+/-- The conflicting positions receive incoming carry states `0` and `6`. -/
+theorem coordinate_conflict_carry_states_zero_four :
+    ((coordinate.stateAlignments coordinate_goodMode 8 4)[0]'(by native_decide)).carryIn = 0 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 4)[4]'(by native_decide)).carryIn = 6 := by
+  native_decide
+
+/-- The displayed carried block is hidden: both conflicting positions emit `2`. -/
+theorem coordinate_conflict_carried_blocks_zero_four :
+    ((coordinate.stateAlignments coordinate_goodMode 8 4)[0]'(by native_decide)).carryBlockValue = 2 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 4)[4]'(by native_decide)).carryBlockValue = 2 := by
+  native_decide
+
+/-- The scaffolded finite obstruction record for the base-12 `N = 5` `8/4`
+window. This is the record theorem named by the certificate mapping recipe. -/
+theorem coordinate_stateAlignments_zero_four_certifiedConflict_eight_four :
+    coordinate.StateAlignmentCertifiedConflict coordinate_goodMode 8 4 0 4
+      (by rw [coordinate.stateAlignments_length]; decide)
+      (by rw [coordinate.stateAlignments_length]; decide) := by
+  exact
+    { remainderIn_eq := by native_decide
+      coefficient_ne := by native_decide
+      left_carryIn_eq_incomingCarry := by native_decide
+      right_carryIn_eq_incomingCarry := by native_decide
+      carryBlockValue_eq := by native_decide
+      remainderToCoefficient_not_functional := by native_decide
+      left_carryBlockValue_eq_remainderBlockValue := by native_decide
+      right_carryBlockValue_eq_remainderBlockValue := by native_decide }
+
+/-- Proof-style exemplar for the generated projection stub: record theorem ->
+projection accessor. -/
+theorem coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_four :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 4).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_zero_four_certifiedConflict_eight_four
+  exact hrecord.not_remainderToCoefficientFunctional
+
+/-- Copyable scaffold projection generated from
+`base12_n5_m1_blocks8_L4`. -/
+theorem base12_n5_m1_blocks8_L4_not_remainderToCoefficientFunctional :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 4).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_zero_four_certifiedConflict_eight_four
+  exact hrecord.not_remainderToCoefficientFunctional
+
+end QRTour.FutureBase12N5
+
+namespace QRTour.FutureBase30N34
+
+/-! ### Scaffolded finite obstruction example: base 30, N = 34
+
+This packages the next scaffold candidate emitted after
+`QRTour.FutureBase12N5` became source-ready. It is a finite worked-example hook
+only: it proves the record-shaped obstruction on the certified `8/1` window,
+but it does not add a registry claim, theorem-witness record, atlas status
+change, or global factorization theorem.
+-/
+
+/-- The scaffold coordinate `(base=30, N=34, stride=3)`. -/
+def coordinate : BlockCoordinate where
+  base := 30
+  modulus := 34
+  stride := 3
+  modulus_pos := by decide
+
+/-- The scaffold coordinate is a good mode: `34 < 27000`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `27000`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 27000 := by
+  native_decide
+
+/-- The quotient in `27000 = q*34 + k` is `q = 794`. -/
+theorem coordinate_quotientQ_eq_seven_hundred_ninety_four :
+    coordinate.quotientQ = 794 := by
+  native_decide
+
+/-- The remainder in `27000 = q*34 + k` is `k = 4`. -/
+theorem coordinate_remainderK_eq_four : coordinate.remainderK = 4 := by
+  native_decide
+
+/-- On the scaffold window, the exact lookahead gap numerator is `20416`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 20416 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- Positions `1` and `5` share the same observed remainder state `4`. -/
+theorem coordinate_conflict_remainder_state_one_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).remainderIn = 4 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)).remainderIn = 4 := by
+  native_decide
+
+/-- The same two positions have incompatible raw coefficients `3176` and
+`813056`. -/
+theorem coordinate_conflict_coefficients_one_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).coefficient = 3176 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)).coefficient = 813056 := by
+  native_decide
+
+/-- The conflicting positions receive incoming carry states `0` and `120`. -/
+theorem coordinate_conflict_carry_states_one_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).carryIn = 0 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)).carryIn = 120 := by
+  native_decide
+
+/-- The displayed carried block is hidden: both conflicting positions emit
+`3176`. -/
+theorem coordinate_conflict_carried_blocks_one_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).carryBlockValue = 3176 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)).carryBlockValue = 3176 := by
+  native_decide
+
+/-- The scaffolded finite obstruction record for the base-30 `N = 34` `8/1`
+window. This is the record theorem named by the certificate mapping recipe. -/
+theorem coordinate_stateAlignments_one_five_certifiedConflict_eight_one :
+    coordinate.StateAlignmentCertifiedConflict coordinate_goodMode 8 1 1 5
+      (by rw [coordinate.stateAlignments_length]; decide)
+      (by rw [coordinate.stateAlignments_length]; decide) := by
+  exact
+    { remainderIn_eq := by native_decide
+      coefficient_ne := by native_decide
+      left_carryIn_eq_incomingCarry := by native_decide
+      right_carryIn_eq_incomingCarry := by native_decide
+      carryBlockValue_eq := by native_decide
+      remainderToCoefficient_not_functional := by native_decide
+      left_carryBlockValue_eq_remainderBlockValue := by native_decide
+      right_carryBlockValue_eq_remainderBlockValue := by native_decide }
+
+/-- Proof-style exemplar for the generated projection stub: record theorem ->
+projection accessor. -/
+theorem coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_one :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_one_five_certifiedConflict_eight_one
+  exact hrecord.not_remainderToCoefficientFunctional
+
+/-- Copyable scaffold projection generated from
+`base30_n34_m3_blocks8_L1`. -/
+theorem base30_n34_m3_blocks8_L1_not_remainderToCoefficientFunctional :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_one_five_certifiedConflict_eight_one
+  exact hrecord.not_remainderToCoefficientFunctional
+
+end QRTour.FutureBase30N34
+
+namespace QRTour.FutureBase10N374
+
+/-! ### Shape187/K188 canonical criterion example: base 10, N = 374
+
+This packages the smallest base-10 Shape187/K188 same-position scaling
+candidate through the exported-hypothesis bundle. It proves the canonical
+hidden carried-output equality and pins the certified `8/2` finite conflict
+record.
+-/
+
+/-- The scaffold coordinate `(base=10, N=374, stride=16)`. -/
+def coordinate : BlockCoordinate where
+  base := 10
+  modulus := 374
+  stride := 16
+  modulus_pos := by decide
+
+/-- The scaffold coordinate is a good mode: `374 < 10^16`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `10^16`. -/
+theorem coordinate_blockBase_eq :
+    coordinate.blockBase = 10000000000000000 := by
+  native_decide
+
+/-- The quotient in `10^16 = q*374 + k` is
+`q = 26737967914438`. -/
+theorem coordinate_quotientQ_eq :
+    coordinate.quotientQ = 26737967914438 := by
+  native_decide
+
+/-- The remainder in `10^16 = q*374 + k` is `k = 188`. -/
+theorem coordinate_remainderK_eq_one_hundred_eighty_eight :
+    coordinate.remainderK = 188 := by
+  native_decide
+
+/-- The Shape187/K188 same-position remainder is idempotent modulo `374`. -/
+theorem coordinate_remainderK_idempotent :
+    coordinate.remainderK * coordinate.remainderK % coordinate.modulus =
+      coordinate.remainderK := by
+  native_decide
+
+/-- Bundled Shape187/K188 same-position scaling hypotheses for the base-10
+`N = 374` member. This is the Lean landing pad for the exported
+`same_position_hyp_*` booleans. -/
+theorem coordinate_samePositionScalingHiddenCarryBlockValueHypotheses :
+    coordinate.SamePositionScalingHiddenCarryBlockValueHypotheses 187 2 := by
+  exact
+    { goodMode := coordinate_goodMode
+      modulus_eq_multiplier_mul_core := by native_decide
+      remainderK_eq_core_plus_one := by native_decide
+      multiplier_dvd_remainderK := by native_decide }
+
+/-- The exported-hypothesis bundle proves the canonical hidden carried-output
+equality at positions `1` and `2`. -/
+theorem coordinate_samePositionIdempotent_hiddenCarryBlockValue_one_two :
+    coordinate.canonicalCarryBlockValue 1 =
+      coordinate.canonicalCarryBlockValue 2 := by
+  exact
+    coordinate.samePositionScaling_hiddenCarryBlockValue_one_two_of_exportedHypotheses
+      coordinate_samePositionScalingHiddenCarryBlockValueHypotheses
+
+/-- On the scaffold window, the exact lookahead gap numerator is the default
+Shape187/K188 base-10 `N = 374` value. -/
+theorem coordinate_lookaheadGapNumerator_eight_two :
+    coordinate.lookaheadGapNumerator 8 2 =
+      49732620321003086063324378955776 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- Two blocks of lookahead certify the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_two :
+    coordinate.lookaheadCertificateHolds 8 2 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- Positions `1` and `2` share the same observed remainder state `188`. -/
+theorem coordinate_conflict_remainder_state_one_two :
+    ((coordinate.stateAlignments coordinate_goodMode 8 2)[1]'(by native_decide)).remainderIn = 188 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 2)[2]'(by native_decide)).remainderIn = 188 := by
+  native_decide
+
+/-- The same two positions have incompatible raw coefficients. -/
+theorem coordinate_conflict_coefficients_one_two :
+    ((coordinate.stateAlignments coordinate_goodMode 8 2)[1]'(by native_decide)).coefficient =
+        5026737967914344 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 2)[2]'(by native_decide)).coefficient =
+        945026737967896672 := by
+  native_decide
+
+/-- The conflicting positions receive incoming carry states `94` and `17766`. -/
+theorem coordinate_conflict_carry_states_one_two :
+    ((coordinate.stateAlignments coordinate_goodMode 8 2)[1]'(by native_decide)).carryIn = 94 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 2)[2]'(by native_decide)).carryIn = 17766 := by
+  native_decide
+
+/-- The displayed carried block is hidden: both conflicting positions emit
+`5026737967914438`. -/
+theorem coordinate_conflict_carried_blocks_one_two :
+    ((coordinate.stateAlignments coordinate_goodMode 8 2)[1]'(by native_decide)).carryBlockValue =
+        5026737967914438 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 2)[2]'(by native_decide)).carryBlockValue =
+        5026737967914438 := by
+  native_decide
+
+/-- The scaffolded finite obstruction record for the base-10 `N = 374` `8/2`
+window. -/
+theorem coordinate_stateAlignments_one_two_certifiedConflict_eight_two :
+    coordinate.StateAlignmentCertifiedConflict coordinate_goodMode 8 2 1 2
+      (by rw [coordinate.stateAlignments_length]; decide)
+      (by rw [coordinate.stateAlignments_length]; decide) := by
+  exact
+    { remainderIn_eq := by native_decide
+      coefficient_ne := by native_decide
+      left_carryIn_eq_incomingCarry := by native_decide
+      right_carryIn_eq_incomingCarry := by native_decide
+      carryBlockValue_eq := by native_decide
+      remainderToCoefficient_not_functional := by native_decide
+      left_carryBlockValue_eq_remainderBlockValue := by native_decide
+      right_carryBlockValue_eq_remainderBlockValue := by native_decide }
+
+/-- Proof-style exemplar for the generated projection stub: record theorem ->
+projection accessor. -/
+theorem coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_two :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 2).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_one_two_certifiedConflict_eight_two
+  exact hrecord.not_remainderToCoefficientFunctional
+
+end QRTour.FutureBase10N374
+
+namespace QRTour.FutureBase12N374
+
+/-! ### Shape187/K188 canonical criterion example: base 12, N = 374
+
+This packages the sibling base-12 Shape187/K188 same-position scaling
+candidate through the exported-hypothesis bundle. It proves the canonical
+hidden carried-output equality only; a finite certified conflict record can be
+added separately if this row becomes the next finite package target.
+-/
+
+/-- The scaffold coordinate `(base=12, N=374, stride=16)`. -/
+def coordinate : BlockCoordinate where
+  base := 12
+  modulus := 374
+  stride := 16
+  modulus_pos := by decide
+
+/-- The scaffold coordinate is a good mode: `374 < 12^16`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `12^16`. -/
+theorem coordinate_blockBase_eq :
+    coordinate.blockBase = 184884258895036416 := by
+  native_decide
+
+/-- The quotient in `12^16 = q*374 + k` is
+`q = 494342938222022`. -/
+theorem coordinate_quotientQ_eq :
+    coordinate.quotientQ = 494342938222022 := by
+  native_decide
+
+/-- The remainder in `12^16 = q*374 + k` is `k = 188`. -/
+theorem coordinate_remainderK_eq_one_hundred_eighty_eight :
+    coordinate.remainderK = 188 := by
+  native_decide
+
+/-- The Shape187/K188 same-position remainder is idempotent modulo `374`. -/
+theorem coordinate_remainderK_idempotent :
+    coordinate.remainderK * coordinate.remainderK % coordinate.modulus =
+      coordinate.remainderK := by
+  native_decide
+
+/-- Bundled Shape187/K188 same-position scaling hypotheses for the base-12
+`N = 374` member. This is the Lean landing pad for the exported
+`same_position_hyp_*` booleans. -/
+theorem coordinate_samePositionScalingHiddenCarryBlockValueHypotheses :
+    coordinate.SamePositionScalingHiddenCarryBlockValueHypotheses 187 2 := by
+  exact
+    { goodMode := coordinate_goodMode
+      modulus_eq_multiplier_mul_core := by native_decide
+      remainderK_eq_core_plus_one := by native_decide
+      multiplier_dvd_remainderK := by native_decide }
+
+/-- The exported-hypothesis bundle proves the canonical hidden carried-output
+equality at positions `1` and `2`. -/
+theorem coordinate_samePositionIdempotent_hiddenCarryBlockValue_one_two :
+    coordinate.canonicalCarryBlockValue 1 =
+      coordinate.canonicalCarryBlockValue 2 := by
+  exact
+    coordinate.samePositionScaling_hiddenCarryBlockValue_one_two_of_exportedHypotheses
+      coordinate_samePositionScalingHiddenCarryBlockValueHypotheses
+
+end QRTour.FutureBase12N374
+
+namespace QRTour.FutureBase30N374
+
+/-! ### Scaffolded same-position obstruction example: base 30, N = 374
+
+This packages the first Shape187/K188 same-position scaling candidate. The
+generic idempotent-remainder theorem proves the canonical hidden carried-output
+equality, and the finite record below pins the certified `8/1` state-alignment
+obstruction. This remains a worked finite package, not a registry claim,
+theorem-witness promotion, atlas status change, or global factorization result.
+-/
+
+/-- The scaffold coordinate `(base=30, N=374, stride=20)`. -/
+def coordinate : BlockCoordinate where
+  base := 30
+  modulus := 374
+  stride := 20
+  modulus_pos := by decide
+
+/-- The scaffold coordinate is a good mode: `374 < 30^20`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `30^20`. -/
+theorem coordinate_blockBase_eq :
+    coordinate.blockBase = 348678440100000000000000000000 := by
+  native_decide
+
+/-- The quotient in `30^20 = q*374 + k` is
+`q = 932295294385026737967914438`. -/
+theorem coordinate_quotientQ_eq :
+    coordinate.quotientQ = 932295294385026737967914438 := by
+  native_decide
+
+/-- The remainder in `30^20 = q*374 + k` is `k = 188`. -/
+theorem coordinate_remainderK_eq_one_hundred_eighty_eight :
+    coordinate.remainderK = 188 := by
+  native_decide
+
+/-- The Shape187/K188 same-position remainder is idempotent modulo `374`. -/
+theorem coordinate_remainderK_idempotent :
+    coordinate.remainderK * coordinate.remainderK % coordinate.modulus =
+      coordinate.remainderK := by
+  native_decide
+
+/-- Bundled Shape187/K188 same-position scaling hypotheses for the base-30
+`N = 374` member. This is the Lean landing pad for the exported
+`same_position_hyp_*` booleans. -/
+theorem coordinate_samePositionScalingHiddenCarryBlockValueHypotheses :
+    coordinate.SamePositionScalingHiddenCarryBlockValueHypotheses 187 2 := by
+  exact
+    { goodMode := coordinate_goodMode
+      modulus_eq_multiplier_mul_core := by native_decide
+      remainderK_eq_core_plus_one := by native_decide
+      multiplier_dvd_remainderK := by native_decide }
+
+/-- The generic idempotent-remainder lemma proves the canonical hidden
+carried-output equality at positions `1` and `2`. -/
+theorem coordinate_samePositionIdempotent_hiddenCarryBlockValue_one_two :
+    coordinate.canonicalCarryBlockValue 1 =
+      coordinate.canonicalCarryBlockValue 2 := by
+  exact
+    coordinate.samePositionScaling_hiddenCarryBlockValue_one_two_of_exportedHypotheses
+      coordinate_samePositionScalingHiddenCarryBlockValueHypotheses
+
+/-- On the scaffold window, the exact lookahead gap numerator is the default
+Shape187/K188 base-30 `N = 374` value. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 =
+      173406924756399393953853079552 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- Positions `1` and `2` share the same observed remainder state `188`. -/
+theorem coordinate_conflict_remainder_state_one_two :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).remainderIn = 188 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[2]'(by native_decide)).remainderIn = 188 := by
+  native_decide
+
+/-- The same two positions have incompatible raw coefficients. -/
+theorem coordinate_conflict_coefficients_one_two :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).coefficient =
+        175271515344385026737967914344 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[2]'(by native_decide)).coefficient =
+        32951044884744385026737967896672 := by
+  native_decide
+
+/-- The conflicting positions receive incoming carry states `94` and `17766`. -/
+theorem coordinate_conflict_carry_states_one_two :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).carryIn = 94 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[2]'(by native_decide)).carryIn = 17766 := by
+  native_decide
+
+/-- The displayed carried block is hidden: both conflicting positions emit
+`175271515344385026737967914438`. -/
+theorem coordinate_conflict_carried_blocks_one_two :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).carryBlockValue =
+        175271515344385026737967914438 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[2]'(by native_decide)).carryBlockValue =
+        175271515344385026737967914438 := by
+  native_decide
+
+/-- The scaffolded finite obstruction record for the base-30 `N = 374` `8/1`
+window. This is the first source-ready package for Shape187/K188. -/
+theorem coordinate_stateAlignments_one_two_certifiedConflict_eight_one :
+    coordinate.StateAlignmentCertifiedConflict coordinate_goodMode 8 1 1 2
+      (by rw [coordinate.stateAlignments_length]; decide)
+      (by rw [coordinate.stateAlignments_length]; decide) := by
+  exact
+    { remainderIn_eq := by native_decide
+      coefficient_ne := by native_decide
+      left_carryIn_eq_incomingCarry := by native_decide
+      right_carryIn_eq_incomingCarry := by native_decide
+      carryBlockValue_eq := by native_decide
+      remainderToCoefficient_not_functional := by native_decide
+      left_carryBlockValue_eq_remainderBlockValue := by native_decide
+      right_carryBlockValue_eq_remainderBlockValue := by native_decide }
+
+/-- Proof-style exemplar for the generated projection stub: record theorem ->
+projection accessor. -/
+theorem coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_one :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_one_two_certifiedConflict_eight_one
+  exact hrecord.not_remainderToCoefficientFunctional
+
+/-- Copyable scaffold projection generated from
+`base30_n374_m20_blocks8_L1`. -/
+theorem base30_n374_m20_blocks8_L1_not_remainderToCoefficientFunctional :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_one_two_certifiedConflict_eight_one
+  exact hrecord.not_remainderToCoefficientFunctional
+
+end QRTour.FutureBase30N374
+
+namespace QRTour.FutureBase30N748
+
+/-! ### Scaffolded same-position obstruction example: base 30, N = 748
+
+This packages the second default Shape187/K188 same-position scaling candidate
+over base `30`. The generic idempotent-remainder theorem proves the canonical
+hidden carried-output equality, and the finite record below pins the certified
+`8/1` state-alignment obstruction. This remains a worked finite package, not a
+registry claim, theorem-witness promotion, atlas status change, or global
+factorization result.
+-/
+
+/-- The scaffold coordinate `(base=30, N=748, stride=20)`. -/
+def coordinate : BlockCoordinate where
+  base := 30
+  modulus := 748
+  stride := 20
+  modulus_pos := by decide
+
+/-- The scaffold coordinate is a good mode: `748 < 30^20`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `30^20`. -/
+theorem coordinate_blockBase_eq :
+    coordinate.blockBase = 348678440100000000000000000000 := by
+  native_decide
+
+/-- The quotient in `30^20 = q*748 + k` is
+`q = 466147647192513368983957219`. -/
+theorem coordinate_quotientQ_eq :
+    coordinate.quotientQ = 466147647192513368983957219 := by
+  native_decide
+
+/-- The remainder in `30^20 = q*748 + k` is `k = 188`. -/
+theorem coordinate_remainderK_eq_one_hundred_eighty_eight :
+    coordinate.remainderK = 188 := by
+  native_decide
+
+/-- The Shape187/K188 same-position remainder is idempotent modulo `748`. -/
+theorem coordinate_remainderK_idempotent :
+    coordinate.remainderK * coordinate.remainderK % coordinate.modulus =
+      coordinate.remainderK := by
+  native_decide
+
+/-- Bundled Shape187/K188 same-position scaling hypotheses for the base-30
+`N = 748` member. This is the Lean landing pad for the exported
+`same_position_hyp_*` booleans. -/
+theorem coordinate_samePositionScalingHiddenCarryBlockValueHypotheses :
+    coordinate.SamePositionScalingHiddenCarryBlockValueHypotheses 187 4 := by
+  exact
+    { goodMode := coordinate_goodMode
+      modulus_eq_multiplier_mul_core := by native_decide
+      remainderK_eq_core_plus_one := by native_decide
+      multiplier_dvd_remainderK := by native_decide }
+
+/-- The generic idempotent-remainder lemma proves the canonical hidden
+carried-output equality at positions `1` and `2`. -/
+theorem coordinate_samePositionIdempotent_hiddenCarryBlockValue_one_two :
+    coordinate.canonicalCarryBlockValue 1 =
+      coordinate.canonicalCarryBlockValue 2 := by
+  exact
+    coordinate.samePositionScaling_hiddenCarryBlockValue_one_two_of_exportedHypotheses
+      coordinate_samePositionScalingHiddenCarryBlockValueHypotheses
+
+/-- On the scaffold window, the exact lookahead gap numerator is the default
+Shape187/K188 base-30 `N = 748` value. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 =
+      261042682428199696976926539776 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- Positions `1` and `2` share the same observed remainder state `188`. -/
+theorem coordinate_conflict_remainder_state_one_two :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).remainderIn = 188 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[2]'(by native_decide)).remainderIn = 188 := by
+  native_decide
+
+/-- The same two positions have incompatible raw coefficients. -/
+theorem coordinate_conflict_coefficients_one_two :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).coefficient =
+        87635757672192513368983957172 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[2]'(by native_decide)).coefficient =
+        16475522442372192513368983948336 := by
+  native_decide
+
+/-- The conflicting positions receive incoming carry states `47` and `8883`. -/
+theorem coordinate_conflict_carry_states_one_two :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).carryIn = 47 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[2]'(by native_decide)).carryIn = 8883 := by
+  native_decide
+
+/-- The displayed carried block is hidden: both conflicting positions emit
+`87635757672192513368983957219`. -/
+theorem coordinate_conflict_carried_blocks_one_two :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).carryBlockValue =
+        87635757672192513368983957219 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[2]'(by native_decide)).carryBlockValue =
+        87635757672192513368983957219 := by
+  native_decide
+
+/-- The scaffolded finite obstruction record for the base-30 `N = 748` `8/1`
+window. This is the second source-ready base-30 package for Shape187/K188. -/
+theorem coordinate_stateAlignments_one_two_certifiedConflict_eight_one :
+    coordinate.StateAlignmentCertifiedConflict coordinate_goodMode 8 1 1 2
+      (by rw [coordinate.stateAlignments_length]; decide)
+      (by rw [coordinate.stateAlignments_length]; decide) := by
+  exact
+    { remainderIn_eq := by native_decide
+      coefficient_ne := by native_decide
+      left_carryIn_eq_incomingCarry := by native_decide
+      right_carryIn_eq_incomingCarry := by native_decide
+      carryBlockValue_eq := by native_decide
+      remainderToCoefficient_not_functional := by native_decide
+      left_carryBlockValue_eq_remainderBlockValue := by native_decide
+      right_carryBlockValue_eq_remainderBlockValue := by native_decide }
+
+/-- Proof-style exemplar for the generated projection stub: record theorem ->
+projection accessor. -/
+theorem coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_one :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_one_two_certifiedConflict_eight_one
+  exact hrecord.not_remainderToCoefficientFunctional
+
+/-- Copyable scaffold projection generated from
+`base30_n748_m20_blocks8_L1`. -/
+theorem base30_n748_m20_blocks8_L1_not_remainderToCoefficientFunctional :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_one_two_certifiedConflict_eight_one
+  exact hrecord.not_remainderToCoefficientFunctional
+
+end QRTour.FutureBase30N748
+
+namespace QRTour.Shape187K188
+
+/-! ### Base-30 Shape187/K188 same-position wrapper
+
+This namespace records the current proof-covered base-30 Shape187/K188 seed
+pair. It packages named instantiations only; base-10 and base-12 rows remain
+exported theorem candidates until they receive their own Lean hooks or a
+genuinely uniform family theorem.
+-/
+
+/-- The base-30 `N = 374` Shape187/K188 member satisfies the canonical
+same-position hidden carried-output criterion. -/
+theorem base30_n374_samePositionIdempotent_hiddenCarryBlockValue_one_two :
+    FutureBase30N374.coordinate.canonicalCarryBlockValue 1 =
+      FutureBase30N374.coordinate.canonicalCarryBlockValue 2 := by
+  exact FutureBase30N374.coordinate_samePositionIdempotent_hiddenCarryBlockValue_one_two
+
+/-- The base-30 `N = 748` Shape187/K188 member satisfies the canonical
+same-position hidden carried-output criterion. -/
+theorem base30_n748_samePositionIdempotent_hiddenCarryBlockValue_one_two :
+    FutureBase30N748.coordinate.canonicalCarryBlockValue 1 =
+      FutureBase30N748.coordinate.canonicalCarryBlockValue 2 := by
+  exact FutureBase30N748.coordinate_samePositionIdempotent_hiddenCarryBlockValue_one_two
+
+/-- Compact wrapper for the two default proof-covered base-30 Shape187/K188
+same-position carried-output seeds. -/
+theorem base30_default_samePositionIdempotent_hiddenCarryBlockValue_one_two_pair :
+    FutureBase30N374.coordinate.canonicalCarryBlockValue 1 =
+        FutureBase30N374.coordinate.canonicalCarryBlockValue 2 ∧
+      FutureBase30N748.coordinate.canonicalCarryBlockValue 1 =
+        FutureBase30N748.coordinate.canonicalCarryBlockValue 2 := by
+  exact ⟨base30_n374_samePositionIdempotent_hiddenCarryBlockValue_one_two,
+    base30_n748_samePositionIdempotent_hiddenCarryBlockValue_one_two⟩
+
+end QRTour.Shape187K188
+
+namespace QRTour.FutureBase7N93
+
+/-! ### Scaffolded finite obstruction example: base 7, N = 93
+
+This packages the next scaffold candidate emitted after
+the base-30 Shape187/K188 seeds became source-ready. It is a finite
+worked-example hook only: it proves the record-shaped obstruction on the
+certified `8/1` window, but it does not add a registry claim, theorem-witness
+record, atlas status change, or global factorization theorem.
+-/
+
+/-- The scaffold coordinate `(base=7, N=93, stride=6)`. -/
+def coordinate : BlockCoordinate where
+  base := 7
+  modulus := 93
+  stride := 6
+  modulus_pos := by decide
+
+/-- The scaffold coordinate is a good mode: `93 < 117649`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `117649`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 117649 := by
+  native_decide
+
+/-- The quotient in `117649 = q*93 + k` is `q = 1265`. -/
+theorem coordinate_quotientQ_eq_twelve_hundred_sixty_five :
+    coordinate.quotientQ = 1265 := by
+  native_decide
+
+/-- The remainder in `117649 = q*93 + k` is `k = 4`. -/
+theorem coordinate_remainderK_eq_four : coordinate.remainderK = 4 := by
+  native_decide
+
+/-- On the scaffold window, the exact lookahead gap numerator is `39505`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 39505 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- Positions `0` and `5` share the same observed remainder state `1`. -/
+theorem coordinate_conflict_remainder_state_zero_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[0]'(by native_decide)).remainderIn = 1 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)).remainderIn = 1 := by
+  native_decide
+
+/-- The same two positions have incompatible raw coefficients `1265` and
+`1295360`. -/
+theorem coordinate_conflict_coefficients_zero_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[0]'(by native_decide)).coefficient = 1265 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)).coefficient = 1295360 := by
+  native_decide
+
+/-- The conflicting positions receive incoming carry states `0` and `44`. -/
+theorem coordinate_conflict_carry_states_zero_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[0]'(by native_decide)).carryIn = 0 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)).carryIn = 44 := by
+  native_decide
+
+/-- The displayed carried block is hidden: both conflicting positions emit
+`1265`. -/
+theorem coordinate_conflict_carried_blocks_zero_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[0]'(by native_decide)).carryBlockValue = 1265 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)).carryBlockValue = 1265 := by
+  native_decide
+
+/-- The scaffolded finite obstruction record for the base-7 `N = 93` `8/1`
+window. This is the record theorem named by the certificate mapping recipe. -/
+theorem coordinate_stateAlignments_zero_five_certifiedConflict_eight_one :
+    coordinate.StateAlignmentCertifiedConflict coordinate_goodMode 8 1 0 5
+      (by rw [coordinate.stateAlignments_length]; decide)
+      (by rw [coordinate.stateAlignments_length]; decide) := by
+  exact
+    { remainderIn_eq := by native_decide
+      coefficient_ne := by native_decide
+      left_carryIn_eq_incomingCarry := by native_decide
+      right_carryIn_eq_incomingCarry := by native_decide
+      carryBlockValue_eq := by native_decide
+      remainderToCoefficient_not_functional := by native_decide
+      left_carryBlockValue_eq_remainderBlockValue := by native_decide
+      right_carryBlockValue_eq_remainderBlockValue := by native_decide }
+
+/-- Proof-style exemplar for the generated projection stub: record theorem ->
+projection accessor. -/
+theorem coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_one :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_zero_five_certifiedConflict_eight_one
+  exact hrecord.not_remainderToCoefficientFunctional
+
+/-- Copyable scaffold projection generated from
+`base7_n93_m6_blocks8_L1`. -/
+theorem base7_n93_m6_blocks8_L1_not_remainderToCoefficientFunctional :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_zero_five_certifiedConflict_eight_one
+  exact hrecord.not_remainderToCoefficientFunctional
+
+end QRTour.FutureBase7N93
+
+namespace QRTour.FutureBase10N39
+
+/-! ### Scaffolded finite obstruction example: base 10, N = 39
+
+This packages the next scaffold candidate emitted after
+`QRTour.FutureBase7N93` became source-ready. It is a finite worked-example hook
+only: it proves the record-shaped obstruction on the certified `8/1` window,
+but it does not add a registry claim, theorem-witness record, atlas status
+change, or global factorization theorem.
+-/
+
+/-- The scaffold coordinate `(base=10, N=39, stride=5)`. -/
+def coordinate : BlockCoordinate where
+  base := 10
+  modulus := 39
+  stride := 5
+  modulus_pos := by decide
+
+/-- The scaffold coordinate is a good mode: `39 < 100000`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `100000`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 100000 := by
+  native_decide
+
+/-- The quotient in `100000 = q*39 + k` is `q = 2564`. -/
+theorem coordinate_quotientQ_eq_two_thousand_five_hundred_sixty_four :
+    coordinate.quotientQ = 2564 := by
+  native_decide
+
+/-- The remainder in `100000 = q*39 + k` is `k = 4`. -/
+theorem coordinate_remainderK_eq_four : coordinate.remainderK = 4 := by
+  native_decide
+
+/-- On the scaffold window, the exact lookahead gap numerator is `65696`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 65696 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- Positions `0` and `6` share the same observed remainder state `1`. -/
+theorem coordinate_conflict_remainder_state_zero_six :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[0]'(by native_decide)).remainderIn = 1 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[6]'(by native_decide)).remainderIn = 1 := by
+  native_decide
+
+/-- The same two positions have incompatible raw coefficients `2564` and
+`10502144`. -/
+theorem coordinate_conflict_coefficients_zero_six :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[0]'(by native_decide)).coefficient = 2564 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[6]'(by native_decide)).coefficient = 10502144 := by
+  native_decide
+
+/-- The conflicting positions receive incoming carry states `0` and `420`. -/
+theorem coordinate_conflict_carry_states_zero_six :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[0]'(by native_decide)).carryIn = 0 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[6]'(by native_decide)).carryIn = 420 := by
+  native_decide
+
+/-- The displayed carried block is hidden: both conflicting positions emit
+`2564`. -/
+theorem coordinate_conflict_carried_blocks_zero_six :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[0]'(by native_decide)).carryBlockValue = 2564 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[6]'(by native_decide)).carryBlockValue = 2564 := by
+  native_decide
+
+/-- The scaffolded finite obstruction record for the base-10 `N = 39` `8/1`
+window. This is the record theorem named by the certificate mapping recipe. -/
+theorem coordinate_stateAlignments_zero_six_certifiedConflict_eight_one :
+    coordinate.StateAlignmentCertifiedConflict coordinate_goodMode 8 1 0 6
+      (by rw [coordinate.stateAlignments_length]; decide)
+      (by rw [coordinate.stateAlignments_length]; decide) := by
+  exact
+    { remainderIn_eq := by native_decide
+      coefficient_ne := by native_decide
+      left_carryIn_eq_incomingCarry := by native_decide
+      right_carryIn_eq_incomingCarry := by native_decide
+      carryBlockValue_eq := by native_decide
+      remainderToCoefficient_not_functional := by native_decide
+      left_carryBlockValue_eq_remainderBlockValue := by native_decide
+      right_carryBlockValue_eq_remainderBlockValue := by native_decide }
+
+/-- Proof-style exemplar for the generated projection stub: record theorem ->
+projection accessor. -/
+theorem coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_one :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_zero_six_certifiedConflict_eight_one
+  exact hrecord.not_remainderToCoefficientFunctional
+
+/-- Copyable scaffold projection generated from
+`base10_n39_m5_blocks8_L1`. -/
+theorem base10_n39_m5_blocks8_L1_not_remainderToCoefficientFunctional :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_zero_six_certifiedConflict_eight_one
+  exact hrecord.not_remainderToCoefficientFunctional
+
+end QRTour.FutureBase10N39
+
+namespace QRTour.FutureBase10N78
+
+/-! ### Scaffolded finite obstruction example: base 10, N = 78
+
+This packages the next scaffold candidate emitted after
+`QRTour.FutureBase10N39` became source-ready. It is a finite worked-example hook
+only: it proves the record-shaped obstruction on the certified `8/1` window,
+but it does not add a registry claim, theorem-witness record, atlas status
+change, or global factorization theorem.
+-/
+
+/-- The scaffold coordinate `(base=10, N=78, stride=5)`. -/
+def coordinate : BlockCoordinate where
+  base := 10
+  modulus := 78
+  stride := 5
+  modulus_pos := by decide
+
+/-- The scaffold coordinate is a good mode: `78 < 100000`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `100000`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 100000 := by
+  native_decide
+
+/-- The quotient in `100000 = q*78 + k` is `q = 1282`. -/
+theorem coordinate_quotientQ_eq_twelve_hundred_eighty_two :
+    coordinate.quotientQ = 1282 := by
+  native_decide
+
+/-- The remainder in `100000 = q*78 + k` is `k = 4`. -/
+theorem coordinate_remainderK_eq_four : coordinate.remainderK = 4 := by
+  native_decide
+
+/-- On the scaffold window, the exact lookahead gap numerator is `82848`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 82848 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- Positions `1` and `7` share the same observed remainder state `4`. -/
+theorem coordinate_conflict_remainder_state_one_seven :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).remainderIn = 4 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[7]'(by native_decide)).remainderIn = 4 := by
+  native_decide
+
+/-- The same two positions have incompatible raw coefficients `5128` and
+`21004288`. -/
+theorem coordinate_conflict_coefficients_one_seven :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).coefficient = 5128 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[7]'(by native_decide)).coefficient = 21004288 := by
+  native_decide
+
+/-- The conflicting positions receive incoming carry states `0` and `840`. -/
+theorem coordinate_conflict_carry_states_one_seven :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).carryIn = 0 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[7]'(by native_decide)).carryIn = 840 := by
+  native_decide
+
+/-- The displayed carried block is hidden: both conflicting positions emit
+`5128`. -/
+theorem coordinate_conflict_carried_blocks_one_seven :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[1]'(by native_decide)).carryBlockValue = 5128 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[7]'(by native_decide)).carryBlockValue = 5128 := by
+  native_decide
+
+/-- The scaffolded finite obstruction record for the base-10 `N = 78` `8/1`
+window. This is the record theorem named by the certificate mapping recipe. -/
+theorem coordinate_stateAlignments_one_seven_certifiedConflict_eight_one :
+    coordinate.StateAlignmentCertifiedConflict coordinate_goodMode 8 1 1 7
+      (by rw [coordinate.stateAlignments_length]; decide)
+      (by rw [coordinate.stateAlignments_length]; decide) := by
+  exact
+    { remainderIn_eq := by native_decide
+      coefficient_ne := by native_decide
+      left_carryIn_eq_incomingCarry := by native_decide
+      right_carryIn_eq_incomingCarry := by native_decide
+      carryBlockValue_eq := by native_decide
+      remainderToCoefficient_not_functional := by native_decide
+      left_carryBlockValue_eq_remainderBlockValue := by native_decide
+      right_carryBlockValue_eq_remainderBlockValue := by native_decide }
+
+/-- Proof-style exemplar for the generated projection stub: record theorem ->
+projection accessor. -/
+theorem coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_one :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_one_seven_certifiedConflict_eight_one
+  exact hrecord.not_remainderToCoefficientFunctional
+
+/-- Copyable scaffold projection generated from
+`base10_n78_m5_blocks8_L1`. -/
+theorem base10_n78_m5_blocks8_L1_not_remainderToCoefficientFunctional :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_one_seven_certifiedConflict_eight_one
+  exact hrecord.not_remainderToCoefficientFunctional
+
+end QRTour.FutureBase10N78
+
+namespace QRTour.FutureBase10N96
+
+/-! ### Scaffolded finite obstruction example: base 10, N = 96
+
+This packages the next scaffold candidate emitted after
+`QRTour.FutureBase10N78` became source-ready. It is a finite worked-example hook
+only: it proves the record-shaped obstruction on the certified `8/3` window,
+but it does not add a registry claim, theorem-witness record, atlas status
+change, or global factorization theorem.
+-/
+
+/-- The scaffold coordinate `(base=10, N=96, stride=2)`. -/
+def coordinate : BlockCoordinate where
+  base := 10
+  modulus := 96
+  stride := 2
+  modulus_pos := by decide
+
+/-- The scaffold coordinate is a good mode: `96 < 100`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `100`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 100 := by
+  native_decide
+
+/-- The quotient in `100 = q*96 + k` is `q = 1`. -/
+theorem coordinate_quotientQ_eq_one : coordinate.quotientQ = 1 := by
+  native_decide
+
+/-- The remainder in `100 = q*96 + k` is `k = 4`. -/
+theorem coordinate_remainderK_eq_four : coordinate.remainderK = 4 := by
+  native_decide
+
+/-- On the scaffold window, the exact lookahead gap numerator is `377024`. -/
+theorem coordinate_lookaheadGapNumerator_eight_three :
+    coordinate.lookaheadGapNumerator 8 3 = 377024 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- Three blocks of lookahead certify the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_three :
+    coordinate.lookaheadCertificateHolds 8 3 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- Positions `3` and `4` share the same observed remainder state `64`. -/
+theorem coordinate_conflict_remainder_state_three_four :
+    ((coordinate.stateAlignments coordinate_goodMode 8 3)[3]'(by native_decide)).remainderIn = 64 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 3)[4]'(by native_decide)).remainderIn = 64 := by
+  native_decide
+
+/-- The same two positions have incompatible raw coefficients `64` and `256`. -/
+theorem coordinate_conflict_coefficients_three_four :
+    ((coordinate.stateAlignments coordinate_goodMode 8 3)[3]'(by native_decide)).coefficient = 64 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 3)[4]'(by native_decide)).coefficient = 256 := by
+  native_decide
+
+/-- The conflicting positions receive incoming carry states `2` and `10`. -/
+theorem coordinate_conflict_carry_states_three_four :
+    ((coordinate.stateAlignments coordinate_goodMode 8 3)[3]'(by native_decide)).carryIn = 2 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 3)[4]'(by native_decide)).carryIn = 10 := by
+  native_decide
+
+/-- The displayed carried block is hidden: both conflicting positions emit
+`66`. -/
+theorem coordinate_conflict_carried_blocks_three_four :
+    ((coordinate.stateAlignments coordinate_goodMode 8 3)[3]'(by native_decide)).carryBlockValue = 66 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 3)[4]'(by native_decide)).carryBlockValue = 66 := by
+  native_decide
+
+/-- The scaffolded finite obstruction record for the base-10 `N = 96` `8/3`
+window. This is the record theorem named by the certificate mapping recipe. -/
+theorem coordinate_stateAlignments_three_four_certifiedConflict_eight_three :
+    coordinate.StateAlignmentCertifiedConflict coordinate_goodMode 8 3 3 4
+      (by rw [coordinate.stateAlignments_length]; decide)
+      (by rw [coordinate.stateAlignments_length]; decide) := by
+  exact
+    { remainderIn_eq := by native_decide
+      coefficient_ne := by native_decide
+      left_carryIn_eq_incomingCarry := by native_decide
+      right_carryIn_eq_incomingCarry := by native_decide
+      carryBlockValue_eq := by native_decide
+      remainderToCoefficient_not_functional := by native_decide
+      left_carryBlockValue_eq_remainderBlockValue := by native_decide
+      right_carryBlockValue_eq_remainderBlockValue := by native_decide }
+
+/-- Proof-style exemplar for the generated projection stub: record theorem ->
+projection accessor. -/
+theorem coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_three :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 3).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_three_four_certifiedConflict_eight_three
+  exact hrecord.not_remainderToCoefficientFunctional
+
+/-- Copyable scaffold projection generated from
+`base10_n96_m2_blocks8_L3`. -/
+theorem base10_n96_m2_blocks8_L3_not_remainderToCoefficientFunctional :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 3).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_three_four_certifiedConflict_eight_three
+  exact hrecord.not_remainderToCoefficientFunctional
+
+end QRTour.FutureBase10N96
+
+namespace QRTour.FutureBase12N35
+
+/-! ### Scaffolded finite obstruction example: base 12, N = 35
+
+This packages the next scaffold candidate emitted after
+`QRTour.FutureBase10N96` became source-ready. It is a finite worked-example hook
+only: it proves the record-shaped obstruction on the certified `8/3` window,
+but it does not add a registry claim, theorem-witness record, atlas status
+change, or global factorization theorem.
+-/
+
+/-- The scaffold coordinate `(base=12, N=35, stride=2)`. -/
+def coordinate : BlockCoordinate where
+  base := 12
+  modulus := 35
+  stride := 2
+  modulus_pos := by decide
+
+/-- The scaffold coordinate is a good mode: `35 < 144`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `144`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 144 := by
+  native_decide
+
+/-- The quotient in `144 = q*35 + k` is `q = 4`. -/
+theorem coordinate_quotientQ_eq_four : coordinate.quotientQ = 4 := by
+  native_decide
+
+/-- The remainder in `144 = q*35 + k` is `k = 4`. -/
+theorem coordinate_remainderK_eq_four : coordinate.remainderK = 4 := by
+  native_decide
+
+/-- On the scaffold window, the exact lookahead gap numerator is `1740800`. -/
+theorem coordinate_lookaheadGapNumerator_eight_three :
+    coordinate.lookaheadGapNumerator 8 3 = 1740800 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- Three blocks of lookahead certify the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_three :
+    coordinate.lookaheadCertificateHolds 8 3 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- Positions `0` and `6` share the same observed remainder state `1`. -/
+theorem coordinate_conflict_remainder_state_zero_six :
+    ((coordinate.stateAlignments coordinate_goodMode 8 3)[0]'(by native_decide)).remainderIn = 1 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 3)[6]'(by native_decide)).remainderIn = 1 := by
+  native_decide
+
+/-- The same two positions have incompatible raw coefficients `4` and
+`16384`. -/
+theorem coordinate_conflict_coefficients_zero_six :
+    ((coordinate.stateAlignments coordinate_goodMode 8 3)[0]'(by native_decide)).coefficient = 4 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 3)[6]'(by native_decide)).coefficient = 16384 := by
+  native_decide
+
+/-- The conflicting positions receive incoming carry states `0` and `468`. -/
+theorem coordinate_conflict_carry_states_zero_six :
+    ((coordinate.stateAlignments coordinate_goodMode 8 3)[0]'(by native_decide)).carryIn = 0 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 3)[6]'(by native_decide)).carryIn = 468 := by
+  native_decide
+
+/-- The displayed carried block is hidden: both conflicting positions emit
+`4`. -/
+theorem coordinate_conflict_carried_blocks_zero_six :
+    ((coordinate.stateAlignments coordinate_goodMode 8 3)[0]'(by native_decide)).carryBlockValue = 4 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 3)[6]'(by native_decide)).carryBlockValue = 4 := by
+  native_decide
+
+/-- The scaffolded finite obstruction record for the base-12 `N = 35` `8/3`
+window. This is the record theorem named by the certificate mapping recipe. -/
+theorem coordinate_stateAlignments_zero_six_certifiedConflict_eight_three :
+    coordinate.StateAlignmentCertifiedConflict coordinate_goodMode 8 3 0 6
+      (by rw [coordinate.stateAlignments_length]; decide)
+      (by rw [coordinate.stateAlignments_length]; decide) := by
+  exact
+    { remainderIn_eq := by native_decide
+      coefficient_ne := by native_decide
+      left_carryIn_eq_incomingCarry := by native_decide
+      right_carryIn_eq_incomingCarry := by native_decide
+      carryBlockValue_eq := by native_decide
+      remainderToCoefficient_not_functional := by native_decide
+      left_carryBlockValue_eq_remainderBlockValue := by native_decide
+      right_carryBlockValue_eq_remainderBlockValue := by native_decide }
+
+/-- Proof-style exemplar for the generated projection stub: record theorem ->
+projection accessor. -/
+theorem coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_three :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 3).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_zero_six_certifiedConflict_eight_three
+  exact hrecord.not_remainderToCoefficientFunctional
+
+/-- Copyable scaffold projection generated from
+`base12_n35_m2_blocks8_L3`. -/
+theorem base12_n35_m2_blocks8_L3_not_remainderToCoefficientFunctional :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 3).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_zero_six_certifiedConflict_eight_three
+  exact hrecord.not_remainderToCoefficientFunctional
+
+end QRTour.FutureBase12N35
+
+namespace QRTour.FutureBase12N31
+
+/-! ### Scaffolded finite obstruction example: base 12, N = 31
+
+This packages the next scaffold candidate emitted after
+`QRTour.FutureBase12N35` became source-ready. It is a finite worked-example hook
+only: it proves the record-shaped obstruction on the certified `8/1` window,
+but it does not add a registry claim, theorem-witness record, atlas status
+change, or global factorization theorem.
+-/
+
+/-- The scaffold coordinate `(base=12, N=31, stride=6)`. -/
+def coordinate : BlockCoordinate where
+  base := 12
+  modulus := 31
+  stride := 6
+  modulus_pos := by decide
+
+/-- The scaffold coordinate is a good mode: `31 < 2985984`. -/
+theorem coordinate_goodMode : coordinate.goodMode := by
+  unfold coordinate BlockCoordinate.goodMode BlockCoordinate.blockBase
+  native_decide
+
+/-- The selected block base is `2985984`. -/
+theorem coordinate_blockBase_eq : coordinate.blockBase = 2985984 := by
+  native_decide
+
+/-- The quotient in `2985984 = q*31 + k` is `q = 96322`. -/
+theorem coordinate_quotientQ_eq_ninety_six_thousand_three_hundred_twenty_two :
+    coordinate.quotientQ = 96322 := by
+  native_decide
+
+/-- The remainder in `2985984 = q*31 + k` is `k = 2`. -/
+theorem coordinate_remainderK_eq_two : coordinate.remainderK = 2 := by
+  native_decide
+
+/-- On the scaffold window, the exact lookahead gap numerator is `2215424`. -/
+theorem coordinate_lookaheadGapNumerator_eight_one :
+    coordinate.lookaheadGapNumerator 8 1 = 2215424 := by
+  unfold coordinate BlockCoordinate.lookaheadGapNumerator
+  native_decide
+
+/-- One block of lookahead certifies the eight-block finite window. -/
+theorem coordinate_lookaheadCertificate_eight_one :
+    coordinate.lookaheadCertificateHolds 8 1 := by
+  unfold BlockCoordinate.lookaheadCertificateHolds
+  native_decide
+
+/-- Positions `0` and `5` share the same observed remainder state `1`. -/
+theorem coordinate_conflict_remainder_state_zero_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[0]'(by native_decide)).remainderIn = 1 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)).remainderIn = 1 := by
+  native_decide
+
+/-- The same two positions have incompatible raw coefficients `96322` and
+`3082304`. -/
+theorem coordinate_conflict_coefficients_zero_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[0]'(by native_decide)).coefficient = 96322 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)).coefficient = 3082304 := by
+  native_decide
+
+/-- The conflicting positions receive incoming carry states `0` and `2`. -/
+theorem coordinate_conflict_carry_states_zero_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[0]'(by native_decide)).carryIn = 0 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)).carryIn = 2 := by
+  native_decide
+
+/-- The displayed carried block is hidden: both conflicting positions emit
+`96322`. -/
+theorem coordinate_conflict_carried_blocks_zero_five :
+    ((coordinate.stateAlignments coordinate_goodMode 8 1)[0]'(by native_decide)).carryBlockValue = 96322 ∧
+      ((coordinate.stateAlignments coordinate_goodMode 8 1)[5]'(by native_decide)).carryBlockValue = 96322 := by
+  native_decide
+
+/-- The scaffolded finite obstruction record for the base-12 `N = 31` `8/1`
+window. This is the record theorem named by the certificate mapping recipe. -/
+theorem coordinate_stateAlignments_zero_five_certifiedConflict_eight_one :
+    coordinate.StateAlignmentCertifiedConflict coordinate_goodMode 8 1 0 5
+      (by rw [coordinate.stateAlignments_length]; decide)
+      (by rw [coordinate.stateAlignments_length]; decide) := by
+  exact
+    { remainderIn_eq := by native_decide
+      coefficient_ne := by native_decide
+      left_carryIn_eq_incomingCarry := by native_decide
+      right_carryIn_eq_incomingCarry := by native_decide
+      carryBlockValue_eq := by native_decide
+      remainderToCoefficient_not_functional := by native_decide
+      left_carryBlockValue_eq_remainderBlockValue := by native_decide
+      right_carryBlockValue_eq_remainderBlockValue := by native_decide }
+
+/-- Proof-style exemplar for the generated projection stub: record theorem ->
+projection accessor. -/
+theorem coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_one :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_zero_five_certifiedConflict_eight_one
+  exact hrecord.not_remainderToCoefficientFunctional
+
+/-- Copyable scaffold projection generated from
+`base12_n31_m6_blocks8_L1`. -/
+theorem base12_n31_m6_blocks8_L1_not_remainderToCoefficientFunctional :
+    ¬ List.FunctionalOnFst
+      ((coordinate.stateAlignments coordinate_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  have hrecord := coordinate_stateAlignments_zero_five_certifiedConflict_eight_one
+  exact hrecord.not_remainderToCoefficientFunctional
+
+end QRTour.FutureBase12N31
 
 namespace QRTour.Composite996
 
@@ -1909,6 +10262,82 @@ theorem actual996_quotientOnly_profile :
     native_decide
   · rw [actual996Stride3.carryToRemainderFunctional_iff_functionalOnFst_pairs]
     native_decide
+
+/-! ### Positive Reconstruction Exemplar
+
+The same `8/1` selector-family window used to expose the finite quotient-only
+profile also gives a positive reconstruction witness for the raw coefficient:
+`remainderIn` determines the raw coefficient on this finite window, even
+though the reverse carry-to-remainder map remains obstructed.
+-/
+
+/-- On the default same-core `996` observability window, the observed
+`remainderIn` states are exactly the first eight powers of the remainder `4`,
+reduced modulo `996`. -/
+theorem actual996_stateAlignments_remainderIn_window_eight_one :
+    ((actual996Stride3.stateAlignments actual996Stride3_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)) = [1, 4, 16, 64, 256, 28, 112, 448] := by
+  have h0 : actual996Stride3.longDivisionRemainder 0 = 1 := by rfl
+  have h1 : actual996Stride3.longDivisionRemainder 1 = 4 := by
+    rw [actual996Stride3.longDivisionRemainder_eq_pow_mod]
+    norm_num [actual996Stride3, actualCoordinate, BlockCoordinate.blockBase]
+  have h2 : actual996Stride3.longDivisionRemainder 2 = 16 := by
+    rw [actual996Stride3.longDivisionRemainder_eq_pow_mod]
+    norm_num [actual996Stride3, actualCoordinate, BlockCoordinate.blockBase]
+  have h3 : actual996Stride3.longDivisionRemainder 3 = 64 := by
+    rw [actual996Stride3.longDivisionRemainder_eq_pow_mod]
+    norm_num [actual996Stride3, actualCoordinate, BlockCoordinate.blockBase]
+  have h4 : actual996Stride3.longDivisionRemainder 4 = 256 := by
+    rw [actual996Stride3.longDivisionRemainder_eq_pow_mod]
+    norm_num [actual996Stride3, actualCoordinate, BlockCoordinate.blockBase]
+  have h5 : actual996Stride3.longDivisionRemainder 5 = 28 := by
+    rw [actual996Stride3.longDivisionRemainder_eq_pow_mod]
+    norm_num [actual996Stride3, actualCoordinate, BlockCoordinate.blockBase]
+  have h6 : actual996Stride3.longDivisionRemainder 6 = 112 := by
+    rw [actual996Stride3.longDivisionRemainder_eq_pow_mod]
+    norm_num [actual996Stride3, actualCoordinate, BlockCoordinate.blockBase]
+  have h7 : actual996Stride3.longDivisionRemainder 7 = 448 := by
+    rw [actual996Stride3.longDivisionRemainder_eq_pow_mod]
+    norm_num [actual996Stride3, actualCoordinate, BlockCoordinate.blockBase]
+  exact actual996Stride3.stateAlignments_remainderIn_window_eight_eq_of_longDivisionRemainders
+    actual996Stride3_goodMode 1 h0 h1 h2 h3 h4 h5 h6 h7
+
+/-- On the default same-core `996` observability window, the observed
+`remainderIn` states are pairwise distinct. -/
+theorem actual996_stateAlignments_remainderIn_nodup_eight_one :
+    ((actual996Stride3.stateAlignments actual996Stride3_goodMode 8 1).map
+      (fun alignment => alignment.remainderIn)).Nodup := by
+  exact actual996Stride3.stateAlignments_remainderIn_nodup_of_window_eq
+    actual996Stride3_goodMode 8 1
+    actual996_stateAlignments_remainderIn_window_eight_one
+    (by norm_num)
+
+/-- On the default same-core `996` observability window, the finite
+`remainderIn ↦ raw coefficient` map is functional by finite injective readout. -/
+theorem actual996_stateAlignments_remainderToCoefficientFunctional_eight_one :
+    List.FunctionalOnFst
+      ((actual996Stride3.stateAlignments actual996Stride3_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))) := by
+  exact
+    actual996Stride3.stateAlignments_remainderToCoefficientFunctional_of_remainderIn_nodup
+      actual996Stride3_goodMode 8 1 actual996_stateAlignments_remainderIn_nodup_eight_one
+
+/-- Positive reconstruction exemplar for `996`: on the finite `8/1`
+state-alignment window, the raw coefficient factors through the observed
+`remainderIn` state. -/
+theorem actual996_stateAlignments_remainderToCoefficientFactorsThrough_eight_one :
+    let pairs :=
+      (actual996Stride3.stateAlignments actual996Stride3_goodMode 8 1).map
+        (fun alignment => (alignment.remainderIn, alignment.coefficient))
+    FactorsThrough
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} =>
+        (⟨p.val.1, ⟨p.val.2, p.property⟩⟩ :
+          {a : ℕ // ∃ b : ℕ, (a, b) ∈ pairs}))
+      (fun p : {p : ℕ × ℕ // p ∈ pairs} => p.val.2) := by
+  exact
+    actual996Stride3.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderIn_nodup
+      actual996Stride3_goodMode 8 1
+      actual996_stateAlignments_remainderIn_nodup_eight_one
 
 /-- On the canonical `4/0 -> 3/0` same-core window pair, an exact shifted-actual
 lookahead certificate already transports back to visible carry/output agreement

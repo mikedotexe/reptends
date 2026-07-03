@@ -399,6 +399,52 @@ theorem CarryTransducer.mem_traceReversedAux_nonleft_block_lt
           · exact T.step_nonleft_block_lt coefficient carryIn
           · exact ih htail hleft
 
+/-- In a non-leftmost recorded step, the emitted block is the block-base
+remainder of the coefficient plus incoming carry. -/
+theorem CarryTransducer.mem_traceReversedAux_nonleft_blockValue_eq_mod
+    (T : CarryTransducer) {coefficients : List ℕ} {carryIn : ℕ} {step : CarryTraceStep}
+    (hstep : step ∈ T.traceReversedAux coefficients carryIn)
+    (hleft : step.isLeftmost = false) :
+    step.blockValue = (step.coefficient + step.carryIn) % T.blockBase := by
+  induction coefficients generalizing carryIn step with
+  | nil =>
+      simp [CarryTransducer.traceReversedAux] at hstep
+  | cons coefficient tail ih =>
+      cases tail with
+      | nil =>
+          simp [CarryTransducer.traceReversedAux, CarryTransducer.mkTraceStep,
+            CarryTransducer.step] at hstep
+          rcases hstep with rfl
+          simp at hleft
+      | cons next rest =>
+          simp [CarryTransducer.traceReversedAux, CarryTransducer.mkTraceStep] at hstep
+          rcases hstep with rfl | htail
+          · simp
+          · exact ih htail hleft
+
+/-- In a non-leftmost recorded step, the outgoing carry is the block-base
+quotient of the coefficient plus incoming carry. -/
+theorem CarryTransducer.mem_traceReversedAux_nonleft_carryOut_eq_div
+    (T : CarryTransducer) {coefficients : List ℕ} {carryIn : ℕ} {step : CarryTraceStep}
+    (hstep : step ∈ T.traceReversedAux coefficients carryIn)
+    (hleft : step.isLeftmost = false) :
+    step.carryOut = (step.coefficient + step.carryIn) / T.blockBase := by
+  induction coefficients generalizing carryIn step with
+  | nil =>
+      simp [CarryTransducer.traceReversedAux] at hstep
+  | cons coefficient tail ih =>
+      cases tail with
+      | nil =>
+          simp [CarryTransducer.traceReversedAux, CarryTransducer.mkTraceStep,
+            CarryTransducer.step] at hstep
+          rcases hstep with rfl
+          simp at hleft
+      | cons next rest =>
+          simp [CarryTransducer.traceReversedAux, CarryTransducer.mkTraceStep] at hstep
+          rcases hstep with rfl | htail
+          · simp
+          · exact ih htail hleft
+
 theorem CarryTransducer.mem_traceBlocks_nonleft_block_lt
     (T : CarryTransducer) {coefficients : List ℕ} {step : CarryTraceStep}
     (hstep : step ∈ T.traceBlocks coefficients)
@@ -410,6 +456,30 @@ theorem CarryTransducer.mem_traceBlocks_nonleft_block_lt
     exact List.mem_reverse.mp this
   simpa [CarryTransducer.traceReversed] using
     T.mem_traceReversedAux_nonleft_block_lt hrev hleft
+
+theorem CarryTransducer.mem_traceBlocks_nonleft_blockValue_eq_mod
+    (T : CarryTransducer) {coefficients : List ℕ} {step : CarryTraceStep}
+    (hstep : step ∈ T.traceBlocks coefficients)
+    (hleft : step.isLeftmost = false) :
+    step.blockValue = (step.coefficient + step.carryIn) % T.blockBase := by
+  have hrev : step ∈ T.traceReversed coefficients.reverse := by
+    have : step ∈ (T.traceReversed coefficients.reverse).reverse := by
+      simpa [CarryTransducer.traceBlocks] using hstep
+    exact List.mem_reverse.mp this
+  simpa [CarryTransducer.traceReversed] using
+    T.mem_traceReversedAux_nonleft_blockValue_eq_mod hrev hleft
+
+theorem CarryTransducer.mem_traceBlocks_nonleft_carryOut_eq_div
+    (T : CarryTransducer) {coefficients : List ℕ} {step : CarryTraceStep}
+    (hstep : step ∈ T.traceBlocks coefficients)
+    (hleft : step.isLeftmost = false) :
+    step.carryOut = (step.coefficient + step.carryIn) / T.blockBase := by
+  have hrev : step ∈ T.traceReversed coefficients.reverse := by
+    have : step ∈ (T.traceReversed coefficients.reverse).reverse := by
+      simpa [CarryTransducer.traceBlocks] using hstep
+    exact List.mem_reverse.mp this
+  simpa [CarryTransducer.traceReversed] using
+    T.mem_traceReversedAux_nonleft_carryOut_eq_div hrev hleft
 
 theorem CarryTransducer.mem_traceBlocks_value
     (T : CarryTransducer) {coefficients : List ℕ} {step : CarryTraceStep}

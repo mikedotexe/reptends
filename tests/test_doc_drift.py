@@ -2,6 +2,10 @@ import re
 from pathlib import Path
 
 from bridge_reptends import (
+    certificate_first_scaffold_mapping_lint_payload,
+    certificate_fixture_mapping_lint_payload,
+    certificate_lean_fixture_payload,
+    certificate_lean_stub_payload,
     load_claim_registry,
     load_lean_claim_carriers,
     load_lean_module_index,
@@ -62,6 +66,9 @@ VISIBILITY_OPTICS_WORKBENCH = DOCS_DIR / "VISIBILITY_OPTICS_WORKBENCH.md"
 INSTRUMENT_ATLAS = DOCS_DIR / "INSTRUMENT_ATLAS.md"
 VISIBILITY_GEOMETRY = DOCS_DIR / "VISIBILITY_GEOMETRY.md"
 CHART_INVARIANCE = DOCS_DIR / "CHART_INVARIANCE.md"
+OBSERVABILITY_BOUNDARY = DOCS_DIR / "OBSERVABILITY_BOUNDARY.md"
+OBSERVABILITY_PROBLEMS = DOCS_DIR / "OBSERVABILITY_PROBLEMS.md"
+RESEARCH_BRIEF = DOCS_DIR / "RESEARCH_BRIEF.md"
 SITE_DOCUMENT = ROOT / "site" / "src" / "components" / "FiniteReptendDocument.tsx"
 SITE_ORBIT_GALLERY = ROOT / "site" / "src" / "components" / "OrbitInstrumentVisibilityGallery.tsx"
 PUBLIC_DOCS = [README, AGENTS, CLAUDE, DISCOVERIES, *sorted(DOCS_DIR.glob("*.md"))]
@@ -186,6 +193,8 @@ def test_orbit_instrument_visibility_lens_stays_prominent_and_status_honest() ->
     readme = README.read_text()
     note = ORBIT_INSTRUMENT_VISIBILITY.read_text()
     carry_doc = CARRY_TRANSDUCER.read_text()
+    theorem_guide = LEAN_GUIDE.read_text()
+    observability_doc = OBSERVABILITY_BOUNDARY.read_text()
     roadmap = HARDENING_ROADMAP.read_text()
     site_document = SITE_DOCUMENT.read_text()
     gallery = SITE_ORBIT_GALLERY.read_text()
@@ -344,8 +353,1122 @@ def test_orbit_instrument_visibility_lens_stays_prominent_and_status_honest() ->
     assert "VISIBILITY_OPTICS_WORKBENCH.md" in carry_doc
     assert "base `30` as data" in carry_doc
     assert "search-reptends visibility-base-compare --max 1200 --bases 10,12,30 --blocks 8 --top 20" in carry_doc
+    assert "search-reptends visibility-coefficient-conflicts --max 1200 --base 10 --blocks 8 --top 20" in carry_doc
+    assert "search-reptends visibility-coefficient-conflict-atlas --max 1200 --bases 7,10,12,30 --blocks 8 --top 20" in carry_doc
+    assert "search-reptends visibility-coefficient-conflict-families --max 1200 --bases 7,10,12,30 --blocks 8 --top 20" in carry_doc
+    assert "search-reptends visibility-composite68-base-sweep --max-base 120 --blocks 8 --top 20" in carry_doc
+    assert "search-reptends visibility-composite68-congruence-family --max-base 120 --max-m 8 --blocks 8 --top 0" in carry_doc
+    assert "Certificate Workbench" in carry_doc
+    assert "search-reptends visibility-certificate-workbench --max 1200 --bases 7,10,12,30 --blocks 8 --top 20" in carry_doc
+    assert "empirical/open-boundary tooling only" in carry_doc
+    assert "does not promote\n`small_k_visibility_threshold`, `carry_dfa_factorization`" in carry_doc
+    for doc in [carry_doc, theorem_guide, observability_doc]:
+        assert "search-reptends observability-atlas --max 1200 --bases 7,10,12,30 --blocks 8 --top 50" in doc
+        assert "search-reptends observability-program-atlas --max 1200 --bases 7,10,12,30 --blocks 8 --top 50" in doc
+        assert "search-reptends observability-target-split --max 1200 --bases 7,10,12,30 --blocks 8 --top 50" in doc
+        assert "search-reptends observability-target-signatures --max 1200 --bases 7,10,12,30 --blocks 8 --top 20" in doc
+        assert "search-reptends observability-mod-stable-carry-loss --max 1200 --bases 7,10,12,30 --blocks 8 --top 20" in doc
+        assert "search-reptends observability-shape13-k4-mod-stable-carry-loss --max 1200 --bases 7,10,12,30 --blocks 8 --top 20" in doc
+        assert "search-reptends observability-instrument-compare --max 1200 --bases 7,10,12,30 --blocks 8 --top 20" in doc
+        assert "search-reptends observability-shape17-k4-family --max 1200 --bases 7,10,12,30 --blocks 8 --top 20" in doc
+        assert "search-reptends observability-next-source-shape-family --max 1200 --bases 7,10,12,30 --blocks 8 --top 20" in doc
+        assert "search-reptends observability-shape187-k188-family --max 1200 --bases 7,10,12,30 --blocks 8 --top 20" in doc
+        assert "coefficient information loss" in doc
+        assert "positive reconstruction" in doc
+        assert "factor-through target" in doc
+        assert "observability_positive_reconstruction_candidate" in doc
+        assert "positive_reconstruction_source_pinned" in doc
+        assert "positive_reconstruction_source_status" in doc
+        assert "positive_reconstruction_lean_support_status" in doc
+        assert "positive_reconstruction_functional_theorem" in doc
+        assert "positive_reconstruction_factor_through_theorem" in doc
+        assert "finite_remainder_state_injective_on_window" in doc
+        assert "remainder_state_window" in doc
+        assert "raw_coefficient_window" in doc
+        assert "remainder_state_window_injective" in doc
+        assert "positive_reconstruction_arithmetic_criterion_id" in doc
+        assert "positive_reconstruction_hyp_remainder_state_window_injective" in doc
+        assert "finite_remainder_power_residue_no_collision" in doc
+        assert "remainder_power_residue_window" in doc
+        assert "positive_reconstruction_hyp_remainder_power_residue_window_injective" in doc
+        assert "finite_remainder_power_residue_no_wrap" in doc
+        assert "remainder_power_unreduced_window" in doc
+        assert "positive_reconstruction_hyp_remainder_power_residue_no_wrap" in doc
+        assert "BlockCoordinate.stateAlignments_remainderIn_nodup_of_remainderK_powerResidues_nodup" in doc
+        assert "BlockCoordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderK_powerResidues_nodup" in doc
+        assert "BlockCoordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_powerResidues_nodup" in doc
+        assert "BlockCoordinate.remainderK_powerResidues_nodup_of_remainderK_pow_lt_modulus" in doc
+        assert "BlockCoordinate.stateAlignments_remainderIn_nodup_of_remainderK_pow_lt_modulus" in doc
+        assert "BlockCoordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderK_pow_lt_modulus" in doc
+        assert "BlockCoordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_pow_lt_modulus" in doc
+        assert "List.functionalOnFst_of_map_fst_nodup" in doc
+        assert "BlockCoordinate.stateAlignments_remainderToCoefficientFunctional_of_remainderIn_nodup" in doc
+        assert "BlockCoordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderIn_nodup" in doc
+        assert "QRTour.Prime97.coordinate_stateAlignments_remainderIn_nodup_eight_two" in doc
+        assert "QRTour.Composite996.actual996_stateAlignments_remainderIn_nodup_eight_one" in doc
+        assert "QRTour.FutureBase10N98.coordinate_stateAlignments_remainderIn_nodup_eight_one" in doc
+        assert "QRTour.FutureBase12N142.coordinate_stateAlignments_remainderIn_nodup_eight_one" in doc
+        assert "QRTour.FutureBase7N47.coordinate_stateAlignments_remainderIn_nodup_eight_one" in doc
+        assert "QRTour.FutureBase12N71.coordinate_stateAlignments_remainderIn_nodup_eight_one" in doc
+        assert "QRTour.FutureBase10N49.coordinate_stateAlignments_remainderIn_nodup_eight_one" in doc
+        assert "QRTour.FutureBase30N299.coordinate_stateAlignments_remainderIn_nodup_eight_one" in doc
+        assert "QRTour.FutureBase7N170.coordinate_remainderK_powerResidues_nodup_eight" in doc
+        assert "first_unpinned_positive_reconstruction_tuple" in doc
+        assert "first_unpinned_positive_reconstruction_remainder_power_residue_window" in doc
+        assert "first_unpinned_positive_reconstruction_family_seed_tuples" in doc
+        assert "[7, 340, 3, 343, 1, 3, 1, 299]" in doc
+        assert "[1, 3, 9, 27, 81, 243, 49, 147]" in doc
+        assert (
+            "QRTour.Base7K3PositiveReconstruction.remainderK_powerResidues_nodup_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base7K3PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+            in doc
+        )
+        assert (
+            "use_lean_proved_family_criterion_before_source_pinning_more_examples"
+            in doc
+        )
+        assert "first_uncovered_positive_reconstruction_tuple" in doc
+        assert "first_uncovered_positive_reconstruction_remainder_power_residue_window" in doc
+        assert "QRTour.FutureBase10N997.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one" in doc
+        assert (
+            "QRTour.Base30K3PositiveReconstruction.remainderK_powerResidues_nodup_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base30K3PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base30K3PositiveReconstruction.n299_n897_powerResidues_nodup_eight_pair"
+            in doc
+        )
+        assert "[10, 498, 3, 1000, 2, 4, 1, 928]" in doc
+        assert (
+            "QRTour.Base10K4PositiveReconstruction.remainderK_powerResidues_nodup_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base10K4PositiveReconstruction.stateAlignments_remainderToCoefficientFunctional_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base10K4PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base10K4PositiveReconstruction.n498_n996_powerResidues_nodup_eight_pair"
+            in doc
+        )
+        assert "[83, 166, 249, 332, 498, 996]" in doc
+        assert "[12, 575, 3, 1728, 3, 3, 1, 1053]" in doc
+        assert "[1, 3, 9, 27, 81, 243, 154, 462]" in doc
+        assert "QRTour.FutureBase12N575.coordinate_remainderK_powerResidues_nodup_eight" in doc
+        assert (
+            "QRTour.FutureBase12N575.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+            in doc
+        )
+        assert (
+            "QRTour.FutureBase12N575.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+            in doc
+        )
+        assert "[12, 75, 3, 1728, 23, 3, 1, 1161]" in doc
+        assert "[1, 3, 9, 27, 6, 18, 54, 12]" in doc
+        assert (
+            "QRTour.Base12K3PositiveReconstruction.remainderK_powerResidues_nodup_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base12K3PositiveReconstruction.stateAlignments_remainderToCoefficientFunctional_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base12K3PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base12K3PositiveReconstruction.n75_n575_powerResidues_nodup_eight_pair"
+            in doc
+        )
+        assert "[23, 25, 69, 75, 115, 345, 575, 1725]" in doc
+        assert "[7, 1199, 4, 2401, 2, 3, 1, 1284]" in doc
+        assert "[1, 3, 9, 27, 81, 243, 729, 988]" in doc
+        assert "QRTour.FutureBase7N1199.coordinate_remainderK_powerResidues_nodup_eight" in doc
+        assert (
+            "QRTour.FutureBase7N1199.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+            in doc
+        )
+        assert (
+            "QRTour.FutureBase7N1199.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+            in doc
+        )
+        assert "[10, 294, 4, 10000, 34, 4, 1, 1776]" in doc
+        assert "[1, 4, 16, 64, 256, 142, 274, 214]" in doc
+        assert "QRTour.FutureBase10N294.coordinate_remainderK_powerResidues_nodup_eight" in doc
+        assert (
+            "QRTour.FutureBase10N294.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+            in doc
+        )
+        assert (
+            "QRTour.FutureBase10N294.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+            in doc
+        )
+        assert "[7, 109, 4, 2401, 22, 3, 1, 2119]" in doc
+        assert "[1, 3, 9, 27, 81, 25, 75, 7]" in doc
+        assert (
+            "QRTour.Base7Stride4K3PositiveReconstruction.remainderK_powerResidues_nodup_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base7Stride4K3PositiveReconstruction.stateAlignments_remainderToCoefficientFunctional_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base7Stride4K3PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base7Stride4K3PositiveReconstruction.n109_n1199_powerResidues_nodup_eight_pair"
+            in doc
+        )
+        assert "[109, 218, 1199, 2398]" in doc
+        assert "[1, 2, 11, 22]" in doc
+        assert "[7, 46, 2, 49, 1, 3, 2, 2171]" in doc
+        assert "[1, 3, 9, 27, 35, 13, 39, 25]" in doc
+        assert "QRTour.FutureBase7N46.coordinate_remainderK_powerResidues_nodup_eight" in doc
+        assert (
+            "QRTour.FutureBase7N46.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_two"
+            in doc
+        )
+        assert (
+            "QRTour.FutureBase7N46.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_two"
+            in doc
+        )
+        assert "[7, 141, 4, 2401, 17, 4, 1, 2353]" in doc
+        assert "[1, 4, 16, 64, 115, 37, 7, 28]" in doc
+        assert "QRTour.FutureBase7N141.coordinate_remainderK_powerResidues_nodup_eight" in doc
+        assert (
+            "QRTour.FutureBase7N141.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+            in doc
+        )
+        assert (
+            "QRTour.FutureBase7N141.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+            in doc
+        )
+        assert "[10, 714, 4, 10000, 14, 4, 1, 2496]" in doc
+        assert "[1, 4, 16, 64, 256, 310, 526, 676]" in doc
+        assert (
+            "QRTour.Base10Stride4K4PositiveReconstruction.remainderK_powerResidues_nodup_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base10Stride4K4PositiveReconstruction.stateAlignments_remainderToCoefficientFunctional_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base10Stride4K4PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base10Stride4K4PositiveReconstruction.n294_n714_powerResidues_nodup_eight_pair"
+            in doc
+        )
+        assert "[49, 98, 119, 147, 196, 238, 294, 357, 476, 588, 714, 833]" in doc
+        assert "[12, 146, 4, 20736, 142, 4, 1, 4352]" in doc
+        assert "[1, 4, 16, 64, 110, 2, 8, 32]" in doc
+        assert "QRTour.FutureBase12N146.coordinate_remainderK_powerResidues_nodup_eight" in doc
+        assert (
+            "QRTour.FutureBase12N146.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+            in doc
+        )
+        assert (
+            "QRTour.FutureBase12N146.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+            in doc
+        )
+        assert "[10, 769, 4, 10000, 13, 3, 1, 4707]" in doc
+        assert "[1, 3, 9, 27, 81, 243, 729, 649]" in doc
+        assert "QRTour.FutureBase10N769.coordinate_remainderK_powerResidues_nodup_eight" in doc
+        assert (
+            "QRTour.FutureBase10N769.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+            in doc
+        )
+        assert (
+            "QRTour.FutureBase10N769.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+            in doc
+        )
+        assert "[7, 345, 6, 117649, 341, 4, 1, 5534]" in doc
+        assert "[1, 4, 16, 64, 256, 334, 301, 169]" in doc
+        assert "QRTour.FutureBase7N345.coordinate_remainderK_powerResidues_nodup_eight" in doc
+        assert (
+            "QRTour.FutureBase7N345.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+            in doc
+        )
+        assert (
+            "QRTour.FutureBase7N345.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+            in doc
+        )
+        assert "[7, 465, 6, 117649, 253, 4, 1, 7901]" in doc
+        assert "[1, 4, 16, 64, 256, 94, 376, 109]" in doc
+        assert (
+            "QRTour.Base7Stride6K4PositiveReconstruction.remainderK_powerResidues_nodup_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base7Stride6K4PositiveReconstruction.stateAlignments_remainderToCoefficientFunctional_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base7Stride6K4PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base7Stride6K4PositiveReconstruction.n345_n465_powerResidues_nodup_eight_pair"
+            in doc
+        )
+        assert "[7, 542, 5, 16807, 31, 5, 1, 8472]" in doc
+        assert "[1, 5, 25, 125, 83, 415, 449, 77]" in doc
+        assert "QRTour.FutureBase7N542.coordinate_remainderK_powerResidues_nodup_eight" in doc
+        assert (
+            "QRTour.FutureBase7N542.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+            in doc
+        )
+        assert (
+            "QRTour.FutureBase7N542.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+            in doc
+        )
+        assert "[12, 73, 4, 20736, 284, 4, 1, 8704]" in doc
+        assert "[1, 4, 16, 64, 37, 2, 8, 32]" in doc
+        assert (
+            "QRTour.Base12Stride4K4PositiveReconstruction.remainderK_powerResidues_nodup_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base12Stride4K4PositiveReconstruction.stateAlignments_remainderToCoefficientFunctional_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base12Stride4K4PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base12Stride4K4PositiveReconstruction.n73_n146_powerResidues_nodup_eight_pair"
+            in doc
+        )
+        assert "[71, 73, 142, 146, 284, 292, 5183, 10366, 20732]" in doc
+        assert "[12, 47, 2, 144, 3, 3, 2, 9639]" in doc
+        assert "[1, 3, 9, 27, 34, 8, 24, 25]" in doc
+        assert "QRTour.FutureBase12N47.coordinate_remainderK_powerResidues_nodup_eight" in doc
+        assert (
+            "QRTour.FutureBase12N47.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_two"
+            in doc
+        )
+        assert (
+            "QRTour.FutureBase12N47.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_two"
+            in doc
+        )
+        assert "[12, 141, 2, 144, 1, 3, 2, 10125]" in doc
+        assert "[1, 3, 9, 27, 81, 102, 24, 72]" in doc
+        assert (
+            "QRTour.Base12Stride2K3PositiveReconstruction.remainderK_powerResidues_nodup_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base12Stride2K3PositiveReconstruction.stateAlignments_remainderToCoefficientFunctional_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base12Stride2K3PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base12Stride2K3PositiveReconstruction.n47_n141_powerResidues_nodup_eight_pair"
+            in doc
+        )
+        assert "[47, 141]" in doc
+        assert "[1, 3]" in doc
+        assert "[30, 794, 3, 27000, 34, 4, 1, 12776]" in doc
+        assert "[1, 4, 16, 64, 256, 230, 126, 504]" in doc
+        assert "QRTour.FutureBase30N794.coordinate_remainderK_powerResidues_nodup_eight" in doc
+        assert (
+            "QRTour.FutureBase30N794.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+            in doc
+        )
+        assert (
+            "QRTour.FutureBase30N794.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+            in doc
+        )
+        assert "[7, 113, 3, 343, 3, 4, 2, 13444]" in doc
+        assert "[1, 4, 16, 64, 30, 7, 28, 112]" in doc
+        assert "QRTour.FutureBase7N113.coordinate_remainderK_powerResidues_nodup_eight" in doc
+        assert (
+            "QRTour.FutureBase7N113.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_two"
+            in doc
+        )
+        assert (
+            "QRTour.FutureBase7N113.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_two"
+            in doc
+        )
+        assert "[12, 691, 4, 20736, 30, 6, 1, 20736]" in doc
+        assert "[1, 6, 36, 216, 605, 175, 359, 81]" in doc
+        assert "QRTour.FutureBase12N691.coordinate_remainderK_powerResidues_nodup_eight" in doc
+        assert (
+            "QRTour.FutureBase12N691.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+            in doc
+        )
+        assert (
+            "QRTour.FutureBase12N691.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+            in doc
+        )
+        assert "[30, 397, 3, 27000, 68, 4, 1, 25552]" in doc
+        assert "[1, 4, 16, 64, 256, 230, 126, 107]" in doc
+        assert (
+            "QRTour.Base30Stride3K4PositiveReconstruction.remainderK_powerResidues_nodup_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base30Stride3K4PositiveReconstruction.stateAlignments_remainderToCoefficientFunctional_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base30Stride3K4PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base30Stride3K4PositiveReconstruction.n397_n794_powerResidues_nodup_eight_pair"
+            in doc
+        )
+        assert "[397, 794, 1588, 6749, 13498, 26996]" in doc
+        assert "[1, 2, 4, 17, 34, 68]" in doc
+        assert "[10, 578, 5, 100000, 173, 6, 1, 26432]" in doc
+        assert "[1, 6, 36, 216, 140, 262, 416, 184]" in doc
+        assert "QRTour.FutureBase10N578.coordinate_remainderK_powerResidues_nodup_eight" in doc
+        assert (
+            "QRTour.FutureBase10N578.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+            in doc
+        )
+        assert (
+            "QRTour.FutureBase10N578.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+            in doc
+        )
+        assert "[10, 277, 5, 100000, 361, 3, 1, 31479]" in doc
+        assert "[1, 3, 9, 27, 81, 243, 175, 248]" in doc
+        assert "QRTour.FutureBase10N277.coordinate_remainderK_powerResidues_nodup_eight" in doc
+        assert (
+            "QRTour.FutureBase10N277.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+            in doc
+        )
+        assert (
+            "QRTour.FutureBase10N277.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+            in doc
+        )
+        assert "[7, 669, 7, 823543, 1231, 4, 1, 32398]" in doc
+        assert "[1, 4, 16, 64, 256, 355, 82, 328]" in doc
+        assert "QRTour.FutureBase7N669.coordinate_remainderK_powerResidues_nodup_eight" in doc
+        assert (
+            "QRTour.FutureBase7N669.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+            in doc
+        )
+        assert (
+            "QRTour.FutureBase7N669.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+            in doc
+        )
+        assert "[7, 71, 6, 117649, 1657, 2, 1, 46404]" in doc
+        assert "[1, 2, 4, 8, 16, 32, 64, 57]" in doc
+        assert "QRTour.FutureBase7N71.coordinate_remainderK_powerResidues_nodup_eight" in doc
+        assert (
+            "QRTour.FutureBase7N71.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+            in doc
+        )
+        assert (
+            "QRTour.FutureBase7N71.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+            in doc
+        )
+        assert "[7, 118, 6, 117649, 997, 3, 1, 47027]" in doc
+        assert "[1, 3, 9, 27, 81, 7, 21, 63]" in doc
+        assert "QRTour.FutureBase7N118.coordinate_remainderK_powerResidues_nodup_eight" in doc
+        assert (
+            "QRTour.FutureBase7N118.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+            in doc
+        )
+        assert (
+            "QRTour.FutureBase7N118.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+            in doc
+        )
+        assert "[7, 997, 6, 117649, 118, 3, 1, 49345]" in doc
+        assert "[1, 3, 9, 27, 81, 243, 729, 193]" in doc
+        assert (
+            "QRTour.Base7Stride6K3PositiveReconstruction.remainderK_powerResidues_nodup_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base7Stride6K3PositiveReconstruction.stateAlignments_remainderToCoefficientFunctional_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base7Stride6K3PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base7Stride6K3PositiveReconstruction.n118_n997_powerResidues_nodup_eight_pair"
+            in doc
+        )
+        assert "[59, 118, 997, 1994, 58823, 117646]" in doc
+        assert "[1, 2]" in doc
+        assert "[10, 289, 5, 100000, 346, 6, 1, 52864]" in doc
+        assert "[1, 6, 36, 216, 140, 262, 127, 184]" in doc
+        assert "[10, 578, 5, 100000, 173, 6, 1, 26432]" in doc
+        assert (
+            "QRTour.Base10Stride5K6PositiveReconstruction.remainderK_powerResidues_nodup_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base10Stride5K6PositiveReconstruction.stateAlignments_remainderToCoefficientFunctional_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base10Stride5K6PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base10Stride5K6PositiveReconstruction.n289_n578_powerResidues_nodup_eight_pair"
+            in doc
+        )
+        assert "[17, 34, 173, 289, 346, 578, 2941, 5882, 49997, 99994]" in doc
+        assert "[12, 226, 5, 248832, 1101, 6, 1, 62208]" in doc
+        assert "[1, 6, 36, 216, 166, 92, 100, 148]" in doc
+        assert "QRTour.FutureBase12N226.coordinate_remainderK_powerResidues_nodup_eight" in doc
+        assert (
+            "QRTour.FutureBase12N226.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+            in doc
+        )
+        assert (
+            "QRTour.FutureBase12N226.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+            in doc
+        )
+        assert "[7, 338, 3, 343, 1, 5, 2, 64744]" in doc
+        assert "[1, 5, 25, 125, 287, 83, 77, 47]" in doc
+        assert "QRTour.FutureBase7N338.coordinate_remainderK_powerResidues_nodup_eight" in doc
+        assert (
+            "QRTour.FutureBase7N338.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_two"
+            in doc
+        )
+        assert (
+            "QRTour.FutureBase7N338.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_two"
+            in doc
+        )
+        assert "[12, 149, 5, 248832, 1670, 2, 1, 70144]" in doc
+        assert "[1, 2, 4, 8, 16, 32, 64, 128]" in doc
+        assert "QRTour.FutureBase12N149.coordinate_remainderK_pow_lt_modulus_eight" in doc
+        assert "QRTour.FutureBase12N149.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one" in doc
+        assert "[12, 289, 5, 248832, 861, 3, 1, 74115]" in doc
+        assert "[1, 3, 9, 27, 81, 243, 151, 164]" in doc
+        assert (
+            "QRTour.Base12Stride5K3PositiveReconstruction.remainderK_powerResidues_nodup_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base12Stride5K3PositiveReconstruction.stateAlignments_remainderToCoefficientFunctional_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base12Stride5K3PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base12Stride5K3PositiveReconstruction.n289_n861_powerResidues_nodup_eight_pair"
+            in doc
+        )
+        assert "[17, 41, 51, 119, 123, 287, 289, 357, 697, 861, 867, 2023, 2091, 4879, 6069, 11849, 14637, 35547, 82943, 248829]" in doc
+        assert "[10, 641, 5, 100000, 156, 4, 1, 76384]" in doc
+        assert "[1, 4, 16, 64, 256, 383, 250, 359]" in doc
+        assert (
+            "QRTour.Base10Stride5K4PositiveReconstruction.remainderK_powerResidues_nodup_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base10Stride5K4PositiveReconstruction.stateAlignments_remainderToCoefficientFunctional_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base10Stride5K4PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+            in doc
+        )
+        assert (
+            "QRTour.Base10Stride5K4PositiveReconstruction.n641_n1282_powerResidues_nodup_eight_pair"
+            in doc
+        )
+        assert "[641, 1282, 1923, 2564, 3846, 7692, 8333, 16666, 24999, 33332, 49998, 99996]" in doc
+        assert "[10, 361, 5, 100000, 277, 3, 1, 82603]" in doc
+        assert "[1, 3, 9, 27, 81, 243, 7, 21]" in doc
+        assert "pursue_family_criterion_before_source_pinning_more_examples" in doc
+        assert "prove_or_reject_same_base_block_remainder_power_no_collision_family" in doc
+        assert "BlockCoordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderToCoefficientFunctional" in doc
+        assert "QRTour.Prime97.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_two" in doc
+        assert "QRTour.Composite996.actual996_stateAlignments_remainderToCoefficientFactorsThrough_eight_one" in doc
+        assert "QRTour.FutureBase10N98.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one" in doc
+        assert "QRTour.FutureBase12N142.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one" in doc
+        assert "QRTour.FutureBase7N47.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one" in doc
+        assert "QRTour.FutureBase12N71.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one" in doc
+        assert "QRTour.FutureBase10N49.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one" in doc
+        assert "QRTour.FutureBase30N299.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one" in doc
+        assert "QRTour.FutureBase7N170.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one" in doc
+        assert "raw_coefficient_nat" in doc
+        assert "coefficient_mod_block_base" in doc
+        assert "carried_block_value" in doc
+        assert "carry_state" in doc
+        assert "remainder_state" in doc
+        assert "displayed_prefix" in doc
+        assert "window-level certificate" in doc
+        assert "empirical/open-boundary target-split tooling" in doc.replace("\n", " ")
+        assert "observability_target_summary_signature" in doc
+        assert "observability_target_signature_family" in doc
+        assert "empirical/open-boundary target-signature tooling" in doc.replace("\n", " ")
+        assert "observability_mod_stable_carry_loss_case" in doc
+        assert "empirical/open-boundary mod-stable carry-loss tooling" in doc.replace("\n", " ")
+        assert "(30, 26, 1, 30, 1, 4, 5, 11927264)" in doc
+        assert "observability_shape13_k4_mod_stable_carry_loss_summary" in doc
+        assert "observability_shape13_k4_mod_stable_carry_loss_member" in doc
+        assert "periodic_modulus=13;k=4;position_gap=6" in doc
+        assert "(30, 13, 1, 30, 2, 4, 5, 23854528)" in doc
+        assert "QRTour.FutureBase30N13.coordinate_stateAlignments_zero_six_certifiedConflict_eight_five" in doc
+        assert "QRTour.FutureBase30N26.coordinate_stateAlignments_one_seven_certifiedConflict_eight_five" in doc
+        assert "QRTour.Shape13K4.base30_core13_to_double26_conflict_shift_scaled" in doc
+        assert "QRTour.Shape13K4.base30_n26_sameCore_scale_two_hiddenCarryBlockValue_shift" in doc
+        assert "sameCoreCompatible_hiddenCarryBlockValue_shift_scale_two" in doc
+        assert "SameCoreScaleTwoHiddenCarryBlockValueHypotheses" in doc
+        assert (
+            "sameCoreCompatible_hiddenCarryBlockValue_shift_scale_two_of_exportedHypotheses"
+            in doc
+        )
+        assert "QRTour.Shape13K4.base30_n26_scaleTwoHiddenCarryBlockValueHypotheses" in doc
+        assert "basePrimeSupportFactor * 2 = k" in doc
+        assert "shape13_k4_hyp_base_prime_support_times_two_eq_k" in doc
+        assert "shape13_k4_hyp_scaled_quotient_remainders_lt_gap" in doc
+        assert "shape13_k4_hyp_scaled_block_remainders_lt_block_base" in doc
+        assert "shape13_k4_scale_two_hypotheses_hold" in doc
+        assert "shape13_k4_scale_two_failure_reason" in doc
+        assert "shape13_k4_scale_two_unnamed_candidate_members" in doc
+        assert "shape13_k4_scale_two_unnamed_candidate_tuples" in doc
+        assert "shape13_k4_scale_two_candidate_mining_status" in doc
+        assert "no_unnamed_scale_two_ready_members_under_current_bounds" in doc
+        assert "base_prime_support_times_two_ne_k" in doc
+        assert "manual probe found no additional members" in doc.replace("\n", " ")
+        assert "max_n=2000" in doc
+        assert (
+            "do_not_add_new_shape13_k4_finite_package_until_wider_scan_emits_new_member"
+            in doc
+        )
+        assert "FactorsThrough" in doc
+        assert "not_factorsThrough_of_collision" in doc
+        assert "List.functionalOnFst_iff_factorsThrough_memberSubtype" in doc
+        assert "BlockCoordinate.stateAlignments_remainderToCoefficientFunctional_iff_factorsThrough_memberSubtype" in doc
+        assert "BlockCoordinate.stateAlignments_not_remainderToCoefficientFactorsThrough_of_not_remainderToCoefficientFunctional" in doc
+        assert "BlockCoordinate.StateAlignmentCertifiedConflict.not_remainderToCoefficientFactorsThrough" in doc
+        assert "QRTour.Composite68.coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFactorsThrough_fullWindow_eight_one" in doc
+        assert "QRTour.Composite68Base30.coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFactorsThrough_fullWindow_eight_one" in doc
+        assert "factor-through obstruction" in doc
+        assert "empirical/open-boundary program" in doc.replace("\n", " ")
+        assert "empirical/open-boundary observability tooling" in doc.replace("\n", " ")
+        assert "small_k_visibility_threshold" in doc
+        assert "carry_dfa_factorization" in doc
+    for doc in [carry_doc, theorem_guide, observability_doc]:
+        normalized = doc.replace("\n", " ")
+        assert "source symmetry shape" in normalized
+        assert "hide, reveal, or shift" in normalized
+        assert "empirical/open-boundary instrument comparison" in normalized
+        assert "Shape13/K4 mod-stable carry-loss classifier" in normalized
+        assert "empirical/open-boundary Shape13/K4" in normalized
+        assert "finite Lean support" in normalized
+        assert "N = 17" in normalized
+        assert "N = 34" in normalized
+        assert "N = 68" in normalized
+        assert "empirical/open-boundary family classification" in normalized
+        assert "finite Shape17/K4 shift witness" in normalized
+        assert "periodic_modulus=187;k=188;position_gap=6" in normalized
+        assert "finite_only_hidden_conflict" in normalized
+        assert "same-position" in normalized
+        assert "same_position_scaling_proved_by_arithmetic_criterion" in normalized
+        assert "same_position_scaling_criterion_candidate" in normalized
+        assert "BlockCoordinate.samePositionIdempotent_hiddenCarryBlockValue" in normalized
+        assert "samePositionIdempotent_hiddenCarryBlockValue" in normalized
+        assert "BlockCoordinate.SamePositionScalingHiddenCarryBlockValueHypotheses" in normalized
+        assert (
+            "BlockCoordinate.SamePositionScalingHiddenCarryBlockValueHypotheses.idempotent_remainder"
+            in normalized
+        )
+        assert (
+            "BlockCoordinate.samePositionScaling_hiddenCarryBlockValue_one_two_of_exportedHypotheses"
+            in normalized
+        )
+        assert (
+            "QRTour.FutureBase30N374.coordinate_samePositionScalingHiddenCarryBlockValueHypotheses"
+            in normalized
+        )
+        assert (
+            "QRTour.FutureBase10N374.coordinate_samePositionScalingHiddenCarryBlockValueHypotheses"
+            in normalized
+        )
+        assert (
+            "QRTour.FutureBase12N374.coordinate_samePositionScalingHiddenCarryBlockValueHypotheses"
+            in normalized
+        )
+        assert (
+            "QRTour.FutureBase30N748.coordinate_samePositionScalingHiddenCarryBlockValueHypotheses"
+            in normalized
+        )
+        assert "same_position_scaling_exported_hypothesis_record" in normalized
+        assert "same_position_scaling_idempotent_remainder_projection" in normalized
+        assert "same_position_scaling_exported_hypothesis_adapter" in normalized
+        assert "same_position_scaling_intended_proof_path" in normalized
+        assert "same_position_scaling_named_hypothesis_instantiation" in normalized
+        assert "same_position_scaling_named_finite_conflict_instantiation" in normalized
+        assert "QRTour.FutureBase10N374.coordinate_samePositionIdempotent_hiddenCarryBlockValue_one_two" in normalized
+        assert "QRTour.FutureBase12N374.coordinate_samePositionIdempotent_hiddenCarryBlockValue_one_two" in normalized
+        assert "QRTour.FutureBase10N374.coordinate_stateAlignments_one_two_certifiedConflict_eight_two" in normalized
+        assert "QRTour.FutureBase30N374.coordinate_samePositionIdempotent_hiddenCarryBlockValue_one_two" in normalized
+        assert "QRTour.FutureBase30N748.coordinate_samePositionIdempotent_hiddenCarryBlockValue_one_two" in normalized
+        assert "QRTour.Shape187K188.base30_default_samePositionIdempotent_hiddenCarryBlockValue_one_two_pair" in normalized
+        assert "QRTour.FutureBase30N374.coordinate_stateAlignments_one_two_certifiedConflict_eight_one" in normalized
+        assert "QRTour.FutureBase30N748.coordinate_stateAlignments_one_two_certifiedConflict_eight_one" in normalized
+        assert "QRTour.FutureBase10N17.coordinate_stateAlignments_zero_four_certifiedConflict_eight_two" in normalized
+        assert "QRTour.FutureBase10N34.coordinate_stateAlignments_one_five_certifiedConflict_eight_two" in normalized
+        assert "QRTour.Shape17K4.base10_core17_to_composite68_conflict_shift_exact" in normalized
+        assert "QRTour.Shape17K4.base10_core17_to_double34_conflict_shift_scaled" in normalized
+        assert "not a global same-core classification theorem" in normalized
+        assert "sameCoreCompatible_rawCoefficient_shift_scaled_one" in normalized
+        assert "sameCoreCompatible_incomingCarry_shift_scaled_one" in normalized
+        assert "sameCoreCompatible_canonicalCarryBlockValue_shift_scaled_one" in normalized
+        assert "sameCoreCompatible_hiddenCarryBlockValue_shift_scaled_one" in normalized
+        assert "nat_mul_div_eq_mul_div_iff_mul_mod_lt" in normalized
+        assert "nat_mul_mod_eq_mul_mod_iff_mul_mod_lt" in normalized
+        assert "QRTour.Shape17K4.base10_n68_sameCore_scale_one_hiddenCarryBlockValue_shift" in normalized
+        assert "QRTour.Shape17K4.base10_n34_sameCore_scale_two_hiddenCarryBlockValue_shift" in normalized
+        assert "QRTour.Shape17K4.base30_n68_sameCore_scale_one_hiddenCarryBlockValue_shift" in normalized
+        assert "QRTour.Shape17K4.base30_n34_sameCore_scale_two_hiddenCarryBlockValue_shift" in normalized
+        assert "same_core_shift_proved_by_arithmetic_criterion" in normalized
+        assert "same_core_shift_criterion_candidate" in normalized
+        assert "finite_only_hidden_conflict" in normalized
+        assert "least-lookahead" in normalized
+    assert "factor-through" in observability_doc
+    assert "observational indistinguishability" in observability_doc
+    assert "External Source Map" in observability_doc
+    assert "Frougny 1992" in observability_doc
+    assert "Reutenauer-Schutzenberger 1991" in observability_doc
+    assert "Blackwell-Koopmans 1957" in observability_doc
+    assert "Cobham 1969" in observability_doc
+    assert "Hermann-Krener 1977" in observability_doc
+    assert "Geiger-Kubin 2017" in observability_doc
+    assert "search-reptends visibility-certificate-lean-fixtures --max 1200 --bases 7,10,12,30 --blocks 8" in carry_doc
+    assert "certificate-lean-fixtures-v1" in carry_doc
+    assert "copyable_lean_stub" in carry_doc
+    assert "search-reptends visibility-certificate-lean-stubs --max 1200 --bases 7,10,12,30 --blocks 8" in carry_doc
+    assert "certificate-lean-stubs-v1" in carry_doc
+    assert "certificate-fixture-mapping-lint-v1" in carry_doc
+    assert "source_pinning_recipe" in carry_doc
+    assert "repeatable path from lint output to Lean theorem names" in carry_doc
+    assert "search-reptends visibility-certificate-lean-stubs --max 120 --bases 7,10,12,30 --blocks 8 --first-scaffold-only" in carry_doc
+    assert "QRTour.FutureBase30N7" in carry_doc
+    assert "QRTour.FutureBase30N14" in carry_doc
+    assert "QRTour.FutureBase30N28" in carry_doc
+    assert "QRTour.FutureBase12N10" in carry_doc
+    assert "QRTour.FutureBase10N102" in carry_doc
+    assert "QRTour.FutureBase7N5" in carry_doc
+    assert "QRTour.FutureBase12N5" in carry_doc
+    assert "QRTour.FutureBase30N34" in carry_doc
+    assert "QRTour.FutureBase7N93" in carry_doc
+    assert "QRTour.FutureBase10N39" in carry_doc
+    assert "QRTour.FutureBase10N78" in carry_doc
+    assert "QRTour.FutureBase10N96" in carry_doc
+    assert "QRTour.FutureBase12N35" in carry_doc
+    assert "QRTour.FutureBase12N31" in carry_doc
+    assert "lean_package_plan" in carry_doc
+    assert "coordinate_stateAlignments_zero_three_certifiedConflict_eight_two" in carry_doc
+    assert "base30_n7_m1_blocks8_L2_not_remainderToCoefficientFunctional" in carry_doc
+    assert "coordinate_stateAlignments_one_four_certifiedConflict_eight_two" in carry_doc
+    assert "base30_n14_m1_blocks8_L2_not_remainderToCoefficientFunctional" in carry_doc
+    assert "coordinate_stateAlignments_two_five_certifiedConflict_eight_two" in carry_doc
+    assert "base30_n28_m1_blocks8_L2_not_remainderToCoefficientFunctional" in carry_doc
+    assert "coordinate_stateAlignments_one_five_certifiedConflict_eight_three" in carry_doc
+    assert "base12_n10_m1_blocks8_L3_not_remainderToCoefficientFunctional" in carry_doc
+    assert "coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_one" in carry_doc
+    assert "base10_n102_m4_blocks8_L1_not_remainderToCoefficientFunctional" in carry_doc
+    assert "coordinate_stateAlignments_zero_four_certifiedConflict_eight_five" in carry_doc
+    assert "base7_n5_m1_blocks8_L5_not_remainderToCoefficientFunctional" in carry_doc
+    assert "coordinate_stateAlignments_zero_four_certifiedConflict_eight_four" in carry_doc
+    assert "base12_n5_m1_blocks8_L4_not_remainderToCoefficientFunctional" in carry_doc
+    assert "base30_n34_m3_blocks8_L1_not_remainderToCoefficientFunctional" in carry_doc
+    assert "base7_n93_m6_blocks8_L1_not_remainderToCoefficientFunctional" in carry_doc
+    assert "base10_n39_m5_blocks8_L1_not_remainderToCoefficientFunctional" in carry_doc
+    assert "base10_n78_m5_blocks8_L1_not_remainderToCoefficientFunctional" in carry_doc
+    assert "base10_n96_m2_blocks8_L3_not_remainderToCoefficientFunctional" in carry_doc
+    assert "base12_n35_m2_blocks8_L3_not_remainderToCoefficientFunctional" in carry_doc
+    assert "base12_n31_m6_blocks8_L1_not_remainderToCoefficientFunctional" in carry_doc
+    assert "source-ready" in carry_doc
+    assert "--namespace QRTour.FutureN7" in carry_doc
+    assert "stub scaffold/lint export" in carry_doc
+    assert "does not write Lean files or promote a claim" in carry_doc
+    assert "empirical/open-boundary certificate-to-Lean tooling" in carry_doc
+    assert "not a theorem\nsurface, registry promotion, theorem-witness record, or atlas claim" in carry_doc
+    assert "(base, N, m, B, q, k, L, gap) = (10, 68, 4, 10000, 147, 4, 1, 6208)" in carry_doc
+    assert "remainder state `4` appears at positions `1` and `5`" in carry_doc
+    assert "periodic_modulus=17;k=4;remainder_state=4;positions=[1, 5];carry_states=[0, 60];output_hidden=true" in carry_doc
+    assert "classify_composite68_cross_base_hidden_output_conflict" in carry_doc
+    assert "`10, 30, 32, 64, 66, 72, 98, 100`" in carry_doc
+    assert "`B mod 68 = 4`" in carry_doc
+    assert "finite Lean response to that recommendation has now\nlanded" in carry_doc
+    assert "remaining open boundary is arithmetic classification" in carry_doc.replace("\n", " ")
+    assert "4^1 ≡ 4^5 (mod 68)" in carry_doc
+    assert "B ≡ 4 (mod 68)" in carry_doc
+    assert "empirical theorem-candidate selector rather than a registry claim" in carry_doc
+    assert "QRTour.Composite68.coordinate_not_coefficientFunctional_eight_one" in carry_doc
+    assert "QRTour.Composite68Base30.coordinate_not_coefficientFunctional_eight_one" in carry_doc
+    assert "(base, N, m, B, q, k, L, gap) = (30, 68, 3, 27000, 397, 4, 1, 10208)" in carry_doc
+    assert "raw coefficients `1588` and `406528`" in carry_doc
+    assert "hidden carried block value `1588`" in carry_doc
+    assert "BlockCoordinate.not_coefficientFunctional_one_five_of_remainderK_eq_four" in carry_doc
+    assert "BlockCoordinate.stateAlignments_remainderIn_one_eq_five_of_modulus_eq_sixty_eight" in carry_doc
+    assert "BlockCoordinate.not_coefficientFunctional_one_five_of_modulus_eq_sixty_eight" in carry_doc
+    assert "BlockCoordinate.remainderK_eq_four_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in carry_doc
+    assert "BlockCoordinate.not_coefficientFunctional_one_five_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in carry_doc
+    assert "BlockCoordinate.incomingCarry_one_eq_zero_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in carry_doc
+    assert "BlockCoordinate.incomingCarry_five_eq_sixty_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in carry_doc
+    assert "BlockCoordinate.incomingCarry_hiddenOutput_one_five_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in carry_doc
+    assert "QRTour.Composite68.coordinate_incomingCarry_hiddenOutput_one_five" in carry_doc
+    assert "QRTour.Composite68Base30.coordinate_incomingCarry_hiddenOutput_one_five" in carry_doc
+    assert "BlockCoordinate.stateAlignments_carryIn_one_five_eq_incomingCarry_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in carry_doc
+    assert "BlockCoordinate.stateAlignments_carryIn_one_five_eq_incomingCarry_eight_zero_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in carry_doc
+    assert "composite68_suffixCarry_five_eq_sixty_of_tailCarry_le_nine_hundred_sixty_three" in carry_doc
+    assert "composite68_suffixCarry_one_eq_zero_of_tailCarry_le_nine_hundred_sixty_three" in carry_doc
+    assert "BlockCoordinate.incomingCarry_step_recurrence" in carry_doc
+    assert "BlockCoordinate.traceRawWord_carryIn_le_incomingCarry" in carry_doc
+    assert "BlockCoordinate.visibleCarryTrace_carryIn_le_incomingCarry" in carry_doc
+    assert "BlockCoordinate.stateAlignments_carryIn_le_incomingCarry" in carry_doc
+    assert "BlockCoordinate.incomingCarry_seven_eq_nine_hundred_sixty_three_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in carry_doc
+    assert "BlockCoordinate.stateAlignments_carryIn_one_five_eq_incomingCarry_eight_any_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in carry_doc
+    assert "BlockCoordinate.stateAlignments_carryIn_one_five_eq_incomingCarry_of_carry_states_zero_sixty" in carry_doc
+    assert "QRTour.Composite68.coordinate_stateAlignments_carryIn_one_five_eq_incomingCarry" in carry_doc
+    assert "QRTour.Composite68Base30.coordinate_stateAlignments_carryIn_one_five_eq_incomingCarry" in carry_doc
+    assert "QRTour.Composite68.coordinate_stateAlignments_carryIn_one_five_eq_incomingCarry_eight_zero" in carry_doc
+    assert "QRTour.Composite68Base30.coordinate_stateAlignments_carryIn_one_five_eq_incomingCarry_eight_zero" in carry_doc
+    assert "certified finite-trace bridge" in carry_doc
+    assert "fixed-window theorem" in carry_doc
+    assert "the `8/1` finite trace itself supplies the `(0, 60)` carry certificate" in carry_doc.replace("\n", " ")
+    assert "same finite carry states are already forced on the `8/0` trace" in carry_doc.replace("\n", " ")
+    assert "positive lookahead is still used for the certified output-agreement obstruction window" in carry_doc.replace("\n", " ")
+    assert "finite carry entering the `4^7` block is at most `963`" in carry_doc.replace("\n", " ")
+    assert "The universal suffix bound is now Lean-proved for the `N = 68`, `B ≡ 4 (mod 68)` family" in carry_doc.replace("\n", " ")
+    assert "all-lookahead eight-block carry-state theorem" in carry_doc.replace("\n", " ")
+    assert "obstruction-first finite visibility theorem" in carry_doc
+    assert "BlockCoordinate.stateAlignments_one_five_hiddenCoefficientConflict_eight_any_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in carry_doc
+    assert "BlockCoordinate.stateAlignments_one_five_certifiedVisibilityObstruction_eight_of_lookaheadCertificate_and_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in carry_doc
+    assert "QRTour.Composite68.coordinate_stateAlignments_one_five_hiddenCoefficientConflict_eight_one" in carry_doc
+    assert "QRTour.Composite68.coordinate_stateAlignments_one_five_certifiedVisibilityObstruction_eight_one" in carry_doc
+    assert "QRTour.Composite68Base30.coordinate_stateAlignments_one_five_hiddenCoefficientConflict_eight_one" in carry_doc
+    assert "QRTour.Composite68Base30.coordinate_stateAlignments_one_five_certifiedVisibilityObstruction_eight_one" in carry_doc
+    assert "lookaheadCertificateHolds 8 L" in carry_doc
+    assert "beyond the stated certificate" in carry_doc
+    assert "BlockCoordinate.truncatedVisiblePrefixRemainder_one_eq_rawCoefficient_mod_blockBase" in carry_doc
+    assert "BlockCoordinate.lookaheadCertificateHolds_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_ge_seventy_five" in carry_doc
+    assert "BlockCoordinate.not_lookaheadCertificateHolds_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_eq_seventy_four" in carry_doc
+    assert "BlockCoordinate.truncatedVisiblePrefixRemainder_two_eq_rawCoefficient_suffix_mod_blockBase_sq" in carry_doc
+    assert "BlockCoordinate.truncatedVisiblePrefixRemainder_three_eq_rawCoefficient_suffix_mod_blockBase_cu" in carry_doc
+    assert "BlockCoordinate.lookaheadCertificateHolds_eight_two_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_ge_three" in carry_doc
+    assert "BlockCoordinate.lookaheadCertificateHolds_eight_three_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in carry_doc
+    assert "BlockCoordinate.not_lookaheadCertificateHolds_eight_zero_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in carry_doc
+    assert "BlockCoordinate.not_lookaheadCertificateHolds_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_le_seventy_four" in carry_doc
+    assert "BlockCoordinate.lookaheadCertificateHolds_eight_one_iff_quotientQ_ge_seventy_five_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in carry_doc
+    assert "BlockCoordinate.not_lookaheadCertificateHolds_eight_two_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_eq_one" in carry_doc
+    assert "BlockCoordinate.not_lookaheadCertificateHolds_eight_two_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_eq_two" in carry_doc
+    assert "BlockCoordinate.not_lookaheadCertificateHolds_eight_two_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_le_two" in carry_doc
+    assert "BlockCoordinate.lookaheadCertificateHolds_eight_two_iff_quotientQ_ge_three_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in carry_doc
+    assert "BlockCoordinate.isMinimalLookaheadCertificate" in carry_doc
+    assert "BlockCoordinate.minimalLookaheadCertificate_eight_selector_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in carry_doc
+    assert "BlockCoordinate.StateAlignmentCertifiedConflict" in carry_doc
+    assert "reusable record-shaped payload for certified hidden coefficient conflicts" in carry_doc.replace("\n", " ")
+    assert "BlockCoordinate.StateAlignmentCertifiedConflict.not_remainderToCoefficientFunctional" in carry_doc
+    assert "BlockCoordinate.StateAlignmentCertifiedConflict.not_remainderToCoefficientFactorsThrough" in carry_doc
+    assert "FactorsThrough.eq_of_obs_eq" in carry_doc
+    assert "not_factorsThrough_of_collision" in carry_doc
+    assert "List.functionalOnFst_iff_factorsThrough_memberSubtype" in carry_doc
+    assert "BlockCoordinate.stateAlignments_remainderToCoefficientFunctional_iff_factorsThrough_memberSubtype" in carry_doc
+    assert "BlockCoordinate.stateAlignments_not_remainderToCoefficientFactorsThrough_of_not_remainderToCoefficientFunctional" in carry_doc
+    assert "BlockCoordinate.StateAlignmentCertifiedConflict.carriedOutput_eq" in carry_doc
+    assert "BlockCoordinate.StateAlignmentCertifiedConflict.output_agreement" in carry_doc
+    assert "without manual record unpacking" in carry_doc.replace("\n", " ")
+    assert "OBSERVABILITY_BOUNDARY.md" in carry_doc
+    assert "coefficient information loss across carry-propagated block normalization" in carry_doc.replace("\n", " ")
+    assert "same observed remainder state can coexist with unequal raw coefficients while the carried output agrees" in carry_doc.replace("\n", " ")
+    assert "working research frame, not a registry claim" in carry_doc.replace("\n", " ")
+    assert "BlockCoordinate.stateAlignmentsOneFiveCertifiedVisibilityObstruction" in carry_doc
+    assert "BlockCoordinate.stateAlignments_one_five_certifiedConflict_eight_of_lookaheadCertificate_and_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in carry_doc
+    assert "BlockCoordinate.stateAlignmentsOneFiveCertifiedVisibilityObstruction_of_lookaheadCertificate" in carry_doc
+    assert "BlockCoordinate.minimalLookaheadCertificate_eight_selector_certifiedVisibilityObstruction_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in carry_doc
+    assert "QRTour.Composite68.coordinate_stateAlignments_one_five_certifiedConflict_eight_one" in carry_doc
+    assert "QRTour.Composite68Base30.coordinate_stateAlignments_one_five_certifiedConflict_eight_one" in carry_doc
+    assert "share that compact record payload explicitly" in carry_doc.replace("\n", " ")
+    assert "QRTour.Composite68.coordinate_minimalLookaheadCertificate_selector_certifiedVisibilityObstruction_eight_one" in carry_doc
+    assert "QRTour.Composite68Base30.coordinate_minimalLookaheadCertificate_selector_certifiedVisibilityObstruction_eight_one" in carry_doc
+    assert "selected minimal certified lookahead still exposes the certified hidden coefficient conflict" in carry_doc.replace("\n", " ")
+    assert "minimal certified lookahead is `1`, and that minimal window still exposes the certified hidden coefficient conflict" in carry_doc.replace("\n", " ")
+    assert "QRTour.Composite68.coordinate_lookaheadCertificate_eight_two" in carry_doc
+    assert "QRTour.Composite68.coordinate_lookaheadCertificate_eight_three" in carry_doc
+    assert "QRTour.Composite68Base30.coordinate_lookaheadCertificate_eight_two" in carry_doc
+    assert "QRTour.Composite68Base30.coordinate_lookaheadCertificate_eight_three" in carry_doc
+    assert "q ≥ 75" in carry_doc
+    assert "q ≥ 3" in carry_doc
+    assert "q = 1" in carry_doc
+    assert "q = 2" in carry_doc
+    assert "`1088`" in carry_doc
+    assert "`432`" in carry_doc
+    assert "`8/0` never certifies" in carry_doc
+    assert "`8/1` certifies exactly when `q ≥ 75`" in carry_doc
+    assert "`8/2` exactly" in carry_doc
+    assert "lookaheadCertificateHolds 8 2" in carry_doc
+    assert "lookaheadCertificateHolds 8 3" in carry_doc
+    assert "q = 74" in carry_doc
+    assert "B = 5036" in carry_doc
+    assert "positive fixed-window lookahead staircase" in carry_doc.replace("\n", " ")
+    assert "fixed-window minimal-lookahead classification only" in carry_doc.replace("\n", " ")
+    assert "`q ≥ 75 -> L = 1`, `3 ≤ q < 75 -> L = 2`, and `q = 1 or q = 2 -> L = 3`" in carry_doc.replace("\n", " ")
+    assert "not a global `small_k_visibility_threshold` theorem" in carry_doc.replace("\n", " ")
+    assert "not `carry_dfa_factorization`, and not a new atlas claim" in carry_doc.replace("\n", " ")
+    assert "externally certified as `0` and `60`" in carry_doc.replace("\n", " ")
+    assert "this proves finite carry-state preservation and the finite hidden-coefficient obstruction for all extra lookahead in the family" in carry_doc.replace("\n", " ")
+    assert "not `small_k_visibility_threshold` or `carry_dfa_factorization`" in carry_doc.replace("\n", " ")
+    assert "whole `N = 68`, `B ≡ 4 (mod 68)` coordinate family" in carry_doc.replace("\n", " ")
+    assert "certified positive-lookahead and hidden-output shape rows empirically" in carry_doc.replace("\n", " ")
     assert "Instrument Atlas" in carry_doc
     assert "search-reptends instrument-atlas --max 1200 --bases 7,10,12,30 --blocks 8 --top 20" in carry_doc
+
+    assert "## Empirical Obstruction Hooks" in theorem_guide
+    assert "QRTour.Composite68" in theorem_guide
+    assert "coordinate_not_coefficientFunctional_eight_one" in theorem_guide
+    assert "QRTour.Composite68Base30.coordinate_not_coefficientFunctional_eight_one" in theorem_guide
+    assert "BlockCoordinate.not_coefficientFunctional_one_five_of_remainderK_eq_four" in theorem_guide
+    assert "(base, N, m, B, q, k, L, gap) = (10, 68, 4, 10000, 147, 4, 1, 6208)" in theorem_guide
+    assert "(base, N, m, B, q, k, L, gap) = (30, 68, 3, 27000, 397, 4, 1, 10208)" in theorem_guide
+    assert "raw coefficients `1588` and `406528`" in theorem_guide
+    assert "search-reptends visibility-coefficient-conflict-atlas --max 1200 --bases 7,10,12,30 --blocks 8 --top 20" in theorem_guide
+    assert "search-reptends visibility-coefficient-conflict-families --max 1200 --bases 7,10,12,30 --blocks 8 --top 20" in theorem_guide
+    assert "search-reptends visibility-composite68-base-sweep --max-base 120 --blocks 8 --top 20" in theorem_guide
+    assert "search-reptends visibility-composite68-congruence-family --max-base 120 --max-m 8 --blocks 8 --top 0" in theorem_guide
+    assert "Certificate Workbench" in theorem_guide
+    assert "search-reptends visibility-certificate-workbench --max 1200 --bases 7,10,12,30 --blocks 8 --top 20" in theorem_guide
+    assert "Observability Atlas" in theorem_guide
+    assert "`hidden_coefficient_conflict`, `visible_coefficient_conflict`, `coefficient_functional_frontier`, and `gap_one_bridge_candidate`" in theorem_guide
+    assert "Observability Instrument Compare" in theorem_guide
+    assert "`observability_source_symmetry_shape` plus `observability_instrument_member` rows" in theorem_guide
+    assert "Shape17/K4 family classifier" in theorem_guide
+    assert "`observability_shape17_k4_family_summary` plus `observability_shape17_k4_family_member` rows" in theorem_guide
+    assert "empirical/open-boundary certificate tooling" in theorem_guide
+    assert "not as a promoted theorem surface, new theorem-witness record, or atlas claim" in theorem_guide
+    assert "search-reptends visibility-certificate-lean-fixtures --max 1200 --bases 7,10,12,30 --blocks 8" in theorem_guide
+    assert "certificate-lean-fixtures-v1" in theorem_guide
+    assert "copyable_lean_stub" in theorem_guide
+    assert "search-reptends visibility-certificate-lean-stubs --max 1200 --bases 7,10,12,30 --blocks 8" in theorem_guide
+    assert "certificate-lean-stubs-v1" in theorem_guide
+    assert "certificate-fixture-mapping-lint-v1" in theorem_guide
+    assert "source_pinning_recipe" in theorem_guide
+    assert "repeatable path from lint output to Lean theorem names" in theorem_guide
+    assert "search-reptends visibility-certificate-lean-stubs --max 120 --bases 7,10,12,30 --blocks 8 --first-scaffold-only" in theorem_guide
+    assert "QRTour.FutureBase30N7" in theorem_guide
+    assert "QRTour.FutureBase30N14" in theorem_guide
+    assert "QRTour.FutureBase30N28" in theorem_guide
+    assert "QRTour.FutureBase12N10" in theorem_guide
+    assert "QRTour.FutureBase10N102" in theorem_guide
+    assert "QRTour.FutureBase7N5" in theorem_guide
+    assert "QRTour.FutureBase12N5" in theorem_guide
+    assert "QRTour.FutureBase30N34" in theorem_guide
+    assert "QRTour.FutureBase7N93" in theorem_guide
+    assert "QRTour.FutureBase10N39" in theorem_guide
+    assert "QRTour.FutureBase10N78" in theorem_guide
+    assert "QRTour.FutureBase10N96" in theorem_guide
+    assert "QRTour.FutureBase12N35" in theorem_guide
+    assert "QRTour.FutureBase12N31" in theorem_guide
+    assert "lean_package_plan" in theorem_guide
+    assert "coordinate_stateAlignments_zero_three_certifiedConflict_eight_two" in theorem_guide
+    assert "base30_n7_m1_blocks8_L2_not_remainderToCoefficientFunctional" in theorem_guide
+    assert "coordinate_stateAlignments_one_four_certifiedConflict_eight_two" in theorem_guide
+    assert "base30_n14_m1_blocks8_L2_not_remainderToCoefficientFunctional" in theorem_guide
+    assert "coordinate_stateAlignments_two_five_certifiedConflict_eight_two" in theorem_guide
+    assert "base30_n28_m1_blocks8_L2_not_remainderToCoefficientFunctional" in theorem_guide
+    assert "coordinate_stateAlignments_one_five_certifiedConflict_eight_three" in theorem_guide
+    assert "base12_n10_m1_blocks8_L3_not_remainderToCoefficientFunctional" in theorem_guide
+    assert "coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_one" in theorem_guide
+    assert "base10_n102_m4_blocks8_L1_not_remainderToCoefficientFunctional" in theorem_guide
+    assert "coordinate_stateAlignments_zero_four_certifiedConflict_eight_five" in theorem_guide
+    assert "base7_n5_m1_blocks8_L5_not_remainderToCoefficientFunctional" in theorem_guide
+    assert "coordinate_stateAlignments_zero_four_certifiedConflict_eight_four" in theorem_guide
+    assert "base12_n5_m1_blocks8_L4_not_remainderToCoefficientFunctional" in theorem_guide
+    assert "base30_n34_m3_blocks8_L1_not_remainderToCoefficientFunctional" in theorem_guide
+    assert "base7_n93_m6_blocks8_L1_not_remainderToCoefficientFunctional" in theorem_guide
+    assert "base10_n39_m5_blocks8_L1_not_remainderToCoefficientFunctional" in theorem_guide
+    assert "base10_n78_m5_blocks8_L1_not_remainderToCoefficientFunctional" in theorem_guide
+    assert "base10_n96_m2_blocks8_L3_not_remainderToCoefficientFunctional" in theorem_guide
+    assert "base12_n35_m2_blocks8_L3_not_remainderToCoefficientFunctional" in theorem_guide
+    assert "base12_n31_m6_blocks8_L1_not_remainderToCoefficientFunctional" in theorem_guide
+    assert "source-ready" in theorem_guide
+    assert "`--namespace` mapping-lint mode" in theorem_guide
+    assert "stub scaffold/lint command" in theorem_guide
+    assert "not as an automatic Lean-file writer or claim promotion path" in theorem_guide
+    assert "empirical/open-boundary certificate-to-Lean tooling" in theorem_guide
+    assert "not as a theorem surface, registry promotion, theorem-witness record, or atlas claim" in theorem_guide
+    assert "periodic_modulus=17;k=4;remainder_state=4;positions=[1, 5];carry_states=[0, 60];output_hidden=true" in theorem_guide
+    assert "classify_composite68_cross_base_hidden_output_conflict" in theorem_guide
+    assert "`10, 30, 32, 64, 66, 72, 98, 100`" in theorem_guide
+    assert "`B mod 68 = 4`" in theorem_guide
+    assert "4^1 ≡ 4^5 (mod 68)" in theorem_guide
+    assert "B ≡ 4 (mod 68)" in theorem_guide
+    assert "The finite Lean response has now landed" in theorem_guide
+    assert "remaining open boundary is arithmetic classification" in theorem_guide
+    assert "BlockCoordinate.stateAlignments_remainderIn_one_eq_five_of_modulus_eq_sixty_eight" in theorem_guide
+    assert "BlockCoordinate.not_coefficientFunctional_one_five_of_modulus_eq_sixty_eight" in theorem_guide
+    assert "BlockCoordinate.remainderK_eq_four_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in theorem_guide
+    assert "BlockCoordinate.not_coefficientFunctional_one_five_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in theorem_guide
+    assert "BlockCoordinate.incomingCarry_one_eq_zero_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in theorem_guide
+    assert "BlockCoordinate.incomingCarry_five_eq_sixty_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in theorem_guide
+    assert "BlockCoordinate.incomingCarry_hiddenOutput_one_five_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in theorem_guide
+    assert "QRTour.Composite68.coordinate_incomingCarry_hiddenOutput_one_five" in theorem_guide
+    assert "QRTour.Composite68Base30.coordinate_incomingCarry_hiddenOutput_one_five" in theorem_guide
+    assert "BlockCoordinate.stateAlignments_carryIn_one_five_eq_incomingCarry_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in theorem_guide
+    assert "BlockCoordinate.stateAlignments_carryIn_one_five_eq_incomingCarry_eight_zero_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in theorem_guide
+    assert "composite68_suffixCarry_five_eq_sixty_of_tailCarry_le_nine_hundred_sixty_three" in theorem_guide
+    assert "composite68_suffixCarry_one_eq_zero_of_tailCarry_le_nine_hundred_sixty_three" in theorem_guide
+    assert "BlockCoordinate.incomingCarry_step_recurrence" in theorem_guide
+    assert "BlockCoordinate.traceRawWord_carryIn_le_incomingCarry" in theorem_guide
+    assert "BlockCoordinate.visibleCarryTrace_carryIn_le_incomingCarry" in theorem_guide
+    assert "BlockCoordinate.stateAlignments_carryIn_le_incomingCarry" in theorem_guide
+    assert "BlockCoordinate.incomingCarry_seven_eq_nine_hundred_sixty_three_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in theorem_guide
+    assert "BlockCoordinate.stateAlignments_carryIn_one_five_eq_incomingCarry_eight_any_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in theorem_guide
+    assert "BlockCoordinate.stateAlignments_carryIn_one_five_eq_incomingCarry_of_carry_states_zero_sixty" in theorem_guide
+    assert "QRTour.Composite68.coordinate_stateAlignments_carryIn_one_five_eq_incomingCarry" in theorem_guide
+    assert "QRTour.Composite68Base30.coordinate_stateAlignments_carryIn_one_five_eq_incomingCarry" in theorem_guide
+    assert "QRTour.Composite68.coordinate_stateAlignments_carryIn_one_five_eq_incomingCarry_eight_zero" in theorem_guide
+    assert "QRTour.Composite68Base30.coordinate_stateAlignments_carryIn_one_five_eq_incomingCarry_eight_zero" in theorem_guide
+    assert "fixed-window trace arithmetic" in theorem_guide
+    assert "the `8/1` `stateAlignments` trace itself supplies the `(0, 60)` finite carry-state certificate" in theorem_guide
+    assert "the `8/0` `stateAlignments` trace already supplies the same `(0, 60)` finite carry-state certificate" in theorem_guide
+    assert "positive lookahead is still used for the certified output-agreement obstruction window" in theorem_guide
+    assert "finite carry entering the `4^7` block is at most `963`" in theorem_guide
+    assert "Lean proves every finite carry entering the `4^7` block is at most `963`" in theorem_guide
+    assert "every `8/L` state-alignment window in that family realizes the canonical `0` and `60` incoming carries" in theorem_guide
+    assert "not output agreement, `small_k_visibility_threshold`, or `carry_dfa_factorization`" in theorem_guide
+    assert "obstruction-first finite visibility theorem" in theorem_guide
+    assert "BlockCoordinate.stateAlignments_one_five_hiddenCoefficientConflict_eight_any_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in theorem_guide
+    assert "BlockCoordinate.stateAlignments_one_five_certifiedVisibilityObstruction_eight_of_lookaheadCertificate_and_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in theorem_guide
+    assert "QRTour.Composite68.coordinate_stateAlignments_one_five_hiddenCoefficientConflict_eight_one" in theorem_guide
+    assert "QRTour.Composite68.coordinate_stateAlignments_one_five_certifiedVisibilityObstruction_eight_one" in theorem_guide
+    assert "QRTour.Composite68Base30.coordinate_stateAlignments_one_five_hiddenCoefficientConflict_eight_one" in theorem_guide
+    assert "QRTour.Composite68Base30.coordinate_stateAlignments_one_five_certifiedVisibilityObstruction_eight_one" in theorem_guide
+    assert "lookaheadCertificateHolds 8 L" in theorem_guide
+    assert "not a closure of `small_k_visibility_threshold` or `carry_dfa_factorization`" in theorem_guide
+    assert "BlockCoordinate.truncatedVisiblePrefixRemainder_one_eq_rawCoefficient_mod_blockBase" in theorem_guide
+    assert "BlockCoordinate.lookaheadCertificateHolds_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_ge_seventy_five" in theorem_guide
+    assert "BlockCoordinate.not_lookaheadCertificateHolds_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_eq_seventy_four" in theorem_guide
+    assert "BlockCoordinate.truncatedVisiblePrefixRemainder_two_eq_rawCoefficient_suffix_mod_blockBase_sq" in theorem_guide
+    assert "BlockCoordinate.truncatedVisiblePrefixRemainder_three_eq_rawCoefficient_suffix_mod_blockBase_cu" in theorem_guide
+    assert "BlockCoordinate.lookaheadCertificateHolds_eight_two_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_ge_three" in theorem_guide
+    assert "BlockCoordinate.lookaheadCertificateHolds_eight_three_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in theorem_guide
+    assert "BlockCoordinate.not_lookaheadCertificateHolds_eight_zero_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in theorem_guide
+    assert "BlockCoordinate.not_lookaheadCertificateHolds_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_le_seventy_four" in theorem_guide
+    assert "BlockCoordinate.lookaheadCertificateHolds_eight_one_iff_quotientQ_ge_seventy_five_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in theorem_guide
+    assert "BlockCoordinate.not_lookaheadCertificateHolds_eight_two_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_eq_one" in theorem_guide
+    assert "BlockCoordinate.not_lookaheadCertificateHolds_eight_two_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_eq_two" in theorem_guide
+    assert "BlockCoordinate.not_lookaheadCertificateHolds_eight_two_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_le_two" in theorem_guide
+    assert "BlockCoordinate.lookaheadCertificateHolds_eight_two_iff_quotientQ_ge_three_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in theorem_guide
+    assert "BlockCoordinate.isMinimalLookaheadCertificate" in theorem_guide
+    assert "BlockCoordinate.isMinimalLookaheadCertificate_eight_one_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_ge_seventy_five" in theorem_guide
+    assert "BlockCoordinate.isMinimalLookaheadCertificate_eight_two_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_ge_three_and_lt_seventy_five" in theorem_guide
+    assert "BlockCoordinate.isMinimalLookaheadCertificate_eight_three_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four_and_quotientQ_eq_one_or_two" in theorem_guide
+    assert "BlockCoordinate.minimalLookaheadCertificate_eight_selector_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in theorem_guide
+    assert "BlockCoordinate.StateAlignmentCertifiedConflict" in theorem_guide
+    assert "reusable record-shaped payload for certified hidden coefficient conflicts" in theorem_guide.replace("\n", " ")
+    assert "BlockCoordinate.StateAlignmentCertifiedConflict.not_remainderToCoefficientFunctional" in theorem_guide
+    assert "BlockCoordinate.StateAlignmentCertifiedConflict.not_remainderToCoefficientFactorsThrough" in theorem_guide
+    assert "FactorsThrough.eq_of_obs_eq" in theorem_guide
+    assert "not_factorsThrough_of_collision" in theorem_guide
+    assert "List.functionalOnFst_iff_factorsThrough_memberSubtype" in theorem_guide
+    assert "BlockCoordinate.stateAlignments_remainderToCoefficientFunctional_iff_factorsThrough_memberSubtype" in theorem_guide
+    assert "BlockCoordinate.stateAlignments_not_remainderToCoefficientFactorsThrough_of_not_remainderToCoefficientFunctional" in theorem_guide
+    assert "BlockCoordinate.StateAlignmentCertifiedConflict.carriedOutput_eq" in theorem_guide
+    assert "BlockCoordinate.StateAlignmentCertifiedConflict.output_agreement" in theorem_guide
+    assert "without manual record unpacking" in theorem_guide.replace("\n", " ")
+    assert "OBSERVABILITY_BOUNDARY.md" in theorem_guide
+    assert "coefficient information loss across carry-propagated block normalization" in theorem_guide.replace("\n", " ")
+    assert "same observed remainder state can coexist with unequal raw coefficients while the carried output agrees" in theorem_guide.replace("\n", " ")
+    assert "working research frame, not a registry claim" in theorem_guide.replace("\n", " ")
+    assert "Recommended obstruction-record proof path" in theorem_guide
+    assert "family wrapper -> record -> projection accessor" in theorem_guide
+    assert "minimal cross-base proof-style exemplars" in theorem_guide
+    assert "Copyable three-line obstruction-record proof pattern" in theorem_guide
+    assert "have hrecord := coordinate_stateAlignments_one_five_certifiedConflict_eight_one" in theorem_guide
+    assert "have hnonfunctional := hrecord.not_remainderToCoefficientFunctional" in theorem_guide
+    assert "have hfactor := hrecord.not_remainderToCoefficientFactorsThrough" in theorem_guide
+    assert "have hwindow := coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_one" in theorem_guide
+    assert "exact hnonfunctional" in theorem_guide
+    assert "exact hfactor" in theorem_guide
+    assert "full-window factor-through obstruction variant" in theorem_guide
+    assert "replace the first line with a direct call" in theorem_guide
+    assert "Record accessor map" in theorem_guide
+    assert "Desired conclusion" in theorem_guide
+    assert "Nonfunctional remainder-to-coefficient mapping" in theorem_guide
+    assert "Factor-through obstruction" in theorem_guide
+    assert "Full-window factor-through obstruction" in theorem_guide
+    assert "Hidden carried-output equality" in theorem_guide
+    assert "Certified output agreement" in theorem_guide
+    assert "`¬ List.FunctionalOnFst` for the observed `(remainderIn, coefficient)` map" in theorem_guide
+    assert "`¬ FactorsThrough` for the two-point remainder-observation to coefficient-signal readout" in theorem_guide
+    assert "`¬ FactorsThrough` for the complete finite state-alignment member subtype readout" in theorem_guide
+    assert "Equal `carryBlockValue` on the two conflicting rows" in theorem_guide
+    assert "Both conflicting rows have `carryBlockValue = remainderBlockValue`" in theorem_guide
+    assert "QRTour.Composite68.coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_one" in theorem_guide
+    assert "QRTour.Composite68Base30.coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFunctional_eight_one" in theorem_guide
+    assert "QRTour.Composite68.coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFactorsThrough_eight_one" in theorem_guide
+    assert "QRTour.Composite68Base30.coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFactorsThrough_eight_one" in theorem_guide
+    assert "QRTour.Composite68.coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFactorsThrough_fullWindow_eight_one" in theorem_guide
+    assert "QRTour.Composite68Base30.coordinate_obstructionRecord_proofPath_not_remainderToCoefficientFactorsThrough_fullWindow_eight_one" in theorem_guide
+    assert ".not_remainderToCoefficientFunctional" in theorem_guide
+    assert ".not_remainderToCoefficientFactorsThrough" in theorem_guide
+    assert ".carriedOutput_eq" in theorem_guide
+    assert ".output_agreement" in theorem_guide
+    assert "BlockCoordinate.stateAlignmentsOneFiveCertifiedVisibilityObstruction" in theorem_guide
+    assert "BlockCoordinate.stateAlignments_one_five_certifiedConflict_eight_of_lookaheadCertificate_and_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in theorem_guide
+    assert "BlockCoordinate.stateAlignmentsOneFiveCertifiedVisibilityObstruction_of_lookaheadCertificate" in theorem_guide
+    assert "BlockCoordinate.minimalLookaheadCertificate_eight_selector_certifiedVisibilityObstruction_of_modulus_eq_sixty_eight_and_blockBase_mod_eq_four" in theorem_guide
+    assert "QRTour.Composite68.coordinate_stateAlignments_one_five_certifiedConflict_eight_one" in theorem_guide
+    assert "QRTour.Composite68Base30.coordinate_stateAlignments_one_five_certifiedConflict_eight_one" in theorem_guide
+    assert "share that compact record payload explicitly" in theorem_guide.replace("\n", " ")
+    assert "QRTour.Composite68.coordinate_minimalLookaheadCertificate_selector_certifiedVisibilityObstruction_eight_one" in theorem_guide
+    assert "QRTour.Composite68Base30.coordinate_minimalLookaheadCertificate_selector_certifiedVisibilityObstruction_eight_one" in theorem_guide
+    assert "minimal selected certified lookahead still exposes the certified hidden coefficient conflict" in theorem_guide.replace("\n", " ")
+    assert "minimal certified lookahead is `1`, and that minimal window still exposes the certified hidden coefficient conflict" in theorem_guide.replace("\n", " ")
+    assert "QRTour.Composite68.coordinate_lookaheadCertificate_eight_two" in theorem_guide
+    assert "QRTour.Composite68.coordinate_lookaheadCertificate_eight_three" in theorem_guide
+    assert "QRTour.Composite68Base30.coordinate_lookaheadCertificate_eight_two" in theorem_guide
+    assert "QRTour.Composite68Base30.coordinate_lookaheadCertificate_eight_three" in theorem_guide
+    assert "QRTour.Composite68.coordinate_quotientQ_ge_seventy_five" in theorem_guide
+    assert "QRTour.Composite68Base30.coordinate_quotientQ_ge_seventy_five" in theorem_guide
+    assert "`q ≥ 75` implies `lookaheadCertificateHolds 8 1`" in theorem_guide
+    assert "`q ≥ 3` implies `lookaheadCertificateHolds 8 2`" in theorem_guide
+    assert "every good coordinate in that family satisfies `lookaheadCertificateHolds 8 3`" in theorem_guide
+    assert "`8/0` never certifies" in theorem_guide
+    assert "`8/1` exactly when `q ≥ 75`" in theorem_guide
+    assert "`8/2` exactly when `q ≥ 3`" in theorem_guide
+    assert "gap numerators `1088` at `q = 1` and `432` at `q = 2`" in theorem_guide
+    assert "`q = 74` with `B = 5036`" in theorem_guide
+    assert "not a closed minimal-`L` classification and not a new atlas claim" in theorem_guide
+    assert "positive fixed-window lookahead staircase" in theorem_guide
+    assert "not a closed global minimal-`L` theorem or an atlas-status change" in theorem_guide
+    assert "fixed-window minimal-lookahead classification" in theorem_guide
+    assert "`q ≥ 75 -> L = 1`, `3 ≤ q < 75 -> L = 2`, and `q = 1` or `q = 2 -> L = 3`" in theorem_guide
+    assert "not a global theorem or atlas-status change" in theorem_guide
+    assert "externally certified as `0` and `60`" in theorem_guide
+    assert "output/certificate classification" in theorem_guide
+    assert "whole `N = 68`, `B ≡ 4 (mod 68)` coordinate family" in theorem_guide
+    assert "certified positive-lookahead and hidden-output shape classifier remains empirical bounded evidence" in theorem_guide
+    assert "`small_k_visibility_threshold` and `carry_dfa_factorization`" in theorem_guide
 
     assert "Visibility Optics" in roadmap
     assert "source remainder orbit" in roadmap
@@ -444,6 +1567,506 @@ def test_theorem_guide_mentions_factorization_frontier_support_honestly() -> Non
     assert "factorization-frontier support" in text
     assert "QRTour/Factorization.lean" in text
     assert "preimage-fiber profile (state-merging atlas)" in text
+
+
+def test_research_brief_and_observability_problem_ledger_stay_status_honest() -> None:
+    readme = README.read_text()
+    brief = RESEARCH_BRIEF.read_text()
+    normalized_brief = brief.replace("\n", " ")
+    observability = OBSERVABILITY_BOUNDARY.read_text()
+    ledger = OBSERVABILITY_PROBLEMS.read_text()
+    normalized_ledger = ledger.replace("\n", " ")
+
+    assert "docs/OBSERVABILITY_PROBLEMS.md" in readme
+    assert "explicit stop conditions" in readme
+
+    assert brief.startswith("# Research Brief v0.2: Orbit, Carry, and Observability")
+    assert "Positional notation is an observation instrument for arithmetic dynamics" in brief
+    assert "1/N = q/(B-k) = (q/B) * 1/(1-k/B) = Σ q*k^j / B^(j+1)" in brief
+    assert "FactorsThrough(obs, signal)" in brief
+    assert "hidden coefficient conflict" in brief
+    assert "Positive reconstruction" in brief
+    assert "finite_remainder_power_residue_no_collision" in brief
+    assert "finite_remainder_power_residue_no_wrap" in brief
+    assert "BlockCoordinate.stateAlignments_remainderToCoefficientFactorsThrough_of_remainderK_pow_lt_modulus" in brief
+    assert "QRTour.FutureBase7N170.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one" in brief
+    assert "QRTour.FutureBase12N149.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one" in brief
+    assert "(12, 289, 5, 248832, 861, 3, 1, 74115)" in brief
+    assert (
+        "QRTour.Base12Stride5K3PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+        in brief
+    )
+    assert "(10, 641, 5, 100000, 156, 4, 1, 76384)" in brief
+    assert (
+        "QRTour.Base10Stride5K4PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+        in brief
+    )
+    assert "(10, 361, 5, 100000, 277, 3, 1, 82603)" in brief
+    assert "(7, 340, 3, 343, 1, 3, 1, 299)" in brief
+    assert "[1, 3, 9, 27, 81, 243, 49, 147]" in brief
+    assert "same-base/block-remainder family criterion" in normalized_brief
+    assert "`small_k_visibility_threshold`" in brief
+    assert "`carry_dfa_factorization`" in brief
+    assert "They are not global morphism" in brief
+    assert "OBSERVABILITY_PROBLEMS.md" in brief
+    assert "Recommended review packet" in brief
+
+    assert "OBSERVABILITY_PROBLEMS.md" in observability
+    assert "positive reconstruction, target-lattice separations" in observability
+    assert "explicit Lean/export surfaces and stop conditions" in observability
+
+    assert ledger.startswith("# Observability Problems Ledger")
+    assert "not a proof-status atlas and not a registry surface" in normalized_ledger
+    assert "`small_k_visibility_threshold` and `carry_dfa_factorization`" in ledger
+    assert "## P1. Positive Reconstruction Criterion" in ledger
+    assert "## P2. Observability Target Lattice" in ledger
+    assert "## P3. Base As Observation Instrument" in ledger
+    assert "## P4. Carry Normalizer As Rational Transduction" in ledger
+    assert "## P5. Quantitative Observability Margins" in ledger
+    assert "finite_remainder_power_residue_no_collision" in ledger
+    assert "finite_remainder_power_residue_no_wrap" in ledger
+    assert "remainder_power_residue_window" in ledger
+    assert "remainder_power_unreduced_window" in ledger
+    assert "first_unpinned_positive_reconstruction_tuple" in ledger
+    assert "first_unpinned_positive_reconstruction_family_seed_tuples" in ledger
+    assert "(7, 340, 3, 343, 1, 3, 1, 299)" in ledger
+    assert "first_uncovered_positive_reconstruction_tuple" in ledger
+    assert "QRTour.FutureBase10N997.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one" in ledger
+    assert (
+        "QRTour.Base30K3PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+        in ledger
+    )
+    assert (
+        "QRTour.Base30K3PositiveReconstruction.n299_n897_powerResidues_nodup_eight_pair"
+        in ledger
+    )
+    assert "(10, 498, 3, 1000, 2, 4, 1, 928)" in ledger
+    assert (
+        "QRTour.Base10K4PositiveReconstruction.remainderK_powerResidues_nodup_eight_of_mem"
+        in ledger
+    )
+    assert (
+        "QRTour.Base10K4PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+        in ledger
+    )
+    assert (
+        "QRTour.Base10K4PositiveReconstruction.n498_n996_powerResidues_nodup_eight_pair"
+        in ledger
+    )
+    assert "(12, 575, 3, 1728, 3, 3, 1, 1053)" in ledger
+    assert "[1, 3, 9, 27, 81, 243, 154, 462]" in ledger
+    assert "QRTour.FutureBase12N575.coordinate_remainderK_powerResidues_nodup_eight" in ledger
+    assert (
+        "QRTour.FutureBase12N575.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+        in ledger
+    )
+    assert (
+        "QRTour.FutureBase12N575.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+        in ledger
+    )
+    assert "(12, 75, 3, 1728, 23, 3, 1, 1161)" in ledger
+    assert "[1, 3, 9, 27, 6, 18, 54, 12]" in ledger
+    assert (
+        "QRTour.Base12K3PositiveReconstruction.remainderK_powerResidues_nodup_eight_of_mem"
+        in ledger
+    )
+    assert (
+        "QRTour.Base12K3PositiveReconstruction.stateAlignments_remainderToCoefficientFunctional_eight_of_mem"
+        in ledger
+    )
+    assert (
+        "QRTour.Base12K3PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+        in ledger
+    )
+    assert (
+        "QRTour.Base12K3PositiveReconstruction.n75_n575_powerResidues_nodup_eight_pair"
+        in ledger
+    )
+    assert "[23, 25, 69, 75, 115, 345, 575, 1725]" in ledger
+    assert "(7, 1199, 4, 2401, 2, 3, 1, 1284)" in ledger
+    assert "[1, 3, 9, 27, 81, 243, 729, 988]" in ledger
+    assert "QRTour.FutureBase7N1199.coordinate_remainderK_powerResidues_nodup_eight" in ledger
+    assert (
+        "QRTour.FutureBase7N1199.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+        in ledger
+    )
+    assert (
+        "QRTour.FutureBase7N1199.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+        in ledger
+    )
+    assert "(10, 294, 4, 10000, 34, 4, 1, 1776)" in ledger
+    assert "[1, 4, 16, 64, 256, 142, 274, 214]" in ledger
+    assert "QRTour.FutureBase10N294.coordinate_remainderK_powerResidues_nodup_eight" in ledger
+    assert (
+        "QRTour.FutureBase10N294.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+        in ledger
+    )
+    assert (
+        "QRTour.FutureBase10N294.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+        in ledger
+    )
+    assert "(7, 109, 4, 2401, 22, 3, 1, 2119)" in ledger
+    assert "[1, 3, 9, 27, 81, 25, 75, 7]" in ledger
+    assert (
+        "QRTour.Base7Stride4K3PositiveReconstruction.remainderK_powerResidues_nodup_eight_of_mem"
+        in ledger
+    )
+    assert (
+        "QRTour.Base7Stride4K3PositiveReconstruction.stateAlignments_remainderToCoefficientFunctional_eight_of_mem"
+        in ledger
+    )
+    assert (
+        "QRTour.Base7Stride4K3PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+        in ledger
+    )
+    assert (
+        "QRTour.Base7Stride4K3PositiveReconstruction.n109_n1199_powerResidues_nodup_eight_pair"
+        in ledger
+    )
+    assert "[109, 218, 1199, 2398]" in ledger
+    assert "[1, 2, 11, 22]" in ledger
+    assert "(7, 46, 2, 49, 1, 3, 2, 2171)" in ledger
+    assert "[1, 3, 9, 27, 35, 13, 39, 25]" in ledger
+    assert "QRTour.FutureBase7N46.coordinate_remainderK_powerResidues_nodup_eight" in ledger
+    assert (
+        "QRTour.FutureBase7N46.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_two"
+        in ledger
+    )
+    assert (
+        "QRTour.FutureBase7N46.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_two"
+        in ledger
+    )
+    assert "(7, 141, 4, 2401, 17, 4, 1, 2353)" in ledger
+    assert "[1, 4, 16, 64, 115, 37, 7, 28]" in ledger
+    assert "QRTour.FutureBase7N141.coordinate_remainderK_powerResidues_nodup_eight" in ledger
+    assert (
+        "QRTour.FutureBase7N141.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+        in ledger
+    )
+    assert (
+        "QRTour.FutureBase7N141.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+        in ledger
+    )
+    assert "(10, 714, 4, 10000, 14, 4, 1, 2496)" in ledger
+    assert "[1, 4, 16, 64, 256, 310, 526, 676]" in ledger
+    assert (
+        "QRTour.Base10Stride4K4PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+        in ledger
+    )
+    assert (
+        "QRTour.Base10Stride4K4PositiveReconstruction.n294_n714_powerResidues_nodup_eight_pair"
+        in ledger
+    )
+    assert "[49, 98, 119, 147, 196, 238, 294, 357, 476, 588, 714, 833]" in ledger
+    assert "(12, 146, 4, 20736, 142, 4, 1, 4352)" in ledger
+    assert "[1, 4, 16, 64, 110, 2, 8, 32]" in ledger
+    assert "QRTour.FutureBase12N146.coordinate_remainderK_powerResidues_nodup_eight" in ledger
+    assert (
+        "QRTour.FutureBase12N146.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+        in ledger
+    )
+    assert (
+        "QRTour.FutureBase12N146.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+        in ledger
+    )
+    assert "(10, 769, 4, 10000, 13, 3, 1, 4707)" in ledger
+    assert "[1, 3, 9, 27, 81, 243, 729, 649]" in ledger
+    assert "QRTour.FutureBase10N769.coordinate_remainderK_powerResidues_nodup_eight" in ledger
+    assert (
+        "QRTour.FutureBase10N769.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+        in ledger
+    )
+    assert (
+        "QRTour.FutureBase10N769.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+        in ledger
+    )
+    assert "(7, 345, 6, 117649, 341, 4, 1, 5534)" in ledger
+    assert "[1, 4, 16, 64, 256, 334, 301, 169]" in ledger
+    assert "QRTour.FutureBase7N345.coordinate_remainderK_powerResidues_nodup_eight" in ledger
+    assert (
+        "QRTour.FutureBase7N345.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+        in ledger
+    )
+    assert (
+        "QRTour.FutureBase7N345.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+        in ledger
+    )
+    assert "(7, 465, 6, 117649, 253, 4, 1, 7901)" in ledger
+    assert "[1, 4, 16, 64, 256, 94, 376, 109]" in ledger
+    assert (
+        "QRTour.Base7Stride6K4PositiveReconstruction.remainderK_powerResidues_nodup_eight_of_mem"
+        in ledger
+    )
+    assert (
+        "QRTour.Base7Stride6K4PositiveReconstruction.stateAlignments_remainderToCoefficientFunctional_eight_of_mem"
+        in ledger
+    )
+    assert (
+        "QRTour.Base7Stride6K4PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+        in ledger
+    )
+    assert "(7, 542, 5, 16807, 31, 5, 1, 8472)" in ledger
+    assert "[1, 5, 25, 125, 83, 415, 449, 77]" in ledger
+    assert "QRTour.FutureBase7N542.coordinate_remainderK_powerResidues_nodup_eight" in ledger
+    assert (
+        "QRTour.FutureBase7N542.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+        in ledger
+    )
+    assert (
+        "QRTour.FutureBase7N542.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+        in ledger
+    )
+    assert "(12, 73, 4, 20736, 284, 4, 1, 8704)" in ledger
+    assert "[1, 4, 16, 64, 37, 2, 8, 32]" in ledger
+    assert (
+        "QRTour.Base12Stride4K4PositiveReconstruction.remainderK_powerResidues_nodup_eight_of_mem"
+        in ledger
+    )
+    assert (
+        "QRTour.Base12Stride4K4PositiveReconstruction.stateAlignments_remainderToCoefficientFunctional_eight_of_mem"
+        in ledger
+    )
+    assert (
+        "QRTour.Base12Stride4K4PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+        in ledger
+    )
+    assert (
+        "QRTour.Base12Stride4K4PositiveReconstruction.n73_n146_powerResidues_nodup_eight_pair"
+        in ledger
+    )
+    assert "[71, 73, 142, 146, 284, 292, 5183, 10366, 20732]" in ledger
+    assert "(12, 47, 2, 144, 3, 3, 2, 9639)" in ledger
+    assert "[1, 3, 9, 27, 34, 8, 24, 25]" in ledger
+    assert "QRTour.FutureBase12N47.coordinate_remainderK_powerResidues_nodup_eight" in ledger
+    assert (
+        "QRTour.FutureBase12N47.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_two"
+        in ledger
+    )
+    assert (
+        "QRTour.FutureBase12N47.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_two"
+        in ledger
+    )
+    assert "(12, 141, 2, 144, 1, 3, 2, 10125)" in ledger
+    assert "[1, 3, 9, 27, 81, 102, 24, 72]" in ledger
+    assert (
+        "QRTour.Base12Stride2K3PositiveReconstruction.remainderK_powerResidues_nodup_eight_of_mem"
+        in ledger
+    )
+    assert (
+        "QRTour.Base12Stride2K3PositiveReconstruction.stateAlignments_remainderToCoefficientFunctional_eight_of_mem"
+        in ledger
+    )
+    assert (
+        "QRTour.Base12Stride2K3PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+        in ledger
+    )
+    assert (
+        "QRTour.Base12Stride2K3PositiveReconstruction.n47_n141_powerResidues_nodup_eight_pair"
+        in ledger
+    )
+    assert "[47, 141]" in ledger
+    assert "(30, 794, 3, 27000, 34, 4, 1, 12776)" in ledger
+    assert "[1, 4, 16, 64, 256, 230, 126, 504]" in ledger
+    assert "QRTour.FutureBase30N794.coordinate_remainderK_powerResidues_nodup_eight" in ledger
+    assert (
+        "QRTour.FutureBase30N794.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+        in ledger
+    )
+    assert (
+        "QRTour.FutureBase30N794.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+        in ledger
+    )
+    assert "(7, 113, 3, 343, 3, 4, 2, 13444)" in ledger
+    assert "[1, 4, 16, 64, 30, 7, 28, 112]" in ledger
+    assert "QRTour.FutureBase7N113.coordinate_remainderK_powerResidues_nodup_eight" in ledger
+    assert (
+        "QRTour.FutureBase7N113.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_two"
+        in ledger
+    )
+    assert (
+        "QRTour.FutureBase7N113.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_two"
+        in ledger
+    )
+    assert "(12, 691, 4, 20736, 30, 6, 1, 20736)" in ledger
+    assert "[1, 6, 36, 216, 605, 175, 359, 81]" in ledger
+    assert "QRTour.FutureBase12N691.coordinate_remainderK_powerResidues_nodup_eight" in ledger
+    assert (
+        "QRTour.FutureBase12N691.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+        in ledger
+    )
+    assert (
+        "QRTour.FutureBase12N691.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+        in ledger
+    )
+    assert "(30, 397, 3, 27000, 68, 4, 1, 25552)" in ledger
+    assert "[1, 4, 16, 64, 256, 230, 126, 107]" in ledger
+    assert (
+        "QRTour.Base30Stride3K4PositiveReconstruction.remainderK_powerResidues_nodup_eight_of_mem"
+        in ledger
+    )
+    assert (
+        "QRTour.Base30Stride3K4PositiveReconstruction.stateAlignments_remainderToCoefficientFunctional_eight_of_mem"
+        in ledger
+    )
+    assert (
+        "QRTour.Base30Stride3K4PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+        in ledger
+    )
+    assert (
+        "QRTour.Base30Stride3K4PositiveReconstruction.n397_n794_powerResidues_nodup_eight_pair"
+        in ledger
+    )
+    assert "[397, 794, 1588, 6749, 13498, 26996]" in ledger
+    assert "[1, 2, 4, 17, 34, 68]" in ledger
+    assert "(10, 578, 5, 100000, 173, 6, 1, 26432)" in ledger
+    assert "[1, 6, 36, 216, 140, 262, 416, 184]" in ledger
+    assert "QRTour.FutureBase10N578.coordinate_remainderK_powerResidues_nodup_eight" in ledger
+    assert (
+        "QRTour.FutureBase10N578.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+        in ledger
+    )
+    assert (
+        "QRTour.FutureBase10N578.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+        in ledger
+    )
+    assert "(10, 277, 5, 100000, 361, 3, 1, 31479)" in ledger
+    assert "[1, 3, 9, 27, 81, 243, 175, 248]" in ledger
+    assert "QRTour.FutureBase10N277.coordinate_remainderK_powerResidues_nodup_eight" in ledger
+    assert (
+        "QRTour.FutureBase10N277.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+        in ledger
+    )
+    assert (
+        "QRTour.FutureBase10N277.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+        in ledger
+    )
+    assert "(7, 669, 7, 823543, 1231, 4, 1, 32398)" in ledger
+    assert "[1, 4, 16, 64, 256, 355, 82, 328]" in ledger
+    assert "QRTour.FutureBase7N669.coordinate_remainderK_powerResidues_nodup_eight" in ledger
+    assert (
+        "QRTour.FutureBase7N669.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+        in ledger
+    )
+    assert (
+        "QRTour.FutureBase7N669.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+        in ledger
+    )
+    assert "(7, 71, 6, 117649, 1657, 2, 1, 46404)" in ledger
+    assert "[1, 2, 4, 8, 16, 32, 64, 57]" in ledger
+    assert "QRTour.FutureBase7N71.coordinate_remainderK_powerResidues_nodup_eight" in ledger
+    assert (
+        "QRTour.FutureBase7N71.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+        in ledger
+    )
+    assert (
+        "QRTour.FutureBase7N71.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+        in ledger
+    )
+    assert "(7, 118, 6, 117649, 997, 3, 1, 47027)" in ledger
+    assert "[1, 3, 9, 27, 81, 7, 21, 63]" in ledger
+    assert "QRTour.FutureBase7N118.coordinate_remainderK_powerResidues_nodup_eight" in ledger
+    assert (
+        "QRTour.FutureBase7N118.coordinate_stateAlignments_remainderToCoefficientFunctional_eight_one"
+        in ledger
+    )
+    assert (
+        "QRTour.FutureBase7N118.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+        in ledger
+    )
+    assert "(7, 997, 6, 117649, 118, 3, 1, 49345)" in ledger
+    assert "[1, 3, 9, 27, 81, 243, 729, 193]" in ledger
+    assert (
+        "QRTour.Base7Stride6K3PositiveReconstruction.remainderK_powerResidues_nodup_eight_of_mem"
+        in ledger
+    )
+    assert (
+        "QRTour.Base7Stride6K3PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+        in ledger
+    )
+    assert (
+        "QRTour.Base7Stride6K3PositiveReconstruction.n118_n997_powerResidues_nodup_eight_pair"
+        in ledger
+    )
+    assert "[59, 118, 997, 1994, 58823, 117646]" in ledger
+    assert "(10, 289, 5, 100000, 346, 6, 1, 52864)" in ledger
+    assert "[1, 6, 36, 216, 140, 262, 127, 184]" in ledger
+    assert "(10, 578, 5, 100000, 173, 6, 1, 26432)" in ledger
+    assert (
+        "QRTour.Base10Stride5K6PositiveReconstruction.remainderK_powerResidues_nodup_eight_of_mem"
+        in ledger
+    )
+    assert (
+        "QRTour.Base10Stride5K6PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+        in ledger
+    )
+    assert (
+        "QRTour.Base10Stride5K6PositiveReconstruction.n289_n578_powerResidues_nodup_eight_pair"
+        in ledger
+    )
+    assert "[17, 34, 173, 289, 346, 578, 2941, 5882, 49997, 99994]" in ledger
+    assert "(12, 226, 5, 248832, 1101, 6, 1, 62208)" in ledger
+    assert "[1, 6, 36, 216, 166, 92, 100, 148]" in ledger
+    assert "QRTour.FutureBase12N226.coordinate_remainderK_powerResidues_nodup_eight" in ledger
+    assert (
+        "QRTour.FutureBase12N226.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one"
+        in ledger
+    )
+    assert "(7, 338, 3, 343, 1, 5, 2, 64744)" in ledger
+    assert "[1, 5, 25, 125, 287, 83, 77, 47]" in ledger
+    assert "QRTour.FutureBase7N338.coordinate_remainderK_powerResidues_nodup_eight" in ledger
+    assert (
+        "QRTour.FutureBase7N338.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_two"
+        in ledger
+    )
+    assert "(12, 149, 5, 248832, 1670, 2, 1, 70144)" in ledger
+    assert "[1, 2, 4, 8, 16, 32, 64, 128]" in ledger
+    assert "QRTour.FutureBase12N149.coordinate_remainderK_pow_lt_modulus_eight" in ledger
+    assert "QRTour.FutureBase12N149.coordinate_stateAlignments_remainderToCoefficientFactorsThrough_eight_one" in ledger
+    assert "(12, 289, 5, 248832, 861, 3, 1, 74115)" in ledger
+    assert "[1, 3, 9, 27, 81, 243, 151, 164]" in ledger
+    assert (
+        "QRTour.Base12Stride5K3PositiveReconstruction.remainderK_powerResidues_nodup_eight_of_mem"
+        in ledger
+    )
+    assert (
+        "QRTour.Base12Stride5K3PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+        in ledger
+    )
+    assert (
+        "QRTour.Base12Stride5K3PositiveReconstruction.n289_n861_powerResidues_nodup_eight_pair"
+        in ledger
+    )
+    assert "(10, 641, 5, 100000, 156, 4, 1, 76384)" in ledger
+    assert "[1, 4, 16, 64, 256, 383, 250, 359]" in ledger
+    assert (
+        "QRTour.Base10Stride5K4PositiveReconstruction.remainderK_powerResidues_nodup_eight_of_mem"
+        in ledger
+    )
+    assert (
+        "QRTour.Base10Stride5K4PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+        in ledger
+    )
+    assert (
+        "QRTour.Base10Stride5K4PositiveReconstruction.n641_n1282_powerResidues_nodup_eight_pair"
+        in ledger
+    )
+    assert "(10, 361, 5, 100000, 277, 3, 1, 82603)" in ledger
+    assert "[1, 3, 9, 27, 81, 243, 7, 21]" in ledger
+    assert (
+        "QRTour.Base7K3PositiveReconstruction.remainderK_powerResidues_nodup_eight_of_mem"
+        in ledger
+    )
+    assert (
+        "QRTour.Base7K3PositiveReconstruction.stateAlignments_remainderToCoefficientFactorsThrough_eight_of_mem"
+        in ledger
+    )
+    assert "use_lean_proved_family_criterion_before_source_pinning_more_examples" in ledger
+    assert "prove_or_reject_same_base_block_remainder_power_no_collision_family" in ledger
+    assert "observability-target-split" in ledger
+    assert "observability-instrument-compare" in ledger
+    assert "carry-factorization --max 500 --blocks 8" in ledger
+    assert "finite factor-through statements first" in ledger
+    assert "global transducer claims last" in ledger
 
 
 def test_track_18_roadmap_marks_release_snapshot_as_landed() -> None:
@@ -560,6 +2183,477 @@ def _lean_declaration_names(path: Path) -> set[str]:
 
 def _lean_name_resolves(name: str, declarations: set[str]) -> bool:
     return name in declarations or any(decl.endswith(f".{name}") for decl in declarations)
+
+
+def _assert_certificate_lean_fixture_drift_gate() -> None:
+    payload = certificate_lean_fixture_payload(
+        max_n=1200,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+        top=20,
+    )
+    theorem_guide_text = LEAN_GUIDE.read_text()
+
+    assert payload["schema"] == "certificate-lean-fixtures-v1"
+    assert payload["summary"]["emitted_fixture_count"] == 2
+    for fixture in payload["fixtures"]:
+        module_path = ROOT / fixture["module_path"]
+        declarations = _lean_declaration_names(module_path)
+        unresolved = [
+            theorem_name
+            for theorem_name in fixture["theorem_names"]
+            if not _lean_name_resolves(theorem_name, declarations)
+        ]
+        assert not unresolved, (
+            f"{fixture['certificate_id']} lists theorem names not found in "
+            f"{fixture['module_path']}: {unresolved}"
+        )
+        missing_guide_mentions = [
+            qualified_name
+            for qualified_name in fixture["qualified_theorem_names"]
+            if qualified_name not in theorem_guide_text
+        ]
+        assert not missing_guide_mentions, (
+            f"{fixture['certificate_id']} fixture theorem names are missing "
+            f"from lean/THEOREM_GUIDE.md: {missing_guide_mentions}"
+        )
+
+        stub = fixture["copyable_lean_stub"]
+        assert stub["kind"] == "not_remainder_to_coefficient_functional_projection"
+        assert stub["record_theorem_name"] in fixture["theorem_names"]
+        assert stub["projection_accessor"] == "not_remainderToCoefficientFunctional"
+        assert stub["recommended_theorem_name"] == (
+            f"{fixture['certificate_id']}_not_remainderToCoefficientFunctional"
+        )
+        assert f"theorem {stub['recommended_theorem_name']} :" in stub["code"]
+        assert stub["record_theorem_name"] in stub["code"]
+        assert f".{stub['projection_accessor']}" in stub["code"]
+
+
+def _assert_certificate_lean_stub_scaffold_lint_gate() -> None:
+    payload = certificate_lean_stub_payload(
+        max_n=1200,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+        top=20,
+    )
+
+    assert payload["schema"] == "certificate-lean-stubs-v1"
+    assert payload["summary"]["source_schema"] == "certificate-lean-fixtures-v1"
+    assert payload["summary"]["emitted_stub_count"] == 2
+    assert payload["summary"]["lint_failed"] == 0
+    for stub in payload["stubs"]:
+        assert stub["stub_scaffold_status"] == "copyable_projection_stub"
+        assert stub["lint_status"] == "passed"
+        assert stub["lint_errors"] == []
+        assert stub["record_theorem_name"] == (
+            "coordinate_stateAlignments_one_five_certifiedConflict_eight_one"
+        )
+        assert stub["projection_accessor"] == "not_remainderToCoefficientFunctional"
+        assert f"theorem {stub['stub_theorem_name']} :" in stub["copyable_lean_code"]
+        assert stub["record_theorem_name"] in stub["copyable_lean_code"]
+        assert f".{stub['projection_accessor']}" in stub["copyable_lean_code"]
+
+
+def _assert_certificate_fixture_mapping_lint_gate() -> None:
+    source_ready = certificate_fixture_mapping_lint_payload(
+        candidate_base=10,
+        candidate_n=68,
+        namespace="QRTour.Composite68",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(10,),
+        n_blocks=8,
+    )
+    assert source_ready["schema"] == "certificate-fixture-mapping-lint-v1"
+    assert source_ready["summary"]["mapping_lint_status"] == (
+        "source_ready_existing_mapping"
+    )
+    assert source_ready["summary"]["source_ready"] is True
+    assert source_ready["summary"]["promotes_claims"] is False
+    assert source_ready["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ] == []
+    assert source_ready["proposed_mapping"]["source_checks"][
+        "missing_theorem_guide_mentions"
+    ] == []
+
+    staged = certificate_fixture_mapping_lint_payload(
+        candidate_base=30,
+        candidate_n=7,
+        namespace="QRTour.FutureN7",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(30,),
+        n_blocks=8,
+    )
+    assert staged["summary"]["mapping_lint_status"] == (
+        "scaffold_ready_pending_lean_source"
+    )
+    assert staged["summary"]["source_ready"] is False
+    assert staged["summary"]["scaffold_ready"] is True
+    assert staged["candidate"]["certificate_tuple"][:2] == [30, 7]
+    assert staged["proposed_mapping"]["source_checks"]["namespace_found"] is False
+    assert staged["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ]
+    assert staged["proposed_mapping"]["stub_lint_status"] == "passed"
+    recipe = staged["proposed_mapping"]["source_pinning_recipe"]
+    assert recipe["recipe_id"] == "source_pinning_recipe_v1"
+    assert recipe["status_transition"] == [
+        "scaffold_ready_pending_lean_source",
+        "source_ready_existing_mapping",
+    ]
+    assert recipe["required_theorem_names"] == staged["proposed_mapping"][
+        "required_theorem_names"
+    ]
+    assert recipe["record_theorem_name"] == (
+        "coordinate_stateAlignments_zero_three_certifiedConflict_eight_two"
+    )
+    assert recipe["projection_accessor"] == "not_remainderToCoefficientFunctional"
+    assert recipe["copyable_stub_theorem_name"] == (
+        "base30_n7_m1_blocks8_L2_not_remainderToCoefficientFunctional"
+    )
+    assert recipe["copyable_stub_field"] == "proposed_mapping.copyable_lean_stub.code"
+    assert any("source_ready_existing_mapping" in step for step in recipe["steps"])
+    assert "No registry IDs" in recipe["promotion_boundary"]
+
+    n7_source_ready = certificate_fixture_mapping_lint_payload(
+        candidate_base=30,
+        candidate_n=7,
+        candidate_m=1,
+        namespace="QRTour.FutureBase30N7",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+    )
+    assert n7_source_ready["summary"]["mapping_lint_status"] == (
+        "source_ready_existing_mapping"
+    )
+    assert n7_source_ready["summary"]["source_ready"] is True
+    assert n7_source_ready["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ] == []
+    assert n7_source_ready["proposed_mapping"]["source_checks"][
+        "missing_theorem_guide_mentions"
+    ] == []
+
+    n14_source_ready = certificate_fixture_mapping_lint_payload(
+        candidate_base=30,
+        candidate_n=14,
+        candidate_m=1,
+        namespace="QRTour.FutureBase30N14",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+    )
+    assert n14_source_ready["summary"]["mapping_lint_status"] == (
+        "source_ready_existing_mapping"
+    )
+    assert n14_source_ready["summary"]["source_ready"] is True
+    assert n14_source_ready["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ] == []
+    assert n14_source_ready["proposed_mapping"]["source_checks"][
+        "missing_theorem_guide_mentions"
+    ] == []
+
+    n28_source_ready = certificate_fixture_mapping_lint_payload(
+        candidate_base=30,
+        candidate_n=28,
+        candidate_m=1,
+        namespace="QRTour.FutureBase30N28",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+    )
+    assert n28_source_ready["summary"]["mapping_lint_status"] == (
+        "source_ready_existing_mapping"
+    )
+    assert n28_source_ready["summary"]["source_ready"] is True
+    assert n28_source_ready["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ] == []
+    assert n28_source_ready["proposed_mapping"]["source_checks"][
+        "missing_theorem_guide_mentions"
+    ] == []
+
+    base12_n10_source_ready = certificate_fixture_mapping_lint_payload(
+        candidate_base=12,
+        candidate_n=10,
+        candidate_m=1,
+        namespace="QRTour.FutureBase12N10",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+    )
+    assert base12_n10_source_ready["summary"]["mapping_lint_status"] == (
+        "source_ready_existing_mapping"
+    )
+    assert base12_n10_source_ready["summary"]["source_ready"] is True
+    assert base12_n10_source_ready["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ] == []
+    assert base12_n10_source_ready["proposed_mapping"]["source_checks"][
+        "missing_theorem_guide_mentions"
+    ] == []
+
+    base10_n102_source_ready = certificate_fixture_mapping_lint_payload(
+        candidate_base=10,
+        candidate_n=102,
+        candidate_m=4,
+        namespace="QRTour.FutureBase10N102",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+    )
+    assert base10_n102_source_ready["summary"]["mapping_lint_status"] == (
+        "source_ready_existing_mapping"
+    )
+    assert base10_n102_source_ready["summary"]["source_ready"] is True
+    assert base10_n102_source_ready["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ] == []
+    assert base10_n102_source_ready["proposed_mapping"]["source_checks"][
+        "missing_theorem_guide_mentions"
+    ] == []
+
+    base7_n5_source_ready = certificate_fixture_mapping_lint_payload(
+        candidate_base=7,
+        candidate_n=5,
+        candidate_m=1,
+        namespace="QRTour.FutureBase7N5",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+    )
+    assert base7_n5_source_ready["summary"]["mapping_lint_status"] == (
+        "source_ready_existing_mapping"
+    )
+    assert base7_n5_source_ready["summary"]["source_ready"] is True
+    assert base7_n5_source_ready["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ] == []
+    assert base7_n5_source_ready["proposed_mapping"]["source_checks"][
+        "missing_theorem_guide_mentions"
+    ] == []
+
+    base12_n5_source_ready = certificate_fixture_mapping_lint_payload(
+        candidate_base=12,
+        candidate_n=5,
+        candidate_m=1,
+        namespace="QRTour.FutureBase12N5",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+    )
+    assert base12_n5_source_ready["summary"]["mapping_lint_status"] == (
+        "source_ready_existing_mapping"
+    )
+    assert base12_n5_source_ready["summary"]["source_ready"] is True
+    assert base12_n5_source_ready["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ] == []
+    assert base12_n5_source_ready["proposed_mapping"]["source_checks"][
+        "missing_theorem_guide_mentions"
+    ] == []
+
+    base30_n34_source_ready = certificate_fixture_mapping_lint_payload(
+        candidate_base=30,
+        candidate_n=34,
+        candidate_m=3,
+        namespace="QRTour.FutureBase30N34",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+    )
+    assert base30_n34_source_ready["summary"]["mapping_lint_status"] == (
+        "source_ready_existing_mapping"
+    )
+    assert base30_n34_source_ready["summary"]["source_ready"] is True
+    assert base30_n34_source_ready["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ] == []
+    assert base30_n34_source_ready["proposed_mapping"]["source_checks"][
+        "missing_theorem_guide_mentions"
+    ] == []
+
+    base7_n93_source_ready = certificate_fixture_mapping_lint_payload(
+        candidate_base=7,
+        candidate_n=93,
+        candidate_m=6,
+        namespace="QRTour.FutureBase7N93",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+    )
+    assert base7_n93_source_ready["summary"]["mapping_lint_status"] == (
+        "source_ready_existing_mapping"
+    )
+    assert base7_n93_source_ready["summary"]["source_ready"] is True
+    assert base7_n93_source_ready["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ] == []
+    assert base7_n93_source_ready["proposed_mapping"]["source_checks"][
+        "missing_theorem_guide_mentions"
+    ] == []
+
+    base10_n39_source_ready = certificate_fixture_mapping_lint_payload(
+        candidate_base=10,
+        candidate_n=39,
+        candidate_m=5,
+        namespace="QRTour.FutureBase10N39",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+    )
+    assert base10_n39_source_ready["summary"]["mapping_lint_status"] == (
+        "source_ready_existing_mapping"
+    )
+    assert base10_n39_source_ready["summary"]["source_ready"] is True
+    assert base10_n39_source_ready["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ] == []
+    assert base10_n39_source_ready["proposed_mapping"]["source_checks"][
+        "missing_theorem_guide_mentions"
+    ] == []
+
+    base10_n78_source_ready = certificate_fixture_mapping_lint_payload(
+        candidate_base=10,
+        candidate_n=78,
+        candidate_m=5,
+        namespace="QRTour.FutureBase10N78",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+    )
+    assert base10_n78_source_ready["summary"]["mapping_lint_status"] == (
+        "source_ready_existing_mapping"
+    )
+    assert base10_n78_source_ready["summary"]["source_ready"] is True
+    assert base10_n78_source_ready["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ] == []
+    assert base10_n78_source_ready["proposed_mapping"]["source_checks"][
+        "missing_theorem_guide_mentions"
+    ] == []
+
+    base10_n96_source_ready = certificate_fixture_mapping_lint_payload(
+        candidate_base=10,
+        candidate_n=96,
+        candidate_m=2,
+        namespace="QRTour.FutureBase10N96",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+    )
+    assert base10_n96_source_ready["summary"]["mapping_lint_status"] == (
+        "source_ready_existing_mapping"
+    )
+    assert base10_n96_source_ready["summary"]["source_ready"] is True
+    assert base10_n96_source_ready["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ] == []
+    assert base10_n96_source_ready["proposed_mapping"]["source_checks"][
+        "missing_theorem_guide_mentions"
+    ] == []
+
+    base12_n35_source_ready = certificate_fixture_mapping_lint_payload(
+        candidate_base=12,
+        candidate_n=35,
+        candidate_m=2,
+        namespace="QRTour.FutureBase12N35",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+    )
+    assert base12_n35_source_ready["summary"]["mapping_lint_status"] == (
+        "source_ready_existing_mapping"
+    )
+    assert base12_n35_source_ready["summary"]["source_ready"] is True
+    assert base12_n35_source_ready["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ] == []
+    assert base12_n35_source_ready["proposed_mapping"]["source_checks"][
+        "missing_theorem_guide_mentions"
+    ] == []
+
+    base12_n31_source_ready = certificate_fixture_mapping_lint_payload(
+        candidate_base=12,
+        candidate_n=31,
+        candidate_m=6,
+        namespace="QRTour.FutureBase12N31",
+        module_path="lean/QRTour/Examples.lean",
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+    )
+    assert base12_n31_source_ready["summary"]["mapping_lint_status"] == (
+        "source_ready_existing_mapping"
+    )
+    assert base12_n31_source_ready["summary"]["source_ready"] is True
+    assert base12_n31_source_ready["proposed_mapping"]["source_checks"][
+        "missing_source_theorem_names"
+    ] == []
+    assert base12_n31_source_ready["proposed_mapping"]["source_checks"][
+        "missing_theorem_guide_mentions"
+    ] == []
+
+    auto = certificate_first_scaffold_mapping_lint_payload(
+        max_n=120,
+        bases=(7, 10, 12, 30),
+        n_blocks=8,
+    )
+    assert auto["summary"]["candidate_selection_mode"] == "first_scaffold_only"
+    assert auto["summary"]["auto_selected_candidate"] is True
+    assert auto["summary"]["namespace_auto_generated"] is True
+    assert auto["summary"]["skipped_source_pinned_candidates"] == 2
+    assert auto["candidate"]["certificate_tuple"] == [12, 70, 2, 144, 2, 4, 3, 2363392]
+    assert auto["proposed_mapping"]["namespace"] == "QRTour.FutureBase12N70"
+    assert auto["proposed_mapping"]["source_pinning_recipe"][
+        "record_theorem_name"
+    ] == "coordinate_stateAlignments_one_seven_certifiedConflict_eight_three"
+    assert auto["proposed_mapping"]["source_pinning_recipe"][
+        "copyable_stub_theorem_name"
+    ] == "base12_n70_m2_blocks8_L3_not_remainderToCoefficientFunctional"
+    package_plan = auto["proposed_mapping"]["lean_package_plan"]
+    assert package_plan["plan_id"] == "lean_finite_package_plan_v1"
+    assert package_plan["worth_proving_next"] is True
+    assert package_plan["decision"] == "prove_next_finite_obstruction_example"
+    assert package_plan["record_theorem_name"] == (
+        "coordinate_stateAlignments_one_seven_certifiedConflict_eight_three"
+    )
+    assert package_plan["conflict_shape"]["conflict_remainder_state"] == 4
+    assert package_plan["conflict_shape"]["conflict_positions"] == [1, 7]
+    assert package_plan["conflict_shape"]["conflict_coefficients"] == [8, 32768]
+    assert package_plan["conflict_shape"]["conflict_carry_states"] == [0, 936]
+    assert package_plan["conflict_shape"]["conflict_block_values"] == [8, 8]
+    assert package_plan["boundary_note"].startswith("finite example package only")
+
+
+def test_certificate_lean_fixture_payload_source_pins_existing_lean_surface() -> None:
+    _assert_certificate_lean_fixture_drift_gate()
+
+
+def test_certificate_lean_stub_scaffold_lint_payload_stays_consistent() -> None:
+    _assert_certificate_lean_stub_scaffold_lint_gate()
+
+
+def test_certificate_fixture_mapping_lint_payload_stages_future_packages() -> None:
+    _assert_certificate_fixture_mapping_lint_gate()
 
 
 def test_registry_summary_blocks_match_registry_data() -> None:
