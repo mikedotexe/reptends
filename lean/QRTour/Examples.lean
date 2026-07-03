@@ -13,7 +13,7 @@ import QRTour.Visibility
 import QRTour.CarryComparison
 
 /-!
-# Worked Examples: prime 19, prime 97, composite 21, composite 249, same-core composite 996 over 249, and the empirical composite-68 obstruction hook
+# Worked Examples: prime 19, prime 97, composite 21, composite 249, and same-core composite 996 over 249, plus empirical obstruction and reconstruction hooks
 
 This module packages the five canonical Lean witness families used across the
 repo's current theorem surface:
