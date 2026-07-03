@@ -39,6 +39,7 @@ agda QRTour/RemainderOrbit.agda
 ### Lean 4
 
 ```bash
+./scripts/use_external_lake_cache.sh  # optional but recommended for Dropbox/iCloud checkouts
 cd lean
 lake exe cache get
 lake build
@@ -48,6 +49,7 @@ lake build QRTour.RemainderOrbit
 ### Web Visualization
 
 ```bash
+./scripts/use_external_site_cache.sh  # optional but recommended for Dropbox/iCloud checkouts
 cd site
 yarn install
 yarn dev

@@ -19,16 +19,25 @@ venv/
 MAlonzo/
 
 # Lean
+lean/.lake
 lean/.lake/
 
 # Node/Site
+site/node_modules
 site/node_modules/
+site/dist
 site/dist/
+site/.vite
 site/.vite/
 
 # Data (keep sweep_500.csv, ignore temp outputs)
 data/*.tmp
 data/*.log
+
+# Local research sharing bundles and imported feedback
+fable/
+for-research-ai/
+docs/OBSERVABILITY_BOUNDARY-Research-*.md
 
 # IDE
 .vscode/
