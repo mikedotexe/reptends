@@ -71,9 +71,49 @@ async function assertPosition(page, index) {
   assert.equal(integer(actual.next), expected.nextRemainder);
 }
 
+async function assertOpeningGallery(page) {
+  const gallery = page.locator("#specimens");
+  const examples = gallery.locator("article.decimal-example");
+  assert.equal(await examples.count(), 3);
+  const expected = [["97", 4], ["997", 6], ["9997", 8]];
+  for (let index = 0; index < expected.length; index += 1) {
+    const [denominator, matchingGroups] = expected[index];
+    const example = examples.nth(index);
+    assert.equal(await example.getAttribute("data-denominator"), denominator);
+    assert.equal(await example.getByRole("heading").textContent(), `1/${denominator}`);
+    const groups = await example.locator(".decimal-group").evaluateAll(elements => elements.map(element => {
+      const bounds = element.getBoundingClientRect();
+      const parent = element.closest("article").getBoundingClientRect();
+      return {
+        kind: element.dataset.kind,
+        printed: element.textContent,
+        word: element.dataset.word,
+        visibleWithinExample: bounds.width > 0 && bounds.height > 0 && bounds.left >= parent.left && bounds.right <= parent.right,
+      };
+    }));
+    assert.equal(groups.length, 16, "Each example must show a substantial decimal prefix before the focused explanation.");
+    assert.equal(groups.filter(group => group.kind === "pattern").length, matchingGroups);
+    assert.equal(groups[matchingGroups].kind, "change");
+    assert.equal(groups.filter(group => group.kind === "change").length, 1);
+    assert(groups.slice(matchingGroups + 1).every(group => group.kind === "later"));
+    for (const group of groups) {
+      assert.equal(group.printed, group.word, "The visible digits must preserve the serialized groups, including initial zeros.");
+      assert(group.visibleWithinExample, "Every printed group must remain visible inside its example, without clipped overflow.");
+    }
+  }
+  for (const label of ["×3 pattern", "First change", "The “number jumble”"]) {
+    assert.equal(await gallery.getByText(label, { exact: true }).isVisible(), true, "Text labels must accompany the gallery colors.");
+  }
+  assert.equal(await gallery.evaluate(element => Boolean(element.compareDocumentPosition(document.querySelector("#focus-997")) & Node.DOCUMENT_POSITION_FOLLOWING)), true,
+    "Readers must encounter the decimal examples before the focused 1/997 explanation.");
+  assert.equal((await page.locator("#hero-answer").textContent()).trim(), "731", "The focused explanation must retain the answer already shown in the opening decimals.");
+}
+
 async function exerciseControls(page, exhaustive) {
-  await page.locator("#reveal").click();
+  await page.locator("#reveal").focus();
+  await page.locator("#reveal").press("Enter");
   assert.equal((await page.locator("#hero-answer").textContent()).trim(), "731");
+  assert.equal(await page.evaluate(() => document.activeElement?.id), "carry", "The explanation button must move keyboard focus to the carry section.");
   await assertPosition(page, 6);
   await page.locator("#position").focus();
   await page.locator("#position").press("ArrowRight");
@@ -243,8 +283,12 @@ try {
       await loadOfflineArtifact(page);
       await page.getByRole("heading", { level: 1 }).waitFor();
       await assertPageFits(page);
+      await assertOpeningGallery(page);
       if ([320, 768].includes(width) && colorScheme === "light") {
         await page.screenshot({ path: screenshotPath(`${width}-top.png`) });
+      }
+      if ([320, 768, 1440].includes(width) && colorScheme === "light") {
+        await page.locator("#specimens").screenshot({ path: screenshotPath(`${width}-opening-gallery.png`) });
       }
       await exerciseControls(page, engine === "chromium" && width === 1440 && colorScheme === "light");
       await page.screenshot({ path: screenshotPath(`${width}-${colorScheme}.png`), fullPage: true });
@@ -273,6 +317,7 @@ try {
   });
   const fallbackPage = await fallback.newPage();
   await loadOfflineArtifact(fallbackPage);
+  await assertOpeningGallery(fallbackPage);
   assert.equal((await fallbackPage.locator("#hero-answer").textContent()).trim(), "731");
   for (const selector of ["#reveal", "#previous", "#animate-split", "#cycle-later"]) {
     assert.equal(await fallbackPage.locator(selector).isVisible(), false, `${selector} should be hidden when JavaScript is disabled.`);
@@ -283,6 +328,7 @@ try {
   assert.match(await fallbackPage.locator(".geometry-static").textContent(), /0000, 0000, 0001, 0003/);
   await assertPageFits(fallbackPage);
   await fallbackPage.screenshot({ path: screenshotPath("320-no-javascript.png"), fullPage: true });
+  await fallbackPage.locator("#specimens").screenshot({ path: screenshotPath("320-opening-gallery-no-javascript.png") });
   await fallback.close();
   console.log(`PASS ${engine} 320px without JavaScript: readable examples, hidden inactive controls, native disclosures, layout bounds.`);
 

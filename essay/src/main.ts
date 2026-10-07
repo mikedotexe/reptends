@@ -8,7 +8,6 @@ const certificates = view.rows.map((_, index) => certifiedPrefix(view.trace, ind
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 const initialPosition = positionFromSearch(window.location.search);
 let selected = initialPosition ?? 6;
-let revealed = initialPosition !== null;
 let animationFrame = 0;
 
 function element<T extends HTMLElement>(id: string): T {
@@ -31,14 +30,6 @@ function word(value: bigint): string {
 }
 function announce(message: string): void {
   put("live-status", message);
-}
-
-function renderReveal(): void {
-  put("hero-answer", revealed ? "731" : "?");
-  put("hero-explanation", revealed
-    ? "729 still fits into three digits. So why did it become 731?"
-    : "Multiply 243 by three. What would you expect next?");
-  put("reveal", revealed ? "Follow the hidden carry ↓" : "Reveal the next group ↗");
 }
 
 function rememberPosition(): void {
@@ -146,8 +137,6 @@ function select(index: number, message: string): void {
 window.addEventListener("popstate", () => {
   const fromURL = positionFromSearch(window.location.search);
   selected = fromURL ?? 6;
-  if (fromURL !== null) revealed = true;
-  renderReveal();
   render("Restored the linked position.");
 });
 
@@ -188,14 +177,9 @@ element("cycle-earlier").addEventListener("click", () => {
   }
 });
 element("reveal").addEventListener("click", () => {
-  if (revealed) {
-    element("carry").scrollIntoView({ behavior: reducedMotion.matches ? "instant" : "smooth" });
-    element("next").focus({ preventScroll: true });
-    return;
-  }
-  revealed = true;
-  renderReveal();
   select(6, "The next group is 731, although the next power of three is 729.");
+  element("carry").scrollIntoView({ behavior: reducedMotion.matches ? "instant" : "smooth" });
+  element("carry").focus({ preventScroll: true });
 });
 element("animate-split").addEventListener("click", () => {
   if (animationFrame) return;
@@ -223,5 +207,4 @@ reducedMotion.addEventListener("change", () => {
 
 initGeometry(element("geometry-app"));
 render();
-renderReveal();
 document.documentElement.classList.add("js");
