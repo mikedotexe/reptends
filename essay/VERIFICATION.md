@@ -1,40 +1,31 @@
-# Verification — essay v1.0.1
+# Verification — essay v1.0.2
 
-Published 6 October 2026 (Pacific time). The current standalone artifact is 75,438 bytes, SHA-256 `29a50ae4f9efda6f9ced09ec13298d8adf0afe10c58c51f3c831f602f2eca425`.
+The standalone artifact is 87,269 bytes, SHA-256 `dde4805aede619f3520c196673c921a997d88caa74edb172a5b5943457898ee9`. The tested source commit is [`14fa261`](https://github.com/mikedotexe/reptends/commit/14fa261a1282458659e8375fd763fc210d78fb0c). Later release-record commits do not change the built page. Earlier verification records are preserved under `releases/v1.0.0/` and `releases/v1.0.1/`.
 
-The tested source commit is [`64df4ed`](https://github.com/mikedotexe/reptends/commit/64df4ed8b46301cb50f7f9d083d5b3bf04feb838). Later release-record commits do not change the built page. The original first-edition artifact and its [verification record](releases/v1.0.0/VERIFICATION.md) are preserved in `releases/v1.0.0/`.
+## Opening comparison
 
-## Arithmetic and reader-facing changes
+The essay now begins with sixteen actual decimal groups each of 1/97, 1/997, and 1/9997. Their first four, six, and eight groups respectively follow powers of three. The first corrections are 81 → 83, 729 → 731, and 6561 → 6562. Each example continues into later groups before the reader reaches the focused 1/997 explanation.
 
-- 38 arithmetic, artifact, and navigation tests pass; strict TypeScript checking and the single-file build pass.
-- All 332 main positions agree with ordinary division; all 333 finite boundaries balance exactly. The three inherited arithmetic modules remain byte-for-byte copies of their research source.
-- The tail explanation states its units explicitly: at the seventh group, the later contributions total `2187/997 = 2 + 193/997`. The whole 2 changes 729 to 731. The following printed group is 193 after the previous-carry adjustment.
-- The minimal decimal period remains 166 digits; 166 three-digit groups span 498 decimal positions.
-- Mike's signed origin note uses his supplied account of the widening groups and “number salad.” Source and feedback links point to the public repository.
-- Shared links use group numbers 1–332, reject malformed/ambiguous input, preserve linked positions through browser history, and offer a selectable input when clipboard access is unavailable.
+The preserved exact recurrence engine generates these examples at build time. Independent digit-by-digit long division checks every displayed digit, including initial zeros and correction boundaries. The comparison is present in the standalone HTML and readable without JavaScript. Text labels, solid/dotted borders, and an outline accompany its colors.
 
-## Browser verification
+The 1/997 comparison now shows 731 immediately. Its explanation button selects group 7, scrolls to the carry explanation, and moves keyboard focus to that section. Shared-group links and the main position control retain their existing behavior.
 
-[Essay browser checks passed](https://github.com/mikedotexe/reptends/actions/runs/37549631826) on Ubuntu 24.04 for Chromium 151, Firefox 153, and WebKit 26.5. Each job passed all 38 tests, typechecking, build, and its browser suite. Local Chromium and WebKit suites also passed.
+## Arithmetic and browser verification
 
-Coverage includes narrow/mobile, tablet, and desktop layouts; keyboard controls; reduced and normal motion; every curated geometry slice; initial zero groups; large-integer disclosures; no-JavaScript content; shared-link bounds, clipboard success/fallback, and Back/Forward; and zero additional asset requests or browser errors. Chromium checks every one of the 332 UI positions. WebKit loads the local file before enabling Playwright's offline emulator, then performs all interactions offline; its file-navigation limitation does not affect the self-contained artifact.
+All 42 arithmetic, artifact, and navigation tests pass, along with strict TypeScript checking and the standalone build. The three inherited arithmetic modules are unchanged. All 332 main positions and 333 finite boundaries retain their exact division and residual checks; the minimal decimal period remains 166 digits, while 166 three-digit groups span 498 decimal positions.
 
-WebKit provides coverage of Safari's engine, not a separate native Safari application test. The local Firefox build cannot start on this macOS version; the passing Linux Firefox job supplies that coverage. Carry, personal-note, and sharing-fallback screenshots at 320 and 1440 px were visually inspected under `qa/`.
+Local Chromium and WebKit full browser suites passed against this artifact. Gallery crops were visually inspected at 320, 768, and 1440 px, including 320 px without JavaScript. All sixteen groups in every example remain visible and wrap only between groups. The checks also cover keyboard navigation, reduced and normal motion, geometry, large integers, shared links and history, clipboard fallback, and absence of external asset requests and browser errors.
 
-## Publication, DNS, and access
+[GitHub browser checks passed](https://github.com/mikedotexe/reptends/actions/runs/37555219636) on Ubuntu 24.04 for Chromium, Firefox, and WebKit. Every job passed the 42 tests, typechecking, build, and its browser suite. All three CI builds produced the same 87,269-byte standalone file size as the reviewed local artifact.
 
-The narrowed `reptends` profile uploaded only `index.html`; CloudFront invalidation completed. Ordinary system DNS now resolves without overrides, with both A and AAAA records. `node deploy/check-dns.mjs` and `npm run test:live` pass:
+WebKit covers Safari's engine, not a separate native Safari application test. The local Firefox build cannot start on this macOS version; Linux CI supplies Firefox coverage.
 
-- Trusted HTTPS returns the exact reviewed artifact at `/`, `/index.html`, and `/?group=8`.
-- HTTP returns 301 to HTTPS while preserving the group query.
-- An unmodified Chromium visit to `http://reptends.mikedotexe.com/?group=8#carry` reaches the HTTPS URL, retains the fragment, and selects group 8 with output 193.
-- The live reveal, next/reset, 166-group jump, and cube controls work without extra requests or browser errors.
-- Anonymous S3 access remains denied with 403. The deployer retains only this object's upload permission and this distribution's invalidation permissions.
+## Publication
 
-Current deployment IDs and evidence are in `deploy/hosting.json` and `deploy/live-verification.json`; the [release manifest](releases/v1.0.1/manifest.json) records the source commit, artifact hash, and browser run.
+Published 6 October 2026 (Pacific time), with CloudFront invalidation completed. The narrowed deployer uploaded only `index.html`. `node deploy/check-dns.mjs`, `python3 deploy/aws_site.py verify --target live`, and `npm run test:live` passed: ordinary DNS resolves; trusted HTTPS serves the exact reviewed artifact at `/`, `/index.html`, and `/?group=8`; HTTP returns 301 to HTTPS while preserving the group query; anonymous S3 access returns 403. Live controls work without additional asset requests or browser errors. Refreshing the existing in-app browser tab visibly confirmed all three opening examples followed by the 1/997 explanation.
 
-## Outstanding evidence and inherited repository checks
+Current resource IDs and publication evidence are in `deploy/hosting.json` and `deploy/live-verification.json`. The release manifest is `releases/v1.0.2/manifest.json`.
 
-Actual fresh-reader feedback is **pending**. [READER-CHECK.md](READER-CHECK.md) supplies the short, uncoached protocol and a blank response record. Neither an AI review nor browser automation is reported as human comprehension evidence.
+## Outstanding evidence
 
-The separate, older [repository CI](https://github.com/mikedotexe/reptends/actions/runs/37549631750) has pre-existing failures outside the essay: Yarn 1.22.22 is invoked during cache setup before Corepack enables the old site's required Yarn 4.12.0, and six generated research documentation surfaces have registry drift. The baseline `ae9f4d9` has the same Site Build annotation; comparing both commits with the unchanged registry renderer produces the same six documentation mismatches. The old research code, site, Lean files, and CI workflow were not changed by this release.
+Fresh-reader feedback remains pending; the protocol is in [READER-CHECK.md](READER-CHECK.md). Automated or AI checks do not substitute for human comprehension evidence. The older repository CI has unrelated, pre-existing Yarn bootstrap and generated-documentation failures, documented in the [v1.0.1 verification record](releases/v1.0.1/VERIFICATION.md); this change does not modify that research code or workflow.
