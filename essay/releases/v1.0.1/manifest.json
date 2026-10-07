@@ -1,0 +1,15 @@
+{
+  "version": "1.0.1",
+  "source_commit": "64df4ed8b46301cb50f7f9d083d5b3bf04feb838",
+  "bytes": 75438,
+  "sha256": "29a50ae4f9efda6f9ced09ec13298d8adf0afe10c58c51f3c831f602f2eca425",
+  "published_at": "2026-10-07T00:02:41.799793+00:00",
+  "verified_at": "2026-10-07T00:03:36.918834+00:00",
+  "ci": "https://github.com/mikedotexe/reptends/actions/runs/37549631826",
+  "browsers": [
+    "Chromium 151",
+    "Firefox 153",
+    "WebKit 26.5"
+  ],
+  "human_reader_feedback": "pending"
+}

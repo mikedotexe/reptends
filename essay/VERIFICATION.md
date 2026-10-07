@@ -1,42 +1,40 @@
-# First-release verification — 6 October 2026
+# Verification — essay v1.0.1
 
-Reviewed artifact: `dist/index.html`, 64,812 bytes.
+Published 6 October 2026 (Pacific time). The current standalone artifact is 75,438 bytes, SHA-256 `29a50ae4f9efda6f9ced09ec13298d8adf0afe10c58c51f3c831f602f2eca425`.
 
-SHA-256: `ceb9acdf01c7588b469a02a6361f74f648b36865248c6f13a6a1ad3758ac0ce6`
+The tested source commit is [`64df4ed`](https://github.com/mikedotexe/reptends/commit/64df4ed8b46301cb50f7f9d083d5b3bf04feb838). Later release-record commits do not change the built page. The original first-edition artifact and its [verification record](releases/v1.0.0/VERIFICATION.md) are preserved in `releases/v1.0.0/`.
 
-## Arithmetic and build
+## Arithmetic and reader-facing changes
 
-- `npm run typecheck`: passed.
-- `npm test`: 36 tests passed, including all 332 displayed 1/997 steps against independent ordinary division and all 333 finite boundaries.
-- The first correction is 729 + 2 = 731. The following group is 2187 + 6 − 1000 × 2 = 193.
-- Remainder/output return after 166 three-digit groups. Their 498 decimal positions contain three minimal 166-digit decimal periods.
-- Square/cube coefficients and ordered contribution counts pass; one/two initial zero groups are preserved. Carrying is explicitly separate from collecting coefficients.
-- Three copied arithmetic modules match their original research sources byte-for-byte.
-- Build emits one HTML file with inline CSS/JavaScript and SVG diagrams. Artifact checks reject external resources and common credential patterns.
-- Deployment tooling: seven tests passed, covering publication gates, resumability, preservation of other credential profiles, and the live-verification gate for permission reduction.
+- 38 arithmetic, artifact, and navigation tests pass; strict TypeScript checking and the single-file build pass.
+- All 332 main positions agree with ordinary division; all 333 finite boundaries balance exactly. The three inherited arithmetic modules remain byte-for-byte copies of their research source.
+- The tail explanation states its units explicitly: at the seventh group, the later contributions total `2187/997 = 2 + 193/997`. The whole 2 changes 729 to 731. The following printed group is 193 after the previous-carry adjustment.
+- The minimal decimal period remains 166 digits; 166 three-digit groups span 498 decimal positions.
+- Mike's signed origin note uses his supplied account of the widening groups and “number salad.” Source and feedback links point to the public repository.
+- Shared links use group numbers 1–332, reject malformed/ambiguous input, preserve linked positions through browser history, and offer a selectable input when clipboard access is unavailable.
 
-## Browser acceptance
+## Browser verification
 
-Automated checks used Chromium through Playwright, loading the file with the network offline:
+[Essay browser checks passed](https://github.com/mikedotexe/reptends/actions/runs/37549631826) on Ubuntu 24.04 for Chromium 151, Firefox 153, and WebKit 26.5. Each job passed all 38 tests, typechecking, build, and its browser suite. Local Chromium and WebKit suites also passed.
 
-- 320, 360, 768, and 1440 px viewports, with light and dark system preferences.
-- All 332 UI positions checked against the exact engine; boundary positions repeated across viewport sizes.
-- Reveal, Previous/Next, First change, and forward/backward cycle interactions.
-- Keyboard range changes, rotation controls, and native disclosures.
-- Every square/cube slice, initial zero groups, transformed diagrams, and coefficient counts.
-- Reduced motion; normal animation movement, completion, restart, and cancellation when the main selection changes.
-- All disclosures open at the largest integer on a 320 px screen, with no horizontal page overflow.
-- No JavaScript: examples, geometry prose, and native disclosures remain readable; inactive controls are hidden.
-- No browser errors and no external resource requests.
+Coverage includes narrow/mobile, tablet, and desktop layouts; keyboard controls; reduced and normal motion; every curated geometry slice; initial zero groups; large-integer disclosures; no-JavaScript content; shared-link bounds, clipboard success/fallback, and Back/Forward; and zero additional asset requests or browser errors. Chromium checks every one of the 332 UI positions. WebKit loads the local file before enabling Playwright's offline emulator, then performs all interactions offline; its file-navigation limitation does not affect the self-contained artifact.
 
-Full-page screenshots and viewport crops are under `qa/`. Desktop, tablet, phone opening, and large-integer views were visually inspected. Browser coverage is Chromium; other browser engines have not been separately tested.
+WebKit provides coverage of Safari's engine, not a separate native Safari application test. The local Firefox build cannot start on this macOS version; the passing Linux Firefox job supplies that coverage. Carry, personal-note, and sharing-fallback screenshots at 320 and 1440 px were visually inspected under `qa/`.
 
-## Publication
+## Publication, DNS, and access
 
-The deployment manifest `deploy/hosting.json` records resource identifiers, uploaded artifact hash, invalidation, and DNS changes. The deployment guide records the checks and permission reduction after live verification. No credentials are included in either record.
+The narrowed `reptends` profile uploaded only `index.html`; CloudFront invalidation completed. Ordinary system DNS now resolves without overrides, with both A and AAAA records. `node deploy/check-dns.mjs` and `npm run test:live` pass:
 
-Live checks passed: valid HTTPS at `/` and `/index.html`, exact artifact SHA-256, HTTP 301 to HTTPS, and anonymous S3 access denied with 403. Authoritative Route 53 nameservers, Cloudflare DNS, and Google DNS resolve the A/AAAA aliases. The machine's default resolver initially retained its pre-launch negative answer; live verification used a process-scoped public DNS lookup with the true hostname, Host header, SNI, and certificate validation retained.
+- Trusted HTTPS returns the exact reviewed artifact at `/`, `/index.html`, and `/?group=8`.
+- HTTP returns 301 to HTTPS while preserving the group query.
+- An unmodified Chromium visit to `http://reptends.mikedotexe.com/?group=8#carry` reaches the HTTPS URL, retains the fragment, and selects group 8 with output 193.
+- The live reveal, next/reset, 166-group jump, and cube controls work without extra requests or browser errors.
+- Anonymous S3 access remains denied with 403. The deployer retains only this object's upload permission and this distribution's invalidation permissions.
 
-`npm run test:live` passed over the public site: reveal 731, next group 193, reset, 166-group return with the enlarged 83-digit power, and the cube face view. There were no additional asset requests or browser errors. The live desktop viewport was also inspected in `qa/live-desktop.png`.
+Current deployment IDs and evidence are in `deploy/hosting.json` and `deploy/live-verification.json`; the [release manifest](releases/v1.0.1/manifest.json) records the source commit, artifact hash, and browser run.
 
-After live verification, the administrator attached `ReptendsPublish` and detached `ReptendsBootstrap`. The deployer now has only uploads to this bucket's `index.html` and invalidation creation/status for the one distribution. Nine effective IAM permission checks passed, including denials for other objects, other distributions, DNS edits, and IAM changes. The narrowed profile successfully read the completed invalidation. Evidence is in `deploy/publisher-effective-permissions.json` and the deployment manifest.
+## Outstanding evidence and inherited repository checks
+
+Actual fresh-reader feedback is **pending**. [READER-CHECK.md](READER-CHECK.md) supplies the short, uncoached protocol and a blank response record. Neither an AI review nor browser automation is reported as human comprehension evidence.
+
+The separate, older [repository CI](https://github.com/mikedotexe/reptends/actions/runs/37549631750) has pre-existing failures outside the essay: Yarn 1.22.22 is invoked during cache setup before Corepack enables the old site's required Yarn 4.12.0, and six generated research documentation surfaces have registry drift. The baseline `ae9f4d9` has the same Site Build annotation; comparing both commits with the unchanged registry renderer produces the same six documentation mismatches. The old research code, site, Lean files, and CI workflow were not changed by this release.
