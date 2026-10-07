@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f3eb">
+  <meta name="description" content="Powers of three hide inside 1/997. Follow the pattern through carrying, repeating decimals, and the geometry of multiplication. An interactive essay.">
+  <meta name="author" content="Mike Purvis">
+  <meta name="dcterms.created" content="2026-10-06">
+  <title>Where Did the Pattern Go? · An interactive essay</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2317685b'/%3E%3Ctext x='32' y='46' text-anchor='middle' font-family='Georgia' font-size='47' fill='%23f6f3eb'%3E3%3C/text%3E%3C/svg%3E">
+  <!-- APP_CSS -->
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to the essay</a>
+<header class="masthead wrap">
+  <a href="#" class="wordmark"><span class="mark" aria-hidden="true">↗</span> PATTERNS IN PLAIN SIGHT</a>
+  <span class="mast-note">An interactive field note</span>
+</header>
+<main id="main">
+  <section class="hero wrap" aria-labelledby="page-title">
+    <div class="hero-copy">
+      <p class="eyebrow">A small fraction. A surprisingly large story.</p>
+      <h1 id="page-title">Where did<br>the pattern <em>go?</em></h1>
+      <p class="lede">A decimal starts counting in powers of three. Then it seems to lose the thread. Let’s slow it down and look inside.</p>
+      <p class="essay-byline">By <a href="#origin-note">Mike Purvis</a> <span aria-hidden="true">·</span> First edition, <time datetime="2026-10-06">October 6, 2026</time></p>
+      <a class="text-link" href="#carry">Follow the arithmetic <span aria-hidden="true">↓</span></a>
+    </div>
+    <div class="hero-specimen">
+      <div class="specimen-top"><span class="small-label">SPECIMEN 01</span><span class="fraction"><span>1</span><span>997</span></span></div>
+      <p class="specimen-caption">Read the decimal in groups of three.</p>
+      <div class="digit-ribbon" aria-label="The first six groups are 001, 003, 009, 027, 081, 243">
+        <span>001</span><span>003</span><span>009</span><span>027</span><span>081</span><span>243</span>
+      </div>
+      <div class="rhythm" aria-hidden="true"><span>× 3</span><span>× 3</span><span>× 3</span><span>× 3</span><span>× 3</span></div>
+      <div class="prediction">
+        <div><span class="small-label">YOU MIGHT EXPECT</span><strong class="expected">729</strong></div>
+        <span class="prediction-arrow" aria-hidden="true">→</span>
+        <div><span class="small-label">THE DECIMAL SAYS</span><strong id="hero-answer" class="answer">731</strong></div>
+      </div>
+      <button id="reveal" class="button primary enhancement" type="button">Reveal the next group <span aria-hidden="true">↗</span></button>
+      <p id="hero-explanation" class="specimen-foot">729 still fits into three digits. So why did it become 731?</p>
+    </div>
+    <div class="hero-bottom"><span>Nothing random happened.</span><span>The way we write the number has hidden how it was built.</span></div>
+  </section>
+  <nav class="chapter-nav wrap" aria-label="Chapters">
+    <a href="#carry"><span>01</span> The hidden carry</a>
+    <a href="#repeat"><span>02</span> The returning remainder</a>
+    <a href="#geometry"><span>03</span> Multiplication, in pieces</a>
+    <a href="#research"><span>↗</span> The mathematics</a>
+  </nav>
+  <section id="carry" class="chapter wrap" aria-labelledby="carry-title">
+    <div class="chapter-heading"><span class="chapter-number">01 / LOOK CLOSER</span><h2 id="carry-title">The pattern kept going.<br>Its contributions overlapped.</h2></div>
+    <div class="prose">
+      <p>The clue is a small gap: <strong>997 is three less than 1000.</strong> That gives us a way to assemble its reciprocal from powers of three:</p>
+      <div class="series" aria-label="One over 997 equals one over 1000, plus three over 1000 squared, plus nine over 1000 cubed, and so on">
+        <span class="fraction"><span>1</span><span>997</span></span><span>=</span>
+        <span class="fraction"><span>1</span><span>1000</span></span><span>+</span>
+        <span class="fraction"><span>3</span><span>1000²</span></span><span>+</span>
+        <span class="fraction"><span>9</span><span>1000³</span></span><span>+</span><span>…</span>
+      </div>
+      <p>These are amounts we <em>add</em>, not labels we simply join together. Each amount is smaller than the one before it, even as its numerator grows. Eventually, the addition reaches back into earlier groups.</p>
+    </div>
+    <aside id="carry-tail-note" class="tail-note" aria-labelledby="tail-title">
+      <div class="tail-copy">
+        <span class="small-label">WHERE THE EXTRA 2 COMES FROM</span>
+        <h3 id="tail-title">The rest of the sum reaches back.</h3>
+        <p>At the seventh group, the raw term is 729. Measure everything that follows in units of that same place:</p>
+        <p class="tail-equation"><span>2187/1000 + 6561/1000² + …</span><span>= 2187/997</span><span>= <strong>2</strong> + 193/997</span></p>
+        <p>All those smaller contributions add up to <strong>two whole units, plus a fraction.</strong> The whole 2 changes 729 into 731. The fractional part continues into later groups.</p>
+      </div>
+      <div class="tail-illustration">
+        <svg viewBox="0 0 420 214" role="img" aria-labelledby="tail-svg-title tail-svg-desc">
+          <title id="tail-svg-title">Two whole units carry back into group 7</title>
+          <desc id="tail-svg-desc">The later contributions total 2 plus 193 over 997 in units of group 7. The whole 2 carries left to change 729 to 731. The fractional part stays to the right.</desc>
+          <text class="tail-svg-label" x="310" y="23" text-anchor="middle">LATER CONTRIBUTIONS</text>
+          <rect class="tail-source" x="217" y="37" width="186" height="58" rx="4"/>
+          <text class="tail-svg-sum" x="310" y="73" text-anchor="middle">2 + 193/997</text>
+          <path class="tail-arrow" d="M 247 96 C 247 136, 135 94, 102 132"/>
+          <path class="tail-arrow" d="m 102 132 3 -13 m -3 13 13 -3"/>
+          <text class="tail-svg-label" x="109" y="106" text-anchor="middle">CARRY 2 LEFT</text>
+          <rect class="tail-destination" x="17" y="145" width="180" height="52" rx="4"/>
+          <text class="tail-svg-result" x="107" y="178" text-anchor="middle">729 + 2 = 731</text>
+          <text class="tail-svg-label" x="310" y="154" text-anchor="middle">FRACTIONAL PART</text>
+          <text class="tail-svg-rest" x="310" y="182" text-anchor="middle">193/997 remains</text>
+        </svg>
+        <p class="fine-print">This is the first correction. The next step also accounts for the carry we have already used.</p>
+      </div>
+    </aside>
+    <div class="workbench" aria-label="Unfolded terms and printed groups">
+      <div class="workbench-top"><div><span class="small-label">TWO READINGS · ONE NUMBER</span><h3>Unfold. Then settle.</h3></div><span class="base-badge">Fixed place step: 1000</span></div>
+      <div class="position-controls enhancement">
+        <button id="previous" class="button icon-button" type="button" aria-label="Previous group">←</button>
+        <div class="position-slider"><label for="position">Selected group <strong id="position-label">7 of 332</strong></label><input id="position" type="range" min="0" max="331" value="6" step="1"></div>
+        <button id="next" class="button icon-button" type="button" aria-label="Next group">→</button>
+        <button id="reset" class="button subtle" type="button">First change</button>
+      </div>
+      <div class="position-sharing enhancement">
+        <button id="share-position" class="button small" type="button" aria-describedby="share-help">Copy a link to this group</button>
+        <span id="share-help">Keep this exact step in the story.</span>
+        <label id="share-link-label" class="share-link-fallback" for="share-link" hidden>Copy this link:<input id="share-link" type="text" readonly spellcheck="false" aria-label="Link to the selected group"></label>
+      </div>
+      <div class="comparison" id="comparison">
+        <div class="compare-head"><span></span><span id="place-before">Group 6</span><span id="place-current">Group 7</span><span id="place-after">Group 8</span></div>
+        <div class="compare-row raw-row"><div class="row-label"><span class="color-key raw-key"></span>Growing terms<small>The construction</small></div><span id="raw-before">243</span><strong id="raw-current">729</strong><span id="raw-after">2187</span></div>
+        <div class="compare-row settled-row"><div class="row-label"><span class="color-key settled-key"></span>Printed groups<small>The familiar decimal</small></div><span id="word-before">243</span><strong id="word-current">731</strong><span id="word-after">193</span></div>
+      </div>
+      <p class="comparison-note">A wider written term keeps its original place value. More ink does not mean more decimal places.</p>
+      <div class="carry-account">
+        <span class="small-label">THE EXACT ADJUSTMENT AT THIS GROUP</span>
+        <p id="carry-equation" class="equation">729 + 2 − 1000 × 0 = 731</p>
+        <p id="carry-description">Two whole units arrive from the remaining tail. No earlier carry needs exchanging yet.</p>
+        <p id="abbreviation-note" class="fine-print" hidden>Long integers are shortened in this view. Expand the exact values below to inspect every digit.</p>
+      </div>
+      <details class="math-note"><summary>Inspect this step and its exact balance</summary>
+        <p>The companion <a href="https://github.com/mikedotexe/reptends/blob/main/docs/PROOF_STATUS_ATLAS.md">proof-status atlas</a> labels the geometric-series identity (<code>series_q_weighted_identity</code>) and incoming-carry formula (<code>incoming_carry_position_formula</code>) <strong>reproved-here</strong>. This example uses (base, N, m, B, q, k, L) = (10, 997, 3, 1000, 1, 3, 166), where B = qN + k and L counts groups in a cycle.</p>
+        <p>The incoming carry accounts for the entire remaining tail at this boundary. In later groups, we must also remove the earlier carry’s contribution.</p>
+        <dl class="exact-values"><div><dt>Raw term</dt><dd id="exact-raw">729</dd></div><div><dt>Incoming carry</dt><dd id="exact-carry">2</dd></div><div><dt>Previous carry</dt><dd id="exact-previous">0</dd></div><div><dt>Ordinary division</dt><dd id="exact-division">1000 × 729 = 997 × 731 + 193</dd></div></dl>
+        <p id="prefix-check">After 7 terms, the raw prefix leaves the exact balance 2187 / (997 × 1000⁷). Settling it adds 2 to the prefix’s integer numerator and leaves remainder 193.</p>
+        <p class="fine-print">For this unit numerator, every displayed prefix is checked using the integer identity D × A + x<sub>M</sub> = B<sup>M</sup>, where A is the raw prefix read as one weighted integer and x<sub>M</sub> is its remaining lifted state.</p>
+      </details>
+    </div>
+    <div class="split-layout">
+      <div class="prose"><h3>Make whole groups.<br>Keep the leftover.</h3><p>Ordinary long division carries a small piece of state forward: the <strong>remainder</strong>. At the first change, that remainder is 729.</p><p>Because 1000 = 997 + 3, tripling the remainder reveals the next move. Complete groups of 997 contribute to what we print; the leftover continues the calculation.</p><p class="margin-note">At this first boundary:<br><strong>2187 = 2 × 997 + 193.</strong><br>We print 729 + 2 = 731. The next remainder is 193.</p></div>
+      <div class="split-card">
+        <div class="split-top"><span class="small-label">THE CURRENT REMAINDER, TRIPLED</span><button id="animate-split" class="button small enhancement" type="button">Animate split</button></div>
+        <p id="local-equation" class="local-equation">3 × 729 = 2187</p>
+        <svg id="split-svg" viewBox="0 0 600 200" role="img" aria-label="2187 splits into two full groups of 997 and a remainder of 193"><rect x="12" y="22" width="182" height="48" rx="5" fill="#e6d3b1"/><rect x="200" y="22" width="182" height="48" rx="5" fill="#e6d3b1"/><rect x="388" y="22" width="36" height="48" rx="5" fill="#8db8a9"/><text x="103" y="54" text-anchor="middle">997</text><text x="291" y="54" text-anchor="middle">997</text><text x="406" y="102" text-anchor="middle">193 left</text></svg>
+        <div class="split-outcomes"><div><span class="small-label">PRINTED GROUP</span><strong id="local-word">731</strong><span id="local-addition">729 + 2</span></div><div><span class="small-label">NEXT REMAINDER</span><strong id="local-remainder">193</strong><span>carried into the next step</span></div></div>
+        <p class="fine-print">This split uses the bounded remainder. Its local group count is different from the full growing carry in the comparison above.</p>
+      </div>
+    </div>
+  </section>
+  <section id="repeat" class="chapter wrap" aria-labelledby="repeat-title">
+    <div class="chapter-heading"><span class="chapter-number">02 / FOLLOW THE LEFTOVER</span><h2 id="repeat-title">Something can grow forever<br>and still keep coming back.</h2></div>
+    <div class="prose"><p>The powers of three have unlimited room to grow. A remainder after division by 997 has only <strong>997 possible values: 0 through 996.</strong> For this fraction, the nonzero remainders trace a repeating route.</p><p>When a remainder returns, the same next step follows. That is why the decimal repeats. The clean powers at its beginning were already part of the cycle.</p></div>
+    <div class="orbit-card">
+      <div class="orbit-top"><span class="small-label">THE SAME SHARED POSITION</span><span id="orbit-position">Group 7 · first trip around</span></div>
+      <div class="orbit-readout"><div><span class="small-label">GROWING POWER</span><strong id="orbit-power">729</strong><small id="power-size">3⁶ · 3 digits</small></div><div><span class="small-label">BOUNDED REMAINDER</span><strong id="orbit-remainder">729</strong><small>between 0 and 996</small></div></div>
+      <div class="remainder-track" aria-hidden="true"><span class="track-start">0</span><div id="remainder-dot" class="remainder-dot"></div><span class="track-end">996</span></div>
+      <div class="cycle-actions enhancement"><button id="cycle-later" class="button primary" type="button">One cycle later <span aria-hidden="true">↗</span></button><button id="cycle-earlier" class="button subtle" type="button" hidden>One cycle earlier</button><span>+166 three-digit groups</span></div>
+      <p id="cycle-message" class="orbit-message">The growing power changes. After one full group cycle, the remainder and printed group return.</p>
+      <details class="math-note"><summary>See the whole power and check the period</summary><p id="whole-power" class="long-integer">729</p><p>The <a href="https://github.com/mikedotexe/reptends/blob/main/docs/PROOF_STATUS_ATLAS.md">proof-status atlas</a> records digit periodicity (<code>digit_periodicity</code>) as <strong>reproved-here</strong> and the order of a power (<code>power_order_formula</code>) as <strong>classical</strong>.</p><p>The shortest cycle measured in three-digit groups is 166 steps. That spans 498 decimal places. The shortest decimal-digit cycle is also 166 steps, so those 498 places contain three copies of it.</p><p class="formula">ord₉₉₇(1000) = ord₉₉₇(10) / gcd(ord₉₉₇(10), 3) = 166.</p><p>Keeping both quotient and remainder recovers the growing integer exactly. Keeping only the remainder forgets which whole multiple was removed, while retaining everything needed for the next division step.</p></details>
+    </div>
+    <p class="pull-quote">The growing terms reveal the construction.<br><em>The remainders reveal the return.</em></p>
+  </section>
+  <section id="geometry" class="chapter wrap" aria-labelledby="geometry-title">
+    <div class="chapter-heading"><span class="chapter-number">03 / ANOTHER WAY TO LOOK</span><h2 id="geometry-title">What if multiplication<br>were something you could see?</h2></div>
+    <div class="prose"><p>Start with another simple list: <strong>1/9999 = 0.0001 0001 0001 …</strong>. We have chosen four-digit groups here because 9999 is one less than 10000.</p><p>Squaring pairs every term in one copy with every term in another. A pair from positions 2 and 3 lands in position 5. The pairs form a grid; pairs with the same sum lie along a diagonal.</p><p><strong>Counting numbers count how many products arrive at each place.</strong> Cubing adds a third choice. The resulting slices contain triangular numbers: 1, 3, 6, 10, …</p></div>
+    <details class="geometry-disclosure"><summary><span>Open the geometry of multiplication</span><span aria-hidden="true">＋</span></summary>
+      <div id="geometry-app" class="enhancement"></div>
+      <div class="geometry-static"><p>For the square, the raw four-digit groups begin <strong>0000, 0001, 0002, 0003, …</strong>. For the cube, they begin <strong>0000, 0000, 0001, 0003, 0006, 0010, …</strong>.</p><p>The initial zeros have a reason: two positive positions cannot sum to 1, and three cannot sum to 1 or 2. These early coefficients fit unchanged; later contributions require carrying too.</p></div>
+      <details class="math-note"><summary>From a grid to a coefficient</summary><p>Each factor is the convergent geometric series Σᵢ≥₁ B⁻ⁱ, with B = 10000. Multiplication collects ordered pairs i + j = s, or ordered triples i + j + k = s. There are s − 1 pairs and (s − 1)(s − 2)/2 triples at place s, once their respective starting positions are reached.</p><p>This is the Cauchy product of absolutely convergent series. Collecting contributions produces raw coefficients; carrying normalizes those coefficients into ordinary base-B groups. They are separate operations.</p></details>
+    </details>
+  </section>
+  <aside id="origin-note" class="origin-note wrap" aria-labelledby="origin-title">
+    <span class="chapter-number">A NOTE FROM MIKE</span>
+    <h2 id="origin-title">Before the number salad.</h2>
+    <div class="origin-copy">
+      <p>I got curious watching long division produce an eye-catching pattern: powers of the gap between a denominator and the next power of ten. For 997, that gap is 3.</p>
+      <p>As I added more nines to the front of the denominator, it felt as though the “word size” grew while the pattern stayed the same. I could see more of it before the digits turned into number salad.</p>
+      <p>I kept wondering: <em>if it didn’t jumble up, what would the reciprocal be trying to tell us?</em></p>
+      <p>Then we noticed 729 becoming 731. That tiny difference was a clue: something from later in the series was carrying back. Following that clue became this essay.</p>
+    </div>
+    <p class="origin-signature">Mike Purvis <span>· <time datetime="2026-10-06">October 6, 2026</time></span></p>
+    <p class="origin-links"><a href="https://github.com/mikedotexe/reptends/tree/main/essay">Read the source</a><a href="https://github.com/mikedotexe/reptends/issues/new?title=Essay%20feedback">Share a thought or report a mistake</a></p>
+  </aside>
+  <section id="research" class="chapter research wrap" aria-labelledby="research-title">
+    <div class="chapter-heading"><span class="chapter-number">FOR A CLOSER READING</span><h2 id="research-title">One calculation.<br>Several exact descriptions.</h2></div>
+    <div class="prose"><p>This essay explores a way of explaining established arithmetic. The growing-term notation is an experimental presentation. We make no claim to a new division algorithm or to novelty of the underlying generating-series identities.</p><p>For the status of individual results, see the project’s <a href="https://github.com/mikedotexe/reptends/blob/main/docs/PROOF_STATUS_ATLAS.md">proof-status atlas</a>. The reciprocal-series, incoming-carry, and digit-periodicity claims used above are <strong>reproved-here</strong>; the power-order formula is <strong>classical</strong>. The interactive exposition is <strong>implemented-here</strong>. The general lifted-state formulation and finite-prefix certificates below are explanatory algebraic derivations; their separate formalization remains <strong>open</strong>.</p></div>
+    <details class="research-detail"><summary>The general carry identity</summary><div class="prose"><p>Let B ≥ 2 and D ≥ 2 be integers, and choose coherent integer states x and x′ such that Bx − x′ is divisible by D. Define the raw emission a = (Bx − x′)/D. Write the Euclidean divisions x = Dq + r and x′ = Dq′ + r′, with 0 ≤ r, r′ &lt; D.</p><p class="formula">w = a + q′ − Bq<br>Br = Dw + r′</p><p>The second line is ordinary long division. The first describes exactly how any coherent integer lift yields its printed group. Taking x = r and x′ = r′ gives the canonical lift with both quotient coordinates zero. A recurrence-adapted lift instead exposes simple growing terms.</p><p>For a monic polynomial P(X) = X<sup>d</sup> − c<sub>1</sub>X<sup>d−1</sup> − … − c<sub>d</sub> with integer coefficients, d ≥ 1, and D = P(B) &gt; 1, reduce UX<sup>m</sup> modulo P and evaluate at B. These lifted states produce the seeded recurrence, while Euclidean normalization produces the same groups as division of U/D. Here U is an integer with 0 &lt; U &lt; D, and the initial state is x<sub>0</sub> = U.</p><p>Starting from x<sub>0</sub> = U in [0, D), the first changed group occurs at the first step whose next lifted state leaves [0, D), if such a step occurs. Until that exit, both quotient coordinates are zero; at the exit, q′ becomes nonzero while q is still zero. This need not be exactly one group before a raw term overflows. Signed states require floor division and may produce borrows.</p></div></details>
+    <details class="research-detail"><summary>Why a finite view can still be exact</summary><div class="prose"><p>After M terms, let A = a<sub>0</sub>B<sup>M−1</sup> + ⋯ + a<sub>M−1</sub> be the raw prefix read as one weighted integer, and x<sub>M</sub> its remaining lifted state. With initial state x<sub>0</sub> = U:</p><p class="formula">D × A + x<sub>M</sub> = U × B<sup>M</sup></p><p>The fraction U/D is exactly A/B<sup>M</sup> + x<sub>M</sub>/(D × B<sup>M</sup>). Writing x<sub>M</sub> = Dq<sub>M</sub> + r<sub>M</sub>, with 0 ≤ r<sub>M</sub> &lt; D, settles the prefix to (A + q<sub>M</sub>)/B<sup>M</sup> and leaves r<sub>M</sub>/(D × B<sup>M</sup>).</p><p>The display can therefore stop without pretending the unwritten balance is zero. This finite identity needs no infinite-series convergence assumption. Interpreting the raw terms as an infinite sum does require convergence; the positive examples on this page satisfy it.</p></div></details>
+    <details class="research-detail"><summary>Sources, scope, and further reading</summary><div class="prose"><p>Recurrence generating functions and reciprocal digit patterns have a substantial history. These primary references place the examples in that context:</p><ul class="sources"><li><a href="https://www.fq.math.ca/Scanned/19-1/long.pdf">C. T. Long (1981), “The Decimal Expansion of 1/89 and Related Results”</a> — Fibonacci expansions and finite tails.</li><li><a href="https://www.fq.math.ca/Scanned/23-1/kohler.pdf">G. Köhler (1985), “Generating Functions of Fibonacci-Like Sequences and Decimal Expansions of Some Fractions”</a> — recurrence-based expansions.</li><li><a href="https://www.fq.math.ca/Scanned/25-1/lee.pdf">Jin-Zai Lee and Jia-Sheng Lee (1987), “A Complete Characterization of B-Power Fractions That Can Be Represented as Series of General n-Bonacci Numbers”</a> — related recurrence constructions.</li><li><a href="https://www.fq.math.ca/Scanned/27-5/bicknell.pdf">Marjorie Bicknell-Johnson (1989), “Retrograde Renegades and the Pascal Connection: Repeating Decimals Represented by Fibonacci and Other Sequences Appearing from Right to Left”</a> — recurrence sequences read from the right of repeating decimals.</li></ul><p>Every interactive step uses exact integer arithmetic and is checked against ordinary long division. These checks support the implementation; the identities above provide the mathematical argument. The page does not claim that the full recurrence framework has been formally verified in Lean.</p></div></details>
+  </section>
+</main>
+<footer class="wrap footer"><span class="wordmark">PATTERNS IN PLAIN SIGHT</span><p>A number can be exact in more than one way of seeing.</p><a class="text-link" href="#page-title">Back to the beginning ↑</a></footer>
+<div id="live-status" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+<noscript><p class="noscript wrap">The worked examples and mathematical notes are available above. Enable JavaScript to step through the diagrams.</p></noscript>
+<!-- APP_JS -->
+</body>
+</html>

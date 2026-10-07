@@ -1,0 +1,7 @@
+node_modules/
+dist/
+qa/
+*_accessKeys.csv
+.env
+.env.*
+deploy/.hosting.lock

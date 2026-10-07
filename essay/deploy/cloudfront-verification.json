@@ -1,0 +1,18 @@
+{
+  "hostname": "divsdhaopd86l.cloudfront.net",
+  "verified_at": "2026-10-06T23:38:25.788014+00:00",
+  "sha256": "ceb9acdf01c7588b469a02a6361f74f648b36865248c6f13a6a1ad3758ac0ce6",
+  "https": {
+    "/": {
+      "status": 200,
+      "sha256": "ceb9acdf01c7588b469a02a6361f74f648b36865248c6f13a6a1ad3758ac0ce6"
+    },
+    "/index.html": {
+      "status": 200,
+      "sha256": "ceb9acdf01c7588b469a02a6361f74f648b36865248c6f13a6a1ad3758ac0ce6"
+    }
+  },
+  "http_redirect_status": 301,
+  "http_redirect_location": "https://divsdhaopd86l.cloudfront.net/",
+  "anonymous_s3_status": 403
+}

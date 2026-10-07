@@ -2,6 +2,10 @@
 
 > Long division is best understood here as a remainder orbit plus carry-propagated block normalization.
 
+## Interactive essay
+
+[Where Did the Pattern Go?](https://reptends.mikedotexe.com) is a self-contained public essay about the powers of three inside 1/997, carries, repeating remainders, and the geometry of multiplication. Its source, exact arithmetic tests, and publishing guide are in [essay/](essay/README.md). It builds to one HTML file and can also be read offline.
+
 ## Research Thesis
 
 <!-- THROUGHLINE_RESEARCH_THESIS_START -->

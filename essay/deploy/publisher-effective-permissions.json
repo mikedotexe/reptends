@@ -1,0 +1,50 @@
+{
+  "verified_at": "2026-10-06T23:41:30.261421+00:00",
+  "checks": [
+    {
+      "action": "s3:PutObject",
+      "resource": "arn:aws:s3:::reptends-mikedotexe-com-341982967115/index.html",
+      "decision": "allowed"
+    },
+    {
+      "action": "s3:PutObject",
+      "resource": "arn:aws:s3:::reptends-mikedotexe-com-341982967115/other.html",
+      "decision": "implicitDeny"
+    },
+    {
+      "action": "s3:DeleteObject",
+      "resource": "arn:aws:s3:::reptends-mikedotexe-com-341982967115/index.html",
+      "decision": "implicitDeny"
+    },
+    {
+      "action": "cloudfront:CreateInvalidation",
+      "resource": "arn:aws:cloudfront::341982967115:distribution/E3SFKP3YOOENAP",
+      "decision": "allowed"
+    },
+    {
+      "action": "cloudfront:GetInvalidation",
+      "resource": "arn:aws:cloudfront::341982967115:distribution/E3SFKP3YOOENAP",
+      "decision": "allowed"
+    },
+    {
+      "action": "cloudfront:CreateInvalidation",
+      "resource": "arn:aws:cloudfront::341982967115:distribution/EOTHEREXAMPLE",
+      "decision": "implicitDeny"
+    },
+    {
+      "action": "route53:ChangeResourceRecordSets",
+      "resource": "arn:aws:route53:::hostedzone/ZEBBWSGTKUUP6",
+      "decision": "implicitDeny"
+    },
+    {
+      "action": "cloudfront:CreateDistribution",
+      "resource": "*",
+      "decision": "implicitDeny"
+    },
+    {
+      "action": "iam:CreateUser",
+      "resource": "arn:aws:iam::341982967115:user/other",
+      "decision": "implicitDeny"
+    }
+  ]
+}

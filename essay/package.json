@@ -1,0 +1,23 @@
+{
+  "name": "reptends-pattern-explorer",
+  "version": "1.0.1",
+  "private": true,
+  "type": "module",
+  "description": "An exact, self-contained visual essay about recurrence, carrying, and repeating decimals.",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.ts",
+    "test:browser": "node test/browser.mjs",
+    "test:live": "node test/live.mjs",
+    "typecheck": "tsc --noEmit",
+    "build": "node scripts/build.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.3",
+    "esbuild": "0.25.12",
+    "playwright": "1.62.1",
+    "typescript": "5.9.3"
+  }
+}
