@@ -1,6 +1,6 @@
 # Where Did the Pattern Go?
 
-The canonical website project for [reptends.mikedotexe.com](https://reptends.mikedotexe.com). Three decimal expansions—1/97, 1/997, and 1/9997—first show the powers of three giving way to a jumble of digits. The interactive essay then follows 1/997 through exact carrying, returning remainders, and an optional square/cube geometry of 1/9999.
+The canonical website project for [reptends.mikedotexe.com](https://reptends.mikedotexe.com). Three continuous decimal expansions—1/97, 1/997, and 1/9997—first show the powers of three giving way to a jumble of digits and identify the last clean power in each. The essay then stacks full-width powers to recover the first changed groups through ordinary addition before following 1/997 through exact carrying, returning remainders, and an optional square/cube geometry of 1/9999.
 
 This project lives in the [`essay/` folder of mikedotexe/reptends](https://github.com/mikedotexe/reptends/tree/main/essay). On Mike's machine, `/Users/mikepurvis/other/physics-math-research/site` is a stable symlink to `/Users/mikepurvis/other/reptends-publishing/essay` in a clean publishing checkout. Both paths reach the same files; the original research checkout and its unfinished changes remain intact.
 
@@ -38,8 +38,8 @@ If a local resolver still caches a pre-launch negative answer, set `REPTENDS_DNS
 ## Source map
 
 - `src/template.html`: semantic essay, static examples, native disclosures, references.
-- `src/opening-examples.ts` and `scripts/render-opening.ts`: exact sixteen-group decimal examples, rendered into the HTML at build time and independently checked one decimal digit at a time.
-- `src/opening.css`: the opening comparison and transition into the 1/997 investigation.
+- `src/opening-examples.ts` and `scripts/render-opening.ts`: exact continuous decimal examples and the aligned power stack, rendered into the HTML at build time and independently checked one decimal digit and one addition column at a time.
+- `src/opening.css`: the opening comparison, full-width addition stack, and transition into the 1/997 investigation.
 - `src/styles.css`: editorial layout, responsive sizes, focus styles, reduced motion.
 - `src/main.ts`: shared position, carry split, cycle return, complete integer inspection.
 - `src/navigation.ts`: strict group-link parsing and canonical sharing URLs.
@@ -48,7 +48,7 @@ If a local resolver still caches a pre-launch negative answer, set `REPTENDS_DNS
 - `src/math/`: preserved exact TypeScript engine; see [arithmetic provenance](src/math/PROVENANCE.md).
 - `test/`: inherited arithmetic tests, page-specific contracts, build safeguards, browser checks.
 - `deploy/`: resumable AWS tooling, non-secret resource manifest, and [publishing instructions](deploy/README.md).
-- `releases/v1.0.0/`: original published standalone file and its verified hash, preserved before the finishing pass.
+- `releases/`: versioned publication manifests and preserved verification records.
 - [READER-CHECK.md](READER-CHECK.md): a short uncoached human-reader protocol. Human feedback is pending; automated and AI checks do not substitute for it.
 
 ## Share a particular moment

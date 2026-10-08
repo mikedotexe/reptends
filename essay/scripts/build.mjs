@@ -3,11 +3,11 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { build } from "esbuild";
 import { assertPublishableHtml } from "./validate-artifact.ts";
-import { renderOpeningExamples } from "./render-opening.ts";
+import { renderOpeningExamples, renderPowerStack } from "./render-opening.ts";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const template = await readFile(resolve(root, "src/template.html"), "utf8");
-for (const marker of ["<!-- APP_CSS -->", "<!-- APP_JS -->", "<!-- OPENING_EXAMPLES -->"]) {
+for (const marker of ["<!-- APP_CSS -->", "<!-- APP_JS -->", "<!-- OPENING_EXAMPLES -->", "<!-- POWER_STACK -->"]) {
   if (template.split(marker).length !== 2) {
     throw new Error(`The page template must contain exactly one ${marker} marker.`);
   }
@@ -52,6 +52,7 @@ const script = javascript.outputFiles[0].text.replace(/<\/script/gi, "<\\/script
 const css = stylesheet.outputFiles[0].text.replace(/<\/style/gi, "<\\/style");
 const html = template
   .replace("<!-- OPENING_EXAMPLES -->", () => renderOpeningExamples())
+  .replace("<!-- POWER_STACK -->", () => renderPowerStack())
   .replace("<!-- APP_CSS -->", () => `<style>\n${css}\n</style>`)
   .replace("<!-- APP_JS -->", () => `<script>\n${script}\n</script>`);
 

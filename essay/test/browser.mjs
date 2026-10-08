@@ -75,9 +75,13 @@ async function assertOpeningGallery(page) {
   const gallery = page.locator("#specimens");
   const examples = gallery.locator("article.decimal-example");
   assert.equal(await examples.count(), 3);
-  const expected = [["97", 4], ["997", 6], ["9997", 8]];
+  const expected = [
+    ["97", 4, "27 = 33", "81", "83"],
+    ["997", 6, "243 = 35", "729", "731"],
+    ["9997", 8, "2187 = 37", "6561", "6562"],
+  ];
   for (let index = 0; index < expected.length; index += 1) {
-    const [denominator, matchingGroups] = expected[index];
+    const [denominator, matchingGroups, lastPower, expectedNext, printedNext] = expected[index];
     const example = examples.nth(index);
     assert.equal(await example.getAttribute("data-denominator"), denominator);
     assert.equal(await example.getByRole("heading").textContent(), `1/${denominator}`);
@@ -100,6 +104,13 @@ async function assertOpeningGallery(page) {
       assert.equal(group.printed, group.word, "The visible digits must preserve the serialized groups, including initial zeros.");
       assert(group.visibleWithinExample, "Every printed group must remain visible inside its example, without clipped overflow.");
     }
+    const continuous = (await example.locator(".decimal-expansion").textContent()).trim();
+    assert.equal(continuous, "0." + groups.map(group => group.printed).join("") + "…",
+      "The introduction must show the actual continuous decimal without inserted spaces.");
+    const caption = (await example.locator(".decimal-example-caption").textContent()).replace(/\s+/g, " ").trim();
+    assert.match(caption, new RegExp("Last clean ×3 value: " + lastPower));
+    assert.match(caption, new RegExp("next power is " + expectedNext));
+    assert.match(caption, new RegExp("decimal prints " + printedNext));
   }
   for (const label of ["×3 pattern", "First change", "The “number jumble”"]) {
     assert.equal(await gallery.getByText(label, { exact: true }).isVisible(), true, "Text labels must accompany the gallery colors.");
@@ -107,6 +118,32 @@ async function assertOpeningGallery(page) {
   assert.equal(await gallery.evaluate(element => Boolean(element.compareDocumentPosition(document.querySelector("#focus-997")) & Node.DOCUMENT_POSITION_FOLLOWING)), true,
     "Readers must encounter the decimal examples before the focused 1/997 explanation.");
   assert.equal((await page.locator("#hero-answer").textContent()).trim(), "731", "The focused explanation must retain the answer already shown in the opening decimals.");
+}
+
+async function assertPowerStack(page) {
+  const stack = page.locator("#power-stack");
+  assert.equal(await stack.getByRole("heading", { name: "The “salad” is simple addition." }).isVisible(), true);
+  const table = stack.locator("table.power-stack-table");
+  assert.equal(await table.locator("tbody tr").count(), 8);
+  assert.deepEqual(await table.locator('tbody tr[data-exponent="7"] td').allTextContents(), ["", "", "002", "187", "", "", "", ""]);
+  assert.deepEqual(await table.locator('tbody tr[data-exponent="11"] td').allTextContents(), ["", "", "", "", "", "", "177", "147"]);
+  assert.deepEqual(await table.locator("tfoot td").allTextContents(), ["081", "243", "731", "193", "580", "742", "226", "…"]);
+  for (const addition of ["729 + 002 = 731", "187 + 006 = 193", "561 + 019 = 580", "683 + 059 = 742", "049 + 177 = 226"]) {
+    assert.equal(await stack.getByText(addition, { exact: true }).isVisible(), true);
+  }
+  const scroller = stack.locator(".power-stack-scroll");
+  const scroll = await scroller.evaluate(element => ({ client: element.clientWidth, full: element.scrollWidth }));
+  if (scroll.full > scroll.client) {
+    const lastCellVisible = await scroller.evaluate(element => {
+      element.scrollLeft = element.scrollWidth;
+      const viewport = element.getBoundingClientRect();
+      const last = element.querySelector("tfoot td:last-child").getBoundingClientRect();
+      const visible = last.left >= viewport.left && last.right <= viewport.right + 1;
+      element.scrollLeft = 0;
+      return visible;
+    });
+    assert.equal(lastCellVisible, true, "The complete stack must be reachable by horizontal scrolling.");
+  }
 }
 
 async function exerciseControls(page, exhaustive) {
@@ -284,11 +321,15 @@ try {
       await page.getByRole("heading", { level: 1 }).waitFor();
       await assertPageFits(page);
       await assertOpeningGallery(page);
+      await assertPowerStack(page);
       if ([320, 768].includes(width) && colorScheme === "light") {
         await page.screenshot({ path: screenshotPath(`${width}-top.png`) });
       }
       if ([320, 768, 1440].includes(width) && colorScheme === "light") {
         await page.locator("#specimens").screenshot({ path: screenshotPath(`${width}-opening-gallery.png`) });
+      }
+      if ([320, 1440].includes(width) && colorScheme === "light") {
+        await page.locator("#power-stack").screenshot({ path: screenshotPath(`${width}-power-stack.png`) });
       }
       await exerciseControls(page, engine === "chromium" && width === 1440 && colorScheme === "light");
       await page.screenshot({ path: screenshotPath(`${width}-${colorScheme}.png`), fullPage: true });
@@ -318,6 +359,7 @@ try {
   const fallbackPage = await fallback.newPage();
   await loadOfflineArtifact(fallbackPage);
   await assertOpeningGallery(fallbackPage);
+  await assertPowerStack(fallbackPage);
   assert.equal((await fallbackPage.locator("#hero-answer").textContent()).trim(), "731");
   for (const selector of ["#reveal", "#previous", "#animate-split", "#cycle-later"]) {
     assert.equal(await fallbackPage.locator(selector).isVisible(), false, `${selector} should be hidden when JavaScript is disabled.`);

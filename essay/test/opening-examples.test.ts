@@ -1,7 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { formatWord } from "../src/math/lifts.ts";
-import { OPENING_EXAMPLES } from "../src/opening-examples.ts";
+import {
+  OPENING_EXAMPLES,
+  POWER_STACK,
+  POWER_STACK_RESULT,
+  STACK_FIRST_GROUP,
+  STACK_LAST_GROUP,
+  STACK_RESULT_LAST_GROUP,
+} from "../src/opening-examples.ts";
 
 const expected = [
   {
@@ -72,3 +79,47 @@ for (const fixture of expected) {
     assert(firstChange.raw < example.base, "The correction arrives before this raw term overflows its group.");
   });
 }
+
+test("the opening names the final exact power before every first correction", () => {
+  assert.deepEqual(OPENING_EXAMPLES.map(example => {
+    const last = example.rows[example.firstChangedIndex - 1]!;
+    const changed = example.rows[example.firstChangedIndex]!;
+    return {
+      denominator: example.denominator,
+      cleanGroups: example.firstChangedIndex,
+      lastPower: last.raw,
+      lastExponent: example.firstChangedIndex - 1,
+      expectedNext: changed.raw,
+      printedNext: changed.word,
+    };
+  }), [
+    { denominator: 97n, cleanGroups: 4, lastPower: 27n, lastExponent: 3, expectedNext: 81n, printedNext: 83n },
+    { denominator: 997n, cleanGroups: 6, lastPower: 243n, lastExponent: 5, expectedNext: 729n, printedNext: 731n },
+    { denominator: 9997n, cleanGroups: 8, lastPower: 2187n, lastExponent: 7, expectedNext: 6561n, printedNext: 6562n },
+  ]);
+});
+
+test("full-width powers add column by column to the first number-salad groups", () => {
+  assert.equal(STACK_FIRST_GROUP, 5);
+  assert.equal(STACK_RESULT_LAST_GROUP, 11);
+  assert.equal(STACK_LAST_GROUP, 12);
+
+  for (const row of POWER_STACK) {
+    const occupied = row.cells.flatMap((cell, index) => cell === null
+      ? []
+      : [{ group: STACK_FIRST_GROUP + index, word: cell }]);
+    assert(occupied.length > 0);
+    assert.equal(occupied[0]!.group, row.firstOccupiedGroup);
+    assert.equal(occupied.at(-1)!.group, row.exponent + 1);
+    const reconstructed = occupied.reduce((value, cell) => value * 1000n + cell.word, 0n);
+    assert.equal(reconstructed, row.power);
+  }
+
+  const columnSums = POWER_STACK_RESULT.map((_, index) => POWER_STACK.reduce(
+    (sum, row) => sum + (row.cells[index] ?? 0n),
+    0n,
+  ));
+  assert.deepEqual(columnSums, POWER_STACK_RESULT);
+  assert.deepEqual(POWER_STACK_RESULT, [81n, 243n, 731n, 193n, 580n, 742n, 226n]);
+  assert.deepEqual(columnSums.slice(2), [729n + 2n, 187n + 6n, 561n + 19n, 683n + 59n, 49n + 177n]);
+});
