@@ -42,6 +42,7 @@ If a local resolver still caches a pre-launch negative answer, set `REPTENDS_DNS
 - `src/opening-examples.ts` and `scripts/render-opening.ts`: exact continuous decimal examples and the aligned power stack, rendered into the HTML at build time and independently checked one decimal digit and one addition column at a time.
 - `src/opening.css`: the opening comparison, full-width addition stack, and transition into the 1/997 investigation.
 - `src/styles.css`: editorial layout, responsive sizes, focus styles, reduced motion.
+- `src/repetition-boundaries.ts`, `scripts/render-boundaries.ts`, and `src/boundaries.css`: exact first-carry, decimal-return, and aligned-word endpoints for 97, 997, 94, and 994; static comparison and shared-position jump controls.
 - `src/main.ts`: shared position, carry split, synchronized base-3/base-1000 readouts, cycle return, complete integer inspection.
 - `src/navigation.ts`: strict group-link parsing and canonical sharing URLs.
 - `src/finishing.css`: byline, personal note, and sharing controls.
@@ -61,6 +62,8 @@ The **Copy link to this group** button shares a URL such as [group 8, the 193 fo
 All arithmetic uses `bigint`; only bounded coordinates, indices, and animation timing use ordinary numbers. Growing display widths never change mathematical place values. Every displayed 1/997 step and finite boundary is checked against ordinary division. Initial zero groups in the square and cube are retained.
 
 For 1/997, the minimal decimal period is **166 digits**. A cycle of **166 three-digit groups spans 498 decimal positions**, containing three minimal decimal periods. This corrects the earlier planning description of a 498-digit decimal period.
+
+The “When have we seen enough?” panel distinguishes that first decimal return from the word-aligned return. With groups anchored at the decimal point, digit 166 lies in group 56 (`7 | 00`), associated with `3^55`; the aligned loop ends at group 166 (`667`), associated with `3^165`. Jump buttons reuse the existing position control. The expandable comparison covers 97, 997, 94, and 994, including the initial nonrepeating zero for the two even denominators. Counts start with `k^0 = 1` and describe power positions, not a truncation of the infinite geometric sum. Returning remainders and complete powers remain inspectable without JavaScript.
 
 The proof-status atlas records the [`digit_periodicity`](../docs/PROOF_STATUS_ATLAS.md) quotient step as **reproved-here**. At each selected position, dividing the bounded remainder `r` as `3r = 997d + r′` emits a base-3 digit `d` and next remainder `r′`; the corresponding three-digit decimal word is `r + d`. The interface and tests keep this local quotient digit distinct from the unbounded boundary carry used in the full-power construction.
 

@@ -4,11 +4,12 @@ import { fileURLToPath } from "node:url";
 import { build } from "esbuild";
 import { assertPublishableHtml, assertPublishableRobots } from "./validate-artifact.ts";
 import { renderOpeningExamples, renderPowerStack } from "./render-opening.ts";
+import { renderRepetitionBoundaries } from "./render-boundaries.ts";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const template = await readFile(resolve(root, "src/template.html"), "utf8");
 const robots = await readFile(resolve(root, "src/robots.txt"), "utf8");
-for (const marker of ["<!-- APP_CSS -->", "<!-- APP_JS -->", "<!-- OPENING_EXAMPLES -->", "<!-- POWER_STACK -->"]) {
+for (const marker of ["<!-- APP_CSS -->", "<!-- APP_JS -->", "<!-- OPENING_EXAMPLES -->", "<!-- POWER_STACK -->", "<!-- REPETITION_BOUNDARIES -->"]) {
   if (template.split(marker).length !== 2) {
     throw new Error(`The page template must contain exactly one ${marker} marker.`);
   }
@@ -54,6 +55,7 @@ const css = stylesheet.outputFiles[0].text.replace(/<\/style/gi, "<\\/style");
 const html = template
   .replace("<!-- OPENING_EXAMPLES -->", () => renderOpeningExamples())
   .replace("<!-- POWER_STACK -->", () => renderPowerStack())
+  .replace("<!-- REPETITION_BOUNDARIES -->", () => renderRepetitionBoundaries())
   .replace("<!-- APP_CSS -->", () => `<style>\n${css}\n</style>`)
   .replace("<!-- APP_JS -->", () => `<script>\n${script}\n</script>`);
 

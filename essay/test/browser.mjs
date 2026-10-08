@@ -169,6 +169,73 @@ async function assertComparisonTable(page) {
   assert.equal(await table.locator("tbody td").count(), 6);
 }
 
+async function assertRepetitionBoundaries(page, interactive = true) {
+  const card = page.locator("#soft-end");
+  assert.equal(await card.getByRole("heading", { name: "When have we seen enough?" }).isVisible(), true);
+  assert.equal(await card.locator(".boundary-landmarks > li").count(), 3);
+  assert.equal(await card.locator(".boundary-split").getAttribute("aria-label"), "Word 700: 7 ends the first repetend; 00 starts its next copy");
+  if (interactive) {
+    for (const [index, word] of [[6, "731"], [55, "700"], [165, "667"]]) {
+      const button = card.locator(`[data-boundary-position="${index}"]`);
+      await button.focus();
+      await button.press("Enter");
+      await assertPosition(page, index);
+      assert.equal(await page.locator("#orbit-word").textContent(), word);
+      assert.equal(await page.evaluate(() => document.activeElement?.id), "orbit-readouts");
+      assert.match(await card.locator("#boundary-position").textContent(), new RegExp(`group ${index + 1}`));
+    }
+    await page.locator("#cycle-later").click();
+    await assertPosition(page, 331);
+    await page.locator("#reset").click();
+    await assertPosition(page, 6);
+  } else {
+    for (const button of await card.locator("[data-boundary-position]").all()) {
+      assert.equal(await button.isVisible(), false, "Jump controls require JavaScript; the examples do not.");
+    }
+  }
+  const summary = page.locator("#boundary-comparison > summary");
+  await summary.focus();
+  await summary.press("Enter");
+  assert.equal(await page.locator("#boundary-comparison").getAttribute("open"), "");
+  const table = card.locator(".boundary-table");
+  assert.equal(await table.getByRole("columnheader").count(), 5);
+  for (const [denominator, period, exponent, count, word, loop] of [
+    [97, 96, "347", 48, "67│", 48],
+    [997, 166, "355", 56, "7│00", 166],
+    [94, 46, "623", 24, "5│1", 23],
+    [994, 210, "670", 71, "5│01", 70],
+  ]) {
+    const cells = await table.locator(`[data-boundary-denominator="${denominator}"] td`).allTextContents();
+    assert.match(cells[0], new RegExp(`^${period} repeating digits`));
+    assert.match(cells[1], new RegExp(`^${exponent}${count} power positions`));
+    assert.equal(cells[2], word);
+    assert.match(cells[3], new RegExp(`^${loop} repeating words`));
+    if (denominator === 94 || denominator === 994) {
+      assert.match(cells[0], /initial nonrepeating 0/);
+      assert.match(cells[3], /1 startup word/);
+    }
+  }
+  const scroller = card.locator(".boundary-table-scroll");
+  assert.equal(await scroller.evaluate(element => {
+    element.scrollLeft = element.scrollWidth;
+    const outer = element.getBoundingClientRect();
+    const last = element.querySelector("tbody tr:last-child td:last-child").getBoundingClientRect();
+    const visible = last.right <= outer.right + 1;
+    element.scrollLeft = 0;
+    return visible;
+  }), true, "All comparison columns must be reachable on mobile.");
+  const receiptsSummary = card.locator(".boundary-receipts > summary");
+  await receiptsSummary.focus();
+  await receiptsSummary.press("Enter");
+  assert.equal(await card.locator(".boundary-receipts").getAttribute("open"), "");
+  assert.equal(await card.locator(".boundary-receipt").count(), 4);
+  await assertPageFits(page);
+  await receiptsSummary.press("Enter");
+  await summary.focus();
+  await summary.press("Enter");
+  assert.equal(await page.locator("#boundary-comparison").getAttribute("open"), null);
+}
+
 async function exerciseNavigationFocus() {
   const context = await browser.newContext({
     reducedMotion: "reduce",
@@ -378,6 +445,10 @@ try {
         await page.locator("#power-stack").screenshot({ path: screenshotPath(`${width}-power-stack.png`) });
       }
       await exerciseControls(page, engine === "chromium" && width === 1440 && colorScheme === "light");
+      await assertRepetitionBoundaries(page);
+      if ([320, 768, 1440].includes(width) && colorScheme === "light") {
+        await page.locator("#soft-end").screenshot({ path: screenshotPath(`${width}-soft-end.png`) });
+      }
       if ([320, 1440].includes(width) && colorScheme === "light") {
         await page.locator(".orbit-card").screenshot({ path: screenshotPath(`${width}-two-readouts.png`) });
       }
@@ -403,6 +474,7 @@ try {
   const fallback = await browser.newContext({
     viewport: { width: 320, height: 1000 },
     javaScriptEnabled: false,
+    reducedMotion: "reduce",
     offline: engine !== "webkit",
   });
   const fallbackPage = await fallback.newPage();
@@ -410,6 +482,7 @@ try {
   await assertOpeningGallery(fallbackPage);
   await assertPowerStack(fallbackPage);
   await assertComparisonTable(fallbackPage);
+  await assertRepetitionBoundaries(fallbackPage, false);
   assert.equal((await fallbackPage.locator("#hero-answer").textContent()).trim(), "731");
   for (const selector of ["#reveal", "#previous", "#animate-split", "#cycle-later"]) {
     assert.equal(await fallbackPage.locator(selector).isVisible(), false, `${selector} should be hidden when JavaScript is disabled.`);

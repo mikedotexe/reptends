@@ -130,6 +130,14 @@ try {
   assert.equal(await page.locator("#position").inputValue(), "172");
   assert.equal((await page.locator("#word-current").textContent()).trim(), "731");
   assert.match(await page.locator("#power-size").textContent(), /83 digits/);
+  for (const [index, printed] of [[55, "700"], [165, "667"], [6, "731"]]) {
+    await page.locator(`[data-boundary-position="${index}"]`).click();
+    assert.equal(await page.locator("#position").inputValue(), String(index));
+    assert.equal(await page.locator("#orbit-word").textContent(), printed);
+  }
+  await page.locator("#boundary-comparison > summary").click();
+  assert.equal(await page.locator(".boundary-table tbody tr").count(), 4);
+  await page.locator("#boundary-comparison > summary").click();
   await page.locator(".geometry-disclosure > summary").click();
   const geometry = page.locator("#geometry-app");
   await geometry.locator('[data-geometry-mode="cube"]').click();

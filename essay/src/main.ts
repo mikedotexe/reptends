@@ -116,6 +116,12 @@ function render(message?: string): void {
   put("local-remainder", row.nextRemainder);
   drawSplit(0);
   put("orbit-position", "Group " + (selected + 1) + " · " + (selected < 166 ? "first" : "second") + " trip around");
+  const boundaryLabels: Record<number, string> = {
+    6: "the first carry",
+    55: "the first decimal repetend ends inside word 700: 7 | 00",
+    165: "word 667 closes the first aligned group cycle",
+  };
+  put("boundary-position", "Shared position: group " + (selected + 1) + (boundaryLabels[selected] ? ", " + boundaryLabels[selected] : ", power 3" + superscript(selected)) + ".");
   put("orbit-power", compact(row.raw));
   put("power-size", "3" + superscript(selected) + " · " + row.raw.toString().length + (row.raw.toString().length === 1 ? " digit" : " digits"));
   put("orbit-remainder", row.remainder);
@@ -166,6 +172,14 @@ element("share-position").addEventListener("click", async () => {
 });
 
 element("previous").addEventListener("click", () => select(selected - 1, "Previous group."));
+document.querySelectorAll<HTMLButtonElement>("[data-boundary-position]").forEach(button => {
+  button.addEventListener("click", () => {
+    select(Number(button.dataset.boundaryPosition), button.textContent!.trim() + ".");
+    const readouts = element("orbit-readouts");
+    readouts.scrollIntoView({ behavior: reducedMotion.matches ? "instant" : "smooth" });
+    readouts.focus({ preventScroll: true });
+  });
+});
 element("next").addEventListener("click", () => select(selected + 1, "Next group."));
 element("reset").addEventListener("click", () => select(6, "Back to the first change."));
 element<HTMLInputElement>("position").addEventListener("input", event => select(Number((event.target as HTMLInputElement).value), "Selected."));
