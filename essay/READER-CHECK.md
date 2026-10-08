@@ -12,7 +12,8 @@ After they have explored, ask these questions without offering hints or correcti
 2. Where does the extra 2 in 729 → 731 come from?
 3. When the page says a cycle returns, what exactly repeats? What keeps growing?
 4. If we add more nines to the denominator, what changes about the groups of digits and the pattern we can see?
-5. Where did you feel lost, and what would you try clicking next?
+5. When we reach the last digit of the repeating block, do the powers stop? What have we learned at that point?
+6. Where did you feel lost, and what would you try clicking next?
 
 If they explored the optional geometry, add: “What are we gathering along a diagonal or into a triangular slice? Is gathering those contributions the same as carrying?” Skip this question if they did not reach that section.
 
@@ -30,12 +31,13 @@ Record their own words before discussing the intended explanation. A wrong answe
 - Response 3, in their words: _pending_
 - Response 4, in their words: _pending_
 - Response 5, in their words: _pending_
+- Response 6, in their words: _pending_
 - Optional geometry response: _not asked / pending_
 - Observed pauses, misclicks, or inaccessible controls: _pending_
 - One change supported by this session: _pending_
 
 ## Debrief notes for the facilitator
 
-Read this only after recording the initial responses. At the seventh group, all later terms together contribute 2187/997 = 2 + 193/997 in that group's units; the whole 2 changes 729 to 731. The remainder and printed group return after 166 three-digit steps while the unbounded power grows. Those steps span 498 decimal positions, containing three copies of the minimal 166-digit decimal period. Increasing the fixed decimal grouping width (using denominators such as 997 and 9997, which are 3 below 1000 and 10000) exposes more powers of three before carrying alters their printed groups. Collecting square/cube contributions gives coefficients; carrying subsequently settles them into fixed-width groups.
+Read this only after recording the initial responses. At the seventh group, all later terms together contribute 2187/997 = 2 + 193/997 in that group's units; the whole 2 changes 729 to 731. The remainder and printed group return after 166 three-digit steps while the unbounded power grows. Those steps span 498 decimal positions, containing three copies of the minimal 166-digit decimal period. The first decimal return for 1/997 falls inside group 56, associated with 3^55; it gives a finite description of the digits without truncating the infinite power series. Increasing the fixed decimal grouping width (using denominators such as 997 and 9997, which are 3 below 1000 and 10000) exposes more powers of three before carrying alters their printed groups. Collecting square/cube contributions gives coefficients; carrying subsequently settles them into fixed-width groups.
 
 Keep the response notes anonymous unless the reader explicitly wants credit. Discussing the result together afterward is encouraged; label any later revised answer separately from the initial response.

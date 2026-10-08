@@ -50,6 +50,70 @@ async function assertPageFits(page) {
     `The page is ${dimensions.content}px wide in a ${dimensions.viewport}px viewport.`);
 }
 
+async function setDisclosure(page, selector, open) {
+  const disclosure = page.locator(selector);
+  if (await disclosure.evaluate(element => element.open) !== open) {
+    const summary = disclosure.locator(":scope > summary");
+    await summary.focus();
+    await summary.press("Enter");
+  }
+  assert.equal(await disclosure.evaluate(element => element.open), open);
+}
+
+async function assertReadingStructure(page) {
+  for (const selector of ["#carry-inspector", "#split-note", "#ternary-note", "#verification-guide"]) {
+    assert.equal(await page.locator(selector).evaluate(element => element.open), false,
+      `${selector} should start as an optional native disclosure.`);
+  }
+  for (const selector of ["#comparison", "#split-svg", "#orbit-digit"]) {
+    assert.equal(await page.locator(selector).isVisible(), false, `${selector} belongs to a collapsed deeper explanation.`);
+  }
+  assert.equal(await page.locator("#repeat #orbit-readouts #position").count(), 1);
+  assert.equal(await page.locator("#repeat .orbit-readout > div").count(), 3);
+  for (const selector of ["#orbit-power", "#orbit-remainder", "#orbit-word", "#ordinary-equation", "#orbit-next"]) {
+    assert.equal(await page.locator(selector).isVisible(), true, `${selector} must remain in the main reading path.`);
+  }
+  assert.deepEqual(await page.locator(".chapter-nav a").evaluateAll(links => links.map(link => link.getAttribute("href"))),
+    ["#carry", "#repeat", "#soft-end", "#research"]);
+  assert.equal(await page.locator("#repeat").evaluate(element => element.nextElementSibling?.id), "soft-end",
+    "The finite-description chapter should follow the remainder explorer.");
+}
+
+async function assertVerificationGuide(page, interactive = true) {
+  const record = page.locator("script#reptends-certificate");
+  assert.equal(await record.count(), 1);
+  assert.equal(await record.getAttribute("type"), "application/json");
+  const certificate = JSON.parse(await record.textContent());
+  assert.equal(certificate.schema_version, 1);
+  assert.deepEqual(certificate.cases.map(item => [
+    item.denominator, item.word_width,
+    item.decimal.preperiod_length, item.decimal.period_length,
+    item.grouped.preperiod_length, item.grouped.period_length,
+    item.first_incoming_carry.word_index,
+    item.decimal.endpoint.word_index, item.decimal.endpoint.containing_word,
+    item.grouped.endpoint.word_index, item.grouped.endpoint.word,
+  ]), [
+    ["97", 2, 0, 96, 0, 48, 4, 47, "67", 47, "67"],
+    ["997", 3, 0, 166, 0, 166, 6, 55, "700", 165, "667"],
+    ["94", 2, 1, 46, 1, 23, 2, 23, "51", 23, "51"],
+    ["994", 3, 1, 210, 1, 70, 3, 70, "501", 70, "501"],
+  ]);
+  const guide = page.locator("#verification-guide");
+  if (interactive) {
+    const link = page.locator('#carry a[href="#verification-guide"]');
+    await link.focus();
+    await link.press("Enter");
+    await page.waitForFunction(() => document.querySelector("#verification-guide").open);
+    assert.equal(new URL(page.url()).hash, "#verification-guide");
+  } else {
+    await setDisclosure(page, "#verification-guide", true);
+  }
+  assert.equal(await guide.locator(".verification-code").isVisible(), true);
+  assert.equal(await guide.locator(".boundary-table tbody tr").count(), 4);
+  await assertPageFits(page);
+  await setDisclosure(page, "#verification-guide", false);
+}
+
 async function assertPosition(page, index) {
   const expected = geometric.rows[index];
   const actual = await page.evaluate(() => ({
@@ -63,6 +127,8 @@ async function assertPosition(page, index) {
     orbitWord: document.querySelector("#orbit-word").textContent,
     orbitWordEquation: document.querySelector("#orbit-word-equation").textContent,
     orbitStep: document.querySelector("#orbit-step").textContent,
+    ordinaryEquation: document.querySelector("#ordinary-equation").textContent,
+    nextInstruction: document.querySelector("#orbit-next").textContent,
     valueText: document.querySelector("#position").getAttribute("aria-valuetext"),
     next: document.querySelector("#local-remainder").textContent,
   }));
@@ -78,7 +144,9 @@ async function assertPosition(page, index) {
   assert.equal(actual.orbitWord, formatWord(expected.word, 1000n));
   assert.equal(actual.orbitWordEquation, `${expected.remainder} + ${baseThreeDigit} = ${formatWord(expected.word, 1000n)}`);
   assert.equal(actual.orbitStep, `3 × ${expected.remainder} = ${baseThreeDigit} × 997 + ${expected.nextRemainder}`);
-  assert.equal(actual.valueText, `Group ${index + 1} of 332: growing power 3 to exponent ${index}, remainder ${expected.remainder}, base-3 digit ${baseThreeDigit}, three-digit word ${formatWord(expected.word, 1000n)}`);
+  assert.equal(actual.ordinaryEquation, `1000 × ${expected.remainder} = 997 × ${expected.word} + ${expected.nextRemainder}`);
+  assert.equal(actual.nextInstruction, `Pass remainder ${expected.nextRemainder} into the next step.`);
+  assert.equal(actual.valueText, `Group ${index + 1} of 332: growing power 3 to exponent ${index}, remainder ${expected.remainder}, three-digit word ${formatWord(expected.word, 1000n)}`);
   assert.equal(integer(actual.next), expected.nextRemainder);
 }
 
@@ -87,9 +155,9 @@ async function assertOpeningGallery(page) {
   const examples = gallery.locator("article.decimal-example");
   assert.equal(await examples.count(), 3);
   const expected = [
-    ["97", 4, "27 = 33", "81", "83"],
-    ["997", 6, "243 = 35", "729", "731"],
-    ["9997", 8, "2187 = 37", "6561", "6562"],
+    ["97", 4, "27", "81", "83"],
+    ["997", 6, "243", "729", "731"],
+    ["9997", 8, "2187", "6561", "6562"],
   ];
   for (let index = 0; index < expected.length; index += 1) {
     const [denominator, matchingGroups, lastPower, expectedNext, printedNext] = expected[index];
@@ -119,9 +187,7 @@ async function assertOpeningGallery(page) {
     assert.equal(continuous, "0." + groups.map(group => group.printed).join("") + "…",
       "The introduction must show the actual continuous decimal without inserted spaces.");
     const caption = (await example.locator(".decimal-example-caption").textContent()).replace(/\s+/g, " ").trim();
-    assert.match(caption, new RegExp("Last clean ×3 value: " + lastPower));
-    assert.match(caption, new RegExp("next power is " + expectedNext));
-    assert.match(caption, new RegExp("decimal prints " + printedNext));
+    assert.equal(caption, `Tripling stays visible through ${lastPower}. Then ${expectedNext} becomes ${printedNext}.`);
   }
   for (const label of ["×3 pattern", "First change", "The “number jumble”"]) {
     assert.equal(await gallery.getByText(label, { exact: true }).isVisible(), true, "Text labels must accompany the gallery colors.");
@@ -158,7 +224,9 @@ async function assertPowerStack(page) {
 }
 
 async function assertComparisonTable(page) {
+  await setDisclosure(page, "#carry-inspector", true);
   const table = page.locator("#comparison");
+  assert.equal(await table.isVisible(), true);
   assert.equal(await table.evaluate(element => getComputedStyle(element).display), "table");
   assert.equal(await table.locator("thead tr").evaluate(element => getComputedStyle(element).display), "table-row");
   assert.equal(await table.locator("tbody tr").first().evaluate(element => getComputedStyle(element).display), "table-row");
@@ -167,6 +235,7 @@ async function assertComparisonTable(page) {
   assert.equal(await table.locator('thead th[scope="col"]').count(), 3);
   assert.equal(await table.locator('tbody th[scope="row"]').count(), 2);
   assert.equal(await table.locator("tbody td").count(), 6);
+  await setDisclosure(page, "#carry-inspector", false);
 }
 
 async function assertRepetitionBoundaries(page, interactive = true) {
@@ -247,7 +316,7 @@ async function exerciseNavigationFocus() {
   await skip.focus();
   await skip.press("Enter");
   await page.waitForFunction(() => document.activeElement?.id === "main");
-  for (const id of ["carry", "repeat", "geometry", "research"]) {
+  for (const id of ["carry", "repeat", "soft-end", "research"]) {
     const link = page.locator(`.chapter-nav a[href="#${id}"]`);
     await link.focus();
     await link.press("Enter");
@@ -273,8 +342,15 @@ async function exerciseControls(page, exhaustive) {
   assert.match(await page.locator("#power-size").textContent(), /83 digits/);
   await page.locator("#cycle-earlier").click();
   await assertPosition(page, 6);
+  await setDisclosure(page, "#split-note", true);
   await page.locator("#animate-split").click();
   await assertPosition(page, 6);
+  await setDisclosure(page, "#split-note", false);
+  await setDisclosure(page, "#ternary-note", true);
+  assert.equal(await page.locator("#orbit-digit").isVisible(), true);
+  assert.equal(await page.locator("#orbit-step").isVisible(), true);
+  assert.equal(await page.locator("#whole-power").isVisible(), true);
+  await setDisclosure(page, "#ternary-note", false);
   const positions = exhaustive ? Array.from({ length: 332 }, (_, index) => index) : [0, 6, 7, 166, 172, 331];
   for (const index of positions) {
     await page.locator("#position").evaluate((element, value) => {
@@ -370,7 +446,7 @@ async function exerciseShareLinks() {
   await page.locator("#share-position").press("Enter");
   const fallback = page.locator("#share-link");
   await fallback.waitFor({ state: "visible" });
-  assert.equal(await fallback.inputValue(), "https://reptends.mikedotexe.com/?group=19#carry");
+  assert.equal(await fallback.inputValue(), "https://reptends.mikedotexe.com/?group=19#repeat");
   assert.equal(await fallback.getAttribute("readonly"), "");
   const selection = await fallback.evaluate(input => ({
     focused: document.activeElement === input,
@@ -386,7 +462,7 @@ async function exerciseShareLinks() {
   await page.locator("#reset").click();
   await page.locator("#share-position").click();
   await fallback.waitFor({ state: "visible" });
-  assert.equal(await fallback.inputValue(), "https://reptends.mikedotexe.com/?group=7#carry");
+  assert.equal(await fallback.inputValue(), "https://reptends.mikedotexe.com/?group=7#repeat");
   assert.deepEqual(errors, [], "Share links and query parsing must not produce browser errors.");
   assert.deepEqual(requests, [], "Sharing a group must not make external requests.");
   await context.close();
@@ -402,8 +478,14 @@ async function exerciseShareLinks() {
   await copyPage.goto(`${shareTestURL}?group=332#carry`);
   await copyPage.locator("#share-position").click();
   await copyPage.waitForFunction(() => typeof window.__copiedURL === "string");
-  assert.equal(await copyPage.evaluate(() => window.__copiedURL), "https://reptends.mikedotexe.com/?group=332#carry");
+  assert.equal(await copyPage.evaluate(() => window.__copiedURL), "https://reptends.mikedotexe.com/?group=332#repeat");
   assert.equal(await copyPage.locator("#share-link").isVisible(), false);
+  await copyPage.goto(`${shareTestURL}?group=56#repeat`);
+  await assertPosition(copyPage, 55);
+  assert.equal(new URL(copyPage.url()).hash, "#repeat");
+  await copyPage.goto(`${shareTestURL}#verification-guide`);
+  await copyPage.waitForFunction(() => document.querySelector("#verification-guide").open);
+  assert.equal(await copyPage.locator("#verification-guide .verification-code").isVisible(), true);
   await copyContext.close();
   console.log(`PASS ${engine} share links: initial/boundary/invalid groups, Back/Forward, clipboard success and keyboard-selectable fallback, no requests or errors.`);
 }
@@ -432,6 +514,7 @@ try {
       await loadOfflineArtifact(page);
       await page.getByRole("heading", { level: 1 }).waitFor();
       await assertPageFits(page);
+      await assertReadingStructure(page);
       await assertOpeningGallery(page);
       await assertPowerStack(page);
       await assertComparisonTable(page);
@@ -446,11 +529,12 @@ try {
       }
       await exerciseControls(page, engine === "chromium" && width === 1440 && colorScheme === "light");
       await assertRepetitionBoundaries(page);
+      await assertVerificationGuide(page);
       if ([320, 768, 1440].includes(width) && colorScheme === "light") {
         await page.locator("#soft-end").screenshot({ path: screenshotPath(`${width}-soft-end.png`) });
       }
       if ([320, 1440].includes(width) && colorScheme === "light") {
-        await page.locator(".orbit-card").screenshot({ path: screenshotPath(`${width}-two-readouts.png`) });
+        await page.locator(".orbit-card").screenshot({ path: screenshotPath(`${width}-three-views.png`) });
       }
       await page.screenshot({ path: screenshotPath(`${width}-${colorScheme}.png`), fullPage: true });
       if (width === 320 && colorScheme === "light") {
@@ -479,18 +563,26 @@ try {
   });
   const fallbackPage = await fallback.newPage();
   await loadOfflineArtifact(fallbackPage);
+  await assertReadingStructure(fallbackPage);
   await assertOpeningGallery(fallbackPage);
   await assertPowerStack(fallbackPage);
   await assertComparisonTable(fallbackPage);
   await assertRepetitionBoundaries(fallbackPage, false);
+  await assertVerificationGuide(fallbackPage, false);
   assert.equal((await fallbackPage.locator("#hero-answer").textContent()).trim(), "731");
   for (const selector of ["#reveal", "#previous", "#animate-split", "#cycle-later"]) {
     assert.equal(await fallbackPage.locator(selector).isVisible(), false, `${selector} should be hidden when JavaScript is disabled.`);
   }
   assert.match(await fallbackPage.locator("#carry-equation").textContent(), /729 \+ 2/);
+  assert.equal((await fallbackPage.locator("#ordinary-equation").textContent()).trim(), "1000 × 729 = 997 × 731 + 193");
+  await setDisclosure(fallbackPage, "#ternary-note", true);
   assert.equal((await fallbackPage.locator("#orbit-digit").textContent()).trim(), "2");
   assert.equal((await fallbackPage.locator("#orbit-word").textContent()).trim(), "731");
   assert.match(await fallbackPage.locator("#orbit-step").textContent(), /3 × 729 = 2 × 997 \+ 193/);
+  await setDisclosure(fallbackPage, "#ternary-note", false);
+  await setDisclosure(fallbackPage, "#split-note", true);
+  assert.equal(await fallbackPage.locator("#split-svg").isVisible(), true);
+  await setDisclosure(fallbackPage, "#split-note", false);
   await fallbackPage.locator(".geometry-disclosure > summary").click();
   assert.equal(await fallbackPage.locator(".geometry-static").isVisible(), true);
   assert.match(await fallbackPage.locator(".geometry-static").textContent(), /0000, 0000, 0001, 0003/);
@@ -509,6 +601,7 @@ try {
   const motionErrors = [];
   motionPage.on("pageerror", error => motionErrors.push(error.message));
   await loadOfflineArtifact(motionPage);
+  await setDisclosure(motionPage, "#split-note", true);
   const split = motionPage.locator("#animate-split");
   await split.click();
   await motionPage.waitForFunction(() => {

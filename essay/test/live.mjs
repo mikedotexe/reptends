@@ -120,15 +120,24 @@ try {
   const navigation = await page.goto(siteURL);
   assert.equal(navigation?.status(), 200);
   assert.equal(page.url(), siteURL);
+  for (const selector of ["#carry-inspector", "#split-note", "#ternary-note", "#verification-guide"]) {
+    assert.equal(await page.locator(selector).evaluate(element => element.open), false);
+  }
+  assert.equal(await page.locator("#repeat .orbit-readout > div").count(), 3);
+  assert.equal(await page.locator("#repeat #orbit-readouts #position").count(), 1);
+  assert.equal((await page.locator("#ordinary-equation").textContent()).trim(), "1000 × 729 = 997 × 731 + 193");
   await page.locator("#reveal").click();
   assert.equal((await page.locator("#hero-answer").textContent()).trim(), "731");
   await page.locator("#next").click();
-  assert.equal((await page.locator("#word-current").textContent()).trim(), "193");
+  assert.equal((await page.locator("#orbit-word").textContent()).trim(), "193");
+  assert.equal((await page.locator("#ordinary-equation").textContent()).trim(), "1000 × 193 = 997 × 193 + 579");
+  assert.equal((await page.locator("#orbit-next").textContent()).trim(), "Pass remainder 579 into the next step.");
   await page.locator("#reset").click();
-  assert.equal((await page.locator("#word-current").textContent()).trim(), "731");
+  assert.equal((await page.locator("#orbit-word").textContent()).trim(), "731");
   await page.locator("#cycle-later").click();
   assert.equal(await page.locator("#position").inputValue(), "172");
-  assert.equal((await page.locator("#word-current").textContent()).trim(), "731");
+  assert.equal((await page.locator("#orbit-word").textContent()).trim(), "731");
+  assert.equal((await page.locator("#ordinary-equation").textContent()).trim(), "1000 × 729 = 997 × 731 + 193");
   assert.match(await page.locator("#power-size").textContent(), /83 digits/);
   for (const [index, printed] of [[55, "700"], [165, "667"], [6, "731"]]) {
     await page.locator(`[data-boundary-position="${index}"]`).click();
@@ -136,8 +145,37 @@ try {
     assert.equal(await page.locator("#orbit-word").textContent(), printed);
   }
   await page.locator("#boundary-comparison > summary").click();
-  assert.equal(await page.locator(".boundary-table tbody tr").count(), 4);
+  assert.equal(await page.locator("#boundary-comparison .boundary-table tbody tr").count(), 4);
   await page.locator("#boundary-comparison > summary").click();
+  for (const [selector, visible] of [["#carry-inspector", "#comparison"], ["#split-note", "#split-svg"], ["#ternary-note", "#orbit-digit"]]) {
+    const summary = page.locator(`${selector} > summary`);
+    await summary.focus();
+    await summary.press("Enter");
+    assert.equal(await page.locator(visible).isVisible(), true);
+    if (selector === "#split-note") await page.locator("#animate-split").click();
+    await summary.focus();
+    await summary.press("Enter");
+    assert.equal(await page.locator(selector).evaluate(element => element.open), false);
+  }
+  const certificateElement = page.locator("script#reptends-certificate");
+  assert.equal(await certificateElement.count(), 1);
+  assert.equal(await certificateElement.getAttribute("type"), "application/json");
+  const certificate = JSON.parse(await certificateElement.textContent());
+  assert.equal(certificate.schema_version, 1);
+  assert.deepEqual(certificate.cases.map(item => [
+    item.denominator, item.decimal.period_length, item.grouped.period_length,
+    item.decimal.endpoint.word_index, item.decimal.endpoint.containing_word,
+    item.grouped.endpoint.word_index, item.grouped.endpoint.word,
+  ]), [
+    ["97", 96, 48, 47, "67", 47, "67"],
+    ["997", 166, 166, 55, "700", 165, "667"],
+    ["94", 46, 23, 23, "51", 23, "51"],
+    ["994", 210, 70, 70, "501", 70, "501"],
+  ]);
+  await page.locator('#carry a[href="#verification-guide"]').click();
+  await page.waitForFunction(() => document.querySelector("#verification-guide").open);
+  assert.equal(await page.locator("#verification-guide .verification-code").isVisible(), true);
+  await page.locator("#verification-guide > summary").click();
   await page.locator(".geometry-disclosure > summary").click();
   const geometry = page.locator("#geometry-app");
   await geometry.locator('[data-geometry-mode="cube"]').click();
@@ -151,7 +189,7 @@ try {
   const screenshot = resolve(root, "qa/live-desktop.png");
   await mkdir(dirname(screenshot), { recursive: true });
   await page.screenshot({ path: screenshot });
-  console.log("PASS live browser: trusted TLS, reveal, next/reset, 166-group return, cube controls, no additional requests or errors.");
+  console.log("PASS live browser: trusted TLS, exact three-view explorer, 166-group return, native disclosures, four-case certificate, verifier link, cube controls, no additional requests or errors.");
   console.log(`Saved ${screenshot}`);
   await context.close();
 } finally {

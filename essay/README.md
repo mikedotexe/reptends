@@ -1,6 +1,6 @@
 # Where Did the Pattern Go?
 
-The canonical website project for [reptends.mikedotexe.com](https://reptends.mikedotexe.com). Three continuous decimal expansions—1/97, 1/997, and 1/9997—first show the powers of three giving way to a jumble of digits and identify the last clean power in each. The essay then stacks full-width powers to recover the changed groups through ordinary addition and follows 1/997 into a finite remainder loop with synchronized base-3 and three-digit decimal readouts. Square/cube geometry remains an optional continuation.
+The canonical website project for [reptends.mikedotexe.com](https://reptends.mikedotexe.com). Three continuous decimal expansions—1/97, 1/997, and 1/9997—first show the powers of three giving way to a jumble of digits and identify the last clean power in each. The essay then stacks full-width powers to recover the changed groups through ordinary addition and follows 1/997 into a finite remainder loop with synchronized power, remainder, and three-digit decimal readouts. The main story ends by distinguishing the last digit of a repetend from the end of a grouped cycle. Base-3 digits, exact verification, and square/cube geometry are optional continuations.
 
 This project lives in the [`essay/` folder of mikedotexe/reptends](https://github.com/mikedotexe/reptends/tree/main/essay). On Mike's machine, `/Users/mikepurvis/other/physics-math-research/site` is a stable symlink to `/Users/mikepurvis/other/reptends-publishing/essay` in a clean publishing checkout. Both paths reach the same files; the original research checkout and its unfinished changes remain intact.
 
@@ -41,9 +41,10 @@ If a local resolver still caches a pre-launch negative answer, set `REPTENDS_DNS
 - `src/robots.txt`: an explicit open policy for search, research, and AI crawlers, with a wildcard for future standards-respecting agents.
 - `src/opening-examples.ts` and `scripts/render-opening.ts`: exact continuous decimal examples and the aligned power stack, rendered into the HTML at build time and independently checked one decimal digit and one addition column at a time.
 - `src/opening.css`: the opening comparison, full-width addition stack, and transition into the 1/997 investigation.
-- `src/styles.css`: editorial layout, responsive sizes, focus styles, reduced motion.
+- `src/styles.css` and `src/essay-flow.css`: editorial layout, unified explorer, optional explanations, responsive sizes, focus styles, reduced motion.
 - `src/repetition-boundaries.ts`, `scripts/render-boundaries.ts`, and `src/boundaries.css`: exact first-carry, decimal-return, and aligned-word endpoints for 97, 997, 94, and 994; static comparison and shared-position jump controls.
-- `src/main.ts`: shared position, carry split, synchronized base-3/base-1000 readouts, cycle return, complete integer inspection.
+- `src/main.ts`: shared position, ordinary-division readout, optional carry and base-3 views, cycle return, complete integer inspection.
+- `scripts/render-verification.ts`: build-time verification guide, independently executable Python checker, and embedded JSON evidence for all four examples.
 - `src/navigation.ts`: strict group-link parsing and canonical sharing URLs.
 - `src/finishing.css`: byline, personal note, and sharing controls.
 - `src/geometry.ts` and `src/geometry.css`: ordered pair and triple contributions.
@@ -55,11 +56,13 @@ If a local resolver still caches a pre-launch negative answer, set `REPTENDS_DNS
 
 ## Share a particular moment
 
-The **Copy link to this group** button shares a URL such as [group 8, the 193 follow-up](https://reptends.mikedotexe.com/?group=8#carry). Group numbers run from 1 through 332. Invalid or ambiguous values fall back to the first change, group 7. Browser Back/Forward restores linked positions, and a selectable field is available if clipboard permission is unavailable. Offline copies still create links to the public essay.
+The **Copy link to this group** button shares a URL such as [group 8, the 193 follow-up](https://reptends.mikedotexe.com/?group=8#repeat). Group numbers run from 1 through 332. Invalid or ambiguous values fall back to the first change, group 7. Browser Back/Forward restores linked positions, and a selectable field is available if clipboard permission is unavailable. Offline copies still create links to the public essay.
 
 ## Mathematical scope
 
 All arithmetic uses `bigint`; only bounded coordinates, indices, and animation timing use ordinary numbers. Growing display widths never change mathematical place values. Every displayed 1/997 step and finite boundary is checked against ordinary division. Initial zero groups in the square and cube are retained.
+
+The expandable **Verify the four examples, by hand or with code** guide states assumptions and indexing, distinguishes local quotient digits from incoming boundary carries, derives the finite balance, and includes an independent Python 3 verifier. The non-executable `script#reptends-certificate` JSON in the built HTML contains complete decimal and grouped cycles, first-carry witnesses, endpoint equations, and finite-prefix accounting. Arithmetic integers are decimal strings; indices and lengths are numbers. The schema version is 1. These are reproducible computations and algebraic derivations, not a proof-assistant certificate.
 
 For 1/997, the minimal decimal period is **166 digits**. A cycle of **166 three-digit groups spans 498 decimal positions**, containing three minimal decimal periods. This corrects the earlier planning description of a 498-digit decimal period.
 

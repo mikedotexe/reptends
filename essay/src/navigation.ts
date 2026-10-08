@@ -10,5 +10,5 @@ export function linkToPosition(index: number): string {
   if (!Number.isSafeInteger(index) || index < 0 || index > 331) {
     throw new RangeError("The shared position must be within the two displayed cycles.");
   }
-  return "https://reptends.mikedotexe.com/?group=" + (index + 1) + "#carry";
+  return "https://reptends.mikedotexe.com/?group=" + (index + 1) + "#repeat";
 }

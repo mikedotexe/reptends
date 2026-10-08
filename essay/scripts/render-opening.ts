@@ -23,7 +23,7 @@ export function renderOpeningExamples(): string {
       + '<div class="decimal-example-heading"><h3>1/' + denominator + '</h3>'
       + '<span>' + denominator + ' = ' + base + ' − 3</span><span class="decimal-width">' + width + '-digit groups</span></div>'
       + '<p class="decimal-expansion" aria-label="The first ' + (OPENING_GROUP_COUNT * width) + ' decimal digits of one over ' + denominator + '"><span class="decimal-point">0.</span>' + groups + '<span class="decimal-ellipsis">…</span></p>'
-      + '<p class="decimal-example-caption"><strong>Last clean ×3 value: <span class="decimal-last">' + lastClean.raw + ' = 3<sup>' + (firstChangedIndex - 1) + '</sup></span>.</strong> The next power is <span class="decimal-expected">' + first.raw + '</span>; the decimal prints <strong class="decimal-actual">' + formatWord(first.word, base) + '</strong> and keeps going.</p>'
+      + '<p class="decimal-example-caption">Tripling stays visible through <span class="decimal-last">' + lastClean.raw + '</span>. Then <span class="decimal-expected">' + first.raw + '</span> becomes <strong class="decimal-actual">' + formatWord(first.word, base) + '</strong>.</p>'
       + '</article>';
   }).join("\n");
 }

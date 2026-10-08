@@ -6,7 +6,7 @@ test("shared group links round-trip all bounded positions without changing their
   for (let index = 0; index < 332; index++) {
     const url = new URL(linkToPosition(index));
     assert.equal(url.origin, "https://reptends.mikedotexe.com");
-    assert.equal(url.hash, "#carry");
+    assert.equal(url.hash, "#repeat");
     assert.equal(positionFromSearch(url.search), index);
   }
 });

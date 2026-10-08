@@ -81,7 +81,7 @@ function render(message?: string): void {
   const certificate = certificates[selected]!;
   const slider = element<HTMLInputElement>("position");
   slider.value = String(selected);
-  slider.setAttribute("aria-valuetext", "Group " + (selected + 1) + " of 332: growing power 3 to exponent " + selected + ", remainder " + row.remainder + ", base-3 digit " + ((3n * row.remainder) / 997n) + ", three-digit word " + word(row.word));
+  slider.setAttribute("aria-valuetext", "Group " + (selected + 1) + " of 332: growing power 3 to exponent " + selected + ", remainder " + row.remainder + ", three-digit word " + word(row.word));
   element<HTMLInputElement>("share-link").value = linkToPosition(selected);
   element("share-link-label").hidden = true;
   put("share-position", "Copy link to this group");
@@ -108,6 +108,8 @@ function render(message?: string): void {
   put("exact-carry", row.carryIn);
   put("exact-previous", row.quotient);
   put("exact-division", "1000 × " + row.remainder + " = 997 × " + row.word + " + " + row.nextRemainder);
+  put("ordinary-equation", "1000 × " + row.remainder + " = 997 × " + row.word + " + " + row.nextRemainder);
+  put("orbit-next", "Pass remainder " + row.nextRemainder + " into the next step.");
   put("prefix-check", "After " + certificate.terms + " terms, the raw prefix leaves the exact balance " + certificate.stateAfterPrefix + " / (997 × 1000" + superscript(certificate.terms) + "). Settling it adds " + certificate.boundaryCarry + " to the prefix integer and leaves remainder " + certificate.canonicalRemainder + ". The finite integer identity has been checked exactly.");
   const localCount = (3n * row.remainder) / 997n;
   put("local-equation", "3 × " + row.remainder + " = " + (3n * row.remainder));
@@ -135,8 +137,8 @@ function render(message?: string): void {
   element("cycle-earlier").hidden = selected < 166;
   put("whole-power", "3" + superscript(selected) + " = " + row.raw);
   const partner = selected < 166 ? selected + 166 : selected - 166;
-  put("cycle-message", "Groups " + (Math.min(selected, partner) + 1) + " and " + (Math.max(selected, partner) + 1) + " return to the same state: remainder " + row.remainder + ", base-3 digit " + localCount + ", and printed word " + word(row.word) + ". Their growing powers are 166 multiplications apart.");
-  if (message) announce(message + " Group " + (selected + 1) + ", growing power 3 to exponent " + selected + ", remainder " + row.remainder + ", base-3 digit " + localCount + ", printed word " + word(row.word) + ".");
+  put("cycle-message", "Groups " + (Math.min(selected, partner) + 1) + " and " + (Math.max(selected, partner) + 1) + " return to remainder " + row.remainder + " and printed word " + word(row.word) + ". Their growing powers are 166 multiplications apart.");
+  if (message) announce(message + " Group " + (selected + 1) + ", growing power 3 to exponent " + selected + ", remainder " + row.remainder + ", printed word " + word(row.word) + ".");
 }
 
 function select(index: number, message: string): void {
@@ -227,3 +229,12 @@ reducedMotion.addEventListener("change", () => {
 initGeometry(element("geometry-app"));
 render();
 document.documentElement.classList.add("js");
+
+// A deep link should open a native disclosure before the browser scrolls to it.
+// Readers arriving from the series equation can therefore inspect its proof directly.
+function revealLinkedExplanation(): void {
+  if (window.location.hash !== "#verification-guide") return;
+  element<HTMLDetailsElement>("verification-guide").open = true;
+}
+window.addEventListener("hashchange", revealLinkedExplanation);
+revealLinkedExplanation();
