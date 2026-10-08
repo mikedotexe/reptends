@@ -1,40 +1,34 @@
-# Verification — essay v1.0.4
+# Verification — essay v1.0.5
 
-Published 8 October 2026 (Pacific time). The release has two reviewed public objects:
+Published 8 October 2026 (Pacific time), on top of the completed v1.0.4 revision.
 
-- `index.html`: 95,171 bytes, SHA-256 `b24198ea5fa6d7308f814450c9d0749f988436b074458991bcac2a3159d38266`
+- Source commit: [`669cb92`](https://github.com/mikedotexe/reptends/commit/669cb921f2b78bf5676028582a43b2b453029694)
+- `index.html`: 107,654 bytes, SHA-256 `e05657150986d1308f0139472f9394c509c52f6a2bb03f4460c260dbdcc52649`
 - `robots.txt`: 613 bytes, SHA-256 `5b83e4b5a732add02f74140cfa52abd992278e03ca4685faee545a1ffa771a3b`
+- [Three-browser source CI](https://github.com/mikedotexe/reptends/actions/runs/37834467412) passed for Chromium, Firefox, and WebKit.
 
-The tested source commit is [`bd5ada9`](https://github.com/mikedotexe/reptends/commit/bd5ada9fd4e24cedf70444b7a35d11c7cb54d66c). The later release-record commit does not change either built object.
+## Reader-facing addition
 
-## Editorial and mathematical result
+The “When have we seen enough?” panel follows the synchronized remainder readouts. It distinguishes three landmarks for 1/997: the first carry at group 7 (`3^6`, printing `731`), the first decimal return at digit 166 (group 56, `3^55`, split `7 | 00`), and the aligned word return at group 166 (`3^165`, ending `667`). Its three keyboard-accessible buttons select the existing shared playhead and move focus to the readouts.
 
-The essay now begins with the continuous decimal digits of 1/97, 1/997, and 1/9997, marking the clean powers-of-three prefix, its first changed group, and the ensuing “number salad.” It then stays with 1/997: a full-width addition stack shows how overlapping powers produce `729 → 731` and the following groups, and the interactive position control connects the unbounded power, bounded remainder, local base-3 digit, and three-digit decimal word.
+The native comparison disclosure covers 97, 997, 94, and 994. It keeps the initial nonrepeating zero and startup word for 94 and 994 explicit, uses powers of 6 for those denominators, counts from exponent zero, and distinguishes a finite description of the repeating decimal from truncation of the geometric series. Returning remainder witnesses and complete power values are available without JavaScript.
 
-The exact synchronized step is displayed as
+## Exact arithmetic and browser checks
 
-`3rᵢ = 997dᵢ + rᵢ₊₁`, `1000rᵢ = 997(rᵢ + dᵢ) + rᵢ₊₁`, and `Wᵢ = rᵢ + dᵢ`.
+Strict TypeScript checking, 60 Node arithmetic/artifact/navigation tests, 13 deployment-safety tests, the standalone build, and `git diff --check` passed. Each of the three Linux CI jobs independently ran these checks and its browser suite.
 
-All 332 displayed transitions agree with independent long division. All 333 finite boundaries retain their exact residual accounting. Tests cover `729 → 731`, the next `193` group, the base-3 digit, the return after 166 three-digit groups, and the distinction between a 166-digit minimal decimal period and a 498-place group loop. Square and cube geometry remains available as an optional continuation, including its leading zero groups and separate collection/carrying steps.
+The 14 added arithmetic checks discover the decimal and grouped cycles independently, compare every grouped word to digitwise long division, verify split boundaries and startup counts, and retain the exact nonzero geometric tail at each endpoint. Existing checks still cover all 332 main transitions and all 333 finite boundaries.
 
-## Accessibility and browser verification
+Local Chromium and WebKit suites passed at mobile, tablet, and desktop widths. Checks cover the new jump buttons and focus destination, boundary comparison values, accessible table headings, all columns reachable on narrow screens, native disclosures with and without JavaScript, exact large integers, reduced motion, and no runtime asset requests or browser errors. Desktop and mobile screenshots of the new panel and the expanded comparison were inspected. The no-JavaScript keyboard checks use reduced motion; normal-motion animation checks run separately.
 
-Strict TypeScript checking, 46 Node arithmetic/artifact/navigation tests, 13 Python deployment-safety tests, the standalone build, and `git diff --check` passed locally. Full local Chromium 151 and WebKit 26.5 suites passed at mobile, tablet, and desktop widths. They cover keyboard controls, skip and chapter focus, native table semantics, reduced and normal motion, dark mode, JavaScript-disabled reading, exact large-integer states, sharing/history, geometry, and the absence of runtime asset requests or browser errors.
+## Live verification
 
-[GitHub Essay browser checks passed](https://github.com/mikedotexe/reptends/actions/runs/37832860611) on Ubuntu 24.04 for Chromium 151.0.7922.34, Firefox 153.0, and WebKit 26.5. Each job independently installed dependencies, checked types, ran the Node and deployment suites, rebuilt the two artifacts, and completed its browser suite.
+CloudFront invalidation `I4JC0YXE99PTFQYC6KWK4A6LGM` completed. `node deploy/check-dns.mjs`, `python3 deploy/aws_site.py verify --target live`, and `npm run test:live` passed against the published artifact. The live browser exercises all three new landmark buttons and the four-case comparison in addition to the existing reveal, reset, cycle, and geometry controls.
 
-## Crawler access and publication
+Ordinary IPv4/IPv6 DNS resolves. Valid HTTPS serves the exact reviewed bytes at `/`, `/index.html`, and the tested group query. HTTP redirects the essay, query URLs, and `robots.txt` to HTTPS. Direct S3 access to both public CloudFront objects returns 403. The page makes no additional runtime asset requests and reports no browser errors.
 
-The page includes a canonical URL and `index, follow` metadata. The root `robots.txt` explicitly allows current OpenAI, Anthropic, Perplexity, Google, Apple, Meta, Amazon, and Common Crawl tokens, then allows `User-agent: *` for standard search and future standards-respecting agents. It contains no `Disallow` rule.
-
-The private S3 bucket and deployer policy were expanded from one exact key to two exact keys. CloudFront can read only `index.html` and `robots.txt` through the existing Origin Access Control and distribution ARN. The deployer can upload only those two keys and invalidate only that distribution; permission simulations confirm writes elsewhere and deletion of either object remain denied. All four S3 Block Public Access flags remain enabled.
-
-CloudFront invalidation `I4LJIJIWSDG4J2QXTF7AT0PKT3` completed. `node deploy/check-dns.mjs`, `python3 deploy/aws_site.py verify --target live`, and `npm run test:live` passed. Ordinary IPv4/IPv6 DNS resolves; HTTPS serves the exact reviewed bytes and content types at `/`, `/index.html`, and `/robots.txt`; HTTP redirects the essay, query URLs, and `robots.txt` to HTTPS; direct S3 access to both objects returns 403; and the live controls work without console errors or additional asset requests.
-
-Current resource IDs and evidence are in `deploy/hosting.json`, `deploy/live-verification.json`, and the publisher-policy check files. The release manifest is `releases/v1.0.4/manifest.json`.
+The non-secret resource state and verification receipts are in `deploy/hosting.json` and `deploy/live-verification.json`. The release manifest is [releases/v1.0.5/manifest.json](releases/v1.0.5/manifest.json).
 
 ## Outstanding evidence
 
-Fresh-reader feedback remains pending; the protocol is in [READER-CHECK.md](READER-CHECK.md). Automated or AI checks do not substitute for human comprehension evidence.
-
-The repository's broader legacy CI still reports its established generated-documentation drift and Yarn/Corepack setup-order failures. Lean passes. These failures are outside the essay project; the dedicated essay workflow above is the release gate for this publication.
+Fresh-reader feedback remains pending; see [READER-CHECK.md](READER-CHECK.md). Automated and AI review do not substitute for human comprehension evidence. The broader repository CI has its previously recorded generated-documentation and Yarn/Corepack issues; the dedicated essay workflow is this publication's release gate.
