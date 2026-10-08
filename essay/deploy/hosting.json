@@ -9,7 +9,7 @@
   "certificate_token": "07113d144cd143edb29ec936ea111e8e",
   "distribution_caller_reference": "reptends-3a6899d736564a9fb9577bd3703da362",
   "oac_name": "reptends-mikedotexe-com",
-  "updated_at": "2026-10-08T16:39:00.779632+00:00",
+  "updated_at": "2026-10-08T19:37:01.904083+00:00",
   "preflight_done": true,
   "bucket_created": true,
   "bucket_configured": true,
@@ -28,18 +28,32 @@
   "distribution_status": "Deployed",
   "bucket_policy_configured": true,
   "ready_for_qa_gated_publish": true,
-  "published_sha256": "c07acf1c4bdffac170b4a9f3a61aa5cf7b23fcb0370322305fbe82b8e5536a4e",
-  "published_at": "2026-10-08T16:38:35.200916+00:00",
-  "invalidation_id": "I2K3U7WKK0ZKNKTRRDE7H690XU",
+  "published_sha256": "b24198ea5fa6d7308f814450c9d0749f988436b074458991bcac2a3159d38266",
+  "published_at": "2026-10-08T19:36:03.606378+00:00",
+  "invalidation_id": "I4LJIJIWSDG4J2QXTF7AT0PKT3",
   "invalidation_status": "Completed",
   "cloudfront_verified_sha256": "ceb9acdf01c7588b469a02a6361f74f648b36865248c6f13a6a1ad3758ac0ce6",
   "cloudfront_verified_at": "2026-10-06T23:38:25.788014+00:00",
   "site_dns_change_id": "/change/C08950673OXTHSBFFMDEH",
   "site_dns_published": true,
-  "live_verified_sha256": "c07acf1c4bdffac170b4a9f3a61aa5cf7b23fcb0370322305fbe82b8e5536a4e",
-  "live_verified_at": "2026-10-08T16:38:44.170984+00:00",
+  "live_verified_sha256": "b24198ea5fa6d7308f814450c9d0749f988436b074458991bcac2a3159d38266",
+  "live_verified_at": "2026-10-08T19:37:00.493948+00:00",
   "publisher_policy_arn": "arn:aws:iam::341982967115:policy/ReptendsPublish",
   "publisher_policy_attached": true,
   "bootstrap_policy_detached": true,
-  "permissions_narrowed_at": "2026-10-06T23:41:23.730071+00:00"
+  "permissions_narrowed_at": "2026-10-08T19:35:50.318822+00:00",
+  "bucket_policy_updated_at": "2026-10-08T19:35:48.967026+00:00",
+  "publisher_policy_updated_at": "2026-10-08T19:35:49.657737+00:00",
+  "published_assets": {
+    "index.html": {
+      "sha256": "b24198ea5fa6d7308f814450c9d0749f988436b074458991bcac2a3159d38266",
+      "bytes": 95171,
+      "content_type": "text/html; charset=utf-8"
+    },
+    "robots.txt": {
+      "sha256": "5b83e4b5a732add02f74140cfa52abd992278e03ca4685faee545a1ffa771a3b",
+      "bytes": 613,
+      "content_type": "text/plain; charset=utf-8"
+    }
+  }
 }

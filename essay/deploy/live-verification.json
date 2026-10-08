@@ -1,18 +1,48 @@
 {
   "hostname": "reptends.mikedotexe.com",
-  "verified_at": "2026-10-08T16:38:44.170984+00:00",
-  "sha256": "c07acf1c4bdffac170b4a9f3a61aa5cf7b23fcb0370322305fbe82b8e5536a4e",
+  "verified_at": "2026-10-08T19:37:00.493948+00:00",
+  "sha256": "b24198ea5fa6d7308f814450c9d0749f988436b074458991bcac2a3159d38266",
+  "assets": {
+    "index.html": {
+      "sha256": "b24198ea5fa6d7308f814450c9d0749f988436b074458991bcac2a3159d38266",
+      "bytes": 95171,
+      "content_type": "text/html; charset=utf-8"
+    },
+    "robots.txt": {
+      "sha256": "5b83e4b5a732add02f74140cfa52abd992278e03ca4685faee545a1ffa771a3b",
+      "bytes": 613,
+      "content_type": "text/plain; charset=utf-8"
+    }
+  },
   "https": {
     "/": {
       "status": 200,
-      "sha256": "c07acf1c4bdffac170b4a9f3a61aa5cf7b23fcb0370322305fbe82b8e5536a4e"
+      "sha256": "b24198ea5fa6d7308f814450c9d0749f988436b074458991bcac2a3159d38266"
     },
     "/index.html": {
       "status": 200,
-      "sha256": "c07acf1c4bdffac170b4a9f3a61aa5cf7b23fcb0370322305fbe82b8e5536a4e"
+      "sha256": "b24198ea5fa6d7308f814450c9d0749f988436b074458991bcac2a3159d38266"
+    },
+    "/robots.txt": {
+      "status": 200,
+      "sha256": "5b83e4b5a732add02f74140cfa52abd992278e03ca4685faee545a1ffa771a3b"
     }
   },
   "http_redirect_status": 301,
   "http_redirect_location": "https://reptends.mikedotexe.com/",
-  "anonymous_s3_status": 403
+  "http_redirects": {
+    "/": {
+      "status": 301,
+      "location": "https://reptends.mikedotexe.com/"
+    },
+    "/robots.txt": {
+      "status": 301,
+      "location": "https://reptends.mikedotexe.com/robots.txt"
+    }
+  },
+  "anonymous_s3_status": 403,
+  "anonymous_s3_statuses": {
+    "/index.html": 403,
+    "/robots.txt": 403
+  }
 }

@@ -1,0 +1,27 @@
+{
+  "version": "1.0.4",
+  "source_commit": "bd5ada9fd4e24cedf70444b7a35d11c7cb54d66c",
+  "bytes": 95171,
+  "sha256": "b24198ea5fa6d7308f814450c9d0749f988436b074458991bcac2a3159d38266",
+  "assets": {
+    "index.html": {
+      "bytes": 95171,
+      "sha256": "b24198ea5fa6d7308f814450c9d0749f988436b074458991bcac2a3159d38266",
+      "content_type": "text/html; charset=utf-8"
+    },
+    "robots.txt": {
+      "bytes": 613,
+      "sha256": "5b83e4b5a732add02f74140cfa52abd992278e03ca4685faee545a1ffa771a3b",
+      "content_type": "text/plain; charset=utf-8"
+    }
+  },
+  "published_at": "2026-10-08T19:36:03.606378+00:00",
+  "verified_at": "2026-10-08T19:37:00.493948+00:00",
+  "ci": "https://github.com/mikedotexe/reptends/actions/runs/37832860611",
+  "browsers": [
+    "Chromium 151.0.7922.34",
+    "Firefox 153.0",
+    "WebKit 26.5"
+  ],
+  "human_reader_feedback": "pending"
+}

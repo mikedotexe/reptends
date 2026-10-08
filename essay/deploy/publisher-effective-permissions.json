@@ -1,9 +1,14 @@
 {
-  "verified_at": "2026-10-06T23:41:30.261421+00:00",
+  "verified_at": "2026-10-08T19:35:58.383369+00:00",
   "checks": [
     {
       "action": "s3:PutObject",
       "resource": "arn:aws:s3:::reptends-mikedotexe-com-341982967115/index.html",
+      "decision": "allowed"
+    },
+    {
+      "action": "s3:PutObject",
+      "resource": "arn:aws:s3:::reptends-mikedotexe-com-341982967115/robots.txt",
       "decision": "allowed"
     },
     {
@@ -14,6 +19,11 @@
     {
       "action": "s3:DeleteObject",
       "resource": "arn:aws:s3:::reptends-mikedotexe-com-341982967115/index.html",
+      "decision": "implicitDeny"
+    },
+    {
+      "action": "s3:DeleteObject",
+      "resource": "arn:aws:s3:::reptends-mikedotexe-com-341982967115/robots.txt",
       "decision": "implicitDeny"
     },
     {
