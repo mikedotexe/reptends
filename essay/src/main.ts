@@ -2,6 +2,8 @@ import { formatWord } from "./math/lifts.ts";
 import { buildUnfoldedView, certifiedPrefix } from "./math/unfolded-notation.ts";
 import { initGeometry } from "./geometry.ts";
 import { positionFromSearch, linkToPosition } from "./navigation.ts";
+import { decimalReturn997 } from "./decimal-return.ts";
+import type { DecimalReturn } from "./decimal-return.ts";
 
 const view = buildUnfoldedView({ base: 1000n, coefficients: [3n] }, 332);
 const certificates = view.rows.map((_, index) => certifiedPrefix(view.trace, index + 1));
@@ -30,6 +32,70 @@ function word(value: bigint): string {
 }
 function announce(message: string): void {
   put("live-status", message);
+}
+
+function renderDecimalReturn(boundary: DecimalReturn | null, digits: string): string {
+  const output = element("orbit-word");
+  const note = element("orbit-boundary");
+  output.textContent = digits;
+  output.removeAttribute("aria-describedby");
+  delete output.dataset.boundaryAfter;
+  note.hidden = !boundary;
+  note.replaceChildren();
+  delete note.dataset.decimalPosition;
+  delete note.dataset.copy;
+  if (!boundary) return "";
+
+  // A border marks the cut without adding a character to the actual decimal digits.
+  const before = document.createElement("span");
+  before.className = "decimal-word-before";
+  before.textContent = boundary.before;
+  const after = document.createElement("span");
+  after.className = "decimal-word-after";
+  after.textContent = boundary.after;
+  output.replaceChildren(before, after);
+  output.dataset.boundaryAfter = String(boundary.afterDigits);
+  output.setAttribute("aria-describedby", "orbit-boundary");
+  note.dataset.decimalPosition = String(boundary.position);
+  note.dataset.copy = String(boundary.copy);
+
+  const finalRemainder = boundary.steps.at(-1)!.nextRemainder;
+  const heading = document.createElement("p");
+  heading.className = "orbit-boundary-heading";
+  heading.textContent = "Decimal return at digit " + boundary.position;
+  const explanation = document.createElement("p");
+  explanation.textContent = "The marked boundary completes copy " + boundary.copy + " of the 166-digit repetend: the remainder returns to 1. " + (boundary.after
+    ? "The digits after the divider start the next copy; the whole three-digit step ends with remainder " + finalRemainder + "."
+    : "Here the decimal return also ends the three-digit step.");
+  const detail = document.createElement("details");
+  const summary = document.createElement("summary");
+  summary.textContent = "Follow the digits one at a time";
+  const steps = document.createElement("ol");
+  steps.className = "decimal-return-steps";
+  for (const step of boundary.steps) {
+    const item = document.createElement("li");
+    const position = document.createElement("span");
+    position.className = "decimal-step-position";
+    position.textContent = "Digit " + step.position;
+    const equation = document.createElement("span");
+    equation.className = "decimal-step-equation";
+    equation.textContent = "10 × " + step.remainder + " = 997 × " + step.digit + " + " + step.nextRemainder;
+    item.append(position, equation);
+    if (step.nextRemainder === 1n) {
+      item.className = "decimal-step-return";
+      const returned = document.createElement("span");
+      returned.textContent = "Remainder 1 returns here.";
+      item.append(returned);
+    }
+    steps.append(item);
+  }
+  detail.append(summary, steps);
+  note.append(heading, explanation, detail);
+  return " The decimal repetend ends " + (boundary.afterDigits === 3
+    ? "at the end of this group"
+    : "after " + boundary.afterDigits + (boundary.afterDigits === 1 ? " digit" : " digits") + " of this group") + ", at decimal digit " + boundary.position + ". The remainder returns to 1 there" + (boundary.after
+      ? "; the complete group ends with remainder " + finalRemainder + "."
+      : ".");
 }
 
 function rememberPosition(): void {
@@ -79,9 +145,11 @@ function render(message?: string): void {
   stopAnimation();
   const row = view.rows[selected]!;
   const certificate = certificates[selected]!;
+  const decimalBoundary = decimalReturn997(row);
+  const boundaryAnnouncement = renderDecimalReturn(decimalBoundary, word(row.word));
   const slider = element<HTMLInputElement>("position");
   slider.value = String(selected);
-  slider.setAttribute("aria-valuetext", "Group " + (selected + 1) + " of 332: growing power 3 to exponent " + selected + ", remainder " + row.remainder + ", three-digit word " + word(row.word));
+  slider.setAttribute("aria-valuetext", "Group " + (selected + 1) + " of 332: growing power 3 to exponent " + selected + ", remainder " + row.remainder + ", three-digit word " + word(row.word) + boundaryAnnouncement);
   element<HTMLInputElement>("share-link").value = linkToPosition(selected);
   element("share-link-label").hidden = true;
   put("share-position", "Copy link to this group");
@@ -129,7 +197,6 @@ function render(message?: string): void {
   put("orbit-remainder", row.remainder);
   put("orbit-digit", localCount);
   put("orbit-digit-note", localCount + " whole " + (localCount === 1n ? "copy" : "copies") + " of 997");
-  put("orbit-word", word(row.word));
   put("orbit-word-equation", row.remainder + " + " + localCount + " = " + word(row.word));
   put("orbit-step", "3 × " + row.remainder + " = " + localCount + " × 997 + " + row.nextRemainder);
   element("remainder-dot").style.left = (Number(row.remainder) / 996 * 100) + "%";
@@ -138,7 +205,7 @@ function render(message?: string): void {
   put("whole-power", "3" + superscript(selected) + " = " + row.raw);
   const partner = selected < 166 ? selected + 166 : selected - 166;
   put("cycle-message", "Groups " + (Math.min(selected, partner) + 1) + " and " + (Math.max(selected, partner) + 1) + " return to remainder " + row.remainder + " and printed word " + word(row.word) + ". Their growing powers are 166 multiplications apart.");
-  if (message) announce(message + " Group " + (selected + 1) + ", growing power 3 to exponent " + selected + ", remainder " + row.remainder + ", printed word " + word(row.word) + ".");
+  if (message) announce(message + " Group " + (selected + 1) + ", growing power 3 to exponent " + selected + ", remainder " + row.remainder + ", printed word " + word(row.word) + "." + boundaryAnnouncement);
 }
 
 function select(index: number, message: string): void {

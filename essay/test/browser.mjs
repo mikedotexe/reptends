@@ -100,7 +100,7 @@ async function assertVerificationGuide(page, interactive = true) {
   ]);
   const guide = page.locator("#verification-guide");
   if (interactive) {
-    const link = page.locator('#carry a[href="#verification-guide"]');
+    const link = page.getByRole("link", { name: "Check the identity.", exact: true });
     await link.focus();
     await link.press("Enter");
     await page.waitForFunction(() => document.querySelector("#verification-guide").open);
@@ -130,6 +130,10 @@ async function assertPosition(page, index) {
     ordinaryEquation: document.querySelector("#ordinary-equation").textContent,
     nextInstruction: document.querySelector("#orbit-next").textContent,
     valueText: document.querySelector("#position").getAttribute("aria-valuetext"),
+    boundaryAfter: document.querySelector("#orbit-word").dataset.boundaryAfter,
+    boundaryHidden: document.querySelector("#orbit-boundary").hidden,
+    boundaryPosition: document.querySelector("#orbit-boundary").dataset.decimalPosition,
+    boundaryText: document.querySelector("#orbit-boundary").textContent,
     next: document.querySelector("#local-remainder").textContent,
   }));
   assert.equal(actual.index, index);
@@ -146,7 +150,23 @@ async function assertPosition(page, index) {
   assert.equal(actual.orbitStep, `3 × ${expected.remainder} = ${baseThreeDigit} × 997 + ${expected.nextRemainder}`);
   assert.equal(actual.ordinaryEquation, `1000 × ${expected.remainder} = 997 × ${expected.word} + ${expected.nextRemainder}`);
   assert.equal(actual.nextInstruction, `Pass remainder ${expected.nextRemainder} into the next step.`);
-  assert.equal(actual.valueText, `Group ${index + 1} of 332: growing power 3 to exponent ${index}, remainder ${expected.remainder}, three-digit word ${formatWord(expected.word, 1000n)}`);
+  const baseValueText = `Group ${index + 1} of 332: growing power 3 to exponent ${index}, remainder ${expected.remainder}, three-digit word ${formatWord(expected.word, 1000n)}`;
+  const decimalEnd = Math.floor((3 * index + 3) / 166) * 166;
+  const cut = decimalEnd > 3 * index ? decimalEnd - 3 * index : 0;
+  assert.equal(actual.boundaryHidden, cut === 0);
+  if (cut) {
+    assert.equal(actual.boundaryAfter, String(cut));
+    assert.equal(actual.boundaryPosition, String(decimalEnd));
+    assert(actual.valueText.startsWith(baseValueText));
+    assert.match(actual.valueText, new RegExp(`decimal digit ${decimalEnd}`));
+    assert.match(actual.valueText, /remainder returns to 1/);
+    assert.match(actual.boundaryText, /remainder returns to 1/);
+  } else {
+    assert.equal(actual.valueText, baseValueText);
+    assert.equal(actual.boundaryAfter, undefined);
+    assert.equal(actual.boundaryPosition, undefined);
+    assert.equal(actual.boundaryText, "");
+  }
   assert.equal(integer(actual.next), expected.nextRemainder);
 }
 
@@ -205,6 +225,10 @@ async function assertPowerStack(page) {
   assert.deepEqual(await table.locator('tbody tr[data-exponent="7"] td').allTextContents(), ["", "", "002", "187", "", "", "", ""]);
   assert.deepEqual(await table.locator('tbody tr[data-exponent="11"] td').allTextContents(), ["", "", "", "", "", "", "177", "147"]);
   assert.deepEqual(await table.locator("tfoot td").allTextContents(), ["081", "243", "731", "193", "580", "742", "226", "…"]);
+  await setDisclosure(page, "#stack-tail-note", true);
+  assert.equal(await page.locator("#stack-tail-note .formula").textContent(), "147/1000 + 531441/(997 × 1000) = 678/997 < 1");
+  await assertPageFits(page);
+  await setDisclosure(page, "#stack-tail-note", false);
   for (const addition of ["729 + 002 = 731", "187 + 006 = 193", "561 + 019 = 580", "683 + 059 = 742", "049 + 177 = 226"]) {
     assert.equal(await stack.getByText(addition, { exact: true }).isVisible(), true);
   }
@@ -252,6 +276,19 @@ async function assertRepetitionBoundaries(page, interactive = true) {
       assert.equal(await page.locator("#orbit-word").textContent(), word);
       assert.equal(await page.evaluate(() => document.activeElement?.id), "orbit-readouts");
       assert.match(await card.locator("#boundary-position").textContent(), new RegExp(`group ${index + 1}`));
+      if (index === 55) {
+        const note = page.locator("#orbit-boundary");
+        assert.equal(await note.isVisible(), true);
+        assert.equal(await page.locator("#orbit-word .decimal-word-before").textContent(), "7");
+        assert.equal(await page.locator("#orbit-word .decimal-word-after").textContent(), "00");
+        assert.match(await note.textContent(), /whole three-digit step ends with remainder 100/);
+        await setDisclosure(page, "#orbit-boundary details", true);
+        assert.deepEqual(await note.locator(".decimal-step-equation").allTextContents(), [
+          "10 × 698 = 997 × 7 + 1", "10 × 1 = 997 × 0 + 10", "10 × 10 = 997 × 0 + 100",
+        ]);
+        assert.match(await page.locator("#live-status").textContent(), /after 1 digit/);
+        await assertPageFits(page);
+      }
     }
     await page.locator("#cycle-later").click();
     await assertPosition(page, 331);
@@ -530,6 +567,12 @@ try {
       await exerciseControls(page, engine === "chromium" && width === 1440 && colorScheme === "light");
       await assertRepetitionBoundaries(page);
       await assertVerificationGuide(page);
+      if ([320, 768, 1440].includes(width) && colorScheme === "light") {
+        await page.locator('[data-boundary-position="55"]').click();
+        await setDisclosure(page, "#orbit-boundary details", true);
+        await page.locator(".orbit-card").screenshot({ path: screenshotPath(`${width}-decimal-return.png`) });
+        await page.locator("#reset").click();
+      }
       if ([320, 768, 1440].includes(width) && colorScheme === "light") {
         await page.locator("#soft-end").screenshot({ path: screenshotPath(`${width}-soft-end.png`) });
       }

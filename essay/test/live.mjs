@@ -143,7 +143,18 @@ try {
     await page.locator(`[data-boundary-position="${index}"]`).click();
     assert.equal(await page.locator("#position").inputValue(), String(index));
     assert.equal(await page.locator("#orbit-word").textContent(), printed);
+    if (index === 55) {
+      assert.equal(await page.locator("#orbit-boundary").isVisible(), true);
+      assert.equal(await page.locator("#orbit-word .decimal-word-before").textContent(), "7");
+      assert.equal(await page.locator("#orbit-word .decimal-word-after").textContent(), "00");
+      await page.locator("#orbit-boundary summary").press("Enter");
+      assert.deepEqual(await page.locator("#orbit-boundary .decimal-step-equation").allTextContents(), [
+        "10 × 698 = 997 × 7 + 1", "10 × 1 = 997 × 0 + 10", "10 × 10 = 997 × 0 + 100",
+      ]);
+      assert.match(await page.locator("#orbit-boundary").textContent(), /step ends with remainder 100/);
+    }
   }
+  assert.equal(await page.locator("#orbit-boundary").isVisible(), false);
   await page.locator("#boundary-comparison > summary").click();
   assert.equal(await page.locator("#boundary-comparison .boundary-table tbody tr").count(), 4);
   await page.locator("#boundary-comparison > summary").click();
@@ -172,7 +183,7 @@ try {
     ["94", 46, 23, 23, "51", 23, "51"],
     ["994", 210, 70, 70, "501", 70, "501"],
   ]);
-  await page.locator('#carry a[href="#verification-guide"]').click();
+  await page.getByRole("link", { name: "Check the identity.", exact: true }).click();
   await page.waitForFunction(() => document.querySelector("#verification-guide").open);
   assert.equal(await page.locator("#verification-guide .verification-code").isVisible(), true);
   await page.locator("#verification-guide > summary").click();

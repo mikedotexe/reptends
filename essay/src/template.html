@@ -74,13 +74,18 @@
         <p>Write 2187 across two columns as <strong>002 | 187</strong>. Its 002 adds to 729, making <strong>731</strong>. In the next column, 187 meets the 006 from 6561, making <strong>193</strong>. Follow the rows to see the next groups arrive.</p>
       </div>
       <!-- POWER_STACK -->
+      <details id="stack-tail-note" class="math-note"><summary>Why can later rows no longer change these sums?</summary>
+        <p>The 147 shown in group 12 and every later row together contribute less than one unit in group 11. Here is their exact balance, measured in group-11 units:</p>
+        <p class="formula">147/1000 + 531441/(997 × 1000) = 678/997 &lt; 1</p>
+        <p>The second fraction accounts for all terms after 3<sup>11</sup>, starting with 3<sup>12</sup> = 531441. Together, the unfinished pieces cannot add another whole unit to group 11 or any earlier column. Group 12 still needs settling. This is a worked instance of the <a href="#verification-guide">finite-prefix identity</a>.</p>
+      </details>
       <figcaption>Blank cells contribute nothing. The shown sums are complete through group 11; group 12 waits for later rows. Growing a term’s written width never changes its place value.</figcaption>
     </figure>
     <p class="chapter-bridge">The progression continues forever. To find the repeating part, we can keep much less information: <a href="#repeat">just the leftover from each division.</a></p>
   </section>
   <section id="repeat" class="chapter wrap" aria-labelledby="repeat-title" tabindex="-1">
     <div class="chapter-heading"><span class="chapter-number">02 / FOLLOW THE LEFTOVER</span><h2 id="repeat-title">The leftover remembers<br>what comes next.</h2></div>
-    <div class="prose"><p>At every position, dividing the growing power by 997 leaves the same <strong>remainder</strong> that enters the long-division step. To print three digits, multiply that remainder by 1000, divide by 997, and keep the new leftover.</p><p>The powers keep growing; the remainders stay below 997. Here they follow a loop of <strong>166 group steps</strong>. Once a remainder returns, every later group repeats too.</p></div>
+    <div class="prose"><p>At every position, dividing the growing power by 997 leaves the same <strong>remainder</strong> that enters the long-division step. Multiplying by 1000 or by 3 leaves the same remainder: the difference is exactly 997 times the starting number.</p><p>To print three digits, multiply the remainder by 1000, divide by 997, and keep the new leftover. The powers keep growing; the remainders stay below 997. Here they follow a loop of <strong>166 group steps</strong>. Once a remainder returns, every later group repeats too.</p></div>
     <div class="workbench unified-workbench" id="orbit-readouts" tabindex="-1" aria-label="Explore the powers, remainders, and printed groups">
       <div class="workbench-top"><h3>One step, three views.</h3><span class="base-badge">1/997 · three-digit groups</span></div>
       <div class="position-controls enhancement">
@@ -96,6 +101,7 @@
           <div class="orbit-remainder"><span class="small-label">CURRENT REMAINDER</span><strong id="orbit-remainder">729</strong><small>the leftover entering this step</small></div>
           <div class="orbit-word"><span class="small-label">PRINTED GROUP</span><strong id="orbit-word">731</strong><small>the next three decimal digits</small></div>
         </div>
+        <div id="orbit-boundary" class="orbit-boundary" hidden></div>
         <p id="ordinary-equation" class="ordinary-equation">1000 × 729 = 997 × 731 + 193</p>
         <p id="orbit-next" class="orbit-next">Pass remainder 193 into the next step.</p>
         <div class="remainder-track" aria-hidden="true"><span class="track-start">0</span><div id="remainder-dot" class="remainder-dot"></div><span class="track-end">996</span></div>

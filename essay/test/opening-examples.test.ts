@@ -123,3 +123,21 @@ test("full-width powers add column by column to the first number-salad groups", 
   assert.deepEqual(POWER_STACK_RESULT, [81n, 243n, 731n, 193n, 580n, 742n, 226n]);
   assert.deepEqual(columnSums.slice(2), [729n + 2n, 187n + 6n, 561n + 19n, 683n + 59n, 49n + 177n]);
 });
+
+test("the shown fractional part plus the entire omitted tail cannot carry into group 11", () => {
+  const base = 1000n;
+  const denominator = 997n;
+  const terms = POWER_STACK.at(-1)!.exponent + 1;
+  let rawPrefix = 0n;
+  for (let index = 0; index < terms; index += 1) rawPrefix = base * rawPrefix + 3n ** BigInt(index);
+  const shownFractionNumerator = rawPrefix % base;
+  const remainingPower = 3n ** BigInt(terms);
+  // Both unfinished pieces expressed in group-11 units, with a common denominator.
+  const unfinishedNumerator = denominator * shownFractionNumerator + remainingPower;
+  const unfinishedDenominator = denominator * base;
+  assert.equal(shownFractionNumerator, 147n);
+  assert.equal(remainingPower, 531441n);
+  assert.equal(unfinishedNumerator, 678000n);
+  assert(unfinishedNumerator < unfinishedDenominator);
+  assert.equal(rawPrefix / base, base ** BigInt(terms - 1) / denominator);
+});

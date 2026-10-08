@@ -45,6 +45,7 @@ If a local resolver still caches a pre-launch negative answer, set `REPTENDS_DNS
 - `src/repetition-boundaries.ts`, `scripts/render-boundaries.ts`, and `src/boundaries.css`: exact first-carry, decimal-return, and aligned-word endpoints for 97, 997, 94, and 994; static comparison and shared-position jump controls.
 - `src/main.ts`: shared position, ordinary-division readout, optional carry and base-3 views, cycle return, complete integer inspection.
 - `scripts/render-verification.ts`: build-time verification guide, independently executable Python checker, and embedded JSON evidence for all four examples.
+- `src/decimal-return.ts`: digitwise expansion of the selected exact word, marking all six decimal returns within the two group cycles.
 - `src/navigation.ts`: strict group-link parsing and canonical sharing URLs.
 - `src/finishing.css`: byline, personal note, and sharing controls.
 - `src/geometry.ts` and `src/geometry.css`: ordered pair and triple contributions.
@@ -71,6 +72,14 @@ The “When have we seen enough?” panel distinguishes that first decimal retur
 The proof-status atlas records the [`digit_periodicity`](../docs/PROOF_STATUS_ATLAS.md) quotient step as **reproved-here**. At each selected position, dividing the bounded remainder `r` as `3r = 997d + r′` emits a base-3 digit `d` and next remainder `r′`; the corresponding three-digit decimal word is `r + d`. The interface and tests keep this local quotient digit distinct from the unbounded boundary carry used in the full-power construction.
 
 The general carry identity, geometric series, and Cauchy products are established mathematics. The unfolded display notation and this explanatory sequence are an exploratory presentation, not a claim to a new division algorithm or a formally verified general theorem. Arbitrary recurrence inputs, mixed radices, continued fractions, and the full research dashboard remain outside this first version.
+
+## Definition of done for this edition
+
+The essay has a deliberately bounded scope: concrete decimal patterns, exact addition and carrying, repeating remainders, and the finite information that describes an infinite decimal. A release is ready when its displayed arithmetic is independently checked, its controls and reading path work across supported browsers and screen sizes, and the reviewed standalone artifact is reproducibly published with trusted HTTPS and a private origin.
+
+The editorial acceptance check is a fresh reader who can explain where the extra 2 comes from, what repeats and what grows, what adding nines changes, and why the powers do not stop. Human feedback is still pending; the three independent AI reviews of v1.1.0 are recorded separately in [READER-CHECK.md](READER-CHECK.md). Address specific comprehension failures before expanding the main story.
+
+After acceptance, preserve this edition and maintain it for defects, accessibility, and evidence-backed clarifications. New mathematical questions belong in separate experiments until they earn a place in the essay. The project's completion does not depend on exhausting the research subject or formally verifying the broader recurrence framework.
 
 ## Design provenance and preservation
 

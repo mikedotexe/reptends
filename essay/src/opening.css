@@ -19,7 +19,7 @@
 .decimal-example-heading>span{font-size:13px;color:var(--muted)}
 .decimal-example-heading .decimal-width{margin-left:auto;border:1px solid var(--line);border-radius:20px;padding:3px 11px;white-space:nowrap}
 .decimal-expansion{display:block;font-family:var(--mono);font-size:clamp(19px,2vw,27px);line-height:1.75;letter-spacing:.045em;margin:0 0 13px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
-.decimal-group{display:inline;padding:4px 1px 3px;border-bottom:2px solid transparent;color:#535a51;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.decimal-group{display:inline-block;white-space:nowrap;padding:4px 1px 3px;margin-inline-end:.12em;border-bottom:2px solid transparent;color:#535a51}
 .decimal-pattern{background:#e4eee2;color:var(--teal);border-color:#689383}
 .decimal-change{background:#faede2;color:var(--rust);outline:1px solid var(--rust);outline-offset:-1px;border-color:var(--rust);font-weight:700}
 .decimal-later{background:#f2f0e8;border-bottom:2px dotted #aaa99d}
