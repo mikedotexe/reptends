@@ -10,6 +10,8 @@ const hostname = "reptends.mikedotexe.com";
 const siteURL = "https://" + hostname;
 const digest = value => createHash("sha256").update(value).digest("hex");
 const expectedHash = digest(await readFile(new URL("../dist/index.html", import.meta.url)));
+const expectedRobots = await readFile(new URL("../dist/robots.txt", import.meta.url));
+const expectedRobotsHash = digest(expectedRobots);
 
 function get(address) {
   const url = new URL(address);
@@ -49,13 +51,23 @@ for (const pathname of ["/", "/index.html", "/?group=8"]) {
 }
 console.log("PASS trusted HTTPS serves the exact artifact at /, /index.html, and /?group=8: " + expectedHash);
 
-for (const pathname of ["/", "/?group=8"]) {
+const robots = await get(siteURL + "/robots.txt");
+assert.equal(robots.status, 200, "HTTPS /robots.txt should be public.");
+assert.match(robots.headers["content-type"] ?? "", /^text\/plain\b/i);
+assert.equal(digest(robots.body), expectedRobotsHash, "HTTPS /robots.txt must match dist/robots.txt.");
+assert.match(robots.body.toString("utf8"), /^User-agent:\s*\*$/m);
+assert.match(robots.body.toString("utf8"), /^Allow:\s*\/$/m);
+console.log("PASS robots.txt serves the exact permissive crawler policy: " + expectedRobotsHash);
+
+for (const pathname of ["/", "/?group=8", "/robots.txt"]) {
   const response = await get("http://" + hostname + pathname);
   assert.equal(response.status, 301, "HTTP " + pathname + " should redirect permanently.");
   assert.equal(new URL(response.headers.location, "http://" + hostname).href, siteURL + pathname);
 }
-console.log("PASS HTTP 301 redirects to HTTPS and preserves the group query. URL fragments are browser-side; test #carry in a browser.");
+console.log("PASS HTTP 301 redirects the essay and robots.txt to HTTPS and preserves the group query. URL fragments are browser-side; test #carry in a browser.");
 
 const anonymous = await get("https://reptends-mikedotexe-com-341982967115.s3.us-east-1.amazonaws.com/index.html");
 assert.equal(anonymous.status, 403, "The S3 object must remain private.");
-console.log("PASS anonymous S3 access is denied (403).");
+const anonymousRobots = await get("https://reptends-mikedotexe-com-341982967115.s3.us-east-1.amazonaws.com/robots.txt");
+assert.equal(anonymousRobots.status, 403, "The S3 robots.txt object must remain private.");
+console.log("PASS anonymous S3 access is denied for both public CloudFront objects (403).");

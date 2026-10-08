@@ -1,11 +1,6 @@
 /** Reject accidental credentials or runtime asset dependencies before publishing. */
 export function assertPublishableHtml(html: string, css: string): void {
-  const credentialPatterns = [
-    /\b(?:AKIA|ASIA)[A-Z0-9]{16}\b/,
-    /(?:aws_secret_access_key|secretAccessKey)["']?\s*[:=]\s*["']?[A-Za-z0-9/+=]{40}(?![A-Za-z0-9/+=])/i,
-    /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/,
-    /Access key ID\s*,\s*Secret access key/i,
-  ];
+  const credentialPatterns = credentialPatternList();
   if (credentialPatterns.some(pattern => pattern.test(html))) {
     throw new Error("The page contains a credential pattern; the artifact was not written.");
   }
@@ -20,4 +15,25 @@ export function assertPublishableHtml(html: string, css: string): void {
     || /@import\b/i.test(css)) {
     throw new Error("The standalone page contains an external asset reference.");
   }
+}
+
+export function assertPublishableRobots(robots: string): void {
+  if (!/^User-agent:\s*\*$/m.test(robots) || !/^Allow:\s*\/$/m.test(robots)) {
+    throw new Error("robots.txt must explicitly allow all standards-respecting crawlers.");
+  }
+  if (/^Disallow:/im.test(robots)) {
+    throw new Error("robots.txt must not contain a Disallow rule.");
+  }
+  if (credentialPatternList().some(pattern => pattern.test(robots))) {
+    throw new Error("robots.txt contains a credential pattern; the artifact was not written.");
+  }
+}
+
+function credentialPatternList(): RegExp[] {
+  return [
+    /\b(?:AKIA|ASIA)[A-Z0-9]{16}\b/,
+    /(?:aws_secret_access_key|secretAccessKey)["']?\s*[:=]\s*["']?[A-Za-z0-9/+=]{40}(?![A-Za-z0-9/+=])/i,
+    /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/,
+    /Access key ID\s*,\s*Secret access key/i,
+  ];
 }

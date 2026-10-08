@@ -4,7 +4,7 @@ import { createServer } from "node:http";
 import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { recurrenceTrace } from "../src/math/lifts.ts";
+import { formatWord, recurrenceTrace } from "../src/math/lifts.ts";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(import.meta.url);
@@ -59,6 +59,11 @@ async function assertPosition(page, index) {
     previous: document.querySelector("#exact-previous").textContent,
     word: document.querySelector("#word-current").textContent,
     remainder: document.querySelector("#orbit-remainder").textContent,
+    baseThreeDigit: document.querySelector("#orbit-digit").textContent,
+    orbitWord: document.querySelector("#orbit-word").textContent,
+    orbitWordEquation: document.querySelector("#orbit-word-equation").textContent,
+    orbitStep: document.querySelector("#orbit-step").textContent,
+    valueText: document.querySelector("#position").getAttribute("aria-valuetext"),
     next: document.querySelector("#local-remainder").textContent,
   }));
   assert.equal(actual.index, index);
@@ -68,6 +73,12 @@ async function assertPosition(page, index) {
   assert.equal(integer(actual.previous), expected.quotient);
   assert.equal(integer(actual.word), expected.word);
   assert.equal(integer(actual.remainder), expected.remainder);
+  const baseThreeDigit = 3n * expected.remainder / 997n;
+  assert.equal(integer(actual.baseThreeDigit), baseThreeDigit);
+  assert.equal(actual.orbitWord, formatWord(expected.word, 1000n));
+  assert.equal(actual.orbitWordEquation, `${expected.remainder} + ${baseThreeDigit} = ${formatWord(expected.word, 1000n)}`);
+  assert.equal(actual.orbitStep, `3 × ${expected.remainder} = ${baseThreeDigit} × 997 + ${expected.nextRemainder}`);
+  assert.equal(actual.valueText, `Group ${index + 1} of 332: growing power 3 to exponent ${index}, remainder ${expected.remainder}, base-3 digit ${baseThreeDigit}, three-digit word ${formatWord(expected.word, 1000n)}`);
   assert.equal(integer(actual.next), expected.nextRemainder);
 }
 
@@ -144,6 +155,39 @@ async function assertPowerStack(page) {
     });
     assert.equal(lastCellVisible, true, "The complete stack must be reachable by horizontal scrolling.");
   }
+}
+
+async function assertComparisonTable(page) {
+  const table = page.locator("#comparison");
+  assert.equal(await table.evaluate(element => getComputedStyle(element).display), "table");
+  assert.equal(await table.locator("thead tr").evaluate(element => getComputedStyle(element).display), "table-row");
+  assert.equal(await table.locator("tbody tr").first().evaluate(element => getComputedStyle(element).display), "table-row");
+  assert.deepEqual((await table.getByRole("columnheader").allTextContents()).map(text => text.trim()), ["Group 6", "Group 7", "Group 8"]);
+  assert.deepEqual((await table.getByRole("rowheader").allTextContents()).map(text => text.replace(/\s+/g, " ").trim()), ["Growing termsThe construction", "Printed groupsThe familiar decimal"]);
+  assert.equal(await table.locator('thead th[scope="col"]').count(), 3);
+  assert.equal(await table.locator('tbody th[scope="row"]').count(), 2);
+  assert.equal(await table.locator("tbody td").count(), 6);
+}
+
+async function exerciseNavigationFocus() {
+  const context = await browser.newContext({
+    reducedMotion: "reduce",
+    offline: engine !== "webkit",
+  });
+  const page = await context.newPage();
+  await loadOfflineArtifact(page);
+  const skip = page.locator(".skip-link");
+  await skip.focus();
+  await skip.press("Enter");
+  await page.waitForFunction(() => document.activeElement?.id === "main");
+  for (const id of ["carry", "repeat", "geometry", "research"]) {
+    const link = page.locator(`.chapter-nav a[href="#${id}"]`);
+    await link.focus();
+    await link.press("Enter");
+    await page.waitForFunction(target => document.activeElement?.id === target, id);
+  }
+  await context.close();
+  console.log(`PASS ${engine} skip and chapter links move keyboard focus to their destinations.`);
 }
 
 async function exerciseControls(page, exhaustive) {
@@ -299,6 +343,7 @@ async function exerciseShareLinks() {
 
 try {
   await exerciseShareLinks();
+  await exerciseNavigationFocus();
   for (const width of engine === "chromium" ? [320, 360, 768, 1440] : [320, 768, 1440]) {
     for (const colorScheme of engine === "chromium" ? ["light", "dark"] : ["light"]) {
       const context = await browser.newContext({
@@ -322,6 +367,7 @@ try {
       await assertPageFits(page);
       await assertOpeningGallery(page);
       await assertPowerStack(page);
+      await assertComparisonTable(page);
       if ([320, 768].includes(width) && colorScheme === "light") {
         await page.screenshot({ path: screenshotPath(`${width}-top.png`) });
       }
@@ -332,6 +378,9 @@ try {
         await page.locator("#power-stack").screenshot({ path: screenshotPath(`${width}-power-stack.png`) });
       }
       await exerciseControls(page, engine === "chromium" && width === 1440 && colorScheme === "light");
+      if ([320, 1440].includes(width) && colorScheme === "light") {
+        await page.locator(".orbit-card").screenshot({ path: screenshotPath(`${width}-two-readouts.png`) });
+      }
       await page.screenshot({ path: screenshotPath(`${width}-${colorScheme}.png`), fullPage: true });
       if (width === 320 && colorScheme === "light") {
         await page.locator("#position").evaluate(element => {
@@ -360,11 +409,15 @@ try {
   await loadOfflineArtifact(fallbackPage);
   await assertOpeningGallery(fallbackPage);
   await assertPowerStack(fallbackPage);
+  await assertComparisonTable(fallbackPage);
   assert.equal((await fallbackPage.locator("#hero-answer").textContent()).trim(), "731");
   for (const selector of ["#reveal", "#previous", "#animate-split", "#cycle-later"]) {
     assert.equal(await fallbackPage.locator(selector).isVisible(), false, `${selector} should be hidden when JavaScript is disabled.`);
   }
   assert.match(await fallbackPage.locator("#carry-equation").textContent(), /729 \+ 2/);
+  assert.equal((await fallbackPage.locator("#orbit-digit").textContent()).trim(), "2");
+  assert.equal((await fallbackPage.locator("#orbit-word").textContent()).trim(), "731");
+  assert.match(await fallbackPage.locator("#orbit-step").textContent(), /3 × 729 = 2 × 997 \+ 193/);
   await fallbackPage.locator(".geometry-disclosure > summary").click();
   assert.equal(await fallbackPage.locator(".geometry-static").isVisible(), true);
   assert.match(await fallbackPage.locator(".geometry-static").textContent(), /0000, 0000, 0001, 0003/);

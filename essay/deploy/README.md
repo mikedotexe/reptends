@@ -2,10 +2,12 @@
 
 Run the commands below from the `essay/` directory of the repository (or the canonical local `physics-math-research/site` path).
 
-The public site is a single built `dist/index.html` at <https://reptends.mikedotexe.com>.
+The public essay is a self-contained `dist/index.html` at <https://reptends.mikedotexe.com>,
+accompanied by `dist/robots.txt` at the site root.
 AWS account `341982967115` owns a private S3 bucket in `us-east-1`, a CloudFront
 distribution with signed origin access, an ACM certificate, and Route 53 records.
-The bucket permits CloudFront to read only `index.html` and blocks public access.
+The bucket permits CloudFront to read only `index.html` and `robots.txt`, and
+blocks direct public access.
 
 `hosting.json` is the canonical, nonsecret record of resource IDs and completed
 steps. Preserve it when resuming work. `distribution-config.json` and
@@ -64,14 +66,29 @@ certificate if a response was lost outside that window.
 Run the site's mathematical and browser checks first. `--qa-passed` records an
 explicit operator decision; it does not execute those checks itself.
 
+When upgrading an existing index-only deployment to this two-file release, first
+expand the reviewed allowlist with the verified administrator profile:
+
+```sh
+python3 deploy/aws_site.py check-publisher-policy --admin-profile default
+python3 deploy/aws_site.py narrow-permissions --admin-profile default
+```
+
+This migration reads and validates both existing policies before changing either
+one. It accepts only the exact recorded index-only policy or the desired
+`index.html` plus `robots.txt` policy, and it requires all four S3 Block Public
+Access flags to remain enabled. A fresh deployment performs this step after its
+first verified launch, as described below.
+
 ```sh
 python3 deploy/aws_site.py publish dist/index.html --qa-passed
 python3 deploy/aws_site.py publication-status
 ```
 
-Publishing uploads only `index.html`, sends `Content-Type: text/html;
-charset=utf-8` and `Cache-Control: max-age=60`, and invalidates `/*`. The file's
-SHA-256 digest and publication time are saved. Recheck `publication-status` until
+Publishing uploads `robots.txt` first and the reviewed `index.html` last, sends
+the appropriate UTF-8 plain-text/HTML content types and `Cache-Control:
+max-age=60`, and invalidates `/*`. Both SHA-256 digests and the publication time
+are saved. Recheck `publication-status` until
 the invalidation is `Completed`. Before the first public DNS activation, verify
 the content using the recorded CloudFront domain:
 
@@ -79,9 +96,10 @@ the content using the recorded CloudFront domain:
 python3 deploy/aws_site.py verify --target cloudfront
 ```
 
-Verification compares both `/` and `/index.html` to the uploaded SHA-256 digest,
-checks their HTML content type and the HTTP-to-HTTPS redirect, and confirms the
-private S3 object refuses anonymous requests. DNS activation requires this check.
+Verification compares `/`, `/index.html`, and `/robots.txt` to their uploaded
+SHA-256 digests, checks their content types and the HTTP-to-HTTPS redirect, and
+confirms both private S3 objects refuse anonymous requests. DNS activation
+requires this check.
 
 For the first launch only, after verifying that uploaded content:
 
@@ -116,13 +134,14 @@ python3 deploy/aws_site.py narrow-permissions --admin-profile default
 python3 deploy/aws_site.py publication-status
 ```
 
-The first command performs nine read-only IAM simulations. The second requires
+The first command performs eleven read-only IAM simulations. The second requires
 successful verification of the currently published digest at the live hostname,
 preserves unrelated policies, and checks effective permissions after the switch.
-It stops on unexpected existing policies rather than editing them. Re-running it
-resumes an interrupted policy attachment/detachment. The final policy grants
-only `s3:PutObject` for this `index.html` and CloudFront invalidation creation and
-status for this distribution. The access key does not change. Future publishing
+It stops on unexpected attached policies. Re-running it resumes an interrupted
+policy attachment/detachment; when this exact two-file publication surface changes,
+it installs the reviewed bucket policy and a new managed-policy version. The final
+policy grants only `s3:PutObject` for `index.html` and `robots.txt`, plus CloudFront
+invalidation creation and status for this distribution. The access key does not change. Future publishing
 and `publication-status` work with that policy; infrastructure `provision`,
 `status`, and first-time DNS activation require bootstrap permissions.
 

@@ -6,9 +6,10 @@ import { enumerateTriplePlane } from "../src/math/triple-contributions.ts";
 
 const geometric = { base: 1000n, coefficients: [3n] };
 
-test("all 332 displayed geometric transitions agree with independent division", () => {
+test("all 332 displayed transitions and both readouts agree with independent division", () => {
   const trace = recurrenceTrace(geometric, 332);
   let ordinaryRemainder = 1n;
+  let baseThreeRemainder = 1n;
   let growingPower = 1n;
   for (const row of trace.rows) {
     const scaled = 1000n * ordinaryRemainder;
@@ -17,11 +18,28 @@ test("all 332 displayed geometric transitions agree with independent division", 
     assert.equal(row.word, scaled / 997n);
     assert.equal(row.nextRemainder, scaled % 997n);
     const localWraps = (3n * ordinaryRemainder) / 997n;
+    const baseThreeShifted = 3n * baseThreeRemainder;
+    const baseThreeDigit = baseThreeShifted / 997n;
+    assert(baseThreeDigit >= 0n && baseThreeDigit <= 2n);
+    assert.equal(row.remainder, baseThreeRemainder);
+    assert.equal(localWraps, baseThreeDigit);
+    assert.equal(row.nextRemainder, baseThreeShifted % 997n);
     assert.equal(row.word, ordinaryRemainder + localWraps);
     assert.equal(row.carryIn, 3n * growingPower / 997n);
     ordinaryRemainder = scaled % 997n;
+    baseThreeRemainder = baseThreeShifted % 997n;
     growingPower *= 3n;
   }
+  assert.deepEqual(trace.rows.slice(6, 9).map(row => ({
+    remainder: row.remainder,
+    baseThreeDigit: (3n * row.remainder) / 997n,
+    word: row.word,
+    nextRemainder: row.nextRemainder,
+  })), [
+    { remainder: 729n, baseThreeDigit: 2n, word: 731n, nextRemainder: 193n },
+    { remainder: 193n, baseThreeDigit: 0n, word: 193n, nextRemainder: 579n },
+    { remainder: 579n, baseThreeDigit: 1n, word: 580n, nextRemainder: 740n },
+  ]);
   const boundary = trace.rows[6]!;
   assert.equal(formatWord(boundary.word, trace.base), "731");
   assert.equal(boundary.raw, 729n);
@@ -77,6 +95,7 @@ test("1/997 returns after 166 groups; their 498 digits contain three minimal dec
     const first = trace.rows[index]!;
     const returned = trace.rows[index + 166]!;
     assert.equal(returned.remainder, first.remainder);
+    assert.equal((3n * returned.remainder) / 997n, (3n * first.remainder) / 997n);
     assert.equal(returned.word, first.word);
     assert.equal(returned.lift, first.lift * 3n ** 166n);
   }

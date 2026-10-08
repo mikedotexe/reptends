@@ -1,6 +1,6 @@
 # Where Did the Pattern Go?
 
-The canonical website project for [reptends.mikedotexe.com](https://reptends.mikedotexe.com). Three continuous decimal expansions—1/97, 1/997, and 1/9997—first show the powers of three giving way to a jumble of digits and identify the last clean power in each. The essay then stacks full-width powers to recover the first changed groups through ordinary addition before following 1/997 through exact carrying, returning remainders, and an optional square/cube geometry of 1/9999.
+The canonical website project for [reptends.mikedotexe.com](https://reptends.mikedotexe.com). Three continuous decimal expansions—1/97, 1/997, and 1/9997—first show the powers of three giving way to a jumble of digits and identify the last clean power in each. The essay then stacks full-width powers to recover the changed groups through ordinary addition and follows 1/997 into a finite remainder loop with synchronized base-3 and three-digit decimal readouts. Square/cube geometry remains an optional continuation.
 
 This project lives in the [`essay/` folder of mikedotexe/reptends](https://github.com/mikedotexe/reptends/tree/main/essay). On Mike's machine, `/Users/mikepurvis/other/physics-math-research/site` is a stable symlink to `/Users/mikepurvis/other/reptends-publishing/essay` in a clean publishing checkout. Both paths reach the same files; the original research checkout and its unfinished changes remain intact.
 
@@ -16,7 +16,7 @@ npm test
 npm run build
 ```
 
-The only deployment artifact is `dist/index.html`. Open it directly in a browser: JavaScript and CSS are inline, all diagrams are SVG, and no runtime dependencies or network requests are needed. Primary-reference links are ordinary optional outbound links. Worked examples and mathematical disclosures remain readable with JavaScript disabled.
+The essay artifact is `dist/index.html`; `dist/robots.txt` publishes its open crawler policy. Open the HTML directly in a browser: JavaScript and CSS are inline, all diagrams are SVG, and no runtime dependencies or network requests are needed. Primary-reference links are ordinary optional outbound links. Worked examples and mathematical disclosures remain readable with JavaScript disabled.
 
 For browser checks, install the desired browser through the pinned Playwright development dependency:
 
@@ -38,12 +38,13 @@ If a local resolver still caches a pre-launch negative answer, set `REPTENDS_DNS
 ## Source map
 
 - `src/template.html`: semantic essay, static examples, native disclosures, references.
+- `src/robots.txt`: an explicit open policy for search, research, and AI crawlers, with a wildcard for future standards-respecting agents.
 - `src/opening-examples.ts` and `scripts/render-opening.ts`: exact continuous decimal examples and the aligned power stack, rendered into the HTML at build time and independently checked one decimal digit and one addition column at a time.
 - `src/opening.css`: the opening comparison, full-width addition stack, and transition into the 1/997 investigation.
 - `src/styles.css`: editorial layout, responsive sizes, focus styles, reduced motion.
-- `src/main.ts`: shared position, carry split, cycle return, complete integer inspection.
+- `src/main.ts`: shared position, carry split, synchronized base-3/base-1000 readouts, cycle return, complete integer inspection.
 - `src/navigation.ts`: strict group-link parsing and canonical sharing URLs.
-- `src/finishing.css`: carry explanation, personal note, and sharing controls.
+- `src/finishing.css`: byline, personal note, and sharing controls.
 - `src/geometry.ts` and `src/geometry.css`: ordered pair and triple contributions.
 - `src/math/`: preserved exact TypeScript engine; see [arithmetic provenance](src/math/PROVENANCE.md).
 - `test/`: inherited arithmetic tests, page-specific contracts, build safeguards, browser checks.
@@ -61,6 +62,8 @@ All arithmetic uses `bigint`; only bounded coordinates, indices, and animation t
 
 For 1/997, the minimal decimal period is **166 digits**. A cycle of **166 three-digit groups spans 498 decimal positions**, containing three minimal decimal periods. This corrects the earlier planning description of a 498-digit decimal period.
 
+The proof-status atlas records the [`digit_periodicity`](../docs/PROOF_STATUS_ATLAS.md) quotient step as **reproved-here**. At each selected position, dividing the bounded remainder `r` as `3r = 997d + r′` emits a base-3 digit `d` and next remainder `r′`; the corresponding three-digit decimal word is `r + d`. The interface and tests keep this local quotient digit distinct from the unbounded boundary carry used in the full-power construction.
+
 The general carry identity, geometric series, and Cauchy products are established mathematics. The unfolded display notation and this explanatory sequence are an exploratory presentation, not a claim to a new division algorithm or a formally verified general theorem. Arbitrary recurrence inputs, mixed radices, continued fractions, and the full research dashboard remain outside this first version.
 
 ## Design provenance and preservation
@@ -71,4 +74,4 @@ The shared playhead was informed by `/Users/mikepurvis/other/quadratic-residue-r
 
 ## Publishing
 
-After arithmetic and browser QA, publish only `dist/index.html` through the dedicated `reptends` AWS profile. See [deployment instructions](deploy/README.md). The private S3 origin permits CloudFront access to only that object. Resource identifiers are recorded in `deploy/hosting.json`; credentials stay in the local AWS profile.
+After arithmetic and browser QA, publish `dist/index.html` and `dist/robots.txt` through the dedicated `reptends` AWS profile. See [deployment instructions](deploy/README.md). The private S3 origin permits CloudFront access to only those two objects. Resource identifiers are recorded in `deploy/hosting.json`; credentials stay in the local AWS profile.

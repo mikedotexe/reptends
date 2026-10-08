@@ -2,13 +2,16 @@
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "AllowReptendsCloudFrontReadIndex",
+      "Sid": "AllowReptendsCloudFrontReadPublicFiles",
       "Effect": "Allow",
       "Principal": {
         "Service": "cloudfront.amazonaws.com"
       },
       "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::reptends-mikedotexe-com-341982967115/index.html",
+      "Resource": [
+        "arn:aws:s3:::reptends-mikedotexe-com-341982967115/index.html",
+        "arn:aws:s3:::reptends-mikedotexe-com-341982967115/robots.txt"
+      ],
       "Condition": {
         "StringEquals": {
           "AWS:SourceArn": "arn:aws:cloudfront::341982967115:distribution/E3SFKP3YOOENAP"

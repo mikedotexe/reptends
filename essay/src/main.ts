@@ -81,7 +81,7 @@ function render(message?: string): void {
   const certificate = certificates[selected]!;
   const slider = element<HTMLInputElement>("position");
   slider.value = String(selected);
-  slider.setAttribute("aria-valuetext", "Group " + (selected + 1) + " of 332: " + word(row.word));
+  slider.setAttribute("aria-valuetext", "Group " + (selected + 1) + " of 332: growing power 3 to exponent " + selected + ", remainder " + row.remainder + ", base-3 digit " + ((3n * row.remainder) / 997n) + ", three-digit word " + word(row.word));
   element<HTMLInputElement>("share-link").value = linkToPosition(selected);
   element("share-link-label").hidden = true;
   put("share-position", "Copy link to this group");
@@ -119,13 +119,18 @@ function render(message?: string): void {
   put("orbit-power", compact(row.raw));
   put("power-size", "3" + superscript(selected) + " · " + row.raw.toString().length + (row.raw.toString().length === 1 ? " digit" : " digits"));
   put("orbit-remainder", row.remainder);
+  put("orbit-digit", localCount);
+  put("orbit-digit-note", localCount + " whole " + (localCount === 1n ? "copy" : "copies") + " of 997");
+  put("orbit-word", word(row.word));
+  put("orbit-word-equation", row.remainder + " + " + localCount + " = " + word(row.word));
+  put("orbit-step", "3 × " + row.remainder + " = " + localCount + " × 997 + " + row.nextRemainder);
   element("remainder-dot").style.left = (Number(row.remainder) / 996 * 100) + "%";
   element<HTMLButtonElement>("cycle-later").disabled = selected >= 166;
   element("cycle-earlier").hidden = selected < 166;
   put("whole-power", "3" + superscript(selected) + " = " + row.raw);
   const partner = selected < 166 ? selected + 166 : selected - 166;
-  put("cycle-message", "Groups " + (Math.min(selected, partner) + 1) + " and " + (Math.max(selected, partner) + 1) + " have the same remainder, " + row.remainder + ", and print the same group, " + word(row.word) + ". Their growing powers are 166 multiplications apart.");
-  if (message) announce(message + " Group " + (selected + 1) + ", printed " + word(row.word) + ", remainder " + row.remainder + ".");
+  put("cycle-message", "Groups " + (Math.min(selected, partner) + 1) + " and " + (Math.max(selected, partner) + 1) + " return to the same state: remainder " + row.remainder + ", base-3 digit " + localCount + ", and printed word " + word(row.word) + ". Their growing powers are 166 multiplications apart.");
+  if (message) announce(message + " Group " + (selected + 1) + ", growing power 3 to exponent " + selected + ", remainder " + row.remainder + ", base-3 digit " + localCount + ", printed word " + word(row.word) + ".");
 }
 
 function select(index: number, message: string): void {

@@ -2,11 +2,12 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { build } from "esbuild";
-import { assertPublishableHtml } from "./validate-artifact.ts";
+import { assertPublishableHtml, assertPublishableRobots } from "./validate-artifact.ts";
 import { renderOpeningExamples, renderPowerStack } from "./render-opening.ts";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const template = await readFile(resolve(root, "src/template.html"), "utf8");
+const robots = await readFile(resolve(root, "src/robots.txt"), "utf8");
 for (const marker of ["<!-- APP_CSS -->", "<!-- APP_JS -->", "<!-- OPENING_EXAMPLES -->", "<!-- POWER_STACK -->"]) {
   if (template.split(marker).length !== 2) {
     throw new Error(`The page template must contain exactly one ${marker} marker.`);
@@ -57,8 +58,11 @@ const html = template
   .replace("<!-- APP_JS -->", () => `<script>\n${script}\n</script>`);
 
 assertPublishableHtml(html, css);
+assertPublishableRobots(robots);
 
 await mkdir(resolve(root, "dist"), { recursive: true });
 const destination = resolve(root, "dist/index.html");
 await writeFile(destination, html);
-console.log(`Built ${destination} (${Buffer.byteLength(html).toLocaleString("en-US")} bytes; self-contained).`);
+const robotsDestination = resolve(root, "dist/robots.txt");
+await writeFile(robotsDestination, robots);
+console.log(`Built ${destination} (${Buffer.byteLength(html).toLocaleString("en-US")} bytes; self-contained) and ${robotsDestination}.`);

@@ -4,7 +4,7 @@
 
 ## Interactive essay
 
-[Where Did the Pattern Go?](https://reptends.mikedotexe.com) is a self-contained public essay about the powers of three inside 1/997, carries, repeating remainders, and the geometry of multiplication. Its source, exact arithmetic tests, and publishing guide are in [essay/](essay/README.md). It builds to one HTML file and can also be read offline.
+[Where Did the Pattern Go?](https://reptends.mikedotexe.com) is a self-contained public essay about the powers of three inside 1/997, how carrying creates the apparent digit jumble, and how one remainder loop produces synchronized base-3 and decimal readouts. Its source, exact arithmetic tests, optional multiplication geometry, open crawler policy, and publishing guide are in [essay/](essay/README.md). The essay builds to one offline-readable HTML file, accompanied online by `robots.txt`.
 
 ## Research Thesis
 

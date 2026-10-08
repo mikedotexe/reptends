@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { assertPublishableHtml } from "../scripts/validate-artifact.ts";
+import { assertPublishableHtml, assertPublishableRobots } from "../scripts/validate-artifact.ts";
 
 test("publishing rejects synthetic credentials without echoing them", () => {
   const fixtures = [
@@ -19,6 +19,13 @@ test("publishing rejects synthetic credentials without echoing them", () => {
       return true;
     });
   }
+});
+
+test("robots publishing requires a fully open policy and rejects secrets", () => {
+  assert.doesNotThrow(() => assertPublishableRobots("User-agent: GPTBot\nUser-agent: *\nAllow: /\n"));
+  assert.throws(() => assertPublishableRobots("User-agent: *\nDisallow: /private\nAllow: /\n"), /Disallow/);
+  assert.throws(() => assertPublishableRobots("User-agent: GPTBot\nAllow: /\n"), /all standards-respecting/);
+  assert.throws(() => assertPublishableRobots(`User-agent: *\nAllow: /\n# ${"AKIA" + "A".repeat(16)}\n`), /credential pattern/);
 });
 
 test("publishing permits reference links and inline diagrams but refuses asset requests", () => {

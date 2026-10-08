@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Resumable AWS hosting for the single-file reptends site. Requires AWS CLI v2."""
+"""Resumable AWS hosting for the self-contained reptends essay. Requires AWS CLI v2."""
 import argparse
 import csv
 from contextlib import contextmanager
@@ -26,6 +26,10 @@ DOMAIN = "reptends.mikedotexe.com"
 BUCKET = "reptends-mikedotexe-com-341982967115"
 ZONE = "ZEBBWSGTKUUP6"
 CLOUDFRONT_ZONE = "Z2FDTNDATAQYW2"
+PUBLIC_OBJECTS = {
+    "index.html": "text/html; charset=utf-8",
+    "robots.txt": "text/plain; charset=utf-8",
+}
 
 
 def now():
@@ -128,6 +132,54 @@ def json_argument(value):
     return json.dumps(value, separators=(",", ":"))
 
 
+def object_arn(key):
+    return f"arn:aws:s3:::{BUCKET}/{key}"
+
+
+def desired_bucket_policy(distribution_arn):
+    return {"Version": "2012-10-17", "Statement": [{
+        "Sid": "AllowReptendsCloudFrontReadPublicFiles",
+        "Effect": "Allow",
+        "Principal": {"Service": "cloudfront.amazonaws.com"},
+        "Action": "s3:GetObject",
+        "Resource": [object_arn(key) for key in PUBLIC_OBJECTS],
+        "Condition": {"StringEquals": {"AWS:SourceArn": distribution_arn}},
+    }]}
+
+
+def desired_publisher_policy(distribution_arn):
+    return {"Version": "2012-10-17", "Statement": [
+        {"Sid": "PublishPublicFiles", "Effect": "Allow", "Action": "s3:PutObject",
+         "Resource": [object_arn(key) for key in PUBLIC_OBJECTS]},
+        {"Sid": "RefreshAndObserveSiteCache", "Effect": "Allow",
+         "Action": ["cloudfront:CreateInvalidation", "cloudfront:GetInvalidation"],
+         "Resource": distribution_arn},
+    ]}
+
+
+def legacy_index_bucket_policy(distribution_arn):
+    """The exact v1.0.3 policy accepted for the two-file migration."""
+    return {"Version": "2012-10-17", "Statement": [{
+        "Sid": "AllowReptendsCloudFrontReadIndex",
+        "Effect": "Allow",
+        "Principal": {"Service": "cloudfront.amazonaws.com"},
+        "Action": "s3:GetObject",
+        "Resource": object_arn("index.html"),
+        "Condition": {"StringEquals": {"AWS:SourceArn": distribution_arn}},
+    }]}
+
+
+def legacy_index_publisher_policy(distribution_arn):
+    """The exact v1.0.3 policy accepted for the two-file migration."""
+    return {"Version": "2012-10-17", "Statement": [
+        {"Sid": "PublishIndex", "Effect": "Allow", "Action": "s3:PutObject",
+         "Resource": object_arn("index.html")},
+        {"Sid": "RefreshAndObserveSiteCache", "Effect": "Allow",
+         "Action": ["cloudfront:CreateInvalidation", "cloudfront:GetInvalidation"],
+         "Resource": distribution_arn},
+    ]}
+
+
 def change_records(state, changes, state_key):
     response = aws("route53", "change-resource-record-sets", "--hosted-zone-id", ZONE,
                    "--change-batch", json_argument({"Changes": changes}))
@@ -220,16 +272,13 @@ def provision(state):
         save(state)
         print("Created CloudFront distribution " + state["distribution_id"], flush=True)
     if not state.get("bucket_policy_configured"):
-        policy = {"Version": "2012-10-17", "Statement": [{"Sid": "AllowReptendsCloudFrontReadIndex",
-            "Effect": "Allow", "Principal": {"Service": "cloudfront.amazonaws.com"}, "Action": "s3:GetObject",
-            "Resource": f"arn:aws:s3:::{BUCKET}/index.html", "Condition": {"StringEquals": {"AWS:SourceArn": state["distribution_arn"]}}}]}
+        policy = desired_bucket_policy(state["distribution_arn"])
         aws("s3api", "put-bucket-policy", "--bucket", BUCKET, "--policy", json_argument(policy))
         state["bucket_policy_configured"] = True
         save(state)
         atomic_json(DIRECTORY / "bucket-policy.json", policy)
-    publisher = {"Version": "2012-10-17", "Statement": [
-        {"Sid": "PublishIndex", "Effect": "Allow", "Action": "s3:PutObject", "Resource": f"arn:aws:s3:::{BUCKET}/index.html"},
-        {"Sid": "RefreshAndObserveSiteCache", "Effect": "Allow", "Action": ["cloudfront:CreateInvalidation", "cloudfront:GetInvalidation"], "Resource": state["distribution_arn"]}]}
+    publisher = desired_publisher_policy(state["distribution_arn"])
+    atomic_json(DIRECTORY / "bucket-policy.json", desired_bucket_policy(state["distribution_arn"]))
     atomic_json(DIRECTORY / "publisher-policy.json", publisher)
     status(state)
 
@@ -259,20 +308,43 @@ def publish(state, html_path, qa_passed):
     identity()
     if not state.get("ready_for_qa_gated_publish"):
         raise RuntimeError("Run provision/status until infrastructure is ready.")
-    data = html_path.read_bytes()
-    if not data or len(data) > 5 * 1024 * 1024 * 1024:
-        raise RuntimeError("Expected a nonempty, single-upload HTML file.")
-    digest = hashlib.sha256(data).hexdigest()
-    aws("s3api", "put-object", "--bucket", BUCKET, "--key", "index.html", "--body", html_path.resolve(),
-        "--content-type", "text/html; charset=utf-8", "--cache-control", "max-age=60")
-    state["published_sha256"] = digest
+    if html_path.name != "index.html":
+        raise RuntimeError("Publishing expects the built dist/index.html path.")
+    paths = {"index.html": html_path, "robots.txt": html_path.with_name("robots.txt")}
+    assets = {}
+    for key, path in paths.items():
+        data = path.read_bytes()
+        if not data or len(data) > 5 * 1024 * 1024 * 1024:
+            raise RuntimeError(f"Expected a nonempty {key} file.")
+        assets[key] = {"sha256": hashlib.sha256(data).hexdigest(), "bytes": len(data),
+                       "content_type": PUBLIC_OBJECTS[key]}
+    robots = paths["robots.txt"].read_text()
+    if not re.search(r"(?m)^User-agent:\s*\*$", robots) or not re.search(r"(?m)^Allow:\s*/$", robots):
+        raise RuntimeError("robots.txt must explicitly allow all standards-respecting crawlers.")
+    if re.search(r"(?im)^Disallow:", robots):
+        raise RuntimeError("robots.txt must not contain a Disallow rule.")
+    credential_patterns = [
+        r"\b(?:AKIA|ASIA)[A-Z0-9]{16}\b",
+        r"(?:aws_secret_access_key|secretAccessKey)[\"']?\s*[:=]\s*[\"']?[A-Za-z0-9/+=]{40}(?![A-Za-z0-9/+=])",
+        r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----",
+        r"Access key ID\s*,\s*Secret access key",
+    ]
+    if any(re.search(pattern, robots, re.IGNORECASE) for pattern in credential_patterns):
+        raise RuntimeError("robots.txt contains a credential pattern; refusing to publish it.")
+    # Upload the auxiliary policy first so a partial attempt leaves the previous
+    # essay intact. index.html remains the final publication boundary.
+    for key in ["robots.txt", "index.html"]:
+        aws("s3api", "put-object", "--bucket", BUCKET, "--key", key, "--body", paths[key].resolve(),
+            "--content-type", PUBLIC_OBJECTS[key], "--cache-control", "max-age=60")
+    state["published_sha256"] = assets["index.html"]["sha256"]
+    state["published_assets"] = assets
     state["published_at"] = now()
     save(state)
     invalidation = aws("cloudfront", "create-invalidation", "--distribution-id", state["distribution_id"], "--paths", "/*")["Invalidation"]
     state["invalidation_id"] = invalidation["Id"]
     state["invalidation_status"] = invalidation["Status"]
     save(state)
-    print("Uploaded reviewed index.html and requested cache invalidation.")
+    print("Uploaded reviewed index.html and robots.txt, then requested cache invalidation.")
 
 
 def activate_dns(state, qa_passed):
@@ -343,7 +415,11 @@ def verify_site(state, target, resolve_ip=None):
     if target == "live" and not state.get("site_dns_published"):
         raise RuntimeError("Public DNS has not been activated.")
     hostname = DOMAIN if target == "live" else state["distribution_domain"]
-    evidence = {"hostname": hostname, "verified_at": now(), "sha256": state["published_sha256"], "https": {}}
+    published_assets = state.get("published_assets", {})
+    if "robots.txt" not in published_assets:
+        raise RuntimeError("The current publication does not record robots.txt; publish the complete site first.")
+    evidence = {"hostname": hostname, "verified_at": now(), "sha256": state["published_sha256"],
+                "assets": published_assets, "https": {}}
     if resolve_ip:
         evidence["process_only_dns_override"] = str(ipaddress.ip_address(resolve_ip))
     with scoped_resolution(hostname, resolve_ip):
@@ -355,14 +431,30 @@ def verify_site(state, target, resolve_ip=None):
             if not any(key.lower() == "content-type" and value.lower().startswith("text/html") for key, value in headers.items()):
                 raise RuntimeError("Published response is missing its HTML content type.")
             evidence["https"][path] = {"status": status_code, "sha256": digest}
-        redirect_status, redirect_headers, _ = http_request(hostname, secure=False)
-    location = next((value for key, value in redirect_headers.items() if key.lower() == "location"), "")
-    if redirect_status not in [301, 302, 307, 308] or location != f"https://{hostname}/":
-        raise RuntimeError("HTTP does not redirect to the expected HTTPS URL.")
-    s3_status, _, _ = http_request(f"{BUCKET}.s3.{REGION}.amazonaws.com", "/index.html", method="HEAD")
-    if s3_status != 403:
-        raise RuntimeError(f"Expected anonymous S3 denial, received {s3_status}.")
-    evidence.update(http_redirect_status=redirect_status, http_redirect_location=location, anonymous_s3_status=s3_status)
+        robots_status, robots_headers, robots_body = http_request(hostname, "/robots.txt")
+        robots_digest = hashlib.sha256(robots_body).hexdigest()
+        if robots_status != 200 or robots_digest != published_assets["robots.txt"]["sha256"]:
+            raise RuntimeError(f"HTTPS verification failed for {hostname}/robots.txt: status {robots_status}, body SHA-256 {robots_digest}")
+        if not any(key.lower() == "content-type" and value.lower().startswith("text/plain") for key, value in robots_headers.items()):
+            raise RuntimeError("Published robots.txt is missing its plain-text content type.")
+        evidence["https"]["/robots.txt"] = {"status": robots_status, "sha256": robots_digest}
+        redirects = {}
+        for path in ["/", "/robots.txt"]:
+            redirect_status, redirect_headers, _ = http_request(hostname, path, secure=False)
+            location = next((value for key, value in redirect_headers.items() if key.lower() == "location"), "")
+            if redirect_status not in [301, 302, 307, 308] or location != f"https://{hostname}{path}":
+                raise RuntimeError(f"HTTP {path} does not redirect to the expected HTTPS URL.")
+            redirects[path] = {"status": redirect_status, "location": location}
+    anonymous_statuses = {}
+    for key in PUBLIC_OBJECTS:
+        s3_status, _, _ = http_request(f"{BUCKET}.s3.{REGION}.amazonaws.com", "/" + key, method="HEAD")
+        if s3_status != 403:
+            raise RuntimeError(f"Expected anonymous S3 denial for {key}, received {s3_status}.")
+        anonymous_statuses["/" + key] = s3_status
+    evidence.update(http_redirect_status=redirects["/"]["status"],
+                    http_redirect_location=redirects["/"]["location"], http_redirects=redirects,
+                    anonymous_s3_status=anonymous_statuses["/index.html"],
+                    anonymous_s3_statuses=anonymous_statuses)
     state[target + "_verified_sha256"] = state["published_sha256"]
     state[target + "_verified_at"] = evidence["verified_at"]
     save(state)
@@ -371,12 +463,15 @@ def verify_site(state, target, resolve_ip=None):
 
 
 def check_publishing_permissions(state, administrator_profile, custom=False):
-    index = f"arn:aws:s3:::{BUCKET}/index.html"
+    index = object_arn("index.html")
+    robots = object_arn("robots.txt")
     other = f"arn:aws:s3:::{BUCKET}/other.html"
     checks = [
         ("s3:PutObject", index, "allowed"),
+        ("s3:PutObject", robots, "allowed"),
         ("s3:PutObject", other, "implicitDeny"),
         ("s3:DeleteObject", index, "implicitDeny"),
+        ("s3:DeleteObject", robots, "implicitDeny"),
         ("cloudfront:CreateInvalidation", state["distribution_arn"], "allowed"),
         ("cloudfront:GetInvalidation", state["distribution_arn"], "allowed"),
         ("cloudfront:CreateInvalidation", f"arn:aws:cloudfront::{ACCOUNT}:distribution/EOTHEREXAMPLE", "implicitDeny"),
@@ -415,19 +510,54 @@ def narrow_permissions(state, administrator_profile):
         raise RuntimeError("Unexpected attached policy; inspect before narrowing.")
     if aws("iam", "list-user-policies", "--user-name", user, profile=administrator_profile)["PolicyNames"] or aws("iam", "list-groups-for-user", "--user-name", user, profile=administrator_profile)["Groups"]:
         raise RuntimeError("Unexpected inline or group permissions; inspect before narrowing.")
-    desired = json.loads((DIRECTORY / "publisher-policy.json").read_text())
+    desired = desired_publisher_policy(state["distribution_arn"])
+    bucket_policy = desired_bucket_policy(state["distribution_arn"])
+    atomic_json(DIRECTORY / "publisher-policy.json", desired)
+    atomic_json(DIRECTORY / "bucket-policy.json", bucket_policy)
+    public_access = aws("s3api", "get-public-access-block", "--bucket", BUCKET,
+                        profile=administrator_profile)["PublicAccessBlockConfiguration"]
+    public_access_flags = ["BlockPublicAcls", "IgnorePublicAcls", "BlockPublicPolicy", "RestrictPublicBuckets"]
+    if any(public_access.get(flag) is not True for flag in public_access_flags):
+        raise RuntimeError("All four S3 Block Public Access settings must remain enabled before changing the bucket policy.")
+    current_bucket_policy = json.loads(aws("s3api", "get-bucket-policy", "--bucket", BUCKET,
+                                           profile=administrator_profile)["Policy"])
+    bucket_needs_update = current_bucket_policy != bucket_policy
+    if bucket_needs_update and current_bucket_policy != legacy_index_bucket_policy(state["distribution_arn"]):
+        raise RuntimeError("Existing bucket policy is neither the reviewed legacy policy nor the desired policy; refusing to overwrite it.")
+    policy_missing = False
+    policy_needs_update = False
     try:
         version = aws("iam", "get-policy", "--policy-arn", publisher, profile=administrator_profile)["Policy"]["DefaultVersionId"]
     except RuntimeError as error:
         if "(NoSuchEntity)" not in str(error):
             raise
+        policy_missing = True
+    else:
+        actual = aws("iam", "get-policy-version", "--policy-arn", publisher, "--version-id", version, profile=administrator_profile)["PolicyVersion"]["Document"]
+        policy_needs_update = actual != desired
+        if policy_needs_update:
+            if actual != legacy_index_publisher_policy(state["distribution_arn"]):
+                raise RuntimeError("Existing ReptendsPublish policy is neither the reviewed legacy policy nor the desired policy; refusing to overwrite it.")
+            versions = aws("iam", "list-policy-versions", "--policy-arn", publisher,
+                           profile=administrator_profile)["Versions"]
+            if len(versions) >= 5:
+                raise RuntimeError("ReptendsPublish has five versions; remove a nondefault version after review before updating it.")
+    # Both existing policies are now known before either one is changed.
+    if bucket_needs_update:
+        aws("s3api", "put-bucket-policy", "--bucket", BUCKET, "--policy",
+            json_argument(bucket_policy), profile=administrator_profile)
+        state["bucket_policy_updated_at"] = now()
+        save(state)
+    if policy_missing:
         aws("iam", "create-policy", "--policy-name", "ReptendsPublish", "--policy-document", json_argument(desired), profile=administrator_profile)
         state["publisher_policy_arn"] = publisher
         save(state)
-    else:
-        actual = aws("iam", "get-policy-version", "--policy-arn", publisher, "--version-id", version, profile=administrator_profile)["PolicyVersion"]["Document"]
-        if actual != desired:
-            raise RuntimeError("Existing ReptendsPublish policy differs; refusing to overwrite it.")
+    elif policy_needs_update:
+        aws("iam", "create-policy-version", "--policy-arn", publisher,
+            "--policy-document", json_argument(desired), "--set-as-default",
+            profile=administrator_profile)
+        state["publisher_policy_updated_at"] = now()
+        save(state)
     aws("iam", "attach-user-policy", "--user-name", user, "--policy-arn", publisher, profile=administrator_profile)
     state["publisher_policy_arn"] = publisher
     state["publisher_policy_attached"] = True

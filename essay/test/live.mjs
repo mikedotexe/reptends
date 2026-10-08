@@ -13,6 +13,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const siteURL = "https://reptends.mikedotexe.com/";
 const siteHostname = new URL(siteURL).hostname;
 const privateObjectURL = "https://reptends-mikedotexe-com-341982967115.s3.us-east-1.amazonaws.com/index.html";
+const privateRobotsURL = "https://reptends-mikedotexe-com-341982967115.s3.us-east-1.amazonaws.com/robots.txt";
 const digest = value => createHash("sha256").update(value).digest("hex");
 let siteAddress;
 if (process.env.REPTENDS_DNS_SERVER) {
@@ -58,10 +59,14 @@ function get(address) {
   });
 }
 
-const http = await get("http://reptends.mikedotexe.com/");
-assert([301, 302, 307, 308].includes(http.status), `HTTP should redirect; received ${http.status}.`);
-assert.equal(new URL(http.headers.location, "http://reptends.mikedotexe.com/").href, siteURL);
-console.log("PASS HTTP redirects to HTTPS.");
+for (const pathname of ["", "robots.txt"]) {
+  const source = new URL(pathname, "http://reptends.mikedotexe.com/");
+  const destination = new URL(pathname, siteURL);
+  const http = await get(source);
+  assert([301, 302, 307, 308].includes(http.status), `HTTP ${source.pathname} should redirect; received ${http.status}.`);
+  assert.equal(new URL(http.headers.location, source).href, destination.href);
+}
+console.log("PASS the essay and robots.txt redirect from HTTP to HTTPS.");
 
 const published = await get(siteURL);
 assert.equal(published.status, 200);
@@ -70,9 +75,20 @@ const expectedHash = digest(await readFile(resolve(root, "dist/index.html")));
 assert.equal(digest(published.body), expectedHash);
 console.log(`PASS HTTPS serves the exact local artifact (${expectedHash}).`);
 
+const expectedRobots = await readFile(resolve(root, "dist/robots.txt"));
+const robots = await get(new URL("robots.txt", siteURL));
+assert.equal(robots.status, 200);
+assert.match(robots.headers["content-type"] ?? "", /^text\/plain\b/i);
+assert.equal(digest(robots.body), digest(expectedRobots));
+assert.match(robots.body.toString("utf8"), /^User-agent:\s*\*$/m);
+assert.match(robots.body.toString("utf8"), /^Allow:\s*\/$/m);
+console.log("PASS robots.txt serves the exact permissive crawler policy.");
+
 const anonymous = await get(privateObjectURL);
 assert.equal(anonymous.status, 403, `Anonymous S3 access should be denied; received ${anonymous.status}.`);
-console.log("PASS anonymous S3 access is denied (403).");
+const anonymousRobots = await get(privateRobotsURL);
+assert.equal(anonymousRobots.status, 403, `Anonymous S3 robots.txt access should be denied; received ${anonymousRobots.status}.`);
+console.log("PASS anonymous S3 access is denied for index.html and robots.txt (403).");
 
 const require = createRequire(import.meta.url);
 let playwright;
