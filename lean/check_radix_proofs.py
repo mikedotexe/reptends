@@ -20,7 +20,7 @@ audit = subprocess.run(["lake", "env", "lean", "RadixAudit.lean"], cwd=ROOT,
 report = audit.stdout + audit.stderr
 expected = re.findall(r"^#print axioms (\S+)", (ROOT / "RadixAudit.lean").read_text(), re.M)
 entries = re.findall(r"'([^']+)' (?:depends on axioms: \[([^\]]*)\]|does not depend on any axioms)", report, re.S)
-if [name for name, _ in entries] != expected or len(expected) != 136:
+if [name for name, _ in entries] != expected or len(expected) != 149:
     raise RuntimeError("The theorem audit is incomplete")
 if re.search(r"\b(?:warning|error):", report):
     raise RuntimeError("Lean reported a warning or error during the axiom audit")

@@ -141,3 +141,18 @@ import RadixResearch
 #print axioms RadixRuns.power_997_remainder
 #print axioms RadixRuns.power_997_digit
 #print axioms RadixRuns.power_997_hasSum
+
+-- Indexed digits and the coefficient/carry bridge.
+#print axioms RadixRuns.indexed_remainder_general
+#print axioms RadixRuns.indexed_digit_general
+#print axioms RadixRuns.indexed_remainder
+#print axioms RadixRuns.indexed_digit
+#print axioms RadixRuns.quotient_remainder_carry
+#print axioms RadixRuns.ordinary_digit_carry_balance
+#print axioms RadixRuns.scaled_geometric_pack_balance
+#print axioms RadixRuns.scaled_geometric_pack_carry
+#print axioms RadixRuns.ordinary_prefix_boundary_carry
+#print axioms RadixRuns.ordinary_prefix_boundary_value
+#print axioms RadixRuns.carry_bridge_997_first_overlap
+#print axioms RadixRuns.carry_bridge_997_overflow
+#print axioms RadixRuns.carry_bridge_997_return

@@ -5,6 +5,7 @@ import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { formatWord, recurrenceTrace } from "../src/math/lifts.ts";
+import { exerciseDigitIndex } from "./digit-index-browser.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(import.meta.url);
@@ -74,7 +75,7 @@ async function assertReadingStructure(page) {
     assert.equal(await page.locator(selector).isVisible(), true, `${selector} must remain in the main reading path.`);
   }
   assert.deepEqual(await page.locator(".chapter-nav a").evaluateAll(links => links.map(link => link.getAttribute("href"))),
-    ["#carry", "#repeat", "#soft-end", "#change-radix", "#research"]);
+    ["#carry", "#repeat", "#soft-end", "#change-radix", "#digit-index", "#research"]);
   assert.equal(await page.locator("#repeat").evaluate(element => element.nextElementSibling?.id), "soft-end",
     "The finite-description chapter should follow the remainder explorer.");
 }
@@ -353,7 +354,7 @@ async function exerciseNavigationFocus() {
   await skip.focus();
   await skip.press("Enter");
   await page.waitForFunction(() => document.activeElement?.id === "main");
-  for (const id of ["carry", "repeat", "soft-end", "change-radix", "research"]) {
+  for (const id of ["carry", "repeat", "soft-end", "change-radix", "digit-index", "research"]) {
     const link = page.locator(`.chapter-nav a[href="#${id}"]`);
     await link.focus();
     await link.press("Enter");
@@ -608,6 +609,12 @@ async function exerciseRunLinks() {
 }
 
 try {
+  const indexedContext = await browser.newContext({ viewport: { width: 1024, height: 1000 } });
+  const indexedPage = await indexedContext.newPage();
+  await indexedPage.goto(shareTestURL + "#digit-index");
+  await exerciseDigitIndex(indexedPage);
+  await indexedContext.close();
+  console.log(`PASS ${engine} indexed digits: arbitrary bases, huge positions, independent checks, cancellation, sharing and history.`);
   await exerciseRunLinks();
   await exerciseShareLinks();
   await exerciseNavigationFocus();
@@ -649,6 +656,15 @@ try {
       await assertRepetitionBoundaries(page);
       await assertVerificationGuide(page);
       await assertRunExplorer(page);
+      await page.locator('[data-di-preset="return"]').click();
+      assert.equal(await page.locator("#di-tape").textContent(), "001");
+      await setDisclosure(page, "#di-power-bridge", true);
+      assert.match(await page.locator("#di-full-power").textContent(), /3\^166/);
+      await assertPageFits(page);
+      if ([320, 1440].includes(width) && colorScheme === "light") {
+        await page.locator("#digit-index").screenshot({ path: screenshotPath(`${width}-digit-index.png`) });
+      }
+      await page.locator('[data-di-preset="start"]').click();
       if ([320, 1440].includes(width) && colorScheme === "light") {
         await page.locator("#change-radix").screenshot({ path: screenshotPath(`${width}-change-radix.png`) });
       }
@@ -698,6 +714,8 @@ try {
   await assertRepetitionBoundaries(fallbackPage, false);
   await assertVerificationGuide(fallbackPage, false);
   await assertRunExplorer(fallbackPage, false);
+  assert.equal(await fallbackPage.locator("#di-form").isVisible(), false);
+  assert.match(await fallbackPage.locator("#di-tape").textContent(), /^001003009027081243731193/);
   assert.equal((await fallbackPage.locator("#hero-answer").textContent()).trim(), "731");
   for (const selector of ["#reveal", "#previous", "#animate-split", "#cycle-later"]) {
     assert.equal(await fallbackPage.locator(selector).isVisible(), false, `${selector} should be hidden when JavaScript is disabled.`);

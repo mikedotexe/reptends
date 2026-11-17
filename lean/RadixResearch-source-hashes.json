@@ -1,5 +1,5 @@
 {
-  "RadixRuns.lean": "14482ab22c35323348d095577c7bb80cfe75959fd529f1115060656a2b0daed6",
+  "RadixRuns.lean": "ca75d1412630f1489fdaca4d85a0bf02646d0acc8f7e7cd583d40d461e4d4e94",
   "RetainedProgression.lean": "bde96ae8d5388ab816bcf65f2ed0619922f4b0c1594d361211bb30210d57ba39",
   "RadixTermination.lean": "acf89562d86ebb2c5b7612269ee6358cf745082060df95bbbdfe83c612806efe",
   "RadixResearch.lean": "9c22219e15e7ce52d8cafae6018cfead11b67e2fb483e7590f929319d144c910",
@@ -20,5 +20,6 @@
   "RadixRuns/PowerRuns.lean": "bdf32eb1e2f2da4cf063096385f8e1c071ec32d8d5bccca992407a704fd035a9",
   "RadixRuns/Powers.lean": "930d33b3414a98a9431e31391d58987037605e6fb599b7570ac1a485a77a4352",
   "RadixRuns/Encoding.lean": "3dfa65aee607a2636b7db7c7f7a2ddefcf534065577dc5a6631f5361e614e44f",
-  "RadixRuns/Examples.lean": "4ba7bb51d919b79e629483fcc8c2175255729c8c5a368ce6178ba0387060e431"
+  "RadixRuns/Examples.lean": "4ba7bb51d919b79e629483fcc8c2175255729c8c5a368ce6178ba0387060e431",
+  "RadixRuns/CarryBridge.lean": "9981530ff4218b2cee8c8877ce1651095a177408c7495ac70f6e499186022cb4"
 }

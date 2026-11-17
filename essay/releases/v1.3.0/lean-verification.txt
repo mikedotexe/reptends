@@ -1,0 +1,9 @@
+Command: python3 lean/check_radix_proofs.py
+Result: PASS 23 unchanged proof sources and 149 theorem axiom checks.
+Build: RadixResearch, 7611 jobs, no warnings.
+Added: 13 declarations (2 arbitrary-base indexed formulas; 11 phase11 carry claims).
+Phase11 statement and proof bodies preserved verbatim; import narrowed to Encoding.
+Axioms: propext, Classical.choice, Quot.sound only.
+No custom axioms, sorry, admit, native_decide or kernel bypass.
+Canonical sources unchanged.
+Math identities proved independently; JavaScript implementation is separately tested.

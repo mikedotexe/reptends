@@ -439,9 +439,9 @@ build-release-snapshot
 ### Registry Snapshot
 
 <!-- REGISTRY_SUMMARY_START -->
-- total claims: 17
+- total claims: 18
 - classical: 3
-- reproved-here: 10
+- reproved-here: 11
 - implemented-here: 1
 - empirical: 1
 - open: 2

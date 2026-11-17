@@ -5,6 +5,7 @@ import { positionFromSearch, linkToPosition } from "./navigation.ts";
 import { decimalReturn997 } from "./decimal-return.ts";
 import type { DecimalReturn } from "./decimal-return.ts";
 import { initRadixExplorer } from "./radix-explorer.ts";
+import { initDigitIndexExplorer } from "./digit-index-explorer.ts";
 
 const view = buildUnfoldedView({ base: 1000n, coefficients: [3n] }, 332);
 const certificates = view.rows.map((_, index) => certifiedPrefix(view.trace, index + 1));
@@ -296,6 +297,7 @@ reducedMotion.addEventListener("change", () => {
 
 initGeometry(element("geometry-app"));
 initRadixExplorer();
+initDigitIndexExplorer();
 render();
 document.documentElement.classList.add("js");
 

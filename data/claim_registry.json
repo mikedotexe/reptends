@@ -441,5 +441,24 @@
     ],
     "source_ids": [],
     "counterexample_ids": []
+  },
+  {
+    "id": "indexed_digits_and_carries",
+    "title": "Indexed digits and exact geometric carry accounting",
+    "statement": "For a nonnegative numerator a, denominator D > 0 and radix B >= 2, the remainder before zero-based digit n is (a*B^n) mod D and the digit is floor(B*((a*B^n) mod D)/D). When B = D+c, let q_n = floor(a*c^n/D); then d_n + B*q_n = a*c^n + q_(n+1). For 0 <= a < D, the ordinary packed prefix equals the packed geometric coefficients plus the boundary quotient q_N.",
+    "status": "reproved-here",
+    "repo_status": "Lean-formalized; an exact BigInt digit-by-index explorer is independently tested against sequential division",
+    "proof_status": "indexed_remainder_general, indexed_digit_general, ordinary_digit_carry_balance, ordinary_prefix_boundary_carry and ordinary_prefix_boundary_value. The modular exponentiation implementation and browser UI are tested, not formally verified.",
+    "evidence": [
+      "lean/RadixRuns/CarryBridge.lean",
+      "essay/src/math/digit-index.ts",
+      "essay/test/digit-index.test.ts"
+    ],
+    "vocabulary_ids": [
+      "remainder_orbit",
+      "carry_layer"
+    ],
+    "source_ids": [],
+    "counterexample_ids": []
   }
 ]

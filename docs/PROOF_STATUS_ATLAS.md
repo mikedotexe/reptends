@@ -25,9 +25,9 @@ This project now treats its public claims as a registry rather than free-form pr
 Current registry counts:
 
 <!-- REGISTRY_SUMMARY_START -->
-- total claims: 17
+- total claims: 18
 - classical: 3
-- reproved-here: 10
+- reproved-here: 11
 - implemented-here: 1
 - empirical: 1
 - open: 2
@@ -62,6 +62,7 @@ Current open claim IDs:
 | `carry_dfa_factorization` | `open` | The long-division DFA factors canonically into a remainder-orbit system together with a carry transducer for all coprime bases and moduli. | [CarryTransducer.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CarryTransducer.lean), [CarryComparison.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CarryComparison.lean), [Factorization.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/Factorization.lean), [transducer.py](/Users/mikepurvis/other/quadratic-residue-reptends/bridge_reptends/transducer.py), [CARRY_TRANSDUCER.md](/Users/mikepurvis/other/quadratic-residue-reptends/docs/CARRY_TRANSDUCER.md), [test_carry_transducer.py](/Users/mikepurvis/other/quadratic-residue-reptends/tests/test_carry_transducer.py) |
 | `mixed_radix_run_value_preservation` | `reproved-here` | For a proper fraction a/D with 0 <= a < D, every finite sequence of valid fixed-radix runs preserves Q/P + r/(DP) = a/D. A run of radix B and positive length L with packed digits A contributes A/(P*B^L). First-return boundaries are separately certified. | [Encoding.lean](../lean/RadixRuns/Encoding.lean), [Core.lean](../lean/RadixRuns/Core.lean) |
 | `mixed_radix_power_digits` | `reproved-here` | For integers D > 1 and c >= 2, the schedule B_n = D*c^n + 1 emits the legal digit c^n and remainder 1 at every step. Every one-digit run is a first return. The exact weighted real series sums to 1/D, with a positive tail after every finite prefix. | [Powers.lean](../lean/RadixRuns/Powers.lean), [PowerRuns.lean](../lean/RadixRuns/PowerRuns.lean), [Examples.lean](../lean/RadixRuns/Examples.lean) |
+| `indexed_digits_and_carries` | `reproved-here` | For a nonnegative numerator a, denominator D > 0 and radix B >= 2, the remainder before zero-based digit n is (a*B^n) mod D and the digit is floor(B*((a*B^n) mod D)/D). When B = D+c, let q_n = floor(a*c^n/D); then d_n + B*q_n = a*c^n + q_(n+1). For 0 <= a < D, the ordinary packed prefix equals the packed geometric coefficients plus the boundary quotient q_N. | [CarryBridge.lean](../lean/RadixRuns/CarryBridge.lean), [digit-index.ts](../essay/src/math/digit-index.ts), [digit-index.test.ts](../essay/test/digit-index.test.ts) |
 <!-- CLAIM_TABLE_END -->
 
 <!-- PROOF_STATUS_FOOTER_START -->
@@ -85,3 +86,7 @@ Machine-readable backing lives in [claim_registry.json](/Users/mikepurvis/other/
 - [QRTour/CompositeVisibility.lean](/Users/mikepurvis/other/quadratic-residue-reptends/lean/QRTour/CompositeVisibility.lean) now packages same-core families for actual denominators versus stripped periodic cores using the preperiod factor layer, including exact quotient-scaling, exact/lower/upper endpoint labels, scaled-raw-coefficient sufficient criteria for the non-power interval endpoints, near-denominator coordinate-selection criteria, exact same-core transport of the first visible mismatch boundary in the `k`-power regime, and exact same-core transport of the raw tail-mass lower-bound inequality, the shifted coarse `k^(n+L) < modulus` sufficient condition, and the exact fixed-window lookahead certificate itself between the stripped core at `(n, L)` and the actual denominator at `(n + s, L)`.
 - The stripped-periodic-modulus statement in the composite pipeline remains classical/computational in the repo; Lean now covers the finite prime-power CRT order theorem, the max-over-base-primes preperiod step count, the stripping-factor divisibility layer, and the same-core family packaging built on top of that exact arithmetic.
 <!-- PROOF_STATUS_TRACK_FIVE_NOTES_END -->
+
+## indexed_digits_and_carries
+
+The indexed formula and exact carry/prefix identities are proved in [CarryBridge.lean](../lean/RadixRuns/CarryBridge.lean). The index n in Lean starts at zero; the public explorer calls the corresponding position n+1. These identities do not require a prime denominator or a pure repeating cycle. The explorer supports nonnegative improper fractions by retaining their fractional remainder. Its BigInt modular exponentiation and sequential verifier are independently tested implementations, not certified Lean programs.

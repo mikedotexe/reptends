@@ -7,11 +7,12 @@ import { renderOpeningExamples, renderPowerStack } from "./render-opening.ts";
 import { renderRepetitionBoundaries } from "./render-boundaries.ts";
 import { renderVerificationGuide, renderVerificationCertificate } from "./render-verification.ts";
 import { renderRadixChapter } from "./render-radices.ts";
+import { renderDigitIndexChapter } from "./render-digit-index.ts";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const template = await readFile(resolve(root, "src/template.html"), "utf8");
 const robots = await readFile(resolve(root, "src/robots.txt"), "utf8");
-for (const marker of ["<!-- APP_CSS -->", "<!-- APP_JS -->", "<!-- OPENING_EXAMPLES -->", "<!-- POWER_STACK -->", "<!-- REPETITION_BOUNDARIES -->", "<!-- RADIX_CHAPTER -->", "<!-- VERIFICATION_GUIDE -->", "<!-- VERIFICATION_CERTIFICATE -->"]) {
+for (const marker of ["<!-- APP_CSS -->", "<!-- APP_JS -->", "<!-- OPENING_EXAMPLES -->", "<!-- POWER_STACK -->", "<!-- REPETITION_BOUNDARIES -->", "<!-- RADIX_CHAPTER -->", "<!-- DIGIT_INDEX_CHAPTER -->", "<!-- VERIFICATION_GUIDE -->", "<!-- VERIFICATION_CERTIFICATE -->"]) {
   if (template.split(marker).length !== 2) {
     throw new Error(`The page template must contain exactly one ${marker} marker.`);
   }
@@ -59,6 +60,7 @@ const html = template
   .replace("<!-- POWER_STACK -->", () => renderPowerStack())
   .replace("<!-- REPETITION_BOUNDARIES -->", () => renderRepetitionBoundaries())
   .replace("<!-- RADIX_CHAPTER -->", () => renderRadixChapter())
+  .replace("<!-- DIGIT_INDEX_CHAPTER -->", () => renderDigitIndexChapter())
   .replace("<!-- VERIFICATION_GUIDE -->", () => renderVerificationGuide())
   .replace("<!-- VERIFICATION_CERTIFICATE -->", () => renderVerificationCertificate())
   .replace("<!-- APP_CSS -->", () => `<style>\n${css}\n</style>`)

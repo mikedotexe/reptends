@@ -1,8 +1,10 @@
 # Where Did the Pattern Go?
 
-The canonical website project for [reptends.mikedotexe.com](https://reptends.mikedotexe.com). Four chapters follow the powers inside 1/997: addition and carrying, repeating remainders, the endpoint of a repetend, and a changing-radix representation that keeps every power visible as a legal digit. Each chapter has one clear question; full accounting, decimal conversion, proofs, and geometry remain optional.
+The canonical website project for [reptends.mikedotexe.com](https://reptends.mikedotexe.com). Five chapters follow the powers inside 1/997: addition and carrying, repeating remainders, the endpoint of a repetend, a changing-radix representation that keeps every power visible as a legal digit, and direct access to a digit by its index. Each chapter has one clear question; full accounting, decimal conversion, proofs, and geometry remain optional.
 
 The new [changing-radix chapter](https://reptends.mikedotexe.com/#change-radix) keeps the same fraction while assigning new place weights. The [proof-status atlas](../docs/PROOF_STATUS_ATLAS.md) registers its generic run-preservation and infinite-power claims as `reproved-here`, backed by the public [Lean library](../lean/RadixRuns.lean). A returning remainder determines the same future digits when the radix is held fixed; the new chapter explicitly changes it.
+
+The [Digit by Index chapter](https://reptends.mikedotexe.com/#digit-index), inspired by Fable’s prototype, jumps to any requested position using modular exponentiation. It supports arbitrary integer bases, nonnegative numerators, improper fractions, ranges, and huge indices. An independent, cancellable long-division walk checks practical distances. The base-1000 group-167 example connects its returning digit `001` to the complete power `3^166` and exact carry balance. The [indexed-digit and carry proofs](../lean/RadixRuns/CarryBridge.lean) establish the formulas; they do not formally verify the browser code.
 
 This project lives in the [`essay/` folder of mikedotexe/reptends](https://github.com/mikedotexe/reptends/tree/main/essay). On Mike's machine, `/Users/mikepurvis/other/physics-math-research/site` is a stable symlink to `/Users/mikepurvis/other/reptends-publishing/essay` in a clean publishing checkout. Both paths reach the same files; the original research checkout and its unfinished changes remain intact.
 
@@ -50,6 +52,7 @@ If a local resolver still caches a pre-launch negative answer, set `REPTENDS_DNS
 - `src/decimal-return.ts`: digitwise expansion of the selected exact word, marking all six decimal returns within the two group cycles.
 - `src/navigation.ts`: strict group-link parsing and canonical sharing URLs.
 - `src/run-radices.ts`, `src/radix-explorer.ts`, and `scripts/render-radices.ts`: exact run accounting, the 997 power schedule, static examples, and the focused changing-radix explorer.
+- `src/math/digit-index.ts`, `src/digit-index-explorer.ts`, `scripts/render-digit-index.ts`, and `src/digit-index.css`: bounded exact input parsing, direct indexed digits, independent sequential checks, query sharing, and the optional power/carry inspector.
 - `src/finishing.css`: byline, personal note, and sharing controls.
 - `src/geometry.ts` and `src/geometry.css`: ordered pair and triple contributions.
 - `src/math/`: preserved exact TypeScript engine; see [arithmetic provenance](src/math/PROVENANCE.md).
@@ -62,7 +65,9 @@ If a local resolver still caches a pre-launch negative answer, set `REPTENDS_DNS
 
 The **Copy link to this group** button shares a URL such as [group 8, the 193 follow-up](https://reptends.mikedotexe.com/?group=8#repeat). Group numbers run from 1 through 332. Invalid or ambiguous values fall back to the first change, group 7. Browser Back/Forward restores linked positions, and a selectable field is available if clipboard permission is unavailable. Offline copies still create links to the public essay.
 
-**Copy a link to this run** shares the independent changing-radix position, for example [run 167, digit 3^166](https://reptends.mikedotexe.com/?run=167#change-radix). Run numbers are 1–169, with exponent `run − 1`; the default is run 4. Invalid or duplicated run parameters use that default. Both explorers preserve the other's query parameter. Their positions refer to different representations and different place weights.
+**Copy a link to this run** shares the independent changing-radix position, for example [run 167, digit 3^166](https://reptends.mikedotexe.com/?run=167#change-radix). Run numbers are 1–169, with exponent `run − 1`; the default is run 4. Invalid or duplicated run parameters use that default. All explorers preserve one another’s query parameters. Their positions refer to different representations and different place weights.
+
+**Copy a link to this result** records the numerator, denominator, base, and one-based position range in `di_a`, `di_d`, `di_b`, `di_from`, and `di_to`. For example, [base-1000 group 167](https://reptends.mikedotexe.com/?di_a=1&di_d=997&di_b=1000&di_from=167&di_to=#digit-index) displays `001`. Each search emits at most 1,000 digits. Positions accept up to 256 decimal digits; numerator, denominator and base accept up to 128. The independent walk stops at position 100,000; direct lookup does not need that walk or a precomputed period. Bases above 36 show each digit’s value in decimal brackets, except base 1000, which shows three-digit groups.
 
 ## Mathematical scope
 
@@ -80,7 +85,7 @@ The general carry identity, geometric series, and Cauchy products are establishe
 
 ## Definition of done for this edition
 
-The essay has a deliberately bounded scope: concrete decimal patterns, exact addition and carrying, repeating remainders, and changing measuring units. A release is ready when its displayed arithmetic is independently checked, its controls and reading path work across supported browsers and screen sizes, its cited Lean run proofs build and pass their axiom audit, and the reviewed standalone artifact is reproducibly published with trusted HTTPS and a private origin.
+The essay has a deliberately bounded scope: concrete decimal patterns, exact addition and carrying, repeating remainders, changing measuring units, and indexed access to the same exact arithmetic. A release is ready when its displayed arithmetic is independently checked, its controls and reading path work across supported browsers and screen sizes, its cited Lean run proofs build and pass their axiom audit, and the reviewed standalone artifact is reproducibly published with trusted HTTPS and a private origin.
 
 The editorial acceptance check is a fresh reader who can explain where the extra 2 comes from, what repeats and what grows, what adding nines changes, and why the powers do not stop. Human feedback is still pending; the three independent AI reviews of v1.1.0 are recorded separately in [READER-CHECK.md](READER-CHECK.md). Address specific comprehension failures before expanding the main story.
 
