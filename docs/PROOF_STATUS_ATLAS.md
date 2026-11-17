@@ -25,9 +25,9 @@ This project now treats its public claims as a registry rather than free-form pr
 Current registry counts:
 
 <!-- REGISTRY_SUMMARY_START -->
-- total claims: 19
+- total claims: 20
 - classical: 3
-- reproved-here: 12
+- reproved-here: 13
 - implemented-here: 1
 - empirical: 1
 - open: 2
@@ -64,6 +64,7 @@ Current open claim IDs:
 | `mixed_radix_power_digits` | `reproved-here` | For integers D > 1 and c >= 2, the schedule B_n = D*c^n + 1 emits the legal digit c^n and remainder 1 at every step. Every one-digit run is a first return. The exact weighted real series sums to 1/D, with a positive tail after every finite prefix. | [Powers.lean](../lean/RadixRuns/Powers.lean), [PowerRuns.lean](../lean/RadixRuns/PowerRuns.lean), [Examples.lean](../lean/RadixRuns/Examples.lean) |
 | `indexed_digits_and_carries` | `reproved-here` | For a nonnegative numerator a, denominator D > 0 and radix B >= 2, the remainder before zero-based digit n is (a*B^n) mod D and the digit is floor(B*((a*B^n) mod D)/D). When B = D+c, let q_n = floor(a*c^n/D); then d_n + B*q_n = a*c^n + q_(n+1). For 0 <= a < D, the ordinary packed prefix equals the packed geometric coefficients plus the boundary quotient q_N. | [CarryBridge.lean](../lean/RadixRuns/CarryBridge.lean), [digit-index.ts](../essay/src/math/digit-index.ts), [digit-index.test.ts](../essay/test/digit-index.test.ts) |
 | `retained_progression_handoffs` | `reproved-here` | For integers 0 < r < D and d > 0, R = floor(D*d/r) + 1 emits the legal digit d and a remainder t with 0 < t <= r. Iterating this rule for any positive digit sequence preserves every existing prefix certificate D*Q+r=A*P; its weighted infinite continuation sums to A/D - Q/P. Each R is the smallest radix emitting that digit with a positive remainder. | [HandoffSearch.lean](../lean/RadixRuns/HandoffSearch.lean), [progression.ts](../essay/src/math/progression.ts), [progression.test.ts](../essay/test/progression.test.ts) |
+| `unified_balance_rule` | `reproved-here` | For D > r > 0, current radix B >= 2 and next target a >= 0, let T = B*r - D*a. If 0 <= T < D, keep B and emit a with remainder T; T = 0 completes the fraction. Otherwise, for a > 0 choose R = floor(D*a/r)+1, emitting a with a proper positive remainder. Each step preserves D*Q+r=A*P and its exact value. Iteration with positive targets writes those targets until completion, then zeros; the weighted written stream converges to the original remaining value. | [BalanceRule.lean](../lean/RadixRuns/BalanceRule.lean), [BalanceContinue.lean](../lean/RadixRuns/BalanceContinue.lean), [progression.ts](../essay/src/math/progression.ts), [progression.test.ts](../essay/test/progression.test.ts) |
 <!-- CLAIM_TABLE_END -->
 
 <!-- PROOF_STATUS_FOOTER_START -->
@@ -99,3 +100,11 @@ The adaptive rule and its exact value preservation are proved in [HandoffSearch.
 The worked examples retain the ordinary base-1000 prefix through 243 for 1/997, and through 997 for 1/998001. The next radices are 998 and 999 respectively, emitting 729 and 998. Subsequent changing units keep tripling or counting. The general theorem accepts any positive target sequence; the examples take their targets from the geometric and counting coefficient sequences associated with their original reading unit. This changes the weights of later digits. Ordinary positional notation still retains the exact value.
 
 The minimum is local: it concerns the next radix with the requested digit and a strictly positive remainder. It does not minimize the number of steps until a remainder stays fixed. Zero targets require a separate condition, formalized as `zero_digit_exists_iff`; the positive-digit theorem does not cover them. The JavaScript model, UI, and starting-prefix computations are independently tested implementations rather than certified Lean programs.
+
+## unified_balance_rule
+
+The signed balance `T = B*r - D*a` checks the next supplied term against the current reading unit. Keep the unit exactly when `0 <= T < D`; zero completes the fraction. For a rejected positive target, `floor(D*a/r)+1` supplies a valid replacement with a positive remainder. No parallel ordinary-division stream or preselected switching boundary is needed. This is a representation rule for a supplied progression, not a claim of a unique sequence hidden in a fraction.
+
+[BalanceRule.lean](../lean/RadixRuns/BalanceRule.lean) proves the one-step decision, digit legality, prefix and value preservation, completion, and convergence of the actual written stream. After completion the stream writes zeros. The stream theorem assumes positive targets; initial zero terms in the Fibonacci and counting examples use the separately proved one-step rule. A rejected zero target needs separate feasibility analysis. [BalanceContinue.lean](../lean/RadixRuns/BalanceContinue.lean) supplies the positive continuation core and concrete keep/change witnesses for all three examples.
+
+The first changed positions are 7 for 1/997 (729, radix 998), 12 for 1/9899 (89, radix 99), and 999 for 1/998001 (998, radix 999). The explorer finds these positions by applying the rule from the start. The full initial prefix calculations and UI are independently tested implementations, not Lean-certified programs. The terminating example keeps decimal radix 10 at 1/8 = 0.125. A completed expansion cannot keep writing positive positional digits without changing its value; any continuing generating sequence must be displayed separately.

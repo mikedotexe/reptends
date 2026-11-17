@@ -618,7 +618,7 @@ try {
   await exerciseDigitIndex(indexedPage);
   await indexedPage.goto(shareTestURL + "#change-radix");
   await exerciseProgression(indexedPage);
-  console.log(`PASS ${engine} retained progressions: both prefixes, 16 exact states, bounds, sharing and history.`);
+  console.log(`PASS ${engine} retained progressions: three prefixes, 27 exact states, signed balances, completion, sharing and history.`);
   await indexedContext.close();
   console.log(`PASS ${engine} indexed digits: arbitrary bases, huge positions, independent checks, cancellation, sharing and history.`);
   await exerciseRunLinks();
@@ -662,7 +662,7 @@ try {
       await assertRepetitionBoundaries(page);
       await assertVerificationGuide(page);
       await assertRunExplorer(page);
-      for (const example of ["powers", "counting"]) {
+      for (const example of ["powers", "fibonacci", "counting"]) {
         await page.locator("#hp-" + example).click();
         await assertProgression(page, example, 0);
         if ([320, 1440].includes(width) && colorScheme === "light") {

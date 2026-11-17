@@ -3,9 +3,9 @@ import { progressionRows } from "../src/math/progression.ts";
 
 const atlas = "https://github.com/mikedotexe/reptends/blob/main/docs/PROOF_STATUS_ATLAS.md";
 const proof = "https://github.com/mikedotexe/reptends/blob/main/lean/RadixRuns/Examples.lean";
-const handoffProof = "https://github.com/mikedotexe/reptends/blob/main/lean/RadixRuns/HandoffSearch.lean";
+const handoffProof = "https://github.com/mikedotexe/reptends/blob/main/lean/RadixRuns/BalanceRule.lean";
 
-/** Both worked examples remain readable without JavaScript. */
+/** All three worked examples remain readable without JavaScript. */
 export function renderRadixChapter(): string {
   const first = powerRuns(997n, 3n, 4);
   const rows = first.map((row, n) => `<tr><th scope="row">${n + 1}</th><td>${row.packed}</td><td>${decimalTruncation(row.after.quotient, row.after.place)}…</td></tr>`).join("");
@@ -15,24 +15,26 @@ export function renderRadixChapter(): string {
   return `<section id="change-radix" class="chapter wrap radix-chapter" aria-labelledby="radix-title" tabindex="-1">
     <div class="chapter-heading"><span class="chapter-number">04 / CHANGE THE RADIX</span><h2 id="radix-title">Keep the pattern.<br>Change the units.</h2></div>
     <div class="prose"><p>For 1/997, tripling gives 1, 3, 9, 27, 81, 243, 729… . The decimal groups show that pattern until carrying turns 729 into 731.</p>
-      <p>We can keep the groups already written and change the <strong>radix</strong>—the base used for the next digit. This <a href="${atlas}#retained_progression_handoffs">value-preserving construction</a> makes room for the same progression to stay visible.</p></div>
+      <p>We can keep the groups already written and change the <strong>radix</strong>—the base used for the next digit. This <a href="${atlas}#unified_balance_rule">value-preserving construction</a> uses one check: write the next term in the current radix and inspect what would be left. Keep the radix when the leftover is zero or positive and smaller than the denominator; change it otherwise. Zero means the fraction is complete.</p></div>
     <div class="workbench hp-workbench" aria-label="Keep a progression visible by changing the radix">
       <div class="hp-presets enhancement" role="group" aria-label="Choose a progression">
         <button id="hp-powers" class="button" type="button" aria-pressed="true"><span>1/997</span><small>Keep tripling</small></button>
+        <button id="hp-fibonacci" class="button" type="button" aria-pressed="false"><span>1/9899</span><small>Fibonacci</small></button>
         <button id="hp-counting" class="button" type="button" aria-pressed="false"><span>1/998001</span><small>Keep counting</small></button>
       </div>
       <div class="workbench-top"><h3 id="hp-title">Keep tripling.</h3><span id="hp-fraction" class="base-badge">1/997</span></div>
       <p id="hp-origin" class="hp-origin">1000 − 997 = 3. Reading in groups of three gives the powers 1, 3, 9, 27… before carrying.</p>
       <div class="hp-prefix"><span class="small-label">KEEP WHAT IS ALREADY WRITTEN</span><p id="hp-prefix">001 · 003 · 009 · 027 · 081 · 243</p><small id="hp-prefix-note">6 digits in radix 1000; the remainder is 729.</small></div>
-      <div class="hp-fork" aria-label="Compare the first changed digit"><div><span class="small-label">STAY IN RADIX 1000</span><strong id="hp-fixed-first">731</strong><small>The next ordinary group</small></div><span class="hp-fork-or" aria-hidden="true">or</span><div><span class="small-label">CHANGE THE NEXT RADIX TO <span id="hp-first-radix">998</span></span><strong id="hp-changed-first">729</strong><small>The next term stays visible</small></div></div>
-      <p id="hp-switch-note" class="hp-switch-note">This first switch keeps remainder 729. Each later step triples the digit and uses a new radix.</p>
-      <div class="hp-steps enhancement"><button id="hp-previous" class="button icon-button" type="button" aria-label="Previous changed-radix digit" disabled>←</button><div class="position-slider"><label for="hp-position">Continue the pattern <strong id="hp-step-label">1 of 8</strong></label><input id="hp-position" type="range" min="0" max="7" step="1" value="0"></div><button id="hp-next" class="button icon-button" type="button" aria-label="Next changed-radix digit">→</button></div>
+      <div class="hp-fork" aria-label="Compare the first changed digit"><div><span class="small-label">STAY IN RADIX <span id="hp-original-radix">1000</span></span><strong id="hp-fixed-first">731</strong><small>The next ordinary group</small></div><span class="hp-fork-or" aria-hidden="true">or</span><div><span class="small-label">CHANGE THE NEXT RADIX TO <span id="hp-first-radix">998</span></span><strong id="hp-changed-first">729</strong><small>The next term stays visible</small></div></div>
+      <p id="hp-switch-note" class="hp-switch-note">The comparison above marks the first change. Use the arrows below to inspect the balance before and after it.</p>
+      <div class="hp-steps enhancement"><button id="hp-previous" class="button icon-button" type="button" aria-label="Previous progression step">←</button><div class="position-slider"><label for="hp-position">Continue the pattern <strong id="hp-step-label">1 of 8</strong></label><input id="hp-position" type="range" min="-1" max="7" step="1" value="0"></div><button id="hp-next" class="button icon-button" type="button" aria-label="Next progression step">→</button></div>
+      <div class="hp-balance-panel" aria-label="The balance check"><span class="small-label">TRY THE CURRENT RADIX</span><p id="hp-balance" class="run-equation">1000 × 729 − 997 × 729 = 2187</p><strong id="hp-decision">Change radix 1000 → 998</strong><p id="hp-reason">The leftover is at least 997. It would change the printed digit.</p><p id="hp-choice" class="run-equation">New radix = ⌊997 × 729 / 729⌋ + 1 = 998</p></div>
       <p id="hp-position-note" class="hp-position-note">Digit position 7 in this representation</p>
       <dl class="hp-readout"><div><dt>RADIX AT THIS POSITION</dt><dd id="hp-radix">998</dd></div><div><dt>DIGIT WRITTEN</dt><dd id="hp-digit">729</dd></div><div><dt>REMAINDER</dt><dd id="hp-remainder">729 → 729</dd></div></dl>
       <p id="hp-equation" class="run-equation">998 × 729 = 997 × 729 + 729</p>
       <div id="hp-inscription" class="hp-inscription" role="math" aria-label="After the preserved prefix: digit 729 in radix 998, digit 2187 in radix 2992, digit 6561 in radix 8974, and so on"><span id="hp-leading-dots" hidden>…</span>${continuation.slice(0,3).map((row,i) => `<span id="hp-token-${i}" class="hp-token"${i === 0 ? ' aria-current="step"' : ''}><span id="hp-token-digit-${i}">[${row.desired}]</span><sub id="hp-token-radix-${i}">${row.radix}</sub></span>`).join("")}<span>…</span></div>
       <p class="hp-notation-note">After the preserved prefix, each bracket is one digit. The small number below it is its radix.</p>
-      <p id="hp-observation" class="hp-observation" aria-live="polite">Next comes 2187. Tripling can continue indefinitely as the units change.</p>
+      <p id="hp-observation" class="hp-observation" aria-live="polite">Next comes 2187. The same balance check decides whether to keep or change the radix.</p>
       <details id="hp-weights" class="math-note"><summary>How do the new digits keep the same value?</summary>
         <p>A digit’s weight is 1 divided by the product of <em>all</em> radices used through its position. Keep the old prefix, then add the new contributions:</p>
         <p id="hp-first-weights" class="formula">729/(1000⁶ × 998) + 2187/(1000⁶ × 998 × 2992) + …</p>
@@ -42,16 +44,21 @@ export function renderRadixChapter(): string {
         <details id="hp-exact"><summary>Inspect the exact integers at this step</summary><label class="run-state-label" for="hp-place">Place product P<textarea id="hp-place" rows="3" readonly spellcheck="false">${handoff.after.place}</textarea></label><label class="run-state-label" for="hp-quotient">Packed quotient Q<textarea id="hp-quotient" rows="3" readonly spellcheck="false">${handoff.after.quotient}</textarea></label><p id="hp-decimal-prefix" class="fine-print">Written prefix, truncated to 20 decimal places: ${decimalTruncation(handoff.after.quotient,handoff.after.place)}…</p></details>
       </details>
       <div class="position-sharing enhancement"><button id="hp-share" class="button small" type="button">Copy a link to this step</button><span id="hp-share-help">Keep this example and position.</span><label id="hp-share-label" class="share-link-fallback" for="hp-share-link" hidden>Copy this link:<input id="hp-share-link" type="text" readonly spellcheck="false" aria-label="Link to the selected progression step"></label></div>
-      <noscript><p class="hp-static-counting"><strong>Keep counting with 1/998001.</strong> In radix 1000, the groups are 000, 001, …, 997, then 999. Preserve the first 998 groups and use radix 999 to write 998. Radices 998002, 999001, 1000000 then write 999, 1000, 1001. The same value is expressed with new weights.</p></noscript>
+      <noscript><p class="hp-static-fibonacci"><strong>Fibonacci with 1/9899.</strong> In radix 100 the prefix is 00, 01, 01, 02, 03, 05, 08, 13, 21, 34, 55. Writing 89 next would leave 14489, above denominator 9899. The balance rule chooses radix 99 to write 89, then radices 258 and 996 to write 144 and 233.</p><p class="hp-static-counting"><strong>Keep counting with 1/998001.</strong> In radix 1000, the groups are 000, 001, …, 997, then 999. Preserve the first 998 groups and use radix 999 to write 998. Radices 998002, 999001, 1000000 then write 999, 1000, 1001. The same value is expressed with new weights.</p></noscript>
     </div>
     <p class="chapter-bridge">The progression stays visible. The value stays fixed.<br>The new digits have new weights.</p>
     <details id="hp-proof" class="math-note"><summary>The general rule, and what Lean proves</summary>
-      <p>The <a href="${atlas}#retained_progression_handoffs">proof-status atlas</a> records this construction as <strong>reproved-here in Lean</strong>. It works with integer arithmetic, independently of how we print the numbers.</p>
-      <p>Let D be the denominator, r the current positive remainder, and d the next positive term of the progression. Use:</p>
-      <p class="formula">Next radix = ⌊Dd/r⌋ + 1<br>Next remainder = (next radix) × r − Dd</p>
-      <p>The floor symbol ⌊ ⌋ means round down. This is the smallest radix that writes d and leaves a positive remainder. Each new digit fits its radix, the prefix and remaining tail preserve the value, and the infinite continuation sums to the starting fraction.</p>
-      <p>For 1/997, 1000 − 997 = 3 supplies the tripling pattern. For 1/998001, 998001 = 999² supplies the counting pattern in groups of three. We continue those existing coefficient sequences with new place values. The rule also accepts other positive sequences; the denominator alone does not pick a unique one.</p>
-      <p>A switch need not wait for a repeated remainder: the counting example first changes the remainder to 999, then keeps returning to it. <a href="${handoffProof}">Read the value-preservation and convergence proofs</a>. Lean verifies the mathematical construction; the interactive implementation is checked separately.</p>
+      <p>The <a href="${atlas}#unified_balance_rule">proof-status atlas</a> records this construction as <strong>reproved-here in Lean</strong>. It works with integer arithmetic, independently of how we print the numbers.</p>
+      <p>Let D &gt; r &gt; 0 be the denominator and current remainder, B ≥ 2 the current radix, and a ≥ 0 the next term supplied by the progression.</p>
+      <p class="formula">Trial leftover T = Br − Da<br>Keep B if 0 ≤ T &lt; D. If T = 0, finish.<br>Otherwise, for a &gt; 0, use R = ⌊Da/r⌋ + 1.</p>
+      <p>The floor symbol means round down. At a change, the formula gives the smallest radix that writes the positive next term and leaves a positive remainder. Accepted initial zero terms need no special change. A rejected zero term requires a separate feasibility check.</p>
+      <p>Lean proves the signed balance test, both keep/change branches, legal digits, exact prefix preservation, and completion at zero. It also proves that the full written stream sums to the original value, padding with zeros if the expansion finishes. Its place weights are products of all radices used so far. <a href="${handoffProof}">Read the balance-rule proofs</a>. The browser implementation is tested separately.</p>
+      <p>The generators differ: multiply by three, add the previous two terms, or add one. Their series use denominators B − 3, B² − B − 1, and (B − 1)² at the displayed original radices. The balance check is the same integer arithmetic in all three cases.</p>
+    </details>
+    <details id="hp-finish" class="math-note"><summary>What if the remainder reaches zero?</summary>
+      <p>Zero is a successful finish. For 1/8, ordinary decimal division reaches the prefix 0.12 with remainder 4. Writing the next digit 5 gives:</p>
+      <p class="formula">10 × 4 − 8 × 5 = 0<br>0.125 = 1/8 exactly.</p>
+      <p>In our notation, this is 0.[1]<sub>10</sub>[2]<sub>10</sub>[5]<sub>10</sub>, with remainder 0. Keep radix 10 and stop, or append [0]<sub>10</sub> forever. A generating sequence can still be examined on its own, but further positive terms cannot be added to this completed expansion.</p>
     </details>
     <details id="run-from-start" class="math-note hp-original"><summary>Start with changing units from the beginning</summary>
       <p>We can also begin 1/997 with remainder 1 and change the radix from the first digit. This gives the full power stream 1, 3, 9, 27… with another set of weights.</p>

@@ -1,20 +1,30 @@
 import assert from "node:assert/strict";
 
 export async function assertProgression(page, example, step) {
-  const d = example === "powers" ? 729n * 3n ** BigInt(step) : 998n + BigInt(step);
-  const D = example === "powers" ? 997n : 998001n;
-  const R = example === "powers" ? 997n * 3n ** BigInt(step) + 1n
-    : step === 0 ? 999n : 999n * d + 1n;
-  const r = example === "powers" ? 729n : 999n;
+  const fib = [[55n,100n,8955n], [89n,99n,5534n], [144n,258n,2316n],
+    [233n,996n,269n], [377n,13874n,183n], [610n,32997n,61n],
+    [987n,160170n,57n], [1597n,277346n,19n], [2584n,1346265n,19n]];
+  const [d, R, r] = example === "fibonacci" ? fib[step + 1]
+    : example === "powers" ? (step === -1 ? [243n,1000n,729n]
+      : [729n * 3n ** BigInt(step), 997n * 3n ** BigInt(step) + 1n,729n])
+    : step === -1 ? [997n,1000n,997003n]
+    : [998n + BigInt(step),step === 0 ? 999n : 999n * (998n + BigInt(step)) + 1n,999n];
+  const D = example === "powers" ? 997n : example === "fibonacci" ? 9899n : 998001n;
+  const first = example === "powers" ? 7 : example === "fibonacci" ? 12 : 999;
   assert.equal((await page.locator("#hp-digit").textContent()).trim(), String(d));
   assert.equal((await page.locator("#hp-radix").textContent()).trim(), String(R));
-  assert.match(await page.locator("#hp-position-note").textContent(), new RegExp(`position ${step + (example === "powers" ? 7 : 999)}\\b`));
+  assert.match(await page.locator("#hp-position-note").textContent(), new RegExp(`position ${step + first}\\b`));
   const P = BigInt(await page.locator("#hp-place").inputValue());
   const Q = BigInt(await page.locator("#hp-quotient").inputValue());
   assert.equal(D * Q + r, P);
   assert.equal(await page.locator("#hp-" + example).getAttribute("aria-pressed"), "true");
-  assert.equal(await page.locator("#hp-fixed-first").textContent(), example === "powers" ? "731" : "999");
-  assert.equal(await page.locator("#hp-changed-first").textContent(), example === "powers" ? "729" : "998");
+  assert.equal(await page.locator("#hp-fixed-first").textContent(), example === "powers" ? "731" : example === "fibonacci" ? "90" : "999");
+  assert.equal(await page.locator("#hp-changed-first").textContent(), example === "powers" ? "729" : example === "fibonacci" ? "89" : "998");
+  assert.match(await page.locator("#hp-decision").textContent(), step === -1 ? /Keep/ : /Change/);
+  if (example === "fibonacci" && step === 1) {
+    assert.match(await page.locator("#hp-balance").textContent(), /−877590|-877590/);
+    assert.match(await page.locator("#hp-reason").textContent(), /negative|below zero/);
+  }
   const dimensions = await page.evaluate(() => [innerWidth, document.documentElement.scrollWidth]);
   assert(dimensions[1] <= dimensions[0] + 1, `Progression overflows ${dimensions[0]}px viewport.`);
 }
@@ -23,8 +33,12 @@ export async function exerciseProgression(page) {
   const url = new URL(page.url());
   const errors = [];
   page.on("pageerror", error => errors.push(error.message));
-  for (const example of ["powers", "counting"]) {
+  for (const example of ["powers", "fibonacci", "counting"]) {
     await page.locator("#hp-" + example).click();
+    await page.locator("#hp-previous").click();
+    await assertProgression(page, example, -1);
+    assert.equal(await page.locator("#hp-previous").isDisabled(), true);
+    await page.locator("#hp-next").click();
     for (let step = 0; step < 8; step++) {
       await assertProgression(page, example, step);
       if (step < 7) await page.locator("#hp-next").click();
@@ -41,6 +55,8 @@ export async function exerciseProgression(page) {
   for (const [query, example, step] of [
     ["?group=8&run=167&hp=counting&hp_step=3", "counting", 2],
     ["?hp=powers&hp_step=8", "powers", 7],
+    ["?hp=fibonacci&hp_step=2", "fibonacci", 1],
+    ["?hp=fibonacci&hp_step=0", "fibonacci", -1],
     ["?hp=unknown&hp_step=NaN", "powers", 0],
     ["?hp=powers&hp=counting&hp_step=1", "powers", 0],
     ["?hp=counting&hp_step=9", "counting", 0],
@@ -81,5 +97,8 @@ export async function exerciseProgression(page) {
   await page.locator("#hp-share").click();
   assert.equal(await page.locator("#hp-share-link").inputValue(), shared.href);
   assert.equal(await page.evaluate(() => document.activeElement.id), "hp-share-link");
+  await page.locator("#hp-finish > summary").click();
+  assert.match(await page.locator("#hp-finish").textContent(), /0\.125/);
+  assert.match(await page.locator("#hp-finish").textContent(), /zero/);
   assert.deepEqual(errors, []);
 }

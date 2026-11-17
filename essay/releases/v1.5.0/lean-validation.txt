@@ -1,0 +1,5 @@
+✔ [7611/7614] Built RadixRuns.BalanceRule (29s)
+✔ [7612/7614] Built RadixRuns (5.4s)
+✔ [7613/7614] Built RadixResearch (5.2s)
+Build completed successfully (7614 jobs).
+PASS 26 unchanged proof sources and 257 theorem axiom checks.

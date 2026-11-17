@@ -478,5 +478,24 @@
     ],
     "source_ids": [],
     "counterexample_ids": []
+  },
+  {
+    "id": "unified_balance_rule",
+    "title": "Keep, change, or finish using one signed balance",
+    "statement": "For D > r > 0, current radix B >= 2 and next target a >= 0, let T = B*r - D*a. If 0 <= T < D, keep B and emit a with remainder T; T = 0 completes the fraction. Otherwise, for a > 0 choose R = floor(D*a/r)+1, emitting a with a proper positive remainder. Each step preserves D*Q+r=A*P and its exact value. Iteration with positive targets writes those targets until completion, then zeros; the weighted written stream converges to the original remaining value.",
+    "status": "reproved-here",
+    "repo_status": "Lean-formalized; three progression examples and the decimal completion are independently checked using exact BigInt arithmetic",
+    "proof_status": "RadixBalance.fits_iff_balance, chosen_digit, chosen_remainder, chosen_digit_legal, zero_finishes, chosen_preserves_prefix, chosen_preserves_value, finished_prefix_value, completed_stays_completed, stream_hasSum and after_prefix_hasSum. Initial accepted zero targets are covered by the one-step theorem; rejected zero targets require separate feasibility analysis. The fallback minimizes the next radix with a positive remainder, not all possible radices. The generating sequence is supplied, not uniquely selected by the fraction. The browser implementation and full initial prefix computations are tested, not formally verified.",
+    "evidence": [
+      "lean/RadixRuns/BalanceRule.lean",
+      "lean/RadixRuns/BalanceContinue.lean",
+      "essay/src/math/progression.ts",
+      "essay/test/progression.test.ts"
+    ],
+    "vocabulary_ids": [
+      "remainder_orbit"
+    ],
+    "source_ids": [],
+    "counterexample_ids": []
   }
 ]

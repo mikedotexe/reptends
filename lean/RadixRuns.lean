@@ -5,3 +5,4 @@ import RadixRuns.PowerRuns
 import RadixRuns.Examples
 import RadixRuns.CarryBridge
 import RadixRuns.HandoffSearch
+import RadixRuns.BalanceRule

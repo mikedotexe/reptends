@@ -158,14 +158,14 @@ try {
   }
   assert.equal(await page.locator("#orbit-boundary").isVisible(), false);
   await page.locator(".chapter-nav a[href='#change-radix']").click();
-  for (const example of ["powers", "counting"]) {
+  for (const example of ["powers", "fibonacci", "counting"]) {
     await page.locator("#hp-" + example).click();
     for (let step = 0; step < 4; step++) {
       await assertProgression(page, example, step);
       if (step < 3) await page.locator("#hp-next").click();
     }
   }
-  console.log("PASS live retained progressions: 729,2187,6561,19683 and 998,999,1000,1001 with exact value preservation.");
+  console.log("PASS live retained progressions: 729,2187,6561,19683; 89,144,233,377; and 998,999,1000,1001 with exact value preservation.");
   assert.equal((await page.locator("#run-digit").textContent()).trim(), "27");
   await page.locator("#run-from-start > summary").click();
   await page.locator("#run-166").click();
