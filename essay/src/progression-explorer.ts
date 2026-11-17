@@ -1,4 +1,5 @@
 import { progressionInfo, progressionRows, progressionBefore, progressionExamples, type ProgressionExample } from "./math/progression.ts";
+import { progressionRuns, runDigits } from "./math/run-notation.ts";
 import { decimalTruncation } from "./run-radices.ts";
 
 const stepCount = 8;
@@ -35,8 +36,9 @@ export function initProgressionExplorer(): void {
     put("hp-title", info.patternLabel + ".");
     put("hp-fraction", `1/${info.denominator}`);
     put("hp-origin", info.origin);
-    put("hp-prefix", info.prefixLabel);
-    put("hp-prefix-note", `${info.prefixLength} digits in radix ${info.originalRadix}; the remainder is ${info.initialRemainder}.${example !== "powers" ? " The initial zero group counts as a digit." : ""}`);
+    put("hp-prefix", runDigits(progressionRuns(example, 1)[0]!, true));
+    put("hp-prefix-base", info.originalRadix);
+    put("hp-prefix-note", `The first run keeps ${info.prefixLength} digits in radix ${info.originalRadix}; its final remainder is ${info.initialRemainder}.${example === "counting" ? " The … includes every integer from 0 through 997." : example === "fibonacci" ? " The initial 0 counts as a digit." : ""}`);
     put("hp-fixed-first", first.ordinaryDigit.toString().padStart(info.originalRadix === 100n ? 2 : 3, "0"));
     put("hp-changed-first", first.desired);
     put("hp-first-radix", first.radix);
@@ -60,16 +62,19 @@ export function initProgressionExplorer(): void {
     get<HTMLButtonElement>("hp-next").disabled = selected === stepCount - 1;
     const start = Math.max(0, Math.min(stepCount - 3, selected - 1));
     get("hp-leading-dots").hidden = start === 0;
+    get("hp-window-note").hidden = start === 0;
+    if (selected === -1) get("hp-prefix-run").setAttribute("aria-current", "step");
+    else get("hp-prefix-run").removeAttribute("aria-current");
     const labels: string[] = [];
     for (let i = 0; i < 3; i++) {
       const token = rows[start + i]!;
-      put(`hp-token-digit-${i}`, `[${token.desired}]`);
+      put(`hp-token-digit-${i}`, `⟨${token.desired}⟩`);
       put(`hp-token-radix-${i}`, token.radix);
       if (start + i === selected) get(`hp-token-${i}`).setAttribute("aria-current", "step");
       else get(`hp-token-${i}`).removeAttribute("aria-current");
       labels.push(`digit ${token.desired} in radix ${token.radix}`);
     }
-    get("hp-inscription").setAttribute("aria-label", `Continuation after the preserved prefix${start ? ", excerpt" : ""}: ${labels.join(", ")}, and so on.`);
+    get("hp-inscription").setAttribute("aria-label", `One over ${info.denominator}: first ${info.prefixLength} digits in radix ${info.originalRadix}; ${start ? "intermediate runs omitted; " : ""}${labels.join(", ")}; continue the generator and balance rule.`);
     get("hp-observation").setAttribute("aria-live", announce ? "polite" : "off");
     put("hp-observation", `Next comes ${next}. The same balance check decides whether to keep or change the radix.`);
     const oldPlace = `${info.originalRadix}${superscript(info.prefixLength)}`;

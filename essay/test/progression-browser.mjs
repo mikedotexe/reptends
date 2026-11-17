@@ -25,6 +25,12 @@ export async function assertProgression(page, example, step) {
     assert.match(await page.locator("#hp-balance").textContent(), /−877590|-877590/);
     assert.match(await page.locator("#hp-reason").textContent(), /negative|below zero/);
   }
+  assert.equal(await page.locator("#hp-prefix-base").textContent(),example === "fibonacci" ? "100" : "1000");
+  assert.match(await page.locator("#hp-prefix").textContent(),/^⟨.*⟩$/);
+  if(step === -1) assert.equal(await page.locator("#hp-prefix-run").getAttribute("aria-current"),"step");
+  assert.equal(await page.locator("#hp-window-note").isVisible(),step >= 2);
+  if(step>=0) assert.equal(await page.locator('#hp-inscription [aria-current="step"] > span').textContent(),`⟨${d}⟩`);
+  assert.match(await page.locator("#hp-inscription").getAttribute("aria-label"),/continue the generator and balance rule/);
   const dimensions = await page.evaluate(() => [innerWidth, document.documentElement.scrollWidth]);
   assert(dimensions[1] <= dimensions[0] + 1, `Progression overflows ${dimensions[0]}px viewport.`);
 }
@@ -100,5 +106,13 @@ export async function exerciseProgression(page) {
   await page.locator("#hp-finish > summary").click();
   assert.match(await page.locator("#hp-finish").textContent(), /0\.125/);
   assert.match(await page.locator("#hp-finish").textContent(), /zero/);
+  await page.locator("#notation-examples > summary").click();
+  assert.equal(await page.locator("#notation-examples article").count(),3);
+  await page.locator("#notation-reference > summary").click();
+  assert.match(await page.locator("#notation-reference").textContent(),/typography and browser are not formally verified/);
+  const certificate=JSON.parse(await page.locator("script#reptends-notation").textContent());
+  assert.equal(certificate.examples[2].runs[0].digits.length,998);
+  const layout=await page.evaluate(()=>[innerWidth,document.documentElement.scrollWidth]);
+  assert(layout[1]<=layout[0]+1);
   assert.deepEqual(errors, []);
 }

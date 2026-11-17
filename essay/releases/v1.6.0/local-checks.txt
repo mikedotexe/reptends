@@ -1,0 +1,8 @@
+TypeScript typecheck: passed
+Node tests: 103 passed
+Deployment safety tests: 13 passed
+Lean audit: 26 unchanged source hashes and 257 theorem axiom checks passed
+Chromium: final artifact and combined notation/proof views passed; 320/360/768/1440px, light/dark, keyboard, offline, sharing/history, no JavaScript, no extra asset requests or runtime errors
+WebKit: final artifact passed; 320/768/1440px, offline interaction, keyboard, sharing/history, no JavaScript
+Visual review: complete notation and three-example comparison inspected at mobile and desktop widths; preserved-prefix highlight checked in the in-app preview
+New data checks: weighted run evaluation, split-run equivalence, initial zero positions, full counting digits, independent division of all serialized examples, exact theorem-name references, JSON round trip

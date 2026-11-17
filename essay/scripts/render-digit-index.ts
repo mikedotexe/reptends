@@ -8,7 +8,7 @@ export function renderDigitIndexChapter(): string {
   const example = digitWindow({ numerator: 1n, denominator: 997n, radix: 10n, start: 1n, count: 60 });
   const digits = example.digits.map(d => formatDigit(d, 10n)).join("");
   return `<section id="digit-index" class="chapter wrap digit-index-chapter" aria-labelledby="digit-index-title" tabindex="-1">
-    <div class="chapter-heading"><span class="chapter-number">05 / JUMP TO A POSITION</span><h2 id="digit-index-title">Find a digit<br>without the journey.</h2></div>
+    <div class="chapter-heading"><span class="chapter-number">OPTIONAL TOOL / JUMP TO A POSITION</span><h2 id="digit-index-title">Find a digit<br>without the journey.</h2></div>
     <div class="prose"><p>Choose a fraction and a position—even a very distant one. A modular power finds the remainder there directly. One division step gives the digit.</p><p>The <a href="${atlas}">indexed-digit and carry identities</a> are <strong>reproved here in Lean</strong>. The rule works in any integer base B ≥ 2; it does not need the period to be known first.</p></div>
     <div class="workbench digit-index-workbench">
       <form id="di-form" class="di-form enhancement" novalidate>

@@ -85,6 +85,6 @@ test("invalid run inputs are bounded and the static chapter names the changed we
   assert.match(html, /id="change-radix"/);
   assert.match(html, /reproved-here in Lean/);
   assert.match(html, /Changing radices changes the weights/);
-  assert.match(html, /positive tail at every finite stage/);
+  assert.match(html, /every finite prefix has positive tail/);
   assert.match(html, /truncated after 20 decimal places/);
 });

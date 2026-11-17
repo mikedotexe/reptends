@@ -236,12 +236,12 @@ try {
   await page.waitForFunction(() => document.querySelector("#verification-guide").open);
   assert.equal(await page.locator("#verification-guide .verification-code").isVisible(), true);
   await page.locator("#verification-guide > summary").click();
-  await page.locator(".geometry-disclosure > summary").click();
-  const geometry = page.locator("#geometry-app");
-  await geometry.locator('[data-geometry-mode="cube"]').click();
-  assert.equal(await geometry.getAttribute("data-mode"), "cube");
-  await geometry.locator('[data-geometry-action="transform"]').click();
-  assert.equal(await geometry.getAttribute("data-view"), "face");
+  assert.equal(await page.locator("#geometry-app").count(),0);
+  const notation=JSON.parse(await page.locator("script#reptends-notation").textContent());
+  assert.deepEqual(notation.examples.map(e=>e.denominator),["997","9899","998001"]);
+  await page.locator("#notation-reference > summary").click();
+  assert.match(await page.locator("#notation-reference").textContent(), /radix_change_preserves_value/);
+  await page.locator("#notation-reference > summary").click();
   assert.deepEqual(subresources, [], "The published page should make no additional asset requests.");
   assert.deepEqual(errors, [], "The published page should have no browser errors.");
   await page.locator("#reset").click();
@@ -249,7 +249,7 @@ try {
   const screenshot = resolve(root, "qa/live-desktop.png");
   await mkdir(dirname(screenshot), { recursive: true });
   await page.screenshot({ path: screenshot });
-  console.log("PASS live browser: trusted TLS, exact three-view explorer, 166-group return, indexed-digit chapter, native disclosures, four-case certificate, verifier link, cube controls, no additional requests or errors.");
+  console.log("PASS live browser: trusted TLS, exact three-view explorer, 166-group return, indexed-digit chapter, native disclosures, four-case certificate, verifier link, run notation and proof reference, no additional requests or errors.");
   console.log(`Saved ${screenshot}`);
   await context.close();
 } finally {

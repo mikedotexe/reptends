@@ -10,7 +10,7 @@ import { formatWord } from "../src/math/lifts.ts";
 
 /** Render exact curated examples at build time so they are visible without JS. */
 export function renderOpeningExamples(): string {
-  return OPENING_EXAMPLES.map(example => {
+  return OPENING_EXAMPLES.filter(example => example.denominator === 997n).map(example => {
     const { denominator, base, width, rows, firstChangedIndex } = example;
     const first = rows[firstChangedIndex]!;
     const groups = rows.map((row, index) => {

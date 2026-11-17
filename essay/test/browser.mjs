@@ -175,11 +175,9 @@ async function assertPosition(page, index) {
 async function assertOpeningGallery(page) {
   const gallery = page.locator("#specimens");
   const examples = gallery.locator("article.decimal-example");
-  assert.equal(await examples.count(), 3);
+  assert.equal(await examples.count(), 1);
   const expected = [
-    ["97", 4, "27", "81", "83"],
     ["997", 6, "243", "729", "731"],
-    ["9997", 8, "2187", "6561", "6562"],
   ];
   for (let index = 0; index < expected.length; index += 1) {
     const [denominator, matchingGroups, lastPower, expectedNext, printedNext] = expected[index];
@@ -399,42 +397,7 @@ async function exerciseControls(page, exhaustive) {
     await assertPosition(page, index);
   }
   await page.locator("#reset").click();
-  const disclosure = page.locator(".geometry-disclosure > summary");
-  await disclosure.focus();
-  await disclosure.press("Enter");
-  assert.equal(await page.locator(".geometry-disclosure").getAttribute("open"), "");
-  const geometry = page.locator("#geometry-app");
-  await geometry.locator('[data-geometry-mode="square"]').click();
-  assert.equal(await geometry.getAttribute("data-mode"), "square");
-  await geometry.locator('[data-geometry-action="transform"]').click();
-  assert.equal(await geometry.getAttribute("data-view"), "aligned");
-  await geometry.locator('[data-geometry-mode="cube"]').click();
-  assert.equal(await geometry.getAttribute("data-mode"), "cube");
-  await geometry.locator('[data-geometry-action="transform"]').click();
-  assert.equal(await geometry.getAttribute("data-view"), "face");
-  const selected = Number(await geometry.getAttribute("data-place"));
-  assert.equal(Number(await geometry.getAttribute("data-count")), (selected - 1) * (selected - 2) / 2);
-  for (const mode of ["square", "cube"]) {
-    await geometry.locator(`[data-geometry-mode="${mode}"]`).click();
-    const previous = geometry.locator('[data-geometry-action="previous"]');
-    const next = geometry.locator('[data-geometry-action="next"]');
-    while (!(await previous.isDisabled())) await previous.click();
-    assert.equal(await geometry.locator(".geometry-word-zero").count(), mode === "square" ? 1 : 2);
-    for (let slice = 0; slice < 6; slice += 1) {
-      const place = slice + (mode === "square" ? 2 : 3);
-      assert.equal(Number(await geometry.getAttribute("data-place")), place);
-      const count = mode === "square" ? place - 1 : (place - 1) * (place - 2) / 2;
-      assert.equal(Number(await geometry.getAttribute("data-count")), count);
-      if (slice < 5) await next.click();
-    }
-    assert.equal(await next.isDisabled(), true);
-  }
-  const angle = geometry.locator("#geometry-angle");
-  const priorAngle = Number(await angle.inputValue());
-  await angle.focus();
-  await angle.press("ArrowRight");
-  assert.equal(Number(await angle.inputValue()), priorAngle + 1);
-  assert.equal(await geometry.locator('[data-geometry="angle-label"]').textContent(), `${priorAngle + 1}°`);
+  assert.equal(await page.locator("#geometry-app").count(), 0);
   await assertPageFits(page);
 }
 
@@ -669,6 +632,14 @@ try {
           await page.locator(".hp-workbench").screenshot({ path: screenshotPath(`${width}-progression-${example}.png`) });
         }
       }
+      for (const id of ["notation-examples", "notation-reference"]) {
+        await setDisclosure(page, "#" + id, true);
+        await assertPageFits(page);
+        if ([320, 1440].includes(width) && colorScheme === "light") {
+          await page.locator("#" + id).screenshot({ path: screenshotPath(`${width}-${id}.png`) });
+        }
+        await setDisclosure(page, "#" + id, false);
+      }
       await page.locator('[data-di-preset="return"]').click();
       assert.equal(await page.locator("#di-tape").textContent(), "001");
       await setDisclosure(page, "#di-power-bridge", true);
@@ -708,7 +679,7 @@ try {
       assert.deepEqual(errors, [], "The page must have no runtime or console errors.");
       assert.deepEqual(requests, [], "The single HTML artifact must load without additional requests.");
       await context.close();
-      console.log(`PASS ${engine} ${width}px ${colorScheme}: ${engine === "webkit" ? "local file with offline interaction" : "offline load"}, exact controls, keyboard, geometry, layout bounds, no runtime errors.`);
+      console.log(`PASS ${engine} ${width}px ${colorScheme}: ${engine === "webkit" ? "local file with offline interaction" : "offline load"}, exact controls, keyboard, run notation, layout bounds, no runtime errors.`);
     }
   }
 
@@ -729,7 +700,14 @@ try {
   await assertRunExplorer(fallbackPage, false);
   assert.equal(await fallbackPage.locator("#hp-next").isVisible(), false);
   assert.equal(await fallbackPage.locator("#hp-digit").textContent(), "729");
-  assert.match(await fallbackPage.locator(".hp-static-counting").textContent(), /radix 999 to write 998/);
+  await setDisclosure(fallbackPage, "#notation-examples", true);
+  assert.equal(await fallbackPage.locator("#notation-examples article").count(),3);
+  assert.match(await fallbackPage.locator('[data-example="counting"] .notation-static').textContent(), /⟨998⟩999/);
+  await setDisclosure(fallbackPage, "#notation-reference", true);
+  assert.match(await fallbackPage.locator("#notation-reference").textContent(), /once for each digit/);
+  await assertPageFits(fallbackPage);
+  await setDisclosure(fallbackPage, "#notation-examples", false);
+  await setDisclosure(fallbackPage, "#notation-reference", false);
   assert.equal(await fallbackPage.locator("#di-form").isVisible(), false);
   assert.match(await fallbackPage.locator("#di-tape").textContent(), /^001003009027081243731193/);
   assert.equal((await fallbackPage.locator("#hero-answer").textContent()).trim(), "731");
@@ -746,9 +724,6 @@ try {
   await setDisclosure(fallbackPage, "#split-note", true);
   assert.equal(await fallbackPage.locator("#split-svg").isVisible(), true);
   await setDisclosure(fallbackPage, "#split-note", false);
-  await fallbackPage.locator(".geometry-disclosure > summary").click();
-  assert.equal(await fallbackPage.locator(".geometry-static").isVisible(), true);
-  assert.match(await fallbackPage.locator(".geometry-static").textContent(), /0000, 0000, 0001, 0003/);
   await assertPageFits(fallbackPage);
   await fallbackPage.screenshot({ path: screenshotPath("320-no-javascript.png"), fullPage: true });
   await fallbackPage.locator("#specimens").screenshot({ path: screenshotPath("320-opening-gallery-no-javascript.png") });
@@ -787,19 +762,10 @@ try {
   await split.click();
   await motionPage.waitForFunction(() => document.querySelector("#animate-split").getAttribute("aria-disabled") !== "true");
   assert.equal(await motionPage.locator('#split-svg rect[fill="#e6d3b1"]').first().getAttribute("y"), "99");
-  await motionPage.locator(".geometry-disclosure > summary").click();
-  const movingGeometry = motionPage.locator("#geometry-app");
-  await movingGeometry.locator('[data-geometry-action="transform"]').click();
-  await motionPage.waitForFunction(() => document.querySelector("#geometry-app").dataset.view === "moving");
-  await motionPage.waitForFunction(() => document.querySelector("#geometry-app").dataset.view === "aligned");
-  await movingGeometry.locator('[data-geometry-mode="cube"]').click();
-  await movingGeometry.locator('[data-geometry-action="transform"]').click();
-  await motionPage.waitForFunction(() => document.querySelector("#geometry-app").dataset.view === "moving");
-  await motionPage.waitForFunction(() => document.querySelector("#geometry-app").dataset.view === "face");
   await assertPageFits(motionPage);
   assert.deepEqual(motionErrors, []);
   await motionContext.close();
-  console.log(`PASS ${engine} normal motion: visible split movement, finish/restart, cancellation on selection, square and cube animation completion.`);
+  console.log(`PASS ${engine} normal motion: visible split movement, finish/restart, cancellation on selection.`);
 } finally {
   await browser.close();
   await new Promise(resolve => server.close(resolve));

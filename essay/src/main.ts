@@ -1,6 +1,5 @@
 import { formatWord } from "./math/lifts.ts";
 import { buildUnfoldedView, certifiedPrefix } from "./math/unfolded-notation.ts";
-import { initGeometry } from "./geometry.ts";
 import { positionFromSearch, linkToPosition } from "./navigation.ts";
 import { decimalReturn997 } from "./decimal-return.ts";
 import type { DecimalReturn } from "./decimal-return.ts";
@@ -296,7 +295,6 @@ reducedMotion.addEventListener("change", () => {
   if (reducedMotion.matches && animationFrame) { stopAnimation(); drawSplit(1); }
 });
 
-initGeometry(element("geometry-app"));
 initRadixExplorer();
 initProgressionExplorer();
 initDigitIndexExplorer();
@@ -307,7 +305,7 @@ document.documentElement.classList.add("js");
 // Readers arriving from the series equation can therefore inspect its proof directly.
 function revealLinkedExplanation(): void {
   const id = window.location.hash.slice(1);
-  if (!["verification-guide", "run-proof", "run-decimals", "hp-proof", "hp-weights", "hp-finish", "run-from-start"].includes(id)) return;
+  if (!["verification-guide", "run-proof", "run-decimals", "hp-proof", "hp-weights", "hp-finish", "notation-reference", "notation-examples", "run-from-start"].includes(id)) return;
   const detail = element<HTMLDetailsElement>(id);
   detail.open = true;
   let parent = detail.parentElement?.closest("details");
