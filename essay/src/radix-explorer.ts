@@ -11,21 +11,34 @@ export function initRadixExplorer(): void {
   };
   const put = (id: string, value: string | bigint) => { get(id).textContent = String(value); };
   const slider = get<HTMLInputElement>("run-position");
+  const compact = (value: bigint) => {
+    const text = String(value);
+    return text.length <= 12 ? text : text.slice(0,6) + "…" + text.slice(-4);
+  };
   function render(announce = false): void {
     const row = rows[selected]!;
     const power = "3" + String(selected).replace(/[0-9]/g, d => "⁰¹²³⁴⁵⁶⁷⁸⁹"[Number(d)]!);
     slider.value = String(selected);
     slider.setAttribute("aria-valuetext", `Run ${selected + 1} of 169: ${power}, radix ${row.radix}, digit ${row.packed}, remainder 1 returns.`);
     put("run-position-label", `${selected + 1} of 169`);
-    put("run-radix", row.radix);
-    put("run-digit", row.packed);
+    put("run-radix", compact(row.radix));
+    put("run-digit", compact(row.packed));
+    get("run-radix").dataset.exact = String(row.radix);
+    get("run-digit").dataset.exact = String(row.packed);
     put("run-power", power);
-    put("run-equation", `${row.radix} × 1 = 997 × ${row.packed} + 1`);
+    put("run-equation", row.packed.toString().length > 12
+      ? `B × 1 = 997 × ${power} + 1`
+      : `${row.radix} × 1 = 997 × ${row.packed} + 1`);
+    put("run-size-note", row.radix.toString().length > 12
+      ? "Long numbers are abbreviated. Open the inspector for every exact digit."
+      : "Each emitted digit fits in its radix.");
     get<HTMLButtonElement>("run-previous").disabled = selected === 0;
     get<HTMLButtonElement>("run-next").disabled = selected === 168;
     put("run-state-heading", `After ${selected + 1} runs: P has ${row.after.place.toString().length} digits. The prefix is Q/P; the tail is 1/(997 × P).`);
     get<HTMLTextAreaElement>("run-place").value = String(row.after.place);
     get<HTMLTextAreaElement>("run-quotient").value = String(row.after.quotient);
+    put("run-exact-radix", row.radix);
+    put("run-exact-digit", row.packed);
     const observation = selected === 168
       ? "The formula continues beyond this demonstration: each next radix and digit grows, and remainder 1 returns."
       : selected >= 165 ? `${power} is still one legal digit. This is a new sequence of place values; its run numbers are separate from the old three-digit groups.`

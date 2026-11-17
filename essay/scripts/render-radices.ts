@@ -25,10 +25,12 @@ export function renderRadixChapter(): string {
       </div>
       <dl class="run-readout"><div><dt>RADIX</dt><dd id="run-radix">26920</dd></div><div><dt>EMITTED DIGIT</dt><dd id="run-digit">27</dd><small id="run-power">3³</small></div><div><dt>REMAINDER</dt><dd>1 → 1</dd><small>returns after one digit</small></div></dl>
       <p id="run-equation" class="run-equation">26920 × 1 = 997 × 27 + 1</p>
+      <p id="run-size-note" class="fine-print">Each emitted digit fits in its radix.</p>
       <div class="run-jumps enhancement"><button id="run-start" class="button small" type="button">First four runs</button><button id="run-166" class="button small" type="button">Inspect 3¹⁶⁶</button></div>
       <p id="run-observation" class="run-observation" aria-live="polite">The next run uses a larger radix and emits 81. The remainder will still be 1.</p>
       <details id="run-state" class="math-note"><summary>Inspect the exact state and its remaining tail</summary>
         <p id="run-state-heading">After 4 runs: P has ${selected.after.place.toString().length} digits. The prefix is Q/P; the tail is 1/(997 × P).</p>
+        <dl class="exact-values"><div><dt>Radix B</dt><dd id="run-exact-radix">26920</dd></div><div><dt>Emitted digit</dt><dd id="run-exact-digit">27</dd></div></dl>
         <label class="run-state-label" for="run-place">Accumulated place product P<textarea id="run-place" rows="3" readonly spellcheck="false">${selected.after.place}</textarea></label>
         <label class="run-state-label" for="run-quotient">Packed quotient Q<textarea id="run-quotient" rows="3" readonly spellcheck="false">${selected.after.quotient}</textarea></label>
         <p class="formula">997Q + 1 = P<br>Q/P + 1/(997P) = 1/997</p>

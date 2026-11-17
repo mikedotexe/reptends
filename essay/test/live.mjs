@@ -159,10 +159,10 @@ try {
   assert.equal((await page.locator("#run-digit").textContent()).trim(), "27");
   await page.locator("#run-166").click();
   assert.equal(await page.locator("#run-position").inputValue(), "166");
-  assert.equal((await page.locator("#run-digit").textContent()).trim(), String(3n ** 166n));
-  assert.equal((await page.locator("#run-radix").textContent()).trim(), String(997n * 3n ** 166n + 1n));
+  assert.equal(await page.locator("#run-digit").getAttribute("data-exact"), String(3n ** 166n));
+  assert.equal(await page.locator("#run-radix").getAttribute("data-exact"), String(997n * 3n ** 166n + 1n));
   await page.locator("#run-next").click();
-  assert.equal((await page.locator("#run-digit").textContent()).trim(), String(3n ** 167n));
+  assert.equal(await page.locator("#run-digit").getAttribute("data-exact"), String(3n ** 167n));
   await page.locator("#run-start").click();
   await page.locator("#boundary-comparison > summary").click();
   assert.equal(await page.locator("#boundary-comparison .boundary-table tbody tr").count(), 4);

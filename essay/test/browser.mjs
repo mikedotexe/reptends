@@ -538,9 +538,12 @@ async function assertRunExplorer(page, interactive = true) {
     for (const n of [0, 3, 6, 166, 167, 168]) {
       await page.locator("#run-position").evaluate((el, n) => { el.value = String(n); el.dispatchEvent(new Event("input", { bubbles:true })); }, n);
       const digit = 3n ** BigInt(n);
-      assert.equal((await page.locator("#run-digit").textContent()).trim(), String(digit));
-      assert.equal((await page.locator("#run-radix").textContent()).trim(), String(997n * digit + 1n));
-      assert.equal((await page.locator("#run-equation").textContent()).trim(), `${997n * digit + 1n} × 1 = 997 × ${digit} + 1`);
+      assert.equal(await page.locator("#run-digit").getAttribute("data-exact"), String(digit));
+      assert.equal(await page.locator("#run-radix").getAttribute("data-exact"), String(997n * digit + 1n));
+      assert.equal((await page.locator("#run-exact-digit").textContent()).trim(), String(digit));
+      assert.equal((await page.locator("#run-exact-radix").textContent()).trim(), String(997n * digit + 1n));
+      if (String(digit).length <= 12) assert.equal((await page.locator("#run-equation").textContent()).trim(), `${997n * digit + 1n} × 1 = 997 × ${digit} + 1`);
+      else assert.match(await page.locator("#run-size-note").textContent(), /abbreviated/);
       const P = BigInt(await page.locator("#run-place").inputValue());
       const Q = BigInt(await page.locator("#run-quotient").inputValue());
       assert.equal(P, 997n * Q + 1n);
