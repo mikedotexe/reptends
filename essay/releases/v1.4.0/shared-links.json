@@ -1,0 +1,20 @@
+[
+  {
+    "url": "https://reptends.mikedotexe.com/?hp=powers&hp_step=1",
+    "status": 200,
+    "sha256": "3becadb8b3665d803e72f959d6e0538b2d4563114969823195524ed861998fa7"
+  },
+  {
+    "url": "https://reptends.mikedotexe.com/?hp=counting&hp_step=3",
+    "status": 200,
+    "sha256": "3becadb8b3665d803e72f959d6e0538b2d4563114969823195524ed861998fa7"
+  },
+  {
+    "url": "https://github.com/mikedotexe/reptends/blob/main/lean/RadixRuns/HandoffSearch.lean",
+    "status": 200
+  },
+  {
+    "url": "https://github.com/mikedotexe/reptends/blob/main/docs/PROOF_STATUS_ATLAS.md",
+    "status": 200
+  }
+]
