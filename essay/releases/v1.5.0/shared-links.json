@@ -1,0 +1,30 @@
+[
+  {
+    "url": "https://reptends.mikedotexe.com/?hp=powers&hp_step=1",
+    "status": 200,
+    "sha256": "b3ac5afaa4347ec94b76e93cee1006215e41ee015b9c734d0c9081c8347ebd67"
+  },
+  {
+    "url": "https://reptends.mikedotexe.com/?hp=fibonacci&hp_step=0",
+    "status": 200,
+    "sha256": "b3ac5afaa4347ec94b76e93cee1006215e41ee015b9c734d0c9081c8347ebd67"
+  },
+  {
+    "url": "https://reptends.mikedotexe.com/?hp=fibonacci&hp_step=2",
+    "status": 200,
+    "sha256": "b3ac5afaa4347ec94b76e93cee1006215e41ee015b9c734d0c9081c8347ebd67"
+  },
+  {
+    "url": "https://reptends.mikedotexe.com/?hp=counting&hp_step=3",
+    "status": 200,
+    "sha256": "b3ac5afaa4347ec94b76e93cee1006215e41ee015b9c734d0c9081c8347ebd67"
+  },
+  {
+    "url": "https://github.com/mikedotexe/reptends/blob/main/lean/RadixRuns/BalanceRule.lean",
+    "status": 200
+  },
+  {
+    "url": "https://github.com/mikedotexe/reptends/blob/main/docs/PROOF_STATUS_ATLAS.md",
+    "status": 200
+  }
+]

@@ -1,0 +1,13 @@
+
+> reptends-pattern-explorer@1.5.0 test:live
+> node test/live.mjs
+
+PASS the essay and robots.txt redirect from HTTP to HTTPS.
+PASS HTTPS serves the exact local artifact (b3ac5afaa4347ec94b76e93cee1006215e41ee015b9c734d0c9081c8347ebd67).
+PASS robots.txt serves the exact permissive crawler policy.
+PASS anonymous S3 access is denied for index.html and robots.txt (403).
+PASS live retained progressions: 729,2187,6561,19683; 89,144,233,377; and 998,999,1000,1001 with exact value preservation.
+PASS live indexed digits: group 167 = 001, full 3^166 and carries, independent sequential check, and 1/9899 at position 10^100 = 6.
+Saved /private/tmp/reptends-balance-release/essay/qa/live-digit-index.png
+PASS live browser: trusted TLS, exact three-view explorer, 166-group return, indexed-digit chapter, native disclosures, four-case certificate, verifier link, cube controls, no additional requests or errors.
+Saved /private/tmp/reptends-balance-release/essay/qa/live-desktop.png
