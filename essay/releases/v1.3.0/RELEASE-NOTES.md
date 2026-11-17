@@ -1,5 +1,7 @@
 # Essay v1.3.0 — Digit by Index
 
+Published 16 November 2026 (Pacific time). All release and live checks passed; see `manifest.json` and the versioned verification receipts.
+
 Chapter 05 adds direct access to a fractional digit in any integer base. The reader chooses a fraction, base, and one-based position or range. Modular exponentiation jumps to the incoming remainder; one division step reads its digit. An independent, cancellable long-division walk checks the result for positions up to 100,000. Huge indices do not require a period search or the preceding digits.
 
 The interaction adapts Fable’s “Digit by Index” prototype, provided by Mike. The original attachment is preserved separately, with SHA-256 `aa90e514ed9775811e0a6c036aee14dd3b1e50c7419cb5d32b53dfa50b06c4f6`. The adaptation uses exact BigInt values for arbitrary bases, bounded parsing and ranges, explicit stale-result handling, cancellation, shareable positions, and a selectable clipboard fallback. It introduces no external assets or runtime dependencies.

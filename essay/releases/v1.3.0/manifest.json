@@ -1,0 +1,36 @@
+{
+  "version": "1.3.0",
+  "source_commit": "f87869d06da1e4c314e780113d898a776d399a75",
+  "bytes": 177413,
+  "sha256": "50c1a7f654d3e90bff2b32aa128e1f80330acc2a5a9e22e09523d4dae547e0fe",
+  "assets": {
+    "index.html": {
+      "sha256": "50c1a7f654d3e90bff2b32aa128e1f80330acc2a5a9e22e09523d4dae547e0fe",
+      "bytes": 177413,
+      "content_type": "text/html; charset=utf-8"
+    },
+    "robots.txt": {
+      "sha256": "5b83e4b5a732add02f74140cfa52abd992278e03ca4685faee545a1ffa771a3b",
+      "bytes": 613,
+      "content_type": "text/plain; charset=utf-8"
+    }
+  },
+  "published_at": "2026-11-17T07:02:56.735342+00:00",
+  "verified_at": "2026-11-17T07:03:31.205732+00:00",
+  "ci": "https://github.com/mikedotexe/reptends/actions/runs/44035206341",
+  "browsers": [
+    "Chromium",
+    "Firefox",
+    "WebKit"
+  ],
+  "node_tests": 87,
+  "deployment_safety_tests": 13,
+  "lean_theorem_axiom_checks": 149,
+  "lean_source_hash_checks": 23,
+  "chapter_url": "https://reptends.mikedotexe.com/#digit-index",
+  "checked_result_urls": [
+    "https://reptends.mikedotexe.com/?di_a=1&di_d=997&di_b=1000&di_from=167&di_to=#digit-index",
+    "https://reptends.mikedotexe.com/?group=8&run=167&di_a=1&di_d=9899&di_b=10&di_from=10%5E100&di_to=#digit-index"
+  ],
+  "human_reader_feedback": "pending"
+}
