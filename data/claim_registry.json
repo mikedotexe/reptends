@@ -460,5 +460,23 @@
     ],
     "source_ids": [],
     "counterexample_ids": []
+  },
+  {
+    "id": "retained_progression_handoffs",
+    "title": "Retaining positive progression digits across radix changes",
+    "statement": "For integers 0 < r < D and d > 0, R = floor(D*d/r) + 1 emits the legal digit d and a remainder t with 0 < t <= r. Iterating this rule for any positive digit sequence preserves every existing prefix certificate D*Q+r=A*P; its weighted infinite continuation sums to A/D - Q/P. Each R is the smallest radix emitting that digit with a positive remainder.",
+    "status": "reproved-here",
+    "repo_status": "Lean-formalized; the two public examples and their prefix states are independently checked using exact BigInt arithmetic",
+    "proof_status": "HandoffSearch.next_step, next_radix_valid, next_digit, next_remainder_pos, next_remainder_le, next_radix_minimal, bridge_preserves_identity, bridge_preserves_value, adaptive_digit_legal, adaptive_tail_tendsto_zero, adaptive_hasSum and adaptive_after_prefix_hasSum. The formula preserves a supplied progression; it does not select a unique progression or minimize the number of steps to a fixed remainder. The JavaScript implementation is tested, not formally verified.",
+    "evidence": [
+      "lean/RadixRuns/HandoffSearch.lean",
+      "essay/src/math/progression.ts",
+      "essay/test/progression.test.ts"
+    ],
+    "vocabulary_ids": [
+      "remainder_orbit"
+    ],
+    "source_ids": [],
+    "counterexample_ids": []
   }
 ]

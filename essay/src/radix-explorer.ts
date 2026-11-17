@@ -11,6 +11,10 @@ export function initRadixExplorer(): void {
   };
   const put = (id: string, value: string | bigint) => { get(id).textContent = String(value); };
   const slider = get<HTMLInputElement>("run-position");
+  const openSharedRun = () => {
+    if (runFromSearch(window.location.search) !== null) get<HTMLDetailsElement>("run-from-start").open = true;
+  };
+  openSharedRun();
   const compact = (value: bigint) => {
     const text = String(value);
     return text.length <= 12 ? text : text.slice(0,6) + "…" + text.slice(-4);
@@ -63,7 +67,7 @@ export function initRadixExplorer(): void {
   get("run-next").addEventListener("click", () => select(selected + 1));
   get("run-start").addEventListener("click", () => select(3));
   get("run-166").addEventListener("click", () => select(166));
-  window.addEventListener("popstate", () => { selected = runFromSearch(window.location.search) ?? 3; render(true); });
+  window.addEventListener("popstate", () => { selected = runFromSearch(window.location.search) ?? 3; openSharedRun(); render(true); });
   get("share-run").addEventListener("click", async () => {
     const url = linkToRun(selected);
     try {

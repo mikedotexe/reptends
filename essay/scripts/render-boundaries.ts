@@ -70,6 +70,6 @@ export function renderRepetitionBoundaries(): string {
       <details class="math-note boundary-receipts"><summary>Inspect the returning remainders and complete powers</summary>${receipts}</details>
       <p class="fine-print">These are <strong>computed examples</strong>, checked against ordinary long division, including the startup for 94 and 994. The <a href="${atlas}">proof-status atlas</a> labels <code>digit_periodicity</code> <strong>reproved-here</strong> for odd primes and coprime bases, and <code>power_order_formula</code> <strong>classical</strong>. See the <a href="#research">research notes</a> for scope and verification.</p>
     </details>
-    <p class="chapter-bridge">The loop describes a fixed radix. <a href="#change-radix">What if the measuring units could grow too?</a></p>
+    <p class="chapter-bridge">The loop describes a fixed radix. <a href="#change-radix">What if the measuring units could change?</a></p>
   </section>`;
 }

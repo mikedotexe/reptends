@@ -7,3 +7,6 @@
 The corresponding original tests were copied into this site's `test/` directory with only their import paths changed. `site-contract.test.ts` additionally verifies the particular examples and complete periods presented by the website.
 
 The engine uses exact integer arithmetic, checks its recurrence representation against ordinary long division, and keeps finite residuals. These are implementations and explanations of classical arithmetic identities. Display-width annotations are exploratory notation and do not change the mathematical radix. Continued fractions and the original CLI walkthrough are outside this site's arithmetic bundle.
+
+
+`progression.ts` adapts the positive-digit continuation rule from research phase13's `bridges.mjs`, using this site's existing `advanceRun` accounting. The two presets retain the ordinary base-1000 prefix before the first carried group. Public proof scope is recorded under `retained_progression_handoffs` in the [proof-status atlas](../../../docs/PROOF_STATUS_ATLAS.md), with the unchanged phase13 Lean source imported as [HandoffSearch.lean](../../../lean/RadixRuns/HandoffSearch.lean). Browser code is independently tested, not formally verified.

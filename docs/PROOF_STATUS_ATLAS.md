@@ -25,9 +25,9 @@ This project now treats its public claims as a registry rather than free-form pr
 Current registry counts:
 
 <!-- REGISTRY_SUMMARY_START -->
-- total claims: 18
+- total claims: 19
 - classical: 3
-- reproved-here: 11
+- reproved-here: 12
 - implemented-here: 1
 - empirical: 1
 - open: 2
@@ -63,6 +63,7 @@ Current open claim IDs:
 | `mixed_radix_run_value_preservation` | `reproved-here` | For a proper fraction a/D with 0 <= a < D, every finite sequence of valid fixed-radix runs preserves Q/P + r/(DP) = a/D. A run of radix B and positive length L with packed digits A contributes A/(P*B^L). First-return boundaries are separately certified. | [Encoding.lean](../lean/RadixRuns/Encoding.lean), [Core.lean](../lean/RadixRuns/Core.lean) |
 | `mixed_radix_power_digits` | `reproved-here` | For integers D > 1 and c >= 2, the schedule B_n = D*c^n + 1 emits the legal digit c^n and remainder 1 at every step. Every one-digit run is a first return. The exact weighted real series sums to 1/D, with a positive tail after every finite prefix. | [Powers.lean](../lean/RadixRuns/Powers.lean), [PowerRuns.lean](../lean/RadixRuns/PowerRuns.lean), [Examples.lean](../lean/RadixRuns/Examples.lean) |
 | `indexed_digits_and_carries` | `reproved-here` | For a nonnegative numerator a, denominator D > 0 and radix B >= 2, the remainder before zero-based digit n is (a*B^n) mod D and the digit is floor(B*((a*B^n) mod D)/D). When B = D+c, let q_n = floor(a*c^n/D); then d_n + B*q_n = a*c^n + q_(n+1). For 0 <= a < D, the ordinary packed prefix equals the packed geometric coefficients plus the boundary quotient q_N. | [CarryBridge.lean](../lean/RadixRuns/CarryBridge.lean), [digit-index.ts](../essay/src/math/digit-index.ts), [digit-index.test.ts](../essay/test/digit-index.test.ts) |
+| `retained_progression_handoffs` | `reproved-here` | For integers 0 < r < D and d > 0, R = floor(D*d/r) + 1 emits the legal digit d and a remainder t with 0 < t <= r. Iterating this rule for any positive digit sequence preserves every existing prefix certificate D*Q+r=A*P; its weighted infinite continuation sums to A/D - Q/P. Each R is the smallest radix emitting that digit with a positive remainder. | [HandoffSearch.lean](../lean/RadixRuns/HandoffSearch.lean), [progression.ts](../essay/src/math/progression.ts), [progression.test.ts](../essay/test/progression.test.ts) |
 <!-- CLAIM_TABLE_END -->
 
 <!-- PROOF_STATUS_FOOTER_START -->
@@ -90,3 +91,11 @@ Machine-readable backing lives in [claim_registry.json](/Users/mikepurvis/other/
 ## indexed_digits_and_carries
 
 The indexed formula and exact carry/prefix identities are proved in [CarryBridge.lean](../lean/RadixRuns/CarryBridge.lean). The index n in Lean starts at zero; the public explorer calls the corresponding position n+1. These identities do not require a prime denominator or a pure repeating cycle. The explorer supports nonnegative improper fractions by retaining their fractional remainder. Its BigInt modular exponentiation and sequential verifier are independently tested implementations, not certified Lean programs.
+
+## retained_progression_handoffs
+
+The adaptive rule and its exact value preservation are proved in [HandoffSearch.lean](../lean/RadixRuns/HandoffSearch.lean). For a positive next digit d and a proper nonzero remainder r, the next radix is floor(Dd/r)+1. The new remainder stays positive and never increases. Every digit fits its own radix, the products of radices grow, and the residual tends to zero. `adaptive_after_prefix_hasSum` includes the scale of an already-written prefix, so a change of radix continues the same fraction.
+
+The worked examples retain the ordinary base-1000 prefix through 243 for 1/997, and through 997 for 1/998001. The next radices are 998 and 999 respectively, emitting 729 and 998. Subsequent changing units keep tripling or counting. The general theorem accepts any positive target sequence; the examples take their targets from the geometric and counting coefficient sequences associated with their original reading unit. This changes the weights of later digits. Ordinary positional notation still retains the exact value.
+
+The minimum is local: it concerns the next radix with the requested digit and a strictly positive remainder. It does not minimize the number of steps until a remainder stays fixed. Zero targets require a separate condition, formalized as `zero_digit_exists_iff`; the positive-digit theorem does not cover them. The JavaScript model, UI, and starting-prefix computations are independently tested implementations rather than certified Lean programs.

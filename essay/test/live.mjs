@@ -9,6 +9,8 @@ import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
+import { assertProgression } from "./progression-browser.mjs";
+
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const siteURL = "https://reptends.mikedotexe.com/";
 const siteHostname = new URL(siteURL).hostname;
@@ -156,7 +158,16 @@ try {
   }
   assert.equal(await page.locator("#orbit-boundary").isVisible(), false);
   await page.locator(".chapter-nav a[href='#change-radix']").click();
+  for (const example of ["powers", "counting"]) {
+    await page.locator("#hp-" + example).click();
+    for (let step = 0; step < 4; step++) {
+      await assertProgression(page, example, step);
+      if (step < 3) await page.locator("#hp-next").click();
+    }
+  }
+  console.log("PASS live retained progressions: 729,2187,6561,19683 and 998,999,1000,1001 with exact value preservation.");
   assert.equal((await page.locator("#run-digit").textContent()).trim(), "27");
+  await page.locator("#run-from-start > summary").click();
   await page.locator("#run-166").click();
   assert.equal(await page.locator("#run-position").inputValue(), "166");
   assert.equal(await page.locator("#run-digit").getAttribute("data-exact"), String(3n ** 166n));
@@ -164,6 +175,7 @@ try {
   await page.locator("#run-next").click();
   assert.equal(await page.locator("#run-digit").getAttribute("data-exact"), String(3n ** 167n));
   await page.locator("#run-start").click();
+  await page.locator("#run-from-start > summary").click();
   await page.locator(".chapter-nav a[href='#digit-index']").click();
   await page.locator('[data-di-preset="return"]').click();
   assert.equal(await page.locator("#di-tape").textContent(), "001");

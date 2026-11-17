@@ -4,6 +4,7 @@ import { initGeometry } from "./geometry.ts";
 import { positionFromSearch, linkToPosition } from "./navigation.ts";
 import { decimalReturn997 } from "./decimal-return.ts";
 import type { DecimalReturn } from "./decimal-return.ts";
+import { initProgressionExplorer } from "./progression-explorer.ts";
 import { initRadixExplorer } from "./radix-explorer.ts";
 import { initDigitIndexExplorer } from "./digit-index-explorer.ts";
 
@@ -297,6 +298,7 @@ reducedMotion.addEventListener("change", () => {
 
 initGeometry(element("geometry-app"));
 initRadixExplorer();
+initProgressionExplorer();
 initDigitIndexExplorer();
 render();
 document.documentElement.classList.add("js");
@@ -305,8 +307,11 @@ document.documentElement.classList.add("js");
 // Readers arriving from the series equation can therefore inspect its proof directly.
 function revealLinkedExplanation(): void {
   const id = window.location.hash.slice(1);
-  if (!["verification-guide", "run-proof", "run-decimals"].includes(id)) return;
-  element<HTMLDetailsElement>(id).open = true;
+  if (!["verification-guide", "run-proof", "run-decimals", "hp-proof", "hp-weights", "run-from-start"].includes(id)) return;
+  const detail = element<HTMLDetailsElement>(id);
+  detail.open = true;
+  let parent = detail.parentElement?.closest("details");
+  while (parent) { parent.open = true; parent = parent.parentElement?.closest("details"); }
 }
 window.addEventListener("hashchange", revealLinkedExplanation);
 revealLinkedExplanation();

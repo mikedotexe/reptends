@@ -1,0 +1,4 @@
+Command: python3 lean/check_radix_proofs.py
+Build completed successfully (7612 jobs).
+PASS 24 unchanged proof sources and 199 theorem axiom checks.
+Allowed axioms: propext, Classical.choice, Quot.sound.

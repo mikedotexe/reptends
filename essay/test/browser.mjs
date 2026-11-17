@@ -5,6 +5,7 @@ import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { formatWord, recurrenceTrace } from "../src/math/lifts.ts";
+import { assertProgression, exerciseProgression } from "./progression-browser.mjs";
 import { exerciseDigitIndex } from "./digit-index-browser.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -529,6 +530,7 @@ async function exerciseShareLinks() {
 }
 
 async function assertRunExplorer(page, interactive = true) {
+  await setDisclosure(page, "#run-from-start", true);
   assert.equal(await page.locator("#run-proof").evaluate(el => el.open), false);
   assert.equal(await page.locator("#run-decimals").evaluate(el => el.open), false);
   assert.equal((await page.locator("#run-digit").textContent()).trim(), "27");
@@ -566,6 +568,7 @@ async function assertRunExplorer(page, interactive = true) {
     await assertPageFits(page);
     await setDisclosure(page, "#" + id, false);
   }
+  await setDisclosure(page, "#run-from-start", false);
 }
 
 async function exerciseRunLinks() {
@@ -613,6 +616,9 @@ try {
   const indexedPage = await indexedContext.newPage();
   await indexedPage.goto(shareTestURL + "#digit-index");
   await exerciseDigitIndex(indexedPage);
+  await indexedPage.goto(shareTestURL + "#change-radix");
+  await exerciseProgression(indexedPage);
+  console.log(`PASS ${engine} retained progressions: both prefixes, 16 exact states, bounds, sharing and history.`);
   await indexedContext.close();
   console.log(`PASS ${engine} indexed digits: arbitrary bases, huge positions, independent checks, cancellation, sharing and history.`);
   await exerciseRunLinks();
@@ -656,6 +662,13 @@ try {
       await assertRepetitionBoundaries(page);
       await assertVerificationGuide(page);
       await assertRunExplorer(page);
+      for (const example of ["powers", "counting"]) {
+        await page.locator("#hp-" + example).click();
+        await assertProgression(page, example, 0);
+        if ([320, 1440].includes(width) && colorScheme === "light") {
+          await page.locator(".hp-workbench").screenshot({ path: screenshotPath(`${width}-progression-${example}.png`) });
+        }
+      }
       await page.locator('[data-di-preset="return"]').click();
       assert.equal(await page.locator("#di-tape").textContent(), "001");
       await setDisclosure(page, "#di-power-bridge", true);
@@ -714,6 +727,9 @@ try {
   await assertRepetitionBoundaries(fallbackPage, false);
   await assertVerificationGuide(fallbackPage, false);
   await assertRunExplorer(fallbackPage, false);
+  assert.equal(await fallbackPage.locator("#hp-next").isVisible(), false);
+  assert.equal(await fallbackPage.locator("#hp-digit").textContent(), "729");
+  assert.match(await fallbackPage.locator(".hp-static-counting").textContent(), /radix 999 to write 998/);
   assert.equal(await fallbackPage.locator("#di-form").isVisible(), false);
   assert.match(await fallbackPage.locator("#di-tape").textContent(), /^001003009027081243731193/);
   assert.equal((await fallbackPage.locator("#hero-answer").textContent()).trim(), "731");
