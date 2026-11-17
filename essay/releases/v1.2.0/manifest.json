@@ -1,0 +1,36 @@
+{
+  "version": "1.2.0",
+  "source_commit": "53d39f43bb2c243ebceae39add6ac741135f2374",
+  "bytes": 154908,
+  "sha256": "b8e14bd41cdffcfe55b0fd0d76ae1fd764d7a90e2c9610fc9c04052136fa3954",
+  "assets": {
+    "index.html": {
+      "sha256": "b8e14bd41cdffcfe55b0fd0d76ae1fd764d7a90e2c9610fc9c04052136fa3954",
+      "bytes": 154908,
+      "content_type": "text/html; charset=utf-8"
+    },
+    "robots.txt": {
+      "sha256": "5b83e4b5a732add02f74140cfa52abd992278e03ca4685faee545a1ffa771a3b",
+      "bytes": 613,
+      "content_type": "text/plain; charset=utf-8"
+    }
+  },
+  "published_at": "2026-11-17T04:46:21.833290+00:00",
+  "verified_at": "2026-11-17T04:47:26.924531+00:00",
+  "ci": "https://github.com/mikedotexe/reptends/actions/runs/44019108921",
+  "browsers": [
+    "Chromium",
+    "Firefox",
+    "WebKit"
+  ],
+  "node_tests": 76,
+  "deployment_safety_tests": 13,
+  "lean_theorem_axiom_checks": 136,
+  "lean_source_hash_checks": 22,
+  "chapter_url": "https://reptends.mikedotexe.com/#change-radix",
+  "checked_run_urls": [
+    "https://reptends.mikedotexe.com/?run=167#change-radix",
+    "https://reptends.mikedotexe.com/?group=8&run=169#change-radix"
+  ],
+  "human_reader_feedback": "pending"
+}

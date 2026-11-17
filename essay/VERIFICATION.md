@@ -1,34 +1,34 @@
-# Verification — essay v1.1.1
+# Verification — essay v1.2.0
 
-Published 8 October 2026 (Pacific time), following the independent AI reader review of v1.1.0.
+Published 16 November 2026 (Pacific time) at [reptends.mikedotexe.com](https://reptends.mikedotexe.com/#change-radix).
 
-- Source commit: [`fad656c`](https://github.com/mikedotexe/reptends/commit/fad656ce9e54cae1c70637a1795a36cc0b23dae4)
-- `index.html`: 140,060 bytes, SHA-256 `0a28007f0bea7591e4523efae2b19b9d45cc5e47687f12984e7be93de398a105`
-- `robots.txt`: 613 bytes, SHA-256 `5b83e4b5a732add02f74140cfa52abd992278e03ca4685faee545a1ffa771a3b`
-- [Three-browser source CI](https://github.com/mikedotexe/reptends/actions/runs/37841478344) passed for Chromium, Firefox, and WebKit.
+- Reviewed source: [`53d39f4`](https://github.com/mikedotexe/reptends/commit/53d39f43bb2c243ebceae39add6ac741135f2374).
+- `index.html`: 154,908 bytes, SHA-256 `b8e14bd41cdffcfe55b0fd0d76ae1fd764d7a90e2c9610fc9c04052136fa3954`.
+- `robots.txt`: 613 bytes, SHA-256 `5b83e4b5a732add02f74140cfa52abd992278e03ca4685faee545a1ffa771a3b`.
+- [Release CI](https://github.com/mikedotexe/reptends/actions/runs/44019108921) passed Chromium, Firefox, WebKit, and the new Lean build/audit job.
 
-## Reader-facing clarifications
+## Reading path
 
-The opening specimens now separate fixed-width groups with small visual gaps, preserving the exact continuous decimal text and preventing a group from splitting across lines. The main prose explains why multiplication by 1000 and by 3 leaves the same remainder modulo 997. A nearby native disclosure accounts for the entire omitted tail of the addition table, including the already-shown fractional part: 147/1000 + 531441/(997 × 1000) = 678/997 < 1.
+Four numbered chapters follow carrying, remainders, finite descriptions, and changing radices. The new chapter has one explorer and four short takeaways. Decimal conversion, exact state, and general proofs are native optional disclosures. Introductions and transitions are shorter; fixed-radix repetition is explicitly distinguished from changing the next radix.
 
-The shared explorer marks all six decimal endpoints within its two grouped cycles. At group 56 it shows `7 | 00`, explains the remainder returning to 1 after the 7 and reaching 100 after the complete group, and offers the three digitwise equations. The other cut positions show `67 | 0` and `667 |`. All digits remain unchanged in text content. Keyboard announcements describe the boundary, and leaving a boundary removes its annotation. The inherited arithmetic engine is unchanged.
+The construction retains 1/997 while choosing radix 997·3^n+1 and emitting digit 3^n. Each bar is a one-digit first return to remainder 1. Long integers are abbreviated in the main view, with every exact digit available in the inspector. Run links are independent of group links and support Back/Forward and a selectable clipboard fallback.
 
-The main chapter structure and optional research guide remain intact. [README.md](README.md) records the bounded definition of done; [READER-CHECK.md](READER-CHECK.md) records the three AI reviews separately from pending human feedback.
+## Arithmetic and proof checks
 
-## Exact arithmetic and browser checks
+Strict TypeScript, 76 Node tests, 13 deployment-safety tests, standalone artifact validation, and `git diff --check` passed. The new tests independently compare all 169 displayed runs to division of the accumulated product. They check exact residuals, other denominators and multipliers, multi-digit runs, changing radices, termination, first returns, decimal truncation and link bounds.
 
-Strict TypeScript checking, 70 Node arithmetic/artifact/navigation tests, 13 deployment-safety tests, the standalone build, and `git diff --check` passed. CI ran these checks in each browser job. Three new tests compare decimal-return annotations to a continuous independent scan of all 996 decimal digits and cover all split offsets, trailing zeros, and inconsistent input rows. A fourth test independently checks the exact unfinished balance after the displayed stack and certifies that the first eleven groups cannot change.
+`python3 lean/check_radix_proofs.py` builds the public proof library, verifies 22 unchanged imported source hashes, and audits 136 declarations. Dependencies are subsets of `propext`, `Classical.choice` and `Quot.sound`. No unfinished proofs, custom axioms, `native_decide` or kernel-check bypasses occur in these sources. Both public claim families are registered in the proof-status atlas.
 
-Local Chromium and WebKit suites passed. The browser checks still cover all 332 selected positions, all existing carry and geometry interactions, sharing/history, native keyboard controls, reduced and normal motion, no-JavaScript examples, and offline operation without extra asset requests or browser errors. Added checks verify boundary note presence and cleanup across all positions, the `7 | 00` split and its three exact equations, accessible boundary announcements, and the static tail explanation. Desktop, tablet, and 320-pixel mobile screenshots of the separated opening groups and the expanded decimal-return note were inspected.
+Browser CI covers the existing explorer, powers at positions 166–168, exact inspector values, independent sharing/history, keyboard controls, reduced and ordinary motion, no-JavaScript examples, offline operation, and widths down to 320 pixels. Mobile and desktop screenshots were inspected, including the compact large-power view. Local Chromium and WebKit passed; Firefox's local macOS headless process failed to initialize, and its Linux release job passed.
 
-## Live verification
+## Live publication
 
-CloudFront invalidation `IC49AAVREURAKZYJAVUXN9VSYW` completed. `node deploy/check-dns.mjs`, `python3 deploy/aws_site.py verify --target live`, and `npm run test:live` passed against the exact published artifact. The live browser checks the split word, one-digit equations, final grouped remainder, and annotation cleanup alongside the existing interactions.
+CloudFront invalidation `IEWXW61OAWLASUJPF63PF7GQKE` completed. `python3 deploy/aws_site.py verify --target live`, `npm run test:live`, and `node deploy/check-dns.mjs` passed. Additional requests to `?run=167` and `?group=8&run=169` served the exact reviewed HTML. Public proof sources and the atlas returned successfully.
 
-Ordinary IPv4/IPv6 DNS resolves. Valid HTTPS serves the reviewed bytes at `/`, `/index.html`, and the tested group query. HTTP returns 301 redirects for the essay and `robots.txt`, preserving the tested group query. Direct anonymous S3 requests for both objects return 403. No extra runtime asset requests or browser errors were observed.
+Trusted HTTPS serves the recorded bytes. HTTP redirects preserve the tested group query; ordinary IPv4/IPv6 DNS resolves. The crawler policy is unchanged, and anonymous S3 access to both objects returns 403. The live browser checked the new radix and power at exponent 166 and the following power, alongside inherited interactions, with no extra asset requests or runtime errors.
 
-The non-secret resource state and live receipt are in `deploy/hosting.json` and `deploy/live-verification.json`. The release manifest is [releases/v1.1.1/manifest.json](releases/v1.1.1/manifest.json).
+The [manifest](releases/v1.2.0/manifest.json), [live receipt](releases/v1.2.0/live-verification.json), and [CI receipt](releases/v1.2.0/ci.json) preserve the evidence. The [v1.1.1 verification](releases/v1.1.1/VERIFICATION.md) and prior source commit remain available for rollback.
 
-## Outstanding evidence
+## Evidence boundaries
 
-Fresh human-reader feedback remains pending. The AI reviews do not establish comprehension by a human newcomer. The broader repository CI has its previously recorded generated-documentation and Yarn/Corepack issues; the dedicated essay workflow is this publication's release gate.
+Fresh human-reader feedback remains pending. The broader repository's generated-documentation drift was observed before these registry edits. The dedicated essay workflow is this release's gate. The bracket/bar typography is explanatory notation; the underlying records and arithmetic are formalized. The broader recurrence framework's open claims are unchanged.

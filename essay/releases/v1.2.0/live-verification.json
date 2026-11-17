@@ -1,0 +1,48 @@
+{
+  "hostname": "reptends.mikedotexe.com",
+  "verified_at": "2026-11-17T04:47:26.924531+00:00",
+  "sha256": "b8e14bd41cdffcfe55b0fd0d76ae1fd764d7a90e2c9610fc9c04052136fa3954",
+  "assets": {
+    "index.html": {
+      "sha256": "b8e14bd41cdffcfe55b0fd0d76ae1fd764d7a90e2c9610fc9c04052136fa3954",
+      "bytes": 154908,
+      "content_type": "text/html; charset=utf-8"
+    },
+    "robots.txt": {
+      "sha256": "5b83e4b5a732add02f74140cfa52abd992278e03ca4685faee545a1ffa771a3b",
+      "bytes": 613,
+      "content_type": "text/plain; charset=utf-8"
+    }
+  },
+  "https": {
+    "/": {
+      "status": 200,
+      "sha256": "b8e14bd41cdffcfe55b0fd0d76ae1fd764d7a90e2c9610fc9c04052136fa3954"
+    },
+    "/index.html": {
+      "status": 200,
+      "sha256": "b8e14bd41cdffcfe55b0fd0d76ae1fd764d7a90e2c9610fc9c04052136fa3954"
+    },
+    "/robots.txt": {
+      "status": 200,
+      "sha256": "5b83e4b5a732add02f74140cfa52abd992278e03ca4685faee545a1ffa771a3b"
+    }
+  },
+  "http_redirect_status": 301,
+  "http_redirect_location": "https://reptends.mikedotexe.com/",
+  "http_redirects": {
+    "/": {
+      "status": 301,
+      "location": "https://reptends.mikedotexe.com/"
+    },
+    "/robots.txt": {
+      "status": 301,
+      "location": "https://reptends.mikedotexe.com/robots.txt"
+    }
+  },
+  "anonymous_s3_status": 403,
+  "anonymous_s3_statuses": {
+    "/index.html": 403,
+    "/robots.txt": 403
+  }
+}

@@ -1,6 +1,6 @@
 # Essay v1.2.0
 
-Prepared 16 November 2026. Publication evidence is recorded in `manifest.json` after live verification.
+Published 16 November 2026. Publication evidence is recorded in `manifest.json` and `live-verification.json`.
 
 The essay now has four chapters: carrying, repeating remainders, finite descriptions, and changing radices. Chapter 04, “Let the measuring units grow,” keeps 1/997 fixed while using radices 997·3^n+1 to display each power 3^n as a legal digit. Every one-digit run is a first return to remainder 1. A focused explorer covers exponents 0–168 and supports independent share links. The opening notation and first four accumulated values remain readable without JavaScript.
 
