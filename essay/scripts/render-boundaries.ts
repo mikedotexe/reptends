@@ -35,7 +35,7 @@ export function renderRepetitionBoundaries(): string {
 
   return `<section id="soft-end" class="chapter wrap boundary-chapter" tabindex="-1" aria-labelledby="soft-end-title">
     <div class="chapter-heading"><span class="chapter-number">03 / WHEN HAVE WE SEEN ENOUGH</span><h2 id="soft-end-title">When have we seen enough?</h2></div>
-    <p class="boundary-intro">Once a long-division remainder returns, every later digit is determined. The decimal continues forever, but we have enough information to describe it. For 1/997, the first completed repeat looks like this:</p>
+    <p class="boundary-intro">With a fixed radix, a returning remainder tells us how every later digit repeats. For 1/997, the first completed decimal repeat looks like this:</p>
     <p class="boundary-run" aria-label="The first decimal repeat ends in ${decimalEnd.beforeDigits}; the next begins ${decimalEnd.afterDigits}"><span>…${decimalEnd.beforeDigits}</span><b aria-hidden="true">│</b><span class="boundary-next">${decimalEnd.afterDigits}…</span></p>
     <p class="boundary-run-caption">The divider ends one 166-digit block and begins the next. This is one of three distinct landmarks.</p>
     <ol class="boundary-landmarks">
@@ -57,7 +57,7 @@ export function renderRepetitionBoundaries(): string {
       </li>
     </ol>
     <p id="boundary-position" class="boundary-position enhancement">Shared position: group 7, the first carry.</p>
-    <p class="boundary-caveat">Counting from 3<sup>0</sup> = 1 gives <strong>56 power positions</strong> through the first decimal endpoint’s word, or <strong>166</strong> through the aligned word endpoint. These label positions in an infinite sum; later terms still contribute carries.</p>
+    <p class="boundary-caveat">These endpoints describe the repeating digits. Every later power still contributes to the infinite sum.</p>
     <details id="boundary-comparison" class="math-note"><summary>Compare the stopping places for 97, 997, 94, and 994</summary>
       <p>For 94 = 100 − 6 and 994 = 1000 − 6, the powers are 1, 6, 36, … . Both decimals start with one nonrepeating zero. Grouping still begins at the decimal point, so the startup word counts toward the power position.</p>
       <p class="fine-print">The divider marks the end of the first decimal repetend. Digits to its right start the next copy. On small screens, scroll the table sideways to compare every column.</p>
@@ -70,5 +70,6 @@ export function renderRepetitionBoundaries(): string {
       <details class="math-note boundary-receipts"><summary>Inspect the returning remainders and complete powers</summary>${receipts}</details>
       <p class="fine-print">These are <strong>computed examples</strong>, checked against ordinary long division, including the startup for 94 and 994. The <a href="${atlas}">proof-status atlas</a> labels <code>digit_periodicity</code> <strong>reproved-here</strong> for odd primes and coprime bases, and <code>power_order_formula</code> <strong>classical</strong>. See the <a href="#research">research notes</a> for scope and verification.</p>
     </details>
+    <p class="chapter-bridge">The loop describes a fixed radix. <a href="#change-radix">What if the measuring units could grow too?</a></p>
   </section>`;
 }

@@ -10,6 +10,14 @@ on:
       - 'essay/deploy/**'
       - 'essay/package*.json'
       - 'essay/tsconfig.json'
+      - 'lean/Radix*.lean'
+      - 'lean/RadixRuns/**'
+      - 'lean/check_radix_proofs.py'
+      - 'lean/RadixResearch-source-hashes.json'
+      - 'lean/RadixTermination/**'
+      - 'lean/RetainedProgression*'
+      - 'lean/RetainedProgression/**'
+      - 'data/claim_registry.json'
       - '.github/workflows/essay.yml'
   workflow_dispatch:
 
@@ -17,6 +25,22 @@ permissions:
   contents: read
 
 jobs:
+  radix-proofs:
+    name: Essay · Lean run proofs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Install the pinned Lean toolchain
+        run: |
+          curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Build and audit the run proofs
+        working-directory: lean
+        run: |
+          lake exe cache get
+          python3 check_radix_proofs.py
   browser:
     name: Essay · ${{ matrix.engine }}
     runs-on: ubuntu-24.04

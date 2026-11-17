@@ -1,6 +1,8 @@
 # Where Did the Pattern Go?
 
-The canonical website project for [reptends.mikedotexe.com](https://reptends.mikedotexe.com). Three continuous decimal expansions—1/97, 1/997, and 1/9997—first show the powers of three giving way to a jumble of digits and identify the last clean power in each. The essay then stacks full-width powers to recover the changed groups through ordinary addition and follows 1/997 into a finite remainder loop with synchronized power, remainder, and three-digit decimal readouts. The main story ends by distinguishing the last digit of a repetend from the end of a grouped cycle. Base-3 digits, exact verification, and square/cube geometry are optional continuations.
+The canonical website project for [reptends.mikedotexe.com](https://reptends.mikedotexe.com). Four chapters follow the powers inside 1/997: addition and carrying, repeating remainders, the endpoint of a repetend, and a changing-radix representation that keeps every power visible as a legal digit. Each chapter has one clear question; full accounting, decimal conversion, proofs, and geometry remain optional.
+
+The new [changing-radix chapter](https://reptends.mikedotexe.com/#change-radix) keeps the same fraction while assigning new place weights. The [proof-status atlas](../docs/PROOF_STATUS_ATLAS.md) registers its generic run-preservation and infinite-power claims as `reproved-here`, backed by the public [Lean library](../lean/RadixRuns.lean). A returning remainder determines the same future digits when the radix is held fixed; the new chapter explicitly changes it.
 
 This project lives in the [`essay/` folder of mikedotexe/reptends](https://github.com/mikedotexe/reptends/tree/main/essay). On Mike's machine, `/Users/mikepurvis/other/physics-math-research/site` is a stable symlink to `/Users/mikepurvis/other/reptends-publishing/essay` in a clean publishing checkout. Both paths reach the same files; the original research checkout and its unfinished changes remain intact.
 
@@ -47,6 +49,7 @@ If a local resolver still caches a pre-launch negative answer, set `REPTENDS_DNS
 - `scripts/render-verification.ts`: build-time verification guide, independently executable Python checker, and embedded JSON evidence for all four examples.
 - `src/decimal-return.ts`: digitwise expansion of the selected exact word, marking all six decimal returns within the two group cycles.
 - `src/navigation.ts`: strict group-link parsing and canonical sharing URLs.
+- `src/run-radices.ts`, `src/radix-explorer.ts`, and `scripts/render-radices.ts`: exact run accounting, the 997 power schedule, static examples, and the focused changing-radix explorer.
 - `src/finishing.css`: byline, personal note, and sharing controls.
 - `src/geometry.ts` and `src/geometry.css`: ordered pair and triple contributions.
 - `src/math/`: preserved exact TypeScript engine; see [arithmetic provenance](src/math/PROVENANCE.md).
@@ -58,6 +61,8 @@ If a local resolver still caches a pre-launch negative answer, set `REPTENDS_DNS
 ## Share a particular moment
 
 The **Copy link to this group** button shares a URL such as [group 8, the 193 follow-up](https://reptends.mikedotexe.com/?group=8#repeat). Group numbers run from 1 through 332. Invalid or ambiguous values fall back to the first change, group 7. Browser Back/Forward restores linked positions, and a selectable field is available if clipboard permission is unavailable. Offline copies still create links to the public essay.
+
+**Copy a link to this run** shares the independent changing-radix position, for example [run 167, digit 3^166](https://reptends.mikedotexe.com/?run=167#change-radix). Run numbers are 1–169, with exponent `run − 1`; the default is run 4. Invalid or duplicated run parameters use that default. Both explorers preserve the other's query parameter. Their positions refer to different representations and different place weights.
 
 ## Mathematical scope
 
@@ -71,11 +76,11 @@ The “When have we seen enough?” panel distinguishes that first decimal retur
 
 The proof-status atlas records the [`digit_periodicity`](../docs/PROOF_STATUS_ATLAS.md) quotient step as **reproved-here**. At each selected position, dividing the bounded remainder `r` as `3r = 997d + r′` emits a base-3 digit `d` and next remainder `r′`; the corresponding three-digit decimal word is `r + d`. The interface and tests keep this local quotient digit distinct from the unbounded boundary carry used in the full-power construction.
 
-The general carry identity, geometric series, and Cauchy products are established mathematics. The unfolded display notation and this explanatory sequence are an exploratory presentation, not a claim to a new division algorithm or a formally verified general theorem. Arbitrary recurrence inputs, mixed radices, continued fractions, and the full research dashboard remain outside this first version.
+The general carry identity, geometric series, and Cauchy products are established mathematics. The unfolded display and marked-run notation are explanatory conventions. The focused mixed-radix library proves arbitrary finite run value preservation, separately certified first returns, and convergence of the power schedule `B_n = D*c^n + 1` for `D > 1, c ≥ 2`. No finite power prefix exhausts its value. These results do not assert a universally preferred representation or formalize the broader recurrence framework. Arbitrary user-entered recurrences, continued fractions, and a general research dashboard remain outside this edition.
 
 ## Definition of done for this edition
 
-The essay has a deliberately bounded scope: concrete decimal patterns, exact addition and carrying, repeating remainders, and the finite information that describes an infinite decimal. A release is ready when its displayed arithmetic is independently checked, its controls and reading path work across supported browsers and screen sizes, and the reviewed standalone artifact is reproducibly published with trusted HTTPS and a private origin.
+The essay has a deliberately bounded scope: concrete decimal patterns, exact addition and carrying, repeating remainders, and changing measuring units. A release is ready when its displayed arithmetic is independently checked, its controls and reading path work across supported browsers and screen sizes, its cited Lean run proofs build and pass their axiom audit, and the reviewed standalone artifact is reproducibly published with trusted HTTPS and a private origin.
 
 The editorial acceptance check is a fresh reader who can explain where the extra 2 comes from, what repeats and what grows, what adding nines changes, and why the powers do not stop. Human feedback is still pending; the three independent AI reviews of v1.1.0 are recorded separately in [READER-CHECK.md](READER-CHECK.md). Address specific comprehension failures before expanding the main story.
 

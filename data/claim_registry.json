@@ -406,5 +406,40 @@
       "carry_selector_monotonicity_failure_21",
       "carry_selector_core_invariance_failure_996"
     ]
+  },
+  {
+    "id": "mixed_radix_run_value_preservation",
+    "title": "Exact mixed radix run accounting",
+    "statement": "For a proper fraction a/D with 0 <= a < D, every finite sequence of valid fixed-radix runs preserves Q/P + r/(DP) = a/D. A run of radix B and positive length L with packed digits A contributes A/(P*B^L). First-return boundaries are separately certified.",
+    "status": "reproved-here",
+    "repo_status": "Lean-formalized and independently checked in the essay",
+    "proof_status": "Run.packed_eq_horner; DivisionState.advance_prefix_value, advance_value, execute_initial_value, return_contribution and contributions_add_tail.",
+    "evidence": [
+      "lean/RadixRuns/Encoding.lean",
+      "lean/RadixRuns/Core.lean"
+    ],
+    "vocabulary_ids": [
+      "remainder_orbit"
+    ],
+    "source_ids": [],
+    "counterexample_ids": []
+  },
+  {
+    "id": "mixed_radix_power_digits",
+    "title": "Infinite mixed radix power digits",
+    "statement": "For integers D > 1 and c >= 2, the schedule B_n = D*c^n + 1 emits the legal digit c^n and remainder 1 at every step. Every one-digit run is a first return. The exact weighted real series sums to 1/D, with a positive tail after every finite prefix.",
+    "status": "reproved-here",
+    "repo_status": "Lean-formalized and independently checked in the essay",
+    "proof_status": "power_digit, power_remainder, power_hasSum, power_partialSum_lt_value, powerRuns_firstReturnSequence and the 997 worked examples.",
+    "evidence": [
+      "lean/RadixRuns/Powers.lean",
+      "lean/RadixRuns/PowerRuns.lean",
+      "lean/RadixRuns/Examples.lean"
+    ],
+    "vocabulary_ids": [
+      "remainder_orbit"
+    ],
+    "source_ids": [],
+    "counterexample_ids": []
   }
 ]

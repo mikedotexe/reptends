@@ -13,7 +13,8 @@ After they have explored, ask these questions without offering hints or correcti
 3. When the page says a cycle returns, what exactly repeats? What keeps growing?
 4. If we add more nines to the denominator, what changes about the groups of digits and the pattern we can see?
 5. When we reach the last digit of the repeating block, do the powers stop? What have we learned at that point?
-6. Where did you feel lost, and what would you try clicking next?
+6. In the changing-radix chapter, what stays the same and what changes? What does the number under each bracket mean?
+7. Where did you feel lost, and what would you try clicking next?
 
 If they explored the optional geometry, add: “What are we gathering along a diagonal or into a triangular slice? Is gathering those contributions the same as carrying?” Skip this question if they did not reach that section.
 
@@ -32,6 +33,7 @@ Record their own words before discussing the intended explanation. A wrong answe
 - Response 4, in their words: _pending_
 - Response 5, in their words: _pending_
 - Response 6, in their words: _pending_
+- Response 7, in their words: _pending_
 - Optional geometry response: _not asked / pending_
 - Observed pauses, misclicks, or inaccessible controls: _pending_
 - One change supported by this session: _pending_

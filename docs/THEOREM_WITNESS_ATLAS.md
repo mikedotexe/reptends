@@ -50,9 +50,9 @@ as a promoted theorem claim.
 Current registry counts:
 
 <!-- REGISTRY_SUMMARY_START -->
-- total claims: 15
+- total claims: 17
 - classical: 3
-- reproved-here: 8
+- reproved-here: 10
 - implemented-here: 1
 - empirical: 1
 - open: 2

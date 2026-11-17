@@ -15,3 +15,10 @@ lean_lib QRTour where
 
 lean_lib GeometricStack where
   srcDir := "."
+
+lean_lib RadixTermination
+lean_lib RetainedProgression
+lean_lib RadixRuns
+
+@[default_target]
+lean_lib RadixResearch

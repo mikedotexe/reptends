@@ -4,6 +4,7 @@ import { initGeometry } from "./geometry.ts";
 import { positionFromSearch, linkToPosition } from "./navigation.ts";
 import { decimalReturn997 } from "./decimal-return.ts";
 import type { DecimalReturn } from "./decimal-return.ts";
+import { initRadixExplorer } from "./radix-explorer.ts";
 
 const view = buildUnfoldedView({ base: 1000n, coefficients: [3n] }, 332);
 const certificates = view.rows.map((_, index) => certifiedPrefix(view.trace, index + 1));
@@ -294,14 +295,16 @@ reducedMotion.addEventListener("change", () => {
 });
 
 initGeometry(element("geometry-app"));
+initRadixExplorer();
 render();
 document.documentElement.classList.add("js");
 
 // A deep link should open a native disclosure before the browser scrolls to it.
 // Readers arriving from the series equation can therefore inspect its proof directly.
 function revealLinkedExplanation(): void {
-  if (window.location.hash !== "#verification-guide") return;
-  element<HTMLDetailsElement>("verification-guide").open = true;
+  const id = window.location.hash.slice(1);
+  if (!["verification-guide", "run-proof", "run-decimals"].includes(id)) return;
+  element<HTMLDetailsElement>(id).open = true;
 }
 window.addEventListener("hashchange", revealLinkedExplanation);
 revealLinkedExplanation();

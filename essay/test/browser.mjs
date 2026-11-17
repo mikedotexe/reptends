@@ -74,7 +74,7 @@ async function assertReadingStructure(page) {
     assert.equal(await page.locator(selector).isVisible(), true, `${selector} must remain in the main reading path.`);
   }
   assert.deepEqual(await page.locator(".chapter-nav a").evaluateAll(links => links.map(link => link.getAttribute("href"))),
-    ["#carry", "#repeat", "#soft-end", "#research"]);
+    ["#carry", "#repeat", "#soft-end", "#change-radix", "#research"]);
   assert.equal(await page.locator("#repeat").evaluate(element => element.nextElementSibling?.id), "soft-end",
     "The finite-description chapter should follow the remainder explorer.");
 }
@@ -353,7 +353,7 @@ async function exerciseNavigationFocus() {
   await skip.focus();
   await skip.press("Enter");
   await page.waitForFunction(() => document.activeElement?.id === "main");
-  for (const id of ["carry", "repeat", "soft-end", "research"]) {
+  for (const id of ["carry", "repeat", "soft-end", "change-radix", "research"]) {
     const link = page.locator(`.chapter-nav a[href="#${id}"]`);
     await link.focus();
     await link.press("Enter");
@@ -527,7 +527,85 @@ async function exerciseShareLinks() {
   console.log(`PASS ${engine} share links: initial/boundary/invalid groups, Back/Forward, clipboard success and keyboard-selectable fallback, no requests or errors.`);
 }
 
+async function assertRunExplorer(page, interactive = true) {
+  assert.equal(await page.locator("#run-proof").evaluate(el => el.open), false);
+  assert.equal(await page.locator("#run-decimals").evaluate(el => el.open), false);
+  assert.equal((await page.locator("#run-digit").textContent()).trim(), "27");
+  if (interactive) {
+    await page.locator("#run-position").focus();
+    await page.locator("#run-position").press("ArrowRight");
+    assert.equal((await page.locator("#run-digit").textContent()).trim(), "81");
+    for (const n of [0, 3, 6, 166, 167, 168]) {
+      await page.locator("#run-position").evaluate((el, n) => { el.value = String(n); el.dispatchEvent(new Event("input", { bubbles:true })); }, n);
+      const digit = 3n ** BigInt(n);
+      assert.equal((await page.locator("#run-digit").textContent()).trim(), String(digit));
+      assert.equal((await page.locator("#run-radix").textContent()).trim(), String(997n * digit + 1n));
+      assert.equal((await page.locator("#run-equation").textContent()).trim(), `${997n * digit + 1n} × 1 = 997 × ${digit} + 1`);
+      const P = BigInt(await page.locator("#run-place").inputValue());
+      const Q = BigInt(await page.locator("#run-quotient").inputValue());
+      assert.equal(P, 997n * Q + 1n);
+      await assertPageFits(page);
+    }
+    assert.equal(await page.locator("#run-next").isDisabled(), true);
+    await page.locator("#run-start").click();
+    await page.locator("#run-166").click();
+    assert.equal(await page.locator("#run-position").inputValue(), "166");
+    await setDisclosure(page, "#run-state", true);
+    await assertPageFits(page);
+    await setDisclosure(page, "#run-state", false);
+    await page.locator("#run-start").click();
+  } else {
+    assert.equal(await page.locator("#run-position").isVisible(), false);
+  }
+  for (const id of ["run-decimals", "run-proof"]) {
+    await setDisclosure(page, "#" + id, true);
+    await assertPageFits(page);
+    await setDisclosure(page, "#" + id, false);
+  }
+}
+
+async function exerciseRunLinks() {
+  const context = await browser.newContext({ viewport: { width:320, height:1000 }, reducedMotion:"reduce" });
+  await context.addInitScript(() => {
+    Object.defineProperty(navigator, "clipboard", { configurable:true, value: { writeText: async text => { window.copiedRunLink = text; } } });
+  });
+  const page = await context.newPage();
+  const errors = [];
+  page.on("pageerror", error => errors.push(error.message));
+  for (const [run, n] of [["1",0],["169",168],["0",3],["170",3],["1&run=2",3],["NaN",3]]) {
+    await page.goto(shareTestURL + "?group=8&run=" + run + "#change-radix");
+    assert.equal(await page.locator("#run-position").inputValue(),String(n));
+    assert.equal(await page.locator("#position").inputValue(),"7");
+  }
+  await page.goto(shareTestURL + "?group=8&run=4#change-radix");
+  await page.locator("#run-next").click();
+  assert.equal(new URL(page.url()).searchParams.get("group"),"8");
+  await page.locator("#next").click();
+  assert.equal(new URL(page.url()).searchParams.get("run"),"5");
+  await page.evaluate(() => {
+    history.pushState(null,"","?group=8&run=167#change-radix");
+    dispatchEvent(new PopStateEvent("popstate"));
+  });
+  assert.equal(await page.locator("#run-position").inputValue(),"166");
+  await page.goBack();
+  assert.equal(await page.locator("#run-position").inputValue(),"4");
+  assert.equal(await page.locator("#position").inputValue(),"8");
+  await page.goForward();
+  assert.equal(await page.locator("#run-position").inputValue(),"166");
+  await page.locator("#share-run").click();
+  assert.equal(await page.evaluate(() => window.copiedRunLink),"https://reptends.mikedotexe.com/?run=167#change-radix");
+  await page.evaluate(() => { Object.defineProperty(navigator,"clipboard",{ configurable:true,value:{ writeText:async () => { throw new Error("Unavailable"); } } }); });
+  await page.locator("#share-run").click();
+  assert.equal(await page.locator("#share-run-link").inputValue(),"https://reptends.mikedotexe.com/?run=167#change-radix");
+  assert.equal(await page.evaluate(() => document.activeElement.id),"share-run-link");
+  await assertPageFits(page);
+  assert.deepEqual(errors,[]);
+  await context.close();
+  console.log(`PASS ${engine} run links: bounds, independent group/run positions, Back/Forward, copied link and selectable fallback.`);
+}
+
 try {
+  await exerciseRunLinks();
   await exerciseShareLinks();
   await exerciseNavigationFocus();
   for (const width of engine === "chromium" ? [320, 360, 768, 1440] : [320, 768, 1440]) {
@@ -567,6 +645,10 @@ try {
       await exerciseControls(page, engine === "chromium" && width === 1440 && colorScheme === "light");
       await assertRepetitionBoundaries(page);
       await assertVerificationGuide(page);
+      await assertRunExplorer(page);
+      if ([320, 1440].includes(width) && colorScheme === "light") {
+        await page.locator("#change-radix").screenshot({ path: screenshotPath(`${width}-change-radix.png`) });
+      }
       if ([320, 768, 1440].includes(width) && colorScheme === "light") {
         await page.locator('[data-boundary-position="55"]').click();
         await setDisclosure(page, "#orbit-boundary details", true);
@@ -612,6 +694,7 @@ try {
   await assertComparisonTable(fallbackPage);
   await assertRepetitionBoundaries(fallbackPage, false);
   await assertVerificationGuide(fallbackPage, false);
+  await assertRunExplorer(fallbackPage, false);
   assert.equal((await fallbackPage.locator("#hero-answer").textContent()).trim(), "731");
   for (const selector of ["#reveal", "#previous", "#animate-split", "#cycle-later"]) {
     assert.equal(await fallbackPage.locator(selector).isVisible(), false, `${selector} should be hidden when JavaScript is disabled.`);
