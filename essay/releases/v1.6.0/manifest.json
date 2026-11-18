@@ -1,0 +1,43 @@
+{
+  "version": "1.6.0",
+  "source_commit": "28c0e33e8739a6b2e4dc2794db563591ae27192c",
+  "bytes": 192828,
+  "sha256": "f2695acf97cc43cf18653d03e2ed8a9148f56334ea2601deb2fde3fdb7991e76",
+  "assets": {
+    "index.html": {
+      "sha256": "f2695acf97cc43cf18653d03e2ed8a9148f56334ea2601deb2fde3fdb7991e76",
+      "bytes": 192828,
+      "content_type": "text/html; charset=utf-8"
+    },
+    "robots.txt": {
+      "sha256": "5b83e4b5a732add02f74140cfa52abd992278e03ca4685faee545a1ffa771a3b",
+      "bytes": 613,
+      "content_type": "text/plain; charset=utf-8"
+    }
+  },
+  "published_at": "2026-11-18T00:08:24.632456+00:00",
+  "verified_at": "2026-11-18T00:09:18.741232+00:00",
+  "invalidation_id": "I53XMSF6R5G45O2V0TK8MJUXLE",
+  "invalidation_status": "Completed",
+  "ci": "https://github.com/mikedotexe/reptends/actions/runs/44203722926",
+  "ci_attempt": 2,
+  "browsers": [
+    "Chromium",
+    "Firefox",
+    "WebKit"
+  ],
+  "node_tests": 103,
+  "deployment_safety_tests": 13,
+  "lean_theorem_axiom_checks": 257,
+  "lean_source_hash_checks": 26,
+  "chapter_url": "https://reptends.mikedotexe.com/#change-radix",
+  "notation_examples_url": "https://reptends.mikedotexe.com/#notation-examples",
+  "notation_reference_url": "https://reptends.mikedotexe.com/#notation-reference",
+  "checked_result_urls": [
+    "https://reptends.mikedotexe.com/?hp=powers&hp_step=1#change-radix",
+    "https://reptends.mikedotexe.com/?hp=fibonacci&hp_step=0#change-radix",
+    "https://reptends.mikedotexe.com/?hp=fibonacci&hp_step=2#change-radix",
+    "https://reptends.mikedotexe.com/?hp=counting&hp_step=3#change-radix"
+  ],
+  "human_reader_feedback": "pending"
+}

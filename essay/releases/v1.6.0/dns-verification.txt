@@ -1,0 +1,5 @@
+PASS ordinary DNS resolves: {"systemAddresses":[{"address":"18.238.217.16","family":4},{"address":"18.238.217.103","family":4},{"address":"18.238.217.60","family":4},{"address":"18.238.217.52","family":4}],"ipv4":["18.238.217.16","18.238.217.103","18.238.217.60","18.238.217.52"],"ipv6":["2600:9000:2781:8a00:1b:bbd8:eb40:93a1","2600:9000:2781:7600:1b:bbd8:eb40:93a1","2600:9000:2781:e200:1b:bbd8:eb40:93a1","2600:9000:2781:2800:1b:bbd8:eb40:93a1","2600:9000:2781:6e00:1b:bbd8:eb40:93a1","2600:9000:2781:c200:1b:bbd8:eb40:93a1","2600:9000:2781:ec00:1b:bbd8:eb40:93a1","2600:9000:2781:c800:1b:bbd8:eb40:93a1"]}
+PASS trusted HTTPS serves the exact artifact at /, /index.html, and /?group=8: f2695acf97cc43cf18653d03e2ed8a9148f56334ea2601deb2fde3fdb7991e76
+PASS robots.txt serves the exact permissive crawler policy: 5b83e4b5a732add02f74140cfa52abd992278e03ca4685faee545a1ffa771a3b
+PASS HTTP 301 redirects the essay and robots.txt to HTTPS and preserves the group query. URL fragments are browser-side; test #carry in a browser.
+PASS anonymous S3 access is denied for both public CloudFront objects (403).

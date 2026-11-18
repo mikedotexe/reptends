@@ -1,0 +1,45 @@
+{
+  "verified_at": "2026-11-18T00:09:53.785Z",
+  "results": [
+    {
+      "url": "https://reptends.mikedotexe.com/?hp=powers&hp_step=1#change-radix",
+      "status": 200,
+      "sha256": "f2695acf97cc43cf18653d03e2ed8a9148f56334ea2601deb2fde3fdb7991e76"
+    },
+    {
+      "url": "https://reptends.mikedotexe.com/?hp=fibonacci&hp_step=0#change-radix",
+      "status": 200,
+      "sha256": "f2695acf97cc43cf18653d03e2ed8a9148f56334ea2601deb2fde3fdb7991e76"
+    },
+    {
+      "url": "https://reptends.mikedotexe.com/?hp=fibonacci&hp_step=2#change-radix",
+      "status": 200,
+      "sha256": "f2695acf97cc43cf18653d03e2ed8a9148f56334ea2601deb2fde3fdb7991e76"
+    },
+    {
+      "url": "https://reptends.mikedotexe.com/?hp=counting&hp_step=3#change-radix",
+      "status": 200,
+      "sha256": "f2695acf97cc43cf18653d03e2ed8a9148f56334ea2601deb2fde3fdb7991e76"
+    },
+    {
+      "url": "https://github.com/mikedotexe/reptends/blob/main/essay/NOTATION.md",
+      "status": 200
+    },
+    {
+      "url": "https://github.com/mikedotexe/reptends/blob/main/lean/RadixRuns/Encoding.lean",
+      "status": 200
+    },
+    {
+      "url": "https://github.com/mikedotexe/reptends/blob/main/lean/RadixRuns/Core.lean",
+      "status": 200
+    },
+    {
+      "url": "https://github.com/mikedotexe/reptends/blob/main/lean/RadixRuns/BalanceRule.lean",
+      "status": 200
+    },
+    {
+      "url": "https://github.com/mikedotexe/reptends/blob/main/docs/PROOF_STATUS_ATLAS.md",
+      "status": 200
+    }
+  ]
+}

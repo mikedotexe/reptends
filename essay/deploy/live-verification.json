@@ -1,11 +1,11 @@
 {
   "hostname": "reptends.mikedotexe.com",
-  "verified_at": "2026-11-17T16:56:17.870677+00:00",
-  "sha256": "b3ac5afaa4347ec94b76e93cee1006215e41ee015b9c734d0c9081c8347ebd67",
+  "verified_at": "2026-11-18T00:09:18.741232+00:00",
+  "sha256": "f2695acf97cc43cf18653d03e2ed8a9148f56334ea2601deb2fde3fdb7991e76",
   "assets": {
     "index.html": {
-      "sha256": "b3ac5afaa4347ec94b76e93cee1006215e41ee015b9c734d0c9081c8347ebd67",
-      "bytes": 200931,
+      "sha256": "f2695acf97cc43cf18653d03e2ed8a9148f56334ea2601deb2fde3fdb7991e76",
+      "bytes": 192828,
       "content_type": "text/html; charset=utf-8"
     },
     "robots.txt": {
@@ -17,11 +17,11 @@
   "https": {
     "/": {
       "status": 200,
-      "sha256": "b3ac5afaa4347ec94b76e93cee1006215e41ee015b9c734d0c9081c8347ebd67"
+      "sha256": "f2695acf97cc43cf18653d03e2ed8a9148f56334ea2601deb2fde3fdb7991e76"
     },
     "/index.html": {
       "status": 200,
-      "sha256": "b3ac5afaa4347ec94b76e93cee1006215e41ee015b9c734d0c9081c8347ebd67"
+      "sha256": "f2695acf97cc43cf18653d03e2ed8a9148f56334ea2601deb2fde3fdb7991e76"
     },
     "/robots.txt": {
       "status": 200,
