@@ -13,3 +13,6 @@ The engine uses exact integer arithmetic, checks its recurrence representation a
 
 
 `field.ts` implements the bounded base-1000 neighbourhood around 997 from the reviewed Remainder Machine field inequality `(1000 − n)² < n`. The public scope and elementary root-width derivation are recorded in [Field around 1000: worked example](../../../docs/PROOF_STATUS_ATLAS.md#field-around-1000-worked-example). Exact division and membership use bounded integers; square roots are drawing coordinates. Tests independently group a decimal long-division walk for all 66 displayed denominators. This UI is not Lean-verified, and the lesson does not introduce the general slide-rule regimes.
+
+
+`power-dial.ts` implements the bounded family `1/(10^w−3)` for widths 2 through 6 and fixed `1/997` regrouped at widths 3 through 6. The positive quotient series and incoming carry use the existing registered identities; field membership uses `(10^w−n)²<n`. All integer intermediates remain below 10^12; square roots are display coordinates only. Independent decimal division tests check every displayed opening, first carry, and regrouped digit tape. See [Power dial and fixed grouping examples](../../../docs/PROOF_STATUS_ATLAS.md#power-dial-and-fixed-grouping-examples). No Lean source or registry claim changed.
