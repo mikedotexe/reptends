@@ -1,0 +1,8 @@
+✔ [7608/7614] Built RadixRuns.CarryBridge (32s)
+✔ [7609/7614] Built RadixRuns.HandoffSearch (33s)
+✔ [7610/7614] Built RadixRuns.BalanceContinue (7.2s)
+✔ [7611/7614] Built RadixRuns.BalanceRule (7.2s)
+✔ [7612/7614] Built RadixRuns (6.1s)
+✔ [7613/7614] Built RadixResearch (5.8s)
+Build completed successfully (7614 jobs).
+PASS 26 unchanged proof sources and 257 theorem axiom checks.
