@@ -1,0 +1,49 @@
+{
+  "version": "1.8.0",
+  "source_commit": "5314ea0a4b9048c0a39f19cb34400209e48c757e",
+  "bytes": 241190,
+  "sha256": "5b00b19c5cee3e432d502d1615ff71942317c61520cb625336477164caea7523",
+  "assets": {
+    "index.html": {
+      "bytes": 241190,
+      "sha256": "5b00b19c5cee3e432d502d1615ff71942317c61520cb625336477164caea7523"
+    },
+    "robots.txt": {
+      "bytes": 613,
+      "sha256": "5b83e4b5a732add02f74140cfa52abd992278e03ca4685faee545a1ffa771a3b"
+    }
+  },
+  "ci": "https://github.com/mikedotexe/reptends/actions/runs/45049608785",
+  "source_pull_request": "https://github.com/mikedotexe/reptends/pull/2",
+  "node_tests": 112,
+  "deployment_safety_tests": 13,
+  "lean_theorem_axiom_checks": 257,
+  "lean_source_hash_checks": 26,
+  "local_browsers_passed": [
+    "Chromium",
+    "WebKit"
+  ],
+  "local_firefox": "Launcher failed before page load; hosted Firefox passed on the reviewed source.",
+  "human_reader_feedback": "pending",
+  "publication": "verified",
+  "merge_commit": "8100deffefb07ffe3f73a1070703278d3a4e94b1",
+  "published_at": "2026-11-22T17:33:14.442417+00:00",
+  "verified_at": "2026-11-22T17:34:23.426655+00:00",
+  "invalidation_id": "I7NAZFAM488DDXP22M84RU7LK",
+  "invalidation_status": "Completed",
+  "browsers": [
+    "Chromium",
+    "Firefox",
+    "WebKit"
+  ],
+  "unrelated_ci": "Legacy Site Build and registry documentation checks match the v1.7 baseline; generated atlas blocks are unchanged.",
+  "reading_path": [
+    "focus-997",
+    "carry",
+    "repeat",
+    "soft-end",
+    "one-digit",
+    "change-radix",
+    "nearby-fractions"
+  ]
+}

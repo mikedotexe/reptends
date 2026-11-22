@@ -1,0 +1,44 @@
+
+> reptends-pattern-explorer@1.8.0 test:browser
+> node test/browser.mjs
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+browserType.launch: Timeout 30000ms exceeded.
+Call log:
+[2m  - <launching> /Users/mikepurvis/Library/Caches/ms-playwright/firefox-1538/firefox/Nightly.app/Contents/MacOS/firefox -no-remote -headless -profile /var/folders/9d/z0hk873x74x8twz9vg2zjvq80000gn/T/playwright_firefoxdev_profile-TfZ0fj -juggler-pipe -silent[22m
+[2m  - <launched> pid=68365[22m
+[2m  - [pid=68365][err] *** You are running in headless mode.[22m
+[2m  - [pid=68365][err] sandbox_extension_issue_file_to_process failed for /Users/mikepurvis/Library/Caches/ms-playwright/firefox-1538/firefox/Nightly.app/Contents/MacOS/plugin-container.app: 1 (Operation not permitted)[22m
+[2m  - [pid=68365][err] [INFO  webrender_bindings::bindings] WebRender - OpenGL version new 3.2[22m
+[2m  - [pid=68365][err] [INFO  webrender::device::gl] Renderer: Software WebRender[22m
+[2m  - [pid=68365][err] [INFO  webrender::device::gl] Version: 3.2[22m
+[2m  - [pid=68365][err] [INFO  webrender::device::gl] Max texture size: 16384[22m
+[2m  - [pid=68365][err] [INFO  webrender::device::gl] GL context Gl 3.2[22m
+[2m  - [pid=68365][err] [INFO  webrender::device::gl] GL texture cache TextureFormatPair { internal: BGRA8, external: BGRA8 }, bgra TextureFormatPair { internal: 6408, external: 32993 } swizzle Rgba, texture storage Never, depth 33190[22m
+[2m  - [pid=68365][err] [INFO  webrender::renderer::init] WR FrameBuilderConfig { default_font_render_mode: Subpixel, dual_source_blending_is_supported: true, testing: false, gpu_supports_fast_clears: false, gpu_supports_advanced_blend: true, advanced_blend_is_coherent: true, gpu_supports_render_target_partial_update: true, external_images_require_copy: true, batch_lookback_count: 10, background_color: Some(ColorF { r: 0.0, g: 0.0, b: 0.0, a: 0.0 }), compositor_kind: Native { capabilities: CompositorCapabilities { virtual_surface_size: 0, redraw_on_invalidation: true, max_update_rects: 1, supports_surface_for_backdrop: false, supports_external_compositor_surface_negative_scaling: true } }, tile_size_override: None, max_surface_override: None, max_depth_ids: 4194304, max_target_size: 8192, force_invalidation: false, is_software: true, low_quality_pinch_zoom: false, max_shared_surface_size: 2048, enable_dithering: false }[22m
+[2m  - [pid=68365][err] [INFO  webrender::renderer::init] using None[22m
+[2m  - [pid=68365][out] Crash Annotation GraphicsCriticalError: |[0][GFX1-]: RenderCompositorSWGL failed mapping default framebuffer, no dt (t=2.15365) [GFX1-]: RenderCompositorSWGL failed mapping default framebuffer, no dt[22m
+
+    at /Users/mikepurvis/other/physics-math-research/reading/research/reptend-bases/work/reptends-field-lesson/essay/test/browser.mjs:29:42 {
+  log: [
+    '  - <launching> /Users/mikepurvis/Library/Caches/ms-playwright/firefox-1538/firefox/Nightly.app/Contents/MacOS/firefox -no-remote -headless -profile /var/folders/9d/z0hk873x74x8twz9vg2zjvq80000gn/T/playwright_firefoxdev_profile-TfZ0fj -juggler-pipe -silent',
+    '  - <launched> pid=68365',
+    '  - [pid=68365][err] *** You are running in headless mode.',
+    '  - [pid=68365][err] sandbox_extension_issue_file_to_process failed for /Users/mikepurvis/Library/Caches/ms-playwright/firefox-1538/firefox/Nightly.app/Contents/MacOS/plugin-container.app: 1 (Operation not permitted)',
+    '  - [pid=68365][err] [INFO  webrender_bindings::bindings] WebRender - OpenGL version new 3.2',
+    '  - [pid=68365][err] [INFO  webrender::device::gl] Renderer: Software WebRender',
+    '  - [pid=68365][err] [INFO  webrender::device::gl] Version: 3.2',
+    '  - [pid=68365][err] [INFO  webrender::device::gl] Max texture size: 16384',
+    '  - [pid=68365][err] [INFO  webrender::device::gl] GL context Gl 3.2',
+    '  - [pid=68365][err] [INFO  webrender::device::gl] GL texture cache TextureFormatPair { internal: BGRA8, external: BGRA8 }, bgra TextureFormatPair { internal: 6408, external: 32993 } swizzle Rgba, texture storage Never, depth 33190',
+    '  - [pid=68365][err] [INFO  webrender::renderer::init] WR FrameBuilderConfig { default_font_render_mode: Subpixel, dual_source_blending_is_supported: true, testing: false, gpu_supports_fast_clears: false, gpu_supports_advanced_blend: true, advanced_blend_is_coherent: true, gpu_supports_render_target_partial_update: true, external_images_require_copy: true, batch_lookback_count: 10, background_color: Some(ColorF { r: 0.0, g: 0.0, b: 0.0, a: 0.0 }), compositor_kind: Native { capabilities: CompositorCapabilities { virtual_surface_size: 0, redraw_on_invalidation: true, max_update_rects: 1, supports_surface_for_backdrop: false, supports_external_compositor_surface_negative_scaling: true } }, tile_size_override: None, max_surface_override: None, max_depth_ids: 4194304, max_target_size: 8192, force_invalidation: false, is_software: true, low_quality_pinch_zoom: false, max_shared_surface_size: 2048, enable_dithering: false }',
+    '  - [pid=68365][err] [INFO  webrender::renderer::init] using None',
+    '  - [pid=68365][out] Crash Annotation GraphicsCriticalError: |[0][GFX1-]: RenderCompositorSWGL failed mapping default framebuffer, no dt (t=2.15365) [GFX1-]: RenderCompositorSWGL failed mapping default framebuffer, no dt'
+  ],
+  name: 'TimeoutError'
+}
+
+Node.js v24.10.0
