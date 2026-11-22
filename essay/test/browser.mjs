@@ -7,6 +7,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { formatWord, recurrenceTrace } from "../src/math/lifts.ts";
 import { assertProgression, exerciseProgression } from "./progression-browser.mjs";
 import { exerciseDigitIndex } from "./digit-index-browser.mjs";
+import { assertRemainderStory } from "./remainder-story-browser.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(import.meta.url);
@@ -76,7 +77,7 @@ async function assertReadingStructure(page) {
     assert.equal(await page.locator(selector).isVisible(), true, `${selector} must remain in the main reading path.`);
   }
   assert.deepEqual(await page.locator(".chapter-nav a").evaluateAll(links => links.map(link => link.getAttribute("href"))),
-    ["#carry", "#repeat", "#soft-end", "#change-radix", "#digit-index", "#research"]);
+    ["#focus-997", "#carry", "#repeat", "#soft-end", "#one-digit", "#change-radix", "#digit-index", "#research"]);
   assert.equal(await page.locator("#repeat").evaluate(element => element.nextElementSibling?.id), "soft-end",
     "The finite-description chapter should follow the remainder explorer.");
 }
@@ -264,7 +265,8 @@ async function assertComparisonTable(page) {
 
 async function assertRepetitionBoundaries(page, interactive = true) {
   const card = page.locator("#soft-end");
-  assert.equal(await card.getByRole("heading", { name: "When have we seen enough?" }).isVisible(), true);
+  await setDisclosure(page, "#decimal-vs-groups", true);
+  assert.equal(await card.getByRole("heading", { name: "Halfway, or all the way around?" }).isVisible(), true);
   assert.equal(await card.locator(".boundary-landmarks > li").count(), 3);
   assert.equal(await card.locator(".boundary-split").getAttribute("aria-label"), "Word 700: 7 ends the first repetend; 00 starts its next copy");
   if (interactive) {
@@ -340,6 +342,7 @@ async function assertRepetitionBoundaries(page, interactive = true) {
   await summary.focus();
   await summary.press("Enter");
   assert.equal(await page.locator("#boundary-comparison").getAttribute("open"), null);
+  await setDisclosure(page, "#decimal-vs-groups", false);
 }
 
 async function exerciseNavigationFocus() {
@@ -353,7 +356,7 @@ async function exerciseNavigationFocus() {
   await skip.focus();
   await skip.press("Enter");
   await page.waitForFunction(() => document.activeElement?.id === "main");
-  for (const id of ["carry", "repeat", "soft-end", "change-radix", "digit-index", "research"]) {
+  for (const id of ["focus-997", "carry", "repeat", "soft-end", "one-digit", "change-radix", "digit-index", "research"]) {
     const link = page.locator(`.chapter-nav a[href="#${id}"]`);
     await link.focus();
     await link.press("Enter");
@@ -623,6 +626,7 @@ try {
       }
       await exerciseControls(page, engine === "chromium" && width === 1440 && colorScheme === "light");
       await assertRepetitionBoundaries(page);
+      await assertRemainderStory(page);
       await assertVerificationGuide(page);
       await assertRunExplorer(page);
       for (const example of ["powers", "fibonacci", "counting"]) {
@@ -653,13 +657,16 @@ try {
         await page.locator("#change-radix").screenshot({ path: screenshotPath(`${width}-change-radix.png`) });
       }
       if ([320, 768, 1440].includes(width) && colorScheme === "light") {
+        await setDisclosure(page, "#decimal-vs-groups", true);
         await page.locator('[data-boundary-position="55"]').click();
         await setDisclosure(page, "#orbit-boundary details", true);
         await page.locator(".orbit-card").screenshot({ path: screenshotPath(`${width}-decimal-return.png`) });
+        await setDisclosure(page, "#decimal-vs-groups", false);
         await page.locator("#reset").click();
       }
       if ([320, 768, 1440].includes(width) && colorScheme === "light") {
         await page.locator("#soft-end").screenshot({ path: screenshotPath(`${width}-soft-end.png`) });
+        await page.locator("#one-digit").screenshot({ path: screenshotPath(`${width}-one-digit.png`) });
       }
       if ([320, 1440].includes(width) && colorScheme === "light") {
         await page.locator(".orbit-card").screenshot({ path: screenshotPath(`${width}-three-views.png`) });
@@ -696,6 +703,7 @@ try {
   await assertPowerStack(fallbackPage);
   await assertComparisonTable(fallbackPage);
   await assertRepetitionBoundaries(fallbackPage, false);
+  await assertRemainderStory(fallbackPage, false);
   await assertVerificationGuide(fallbackPage, false);
   await assertRunExplorer(fallbackPage, false);
   assert.equal(await fallbackPage.locator("#hp-next").isVisible(), false);

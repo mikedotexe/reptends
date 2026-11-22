@@ -10,6 +10,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { assertProgression } from "./progression-browser.mjs";
+import { assertRemainderStory } from "./remainder-story-browser.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const siteURL = "https://reptends.mikedotexe.com/";
@@ -141,6 +142,8 @@ try {
   assert.equal((await page.locator("#orbit-word").textContent()).trim(), "731");
   assert.equal((await page.locator("#ordinary-equation").textContent()).trim(), "1000 × 729 = 997 × 731 + 193");
   assert.match(await page.locator("#power-size").textContent(), /83 digits/);
+  await assertRemainderStory(page);
+  await page.locator("#decimal-vs-groups > summary").click();
   for (const [index, printed] of [[55, "700"], [165, "667"], [6, "731"]]) {
     await page.locator(`[data-boundary-position="${index}"]`).click();
     assert.equal(await page.locator("#position").inputValue(), String(index));

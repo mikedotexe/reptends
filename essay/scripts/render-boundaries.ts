@@ -34,8 +34,23 @@ export function renderRepetitionBoundaries(): string {
   }).join("\n");
 
   return `<section id="soft-end" class="chapter wrap boundary-chapter" tabindex="-1" aria-labelledby="soft-end-title">
-    <div class="chapter-heading"><span class="chapter-number">03 / WHEN HAVE WE SEEN ENOUGH</span><h2 id="soft-end-title">When have we seen enough?</h2></div>
-    <p class="boundary-intro">With a fixed radix, a returning remainder tells us how every later digit repeats. For 1/997, the first completed decimal repeat looks like this:</p>
+    <div class="chapter-heading"><span class="chapter-number">04 / RECOGNIZE THE BOUNDARIES</span><h2 id="soft-end-title">Halfway, or all<br>the way around?</h2></div>
+    <div class="prose"><p>Keep reading 1/997 in <strong>three-digit groups, in base 1000</strong>. Start with remainder 1. Two later remainders tell us something useful about the groups still to come.</p></div>
+    <div class="remainder-milestones">
+      <div class="remainder-milestone"><span class="small-label">AFTER 83 GROUPS · FIRST HALF COMPLETE</span><h3>Remainder 996.<br>The mirror begins.</h3><p>The starting remainder 1 is one above zero. Its reflection, <strong>996 = 997 − 1</strong>, is one below 997. Reaching it tells us that the next 83 groups will complement the first 83: each pair adds to 999.</p><p>The next group is <strong>998</strong>, the partner of the opening <strong>001</strong>. This reflected remainder is the halfway state, also called the antipode.</p><button id="midpoint-jump" class="button enhancement" type="button" data-boundary-position="82">Inspect the halfway remainder</button></div>
+      <div class="remainder-milestone"><span class="small-label">AFTER 166 GROUPS · FULL LOOP COMPLETE</span><h3>Remainder 1.<br>We are back.</h3><p>Group <strong>667</strong> leaves remainder <strong>1</strong>, exactly where we began. The next group is 001 again, and the same 166 groups will repeat.</p><p>The last associated power position is <strong>3<sup>165</sup></strong>: the 166th term when we count 1 = 3<sup>0</sup> first. The powers keep growing after the group loop closes.</p><button id="group-return-jump" class="button enhancement" type="button" data-boundary-position="165">Inspect the full return</button></div>
+    </div>
+    <div class="workbench mirror-workbench" aria-labelledby="mirror-title"><div class="workbench-top"><h3 id="mirror-title">Knowing the first half<br>predicts the second.</h3><span class="base-badge">1/997 · base 1000</span></div>
+      <p>Look at groups 83 places apart. Their entering remainders add to 997; their printed groups add to 999. The original carry is part of this symmetry too: <strong>731 + 268 = 999</strong>.</p>
+      <div class="position-slider enhancement"><label for="mirror-position">Compare a pair <strong id="mirror-pair-label">1 of 83</strong></label><input id="mirror-position" type="range" min="0" max="82" step="1" value="0"></div>
+      <div class="mirror-actions enhancement"><button class="button" type="button" data-mirror-pair="0">First pair</button><button class="button" type="button" data-mirror-pair="6">Find 731’s partner</button><button class="button" type="button" data-mirror-pair="82">Last pair</button></div>
+      <div class="mirror-pair"><div><h4 id="mirror-first-position">Group 1</h4><p>Entering remainder <b id="mirror-first-remainder">1</b></p><strong id="mirror-first-word">001</strong></div><div><h4 id="mirror-second-position">Group 84</h4><p>Entering remainder <b id="mirror-second-remainder">996</b></p><strong id="mirror-second-word">998</strong></div></div>
+      <p id="mirror-sum" class="mirror-sum" aria-live="polite">001 + 998 = 999</p><p id="mirror-explanation" class="mirror-explanation">The entering remainders 1 and 996 add to 997. Their printed groups add to 999. The next remainders, 3 and 994, add to 997 again.</p>
+    </div>
+    <p class="mirror-scope">These are <a href="${atlas}#remainder-mirror-examples">computed examples checked by exact long division</a>. The remainder marks the boundary; spotting a complementary decimal digit alone would not establish it.</p>
+    <details id="mirror-why" class="math-note"><summary>Why do the paired groups add to 999?</summary><p>For this example, pairing remainder r with 997 − r makes their two inputs add to 1000 × 997. Their next remainders add to 997, so the two whole quotients must add to 999. For the first pair:</p><p class="formula">1000 × 1 = 997 × 1 + 3<br>1000 × 996 = 997 × 998 + 994<br>1 + 998 = 999, and 3 + 994 = 997.</p><p>This keeps the reflection going at the next step. The prime denominator 997 has an even period. An even period alone is not enough for every denominator: 1/21 repeats 047619, and 047 + 619 = 666. Odd periods have no halfway step of this kind; we can leave those for another exploration.</p></details>
+    <details id="decimal-vs-groups" class="math-note"><summary>166 groups and 166 decimal digits: two different boundaries</summary>
+    <p class="boundary-intro">The grouped loop above spans <strong>498 decimal digits</strong>: three copies of the ordinary 166-digit repetend. If we read one decimal digit at a time, the first return happens earlier:</p>
     <p class="boundary-run" aria-label="The first decimal repeat ends in ${decimalEnd.beforeDigits}; the next begins ${decimalEnd.afterDigits}"><span>…${decimalEnd.beforeDigits}</span><b aria-hidden="true">│</b><span class="boundary-next">${decimalEnd.afterDigits}…</span></p>
     <p class="boundary-run-caption">The divider ends one 166-digit block and begins the next. This is one of three distinct landmarks.</p>
     <ol class="boundary-landmarks">
@@ -53,11 +68,12 @@ export function renderRepetitionBoundaries(): string {
       <li><span class="small-label">THE WORDS ALIGN AGAIN</span><h3>Group ${groupedEnd.coefficientCount}</h3>
         <p class="boundary-power">${power(3n, groupedEnd.wordIndex)} · digit ${groupedEnd.coefficientCount * example.width}</p>
         <p><strong>${groupedEnd.wordText}</strong> closes the word loop after <strong>three copies</strong> of the 166-digit block: 498 decimal places.</p>
-        <button class="button small enhancement" type="button" data-boundary-position="${groupedEnd.wordIndex}">Inspect the word return</button>
+        <a href="#group-return-jump">Inspect the full return above</a>
       </li>
     </ol>
     <p id="boundary-position" class="boundary-position enhancement">Shared position: group 7, the first carry.</p>
     <p class="boundary-caveat">These endpoints describe the repeating digits. Every later power still contributes to the infinite sum.</p>
+    </details>
     <details id="boundary-comparison" class="math-note"><summary>Compare the stopping places for 97, 997, 94, and 994</summary>
       <p>For 94 = 100 − 6 and 994 = 1000 − 6, the powers are 1, 6, 36, … . Both decimals start with one nonrepeating zero. Grouping still begins at the decimal point, so the startup word counts toward the power position.</p>
       <p class="fine-print">The divider marks the end of the first decimal repetend. Digits to its right start the next copy. On small screens, scroll the table sideways to compare every column.</p>
@@ -70,6 +86,6 @@ export function renderRepetitionBoundaries(): string {
       <details class="math-note boundary-receipts"><summary>Inspect the returning remainders and complete powers</summary>${receipts}</details>
       <p class="fine-print">These are <strong>computed examples</strong>, checked against ordinary long division, including the startup for 94 and 994. The <a href="${atlas}">proof-status atlas</a> labels <code>digit_periodicity</code> <strong>reproved-here</strong> for odd primes and coprime bases, and <code>power_order_formula</code> <strong>classical</strong>. See the <a href="#research">research notes</a> for scope and verification.</p>
     </details>
-    <p class="chapter-bridge">The loop describes a fixed radix. <a href="#change-radix">What if the measuring units could change?</a></p>
+    <p class="chapter-bridge">The remainder tells us when a whole block is complete. <a href="#one-digit">What if we treated that whole block as one digit?</a></p>
   </section>`;
 }

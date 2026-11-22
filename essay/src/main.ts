@@ -6,6 +6,7 @@ import type { DecimalReturn } from "./decimal-return.ts";
 import { initProgressionExplorer } from "./progression-explorer.ts";
 import { initRadixExplorer } from "./radix-explorer.ts";
 import { initDigitIndexExplorer } from "./digit-index-explorer.ts";
+import { initRemainderMirror } from "./remainder-mirror.ts";
 
 const view = buildUnfoldedView({ base: 1000n, coefficients: [3n] }, 332);
 const certificates = view.rows.map((_, index) => certifiedPrefix(view.trace, index + 1));
@@ -180,6 +181,13 @@ function render(message?: string): void {
   put("exact-division", "1000 × " + row.remainder + " = 997 × " + row.word + " + " + row.nextRemainder);
   put("ordinary-equation", "1000 × " + row.remainder + " = 997 × " + row.word + " + " + row.nextRemainder);
   put("orbit-next", "Pass remainder " + row.nextRemainder + " into the next step.");
+  const groupBoundary = row.nextRemainder === 996n
+    ? "First half complete: the outgoing remainder is 996, the reflection of the starting remainder 1. The next group begins the complementary half."
+    : row.nextRemainder === 1n
+      ? "Full grouped loop complete: the outgoing remainder returns to 1. The next group is 001 again."
+      : "";
+  put("group-boundary", groupBoundary);
+  element("group-boundary").hidden = !groupBoundary;
   put("prefix-check", "After " + certificate.terms + " terms, the raw prefix leaves the exact balance " + certificate.stateAfterPrefix + " / (997 × 1000" + superscript(certificate.terms) + "). Settling it adds " + certificate.boundaryCarry + " to the prefix integer and leaves remainder " + certificate.canonicalRemainder + ". The finite integer identity has been checked exactly.");
   const localCount = (3n * row.remainder) / 997n;
   put("local-equation", "3 × " + row.remainder + " = " + (3n * row.remainder));
@@ -191,6 +199,7 @@ function render(message?: string): void {
   const boundaryLabels: Record<number, string> = {
     6: "the first carry",
     55: "the first decimal repetend ends inside word 700: 7 | 00",
+    82: "the first half ends with remainder 996",
     165: "word 667 closes the first aligned group cycle",
   };
   put("boundary-position", "Shared position: group " + (selected + 1) + (boundaryLabels[selected] ? ", " + boundaryLabels[selected] : ", power 3" + superscript(selected)) + ".");
@@ -298,6 +307,7 @@ reducedMotion.addEventListener("change", () => {
 initRadixExplorer();
 initProgressionExplorer();
 initDigitIndexExplorer();
+initRemainderMirror();
 render();
 document.documentElement.classList.add("js");
 

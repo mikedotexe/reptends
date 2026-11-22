@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f6f3eb">
-  <meta name="description" content="Powers, Fibonacci numbers, and counting: three fractions in a mixed-radix run notation, with exact balance checks and Lean proofs.">
+  <meta name="description" content="Follow 1/997 from powers of three through carrying, mirrored remainders, repeating blocks, and a simple rule that changes the radix to keep the pattern visible.">
   <meta name="author" content="Mike Purvis">
   <meta name="robots" content="index, follow">
   <meta name="dcterms.created" content="2026-10-06">
@@ -24,7 +24,7 @@
     <div class="hero-copy">
       <p class="eyebrow">An exploration of repeating decimals</p>
       <h1 id="page-title">Where did the pattern <em>go?</em></h1>
-      <p class="lede">Powers of three emerge. The digits jumble. Follow the pattern—and a way to keep it visible.</p>
+      <p class="lede">Powers of three emerge. Then 729 becomes 731. Follow the addition, read the remainder, and learn how to keep the pattern visible.</p>
       <p class="essay-byline">By <a href="#origin-note">Mike Purvis</a> <span aria-hidden="true">·</span> First edition, <time datetime="2026-10-06">October 6, 2026</time></p>
     </div>
     <div id="specimens" class="opening-examples" aria-labelledby="specimens-title">
@@ -35,8 +35,9 @@
     </div>
     <blockquote class="opening-question">“If it didn’t jumble up, what would the reciprocal be trying to tell us?”<cite>The question that started this exploration</cite></blockquote>
   </section>
-  <section id="focus-997" class="focus-997 compact-focus wrap" aria-labelledby="focus-title">
+  <section id="focus-997" class="focus-997 compact-focus wrap" aria-labelledby="focus-title" tabindex="-1">
     <div class="focus-copy">
+      <span class="chapter-number">01 / NOTICE THE CHANGE</span>
       <h2 id="focus-title">Why 731<br>instead of 729?</h2>
       <p>Stay with 1/997. After 243, we expect 729. It still fits into three digits. The extra 2 must come from somewhere.</p>
     </div>
@@ -46,19 +47,21 @@
         <span class="prediction-arrow" aria-hidden="true">→</span>
         <div><span class="small-label">PRINTED GROUP</span><strong id="hero-answer" class="answer">731</strong></div>
       </div>
-      <button id="reveal" class="button primary enhancement" type="button">See where the extra 2 comes from <span aria-hidden="true">↓</span></button>
+      <button id="reveal" class="button primary enhancement" type="button">See where the extra 2 comes from</button>
     </div>
   </section>
   <nav class="chapter-nav wrap" aria-label="Chapters">
-    <a href="#carry"><span>01</span> Where did it go?</a>
-    <a href="#repeat"><span>02</span> Why does it repeat?</a>
-    <a href="#soft-end"><span>03</span> When is it enough?</a>
-    <a href="#change-radix"><span>04</span> Keep the pattern visible</a>
-    <a href="#digit-index"><span>Tool</span> Find a digit by index</a>
-    <a href="#research"><span>↗</span> Check the mathematics</a>
+    <a href="#focus-997"><span>01</span> Why does the pattern change?</a>
+    <a href="#carry"><span>02</span> Where did the extra 2 come from?</a>
+    <a href="#repeat"><span>03</span> What do we need to remember?</a>
+    <a href="#soft-end"><span>04</span> Halfway, or all the way around?</a>
+    <a href="#one-digit"><span>05</span> Could the block be one digit?</a>
+    <a href="#change-radix"><span>06</span> Can we keep the pattern visible?</a>
+    <a href="#digit-index" class="optional-nav"><span>Tool</span> Find a digit by index</a>
+    <a href="#research" class="optional-nav"><span>Sources</span> Check the mathematics</a>
   </nav>
   <section id="carry" class="chapter wrap" aria-labelledby="carry-title" tabindex="-1">
-    <div class="chapter-heading"><span class="chapter-number">01 / FOLLOW THE ADDITION</span><h2 id="carry-title">The powers kept growing.<br>Their digits overlapped.</h2></div>
+    <div class="chapter-heading"><span class="chapter-number">02 / FOLLOW THE ADDITION</span><h2 id="carry-title">The powers kept growing.<br>Their digits overlapped.</h2></div>
     <div class="prose">
       <p>Because <strong>997 = 1000 − 3</strong>, its reciprocal is a geometric series:</p>
       <div class="series" aria-label="One over 997 equals one over 1000, plus three over 1000 squared, plus nine over 1000 cubed, and so on">
@@ -86,8 +89,8 @@
     <p class="chapter-bridge">The progression continues forever. To find the repeating part, we can keep much less information: <a href="#repeat">just the leftover from each division.</a></p>
   </section>
   <section id="repeat" class="chapter wrap" aria-labelledby="repeat-title" tabindex="-1">
-    <div class="chapter-heading"><span class="chapter-number">02 / FOLLOW THE LEFTOVER</span><h2 id="repeat-title">The leftover remembers<br>what comes next.</h2></div>
-    <div class="prose"><p>Multiplying by 1000 or by 3 leaves the same remainder modulo 997: their difference is 997 times the starting number. That connects the growing powers to ordinary long division.</p><p>To print three digits, multiply the remainder by 1000, divide by 997, and keep the new leftover. The remainders stay below 997 and follow a loop of <strong>166 group steps</strong>. With this fixed radix, a returning remainder makes the later groups repeat.</p></div>
+    <div class="chapter-heading"><span class="chapter-number">03 / REMEMBER THE REMAINDER</span><h2 id="repeat-title">The leftover remembers<br>what comes next.</h2></div>
+    <div class="prose"><p>The powers grow without end. To print the next group, long division needs only its <strong>remainder</strong>: the whole-number leftover from the previous step. For 1/997 it always stays between 0 and 996.</p><ol class="remainder-recipe"><li>Multiply the remainder by 1000.</li><li>Divide by 997 and write the whole quotient.</li><li>Keep the new remainder.</li></ol><p>After six groups the remainder is 729. The next step writes 731 and passes remainder 193 forward. Follow all three views below: the growing power, the entering remainder, and the group we print.</p></div>
     <div class="workbench unified-workbench" id="orbit-readouts" tabindex="-1" aria-label="Explore the powers, remainders, and printed groups">
       <div class="workbench-top"><h3>One step, three views.</h3><span class="base-badge">1/997 · three-digit groups</span></div>
       <div class="position-controls enhancement">
@@ -106,6 +109,7 @@
         <div id="orbit-boundary" class="orbit-boundary" hidden></div>
         <p id="ordinary-equation" class="ordinary-equation">1000 × 729 = 997 × 731 + 193</p>
         <p id="orbit-next" class="orbit-next">Pass remainder 193 into the next step.</p>
+        <p id="group-boundary" class="group-boundary" hidden aria-live="polite"></p>
         <div class="remainder-track" aria-hidden="true"><span class="track-start">0</span><div id="remainder-dot" class="remainder-dot"></div><span class="track-end">996</span></div>
         <div class="cycle-actions enhancement"><button id="cycle-later" class="button primary" type="button">One cycle later <span aria-hidden="true">↗</span></button><button id="cycle-earlier" class="button subtle" type="button" hidden>One cycle earlier</button><span>+166 three-digit groups</span></div>
         <p id="cycle-message" class="orbit-message">The growing power changes. After one full group cycle, the remainder and printed group return.</p>
@@ -138,11 +142,12 @@
         <label id="share-link-label" class="share-link-fallback" for="share-link" hidden>Copy this link:<input id="share-link" type="text" readonly spellcheck="false" aria-label="Link to the selected group"></label>
       </div>
     </div>
-    <p class="chapter-bridge">A repeating block is called a <strong>repetend</strong>. But its last digit need not fall at the end of a three-digit group. <a href="#soft-end">Where does the first repetition actually finish?</a></p>
+    <p class="chapter-bridge">With the same radix, the same remainder gives the same future groups. A repeating block is called a <strong>repetend</strong>. <a href="#soft-end">What can the remainder tell us before the whole block is written?</a></p>
   </section>
   <!-- REPETITION_BOUNDARIES -->
+  <!-- ONE_DIGIT_CHAPTER -->
   <!-- RADIX_CHAPTER -->
-  <div class="story-ending wrap"><p class="pull-quote">The value stays fixed.<br><em>The way we measure can grow.</em></p><p class="continue-links"><a href="#notation-reference">Read the notation reference ↓</a><a href="#research">Check the mathematics ↓</a></p></div>
+  <div class="story-ending wrap"><p class="pull-quote">Read the remainder.<br><em>Know how to continue.</em></p><p>Follow the next group, recognize the mirror, close the loop, or choose a new radix that keeps the progression visible.</p><p class="continue-links"><a href="#notation-reference">Read the notation reference</a><a href="#research">Check the mathematics</a></p></div>
   <!-- DIGIT_INDEX_CHAPTER -->
   <section id="research" class="chapter research wrap" aria-labelledby="research-title" tabindex="-1">
     <div class="chapter-heading"><span class="chapter-number">OPTIONAL / GO DEEPER</span><h2 id="research-title">Check the mathematics.</h2></div>
