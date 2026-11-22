@@ -1,0 +1,4 @@
+
+> reptends-pattern-explorer@1.9.0 typecheck
+> tsc --noEmit
+

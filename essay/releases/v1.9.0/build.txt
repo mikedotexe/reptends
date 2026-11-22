@@ -1,0 +1,5 @@
+
+> reptends-pattern-explorer@1.9.0 build
+> node scripts/build.mjs
+
+Built /Users/mikepurvis/other/physics-math-research/reading/research/reptend-bases/work/reptends-power-dial/essay/dist/index.html (268,144 bytes; self-contained) and /Users/mikepurvis/other/physics-math-research/reading/research/reptend-bases/work/reptends-power-dial/essay/dist/robots.txt.

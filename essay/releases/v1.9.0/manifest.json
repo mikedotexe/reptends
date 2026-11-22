@@ -1,0 +1,51 @@
+{
+  "version": "1.9.0",
+  "source_commit": "74fe652a8d2c0d9427da16a3676eccaefdd1e0e6",
+  "assets": {
+    "index.html": {
+      "bytes": 268144,
+      "sha256": "c6ec06ede4fcfe4cfa7a1938a6e1609a665cf9009627ed4df48d0c7172965a07"
+    },
+    "robots.txt": {
+      "bytes": 613,
+      "sha256": "5b83e4b5a732add02f74140cfa52abd992278e03ca4685faee545a1ffa771a3b"
+    }
+  },
+  "ci": "https://github.com/mikedotexe/reptends/actions/runs/45052606803",
+  "source_pull_request": "https://github.com/mikedotexe/reptends/pull/4",
+  "node_tests": 117,
+  "deployment_safety_tests": 13,
+  "lean_theorem_axiom_checks": 257,
+  "lean_source_hash_checks": 26,
+  "human_reader_feedback": "pending",
+  "publication": "verified",
+  "reading_path": [
+    "focus-997",
+    "carry",
+    "repeat",
+    "soft-end",
+    "one-digit",
+    "change-radix",
+    "nearby-fractions",
+    "power-and-grouping"
+  ],
+  "bytes": 268144,
+  "sha256": "c6ec06ede4fcfe4cfa7a1938a6e1609a665cf9009627ed4df48d0c7172965a07",
+  "local_browsers_passed": [
+    "Chromium",
+    "WebKit"
+  ],
+  "browsers": [
+    "Chromium",
+    "Firefox",
+    "WebKit"
+  ],
+  "local_firefox": "Not rerun: its launcher failed before page load in the previous release; hosted Firefox passed on this reviewed source.",
+  "unrelated_ci": "Legacy Site Build still uses Yarn 1 before Corepack, and the same six registry-generated files are out of sync. Generated proof-atlas blocks and other affected files are unchanged.",
+  "legacy_ci": "https://github.com/mikedotexe/reptends/actions/runs/45052619516",
+  "merge_commit": "4c4daa338b9c46cb4e81203bc788513cc4dd8093",
+  "published_at": "2026-11-22T18:05:27.090692+00:00",
+  "invalidation_id": "IBUKK8T6R36WYLCFI825F8WMMA",
+  "verified_at": "2026-11-22T18:06:32.581379+00:00",
+  "invalidation_status": "Completed"
+}
