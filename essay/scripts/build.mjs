@@ -10,11 +10,12 @@ import { renderRadixChapter } from "./render-radices.ts";
 import { renderDigitIndexChapter } from "./render-digit-index.ts";
 import { renderOneDigitChapter } from "./render-one-digit.ts";
 import { renderFieldChapter } from "./render-field.ts";
+import { renderPowerDialChapter } from "./render-power-dial.ts";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const template = await readFile(resolve(root, "src/template.html"), "utf8");
 const robots = await readFile(resolve(root, "src/robots.txt"), "utf8");
-for (const marker of ["<!-- APP_CSS -->", "<!-- APP_JS -->", "<!-- OPENING_EXAMPLES -->", "<!-- POWER_STACK -->", "<!-- REPETITION_BOUNDARIES -->", "<!-- ONE_DIGIT_CHAPTER -->", "<!-- RADIX_CHAPTER -->", "<!-- FIELD_CHAPTER -->", "<!-- DIGIT_INDEX_CHAPTER -->", "<!-- VERIFICATION_GUIDE -->", "<!-- VERIFICATION_CERTIFICATE -->"]) {
+for (const marker of ["<!-- APP_CSS -->", "<!-- APP_JS -->", "<!-- OPENING_EXAMPLES -->", "<!-- POWER_STACK -->", "<!-- REPETITION_BOUNDARIES -->", "<!-- ONE_DIGIT_CHAPTER -->", "<!-- RADIX_CHAPTER -->", "<!-- FIELD_CHAPTER -->", "<!-- POWER_DIAL_CHAPTER -->", "<!-- DIGIT_INDEX_CHAPTER -->", "<!-- VERIFICATION_GUIDE -->", "<!-- VERIFICATION_CERTIFICATE -->"]) {
   if (template.split(marker).length !== 2) {
     throw new Error(`The page template must contain exactly one ${marker} marker.`);
   }
@@ -64,6 +65,7 @@ const html = template
   .replace("<!-- ONE_DIGIT_CHAPTER -->", () => renderOneDigitChapter())
   .replace("<!-- RADIX_CHAPTER -->", () => renderRadixChapter())
   .replace("<!-- FIELD_CHAPTER -->", () => renderFieldChapter())
+  .replace("<!-- POWER_DIAL_CHAPTER -->", () => renderPowerDialChapter())
   .replace("<!-- DIGIT_INDEX_CHAPTER -->", () => renderDigitIndexChapter())
   .replace("<!-- VERIFICATION_GUIDE -->", () => renderVerificationGuide())
   .replace("<!-- VERIFICATION_CERTIFICATE -->", () => renderVerificationCertificate())

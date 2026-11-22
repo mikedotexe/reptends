@@ -15,7 +15,9 @@ The [notation specification](NOTATION.md) is the compact mathematical and machin
 
 7. **Does 997 have company?** Find 997, reveal the field’s 64 integer members from 969 through 1032, and read the same interval on a square-root ruler whose continuous boundaries differ by exactly one. Try a neighbour or an outside denominator; signed terms above 1000 include borrowing.
 
-The first six steps ask what remembering the remainder lets the reader do next. The final chapter changes the denominator while keeping three-digit groups. Odd-period theory, square-root seeds, class numbers, and cryptography are outside the introductory path. Optional tools and the existing Fibonacci/counting examples remain available.
+8. **Give the pattern more room.** Keep the gap at 3 while moving through 97, 997, 9997, and onward; predict and reveal each first carry. Watch the integer neighbourhood grow while its square-root width stays one. Then hold 997 fixed and regroup the same sixty decimal digits into three-, four-, five-, or six-digit boxes.
+
+The first six steps ask what remembering the remainder lets the reader do next. Chapter seven changes the denominator while keeping three-digit groups. Chapter eight separates a changing denominator from a changing grouping. Odd-period theory, square-root seeds, class numbers, and cryptography are outside the introductory path. Optional tools and the existing Fibonacci/counting examples remain available.
 
 `⟨d1,...,dL⟩_B` means L successive digits in radix B. Commas separate positions, the subscript names the radix, and `|` marks a radix change. The first run preserves the ordinary prefix. Each digit's weight uses every radix through that position, including each repeated use inside a run. Leading zeros are positions; they are never dropped.
 
@@ -39,6 +41,8 @@ python3 -m unittest discover -s deploy -p 'test_*.py'
 `dist/index.html` is self-contained. `dist/robots.txt` is the only other hosted object. No runtime fonts, scripts, styles, or services are fetched. The main examples and proof references remain readable without JavaScript; controls progressively enhance the static page.
 
 ## Source map
+
+- `scripts/render-power-dial.ts`, `src/power-dial.ts`, `src/power-dial-view.ts`, `src/math/power-dial.ts`: independent power and grouping controls, carry predictions, and field-width comparison.
 
 - `scripts/render-field.ts`, `src/field-explorer.ts`, `src/math/field.ts`: the guided 997 neighbourhood, independently checked opening groups, and the one-unit square-root strip.
 - `scripts/render-boundaries.ts`, `src/remainder-mirror.ts`: computed midpoint and return examples, all 83 complementary pairs, and the decimal/group distinction.
@@ -69,9 +73,13 @@ Lean's existing run-accounting theorems map digit lists to Horner-packed values 
 
 - `?field_step=1`, `2`, or `3` selects the neighbourhood lesson view. `field_n=968` through `1033` selects its denominator; omitted `field_step` defaults to the neighbour view when `field_n` is supplied. Example: [997 on the square-root strip](https://reptends.mikedotexe.com/?field_step=3&field_n=997#nearby-fractions).
 
+- `?power_width=2` through `6` selects the fixed-gap family; `group_width=3` through `6` regroups fixed 997. `power_reveal=1` opens the predicted carry answer. These controls are independent. Example: [9997 beside six-digit groups of 1/997](https://reptends.mikedotexe.com/?power_width=4&group_width=6#power-and-grouping).
+
 Explorer parameters coexist. Back/Forward restores them, and copy-link buttons have a selectable fallback. Long inscriptions identify omitted intermediate runs explicitly; omitted radices still count in the weights. The structured data never abbreviates its digit arrays.
 
 ## Editorial scope and preservation
+
+Version 1.9.0 adds the two-control power and grouping lesson. Its finite arithmetic is independently checked against decimal long division, and its field geometry uses an explicit algebraic derivation. The natural conclusion is optional: arbitrarily long finite clear openings in the changing family, or one complete period read as one digit for a fixed fraction.
 
 Version 1.8.0 adds the guided neighbourhood chapter and a scoped algebraic derivation linked from the proof-status atlas. All prior controls and shared-link parameters remain available; no Lean source changed.
 

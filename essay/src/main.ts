@@ -8,6 +8,7 @@ import { initRadixExplorer } from "./radix-explorer.ts";
 import { initDigitIndexExplorer } from "./digit-index-explorer.ts";
 import { initRemainderMirror } from "./remainder-mirror.ts";
 import { initFieldExplorer } from "./field-explorer.ts";
+import { initPowerDial } from "./power-dial.ts";
 
 const view = buildUnfoldedView({ base: 1000n, coefficients: [3n] }, 332);
 const certificates = view.rows.map((_, index) => certifiedPrefix(view.trace, index + 1));
@@ -310,6 +311,7 @@ initProgressionExplorer();
 initDigitIndexExplorer();
 initRemainderMirror();
 initFieldExplorer();
+initPowerDial();
 render();
 document.documentElement.classList.add("js");
 
@@ -317,7 +319,7 @@ document.documentElement.classList.add("js");
 // Readers arriving from the series equation can therefore inspect its proof directly.
 function revealLinkedExplanation(): void {
   const id = window.location.hash.slice(1);
-  if (!["verification-guide", "field-boundaries", "run-proof", "run-decimals", "hp-proof", "hp-weights", "hp-finish", "notation-reference", "notation-examples", "run-from-start"].includes(id)) return;
+  if (!["verification-guide", "field-boundaries", "power-dial-proof", "power-dial-conclusion", "run-proof", "run-decimals", "hp-proof", "hp-weights", "hp-finish", "notation-reference", "notation-examples", "run-from-start"].includes(id)) return;
   const detail = element<HTMLDetailsElement>(id);
   detail.open = true;
   let parent = detail.parentElement?.closest("details");
