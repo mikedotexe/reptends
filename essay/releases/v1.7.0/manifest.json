@@ -1,0 +1,43 @@
+{
+  "version": "1.7.0",
+  "source_commit": "ebf371cf7b5eaee58e1b3a4adf716c26ebf16830",
+  "bytes": 209808,
+  "sha256": "dcfae56366465cfc057890897c3dbbc6721d824cbe65e582859f8b6c6f96b4f5",
+  "assets": {
+    "index.html": {
+      "sha256": "dcfae56366465cfc057890897c3dbbc6721d824cbe65e582859f8b6c6f96b4f5",
+      "bytes": 209808,
+      "content_type": "text/html; charset=utf-8"
+    },
+    "robots.txt": {
+      "sha256": "5b83e4b5a732add02f74140cfa52abd992278e03ca4685faee545a1ffa771a3b",
+      "bytes": 613,
+      "content_type": "text/plain; charset=utf-8"
+    }
+  },
+  "published_at": "2026-11-22T05:14:44.645831+00:00",
+  "verified_at": "2026-11-22T05:15:26.436237+00:00",
+  "invalidation_id": "IEJ2O8LIZOE618I51MTPA5N1ED",
+  "invalidation_status": "Completed",
+  "ci": "https://github.com/mikedotexe/reptends/actions/runs/44988411516",
+  "browsers": [
+    "Chromium",
+    "Firefox",
+    "WebKit"
+  ],
+  "node_tests": 106,
+  "deployment_safety_tests": 13,
+  "lean_theorem_axiom_checks": 257,
+  "lean_source_hash_checks": 26,
+  "reading_path": [
+    "focus-997",
+    "carry",
+    "repeat",
+    "soft-end",
+    "one-digit",
+    "change-radix"
+  ],
+  "local_firefox": "Launcher timed out before loading the page; the hosted Firefox job passed on the reviewed source.",
+  "unrelated_ci": "Legacy Site Build and registry documentation checks fail as on baseline 57b60b0; see VERIFICATION.md.",
+  "human_reader_feedback": "pending"
+}

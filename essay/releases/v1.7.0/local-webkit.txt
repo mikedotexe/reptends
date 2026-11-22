@@ -1,0 +1,15 @@
+
+> reptends-pattern-explorer@1.7.0 test:browser
+> node test/browser.mjs
+
+Testing webkit 26.5 (Safari engine; not the native Safari application).
+PASS webkit retained progressions: three prefixes, 27 exact states, signed balances, completion, sharing and history.
+PASS webkit indexed digits: arbitrary bases, huge positions, independent checks, cancellation, sharing and history.
+PASS webkit run links: bounds, independent group/run positions, Back/Forward, copied link and selectable fallback.
+PASS webkit share links: initial/boundary/invalid groups, Back/Forward, clipboard success and keyboard-selectable fallback, no requests or errors.
+PASS webkit skip and chapter links move keyboard focus to their destinations.
+PASS webkit 320px light: local file with offline interaction, exact controls, keyboard, run notation, layout bounds, no runtime errors.
+PASS webkit 768px light: local file with offline interaction, exact controls, keyboard, run notation, layout bounds, no runtime errors.
+PASS webkit 1440px light: local file with offline interaction, exact controls, keyboard, run notation, layout bounds, no runtime errors.
+PASS webkit 320px without JavaScript: readable examples, hidden inactive controls, native disclosures, layout bounds.
+PASS webkit normal motion: visible split movement, finish/restart, cancellation on selection.

@@ -1,32 +1,36 @@
-# Verification — essay v1.6.0
+# Verification — essay v1.7.0
 
-Published 17 November 2026 (Pacific time; 2026-11-18T00:08:24.632456+00:00 UTC) at [Keep the pattern. Change the units.](https://reptends.mikedotexe.com/#change-radix).
+Published 21 November 2026 (Pacific time; 2026-11-22T05:14:44.645831+00:00 UTC) at [Where did the pattern go?](https://reptends.mikedotexe.com/).
 
-- Reviewed source: [`28c0e33`](https://github.com/mikedotexe/reptends/commit/28c0e33e8739a6b2e4dc2794db563591ae27192c).
-- `index.html`: 192,828 bytes, SHA-256 `f2695acf97cc43cf18653d03e2ed8a9148f56334ea2601deb2fde3fdb7991e76`.
+- Reviewed source: [`ebf371c`](https://github.com/mikedotexe/reptends/commit/ebf371cf7b5eaee58e1b3a4adf716c26ebf16830).
+- `index.html`: 209,808 bytes, SHA-256 `dcfae56366465cfc057890897c3dbbc6721d824cbe65e582859f8b6c6f96b4f5`.
 - `robots.txt`: 613 bytes, unchanged SHA-256 `5b83e4b5a732add02f74140cfa52abd992278e03ca4685faee545a1ffa771a3b`.
-- [Release CI](https://github.com/mikedotexe/reptends/actions/runs/44203722926) passed Chromium, Firefox, WebKit, and the Lean build/audit. The first Firefox attempt stalled while installing dependencies and was cancelled before application checks. Its retry passed on the same source commit; the other three successful jobs were retained.
+- [Essay release CI](https://github.com/mikedotexe/reptends/actions/runs/44988411516) passed Chromium, Firefox, WebKit, and the Lean build/audit on the reviewed source.
 
-## Arithmetic, notation, and proofs
+## Reading path
 
-Strict TypeScript, 103 Node tests, 13 deployment-safety tests, standalone artifact validation, and `git diff --check` passed. New checks cover weighted run evaluation, equivalent split runs, initial zeros, the complete counting prefix, legal digits, independent long division through every serialized example, theorem-name references, and JSON round trips.
+The six chapters follow one question at a time: notice 729 becoming 731, add the overlapping powers, remember the remainder, recognize halfway and full returns, group a whole repeating block into one digit, and choose radices that keep the progression visible. Existing carry calculations, optional progression examples, notation, and indexed-digit tools remain available.
 
-The Lean audit passed 26 unchanged source hashes and 257 theorem axiom checks. The [registered proof map](https://github.com/mikedotexe/reptends/blob/main/docs/PROOF_STATUS_ATLAS.md#mixed_radix_run_value_preservation) connects run weights to `Encoding.lean` and `Core.lean`; [the balance claim](https://github.com/mikedotexe/reptends/blob/main/docs/PROOF_STATUS_ATLAS.md#unified_balance_rule) connects choices, completion and stream convergence to `BalanceRule.lean`. No Lean source or theorem was changed. Only `propext`, `Classical.choice`, and `Quot.sound` are allowed dependencies.
+The new mirror explorer checks all 83 pairs in the base-1000 loop for 1/997. After group 83, remainder 996 starts the complementary half; after group 166, remainder 1 restarts the full loop. The ordinary 166-digit period and the 166-group loop are distinguished in an expandable explanation. The associated last power position is 3^165, with 3^0 counted first; the infinite progression continues beyond the group boundary.
 
-The notation uses angle brackets for successive digits sharing a radix, commas for digit positions, and bars for radix changes. The page and standalone `NOTATION.md` specify exact weights and distinguish a radix change from a remainder return. Complete generators, digits and eight changed steps per example are embedded in non-executable JSON. This data is independently checked, not a proof-assistant certificate.
+The 1/7 example compares six decimal steps with one base-1,000,000 step, both returning to remainder 1. The radix chapter introduces the existing balance rule in plain language and works through choosing radix 998 before presenting the notation and controls.
 
-## Browser and reading checks
+## Arithmetic and proofs
 
-The final artifact passed local Chromium and WebKit, and all three hosted engines. Tests cover the preserved run and eight changed steps of all three examples, signed balances, completion, legal sharing/history, keyboard operation, offline operation, no-JavaScript reading, and mobile/desktop layouts. All three full inscriptions and the optional proof reference were visually inspected at mobile and desktop widths. No unexpected asset requests or runtime errors occurred.
+Strict TypeScript, 106 Node tests, 13 deployment-safety tests, standalone artifact validation, and `git diff --check` passed. New checks compare every mirror pair against an independent 498-digit decimal walk, verify the first antipode and first return, and verify the packed 1/7 example with exact integers.
 
-The opening now concentrates on 1/997. Geometry and broad polynomial-recurrence digressions were removed from the reading path, and digit lookup became an optional tool after the conclusion. The three main examples are tripling (1/997), Fibonacci (1/9899), and counting (1/998001). Earlier arithmetic sources and shared links remain available.
+The Lean audit passed 26 unchanged source hashes and 257 theorem axiom checks. No Lean source or theorem changed. The new [mirror examples](https://github.com/mikedotexe/reptends/blob/main/docs/PROOF_STATUS_ATLAS.md#remainder-mirror-examples) are labelled computed examples, with concrete algebra and explicit scope. Grouping references the existing run-accounting proof; radix selection references the existing balance-rule proof.
 
-## Publication evidence
+## Browser and publication checks
 
-CloudFront invalidation `I53XMSF6R5G45O2V0TK8MJUXLE` completed. Live checks verified the exact artifact at `/` and `/index.html`, the unchanged crawler policy, HTTPS redirects, DNS, and anonymous-origin denial. The live browser exercised all three progressions, the notation data and proof reference, indexed digits, disclosures and exact state identities. Four shared result URLs served the checked artifact; all five public notation/proof links returned 200. The published three-example comparison was inspected in the in-app browser.
+The final artifact passed local Chromium and WebKit and all three hosted browser engines. Local Firefox timed out in its launcher before loading the page; hosted Firefox passed on the same source. Checks cover the new pair controls, keyboard navigation, midpoint/full-return actions, responsive layouts, offline interaction, no-JavaScript reading, and the existing progression, history, sharing, and digit-index behavior. New chapters were visually reviewed at mobile and desktop widths, and the published whole-block chapter was inspected in the in-app browser.
 
-Release evidence: [manifest](releases/v1.6.0/manifest.json), [live receipt](releases/v1.6.0/live-verification.json), [live browser checks](releases/v1.6.0/live-browser.txt), [DNS](releases/v1.6.0/dns-verification.txt), [shared links](releases/v1.6.0/shared-links.json), and [CI receipt](releases/v1.6.0/ci.json).
+CloudFront invalidation `IEJ2O8LIZOE618I51MTPA5N1ED` completed. Live checks verified the exact artifact at `/` and `/index.html`, the unchanged crawler policy, HTTPS redirects, and anonymous-origin denial. The live browser exercised the mirror controls, boundary actions, grouped-digit example, three retained progressions, and existing tools without unexpected asset requests or runtime errors.
+
+Release evidence: [manifest](releases/v1.7.0/manifest.json), [live receipt](releases/v1.7.0/live-verification.json), [live browser checks](releases/v1.7.0/live-browser.txt), [CI jobs](releases/v1.7.0/ci.json), [local Chromium](releases/v1.7.0/local-chromium.txt), [local WebKit](releases/v1.7.0/local-webkit.txt), and [Lean audit](releases/v1.7.0/lean-audit.txt).
 
 ## Evidence boundaries
 
-The notation renderer, complete initial-prefix computations, JSON serializer, and browser are tested implementations, not formally verified programs. The generic stream theorem assumes positive targets after any separately certified initial zeros, and pads with zero digits after completion. A rejected zero target needs separate feasibility analysis. The supplied progression is not uniquely selected by the fraction. Fresh human-reader feedback remains pending.
+The mirror explorer and static examples are checked implementations, not newly formalized theorems. An even period alone does not guarantee complementary halves for arbitrary composite denominators; the optional explanation includes 1/21 as a counterexample. A matching complementary printed digit alone does not certify the halfway remainder. Fresh human-reader feedback remains pending.
+
+The repository-wide [legacy CI](https://github.com/mikedotexe/reptends/actions/runs/44988411541) still reports the same unrelated failures as [baseline 57b60b0](https://github.com/mikedotexe/reptends/actions/runs/44205706138): the separate `site/` build invokes Yarn before Corepack is enabled, and generated registry documentation is out of sync. Those files and generated blocks were not changed by this release. The essay's dedicated release checks all passed.
