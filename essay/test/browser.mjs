@@ -8,6 +8,7 @@ import { formatWord, recurrenceTrace } from "../src/math/lifts.ts";
 import { assertProgression, exerciseProgression } from "./progression-browser.mjs";
 import { exerciseDigitIndex } from "./digit-index-browser.mjs";
 import { assertRemainderStory } from "./remainder-story-browser.mjs";
+import { assertFieldLesson, exerciseFieldLinks } from "./field-browser.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(import.meta.url);
@@ -77,7 +78,7 @@ async function assertReadingStructure(page) {
     assert.equal(await page.locator(selector).isVisible(), true, `${selector} must remain in the main reading path.`);
   }
   assert.deepEqual(await page.locator(".chapter-nav a").evaluateAll(links => links.map(link => link.getAttribute("href"))),
-    ["#focus-997", "#carry", "#repeat", "#soft-end", "#one-digit", "#change-radix", "#digit-index", "#research"]);
+    ["#focus-997", "#carry", "#repeat", "#soft-end", "#one-digit", "#change-radix", "#nearby-fractions", "#digit-index", "#research"]);
   assert.equal(await page.locator("#repeat").evaluate(element => element.nextElementSibling?.id), "soft-end",
     "The finite-description chapter should follow the remainder explorer.");
 }
@@ -585,6 +586,8 @@ try {
   await indexedPage.goto(shareTestURL + "#change-radix");
   await exerciseProgression(indexedPage);
   console.log(`PASS ${engine} retained progressions: three prefixes, 27 exact states, signed balances, completion, sharing and history.`);
+  await exerciseFieldLinks(indexedPage, shareTestURL);
+  console.log(`PASS ${engine} field links: independent query parameters, bounds, and same-document Back/Forward restoration.`);
   await indexedContext.close();
   console.log(`PASS ${engine} indexed digits: arbitrary bases, huge positions, independent checks, cancellation, sharing and history.`);
   await exerciseRunLinks();
@@ -627,6 +630,8 @@ try {
       await exerciseControls(page, engine === "chromium" && width === 1440 && colorScheme === "light");
       await assertRepetitionBoundaries(page);
       await assertRemainderStory(page);
+      await assertFieldLesson(page, true, [320, 768, 1440].includes(width) && colorScheme === "light"
+        ? screenshotPath(`${width}-field-strip.png`) : undefined);
       await assertVerificationGuide(page);
       await assertRunExplorer(page);
       for (const example of ["powers", "fibonacci", "counting"]) {
@@ -704,6 +709,7 @@ try {
   await assertComparisonTable(fallbackPage);
   await assertRepetitionBoundaries(fallbackPage, false);
   await assertRemainderStory(fallbackPage, false);
+  await assertFieldLesson(fallbackPage, false);
   await assertVerificationGuide(fallbackPage, false);
   await assertRunExplorer(fallbackPage, false);
   assert.equal(await fallbackPage.locator("#hp-next").isVisible(), false);

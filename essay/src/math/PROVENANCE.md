@@ -10,3 +10,6 @@ The engine uses exact integer arithmetic, checks its recurrence representation a
 
 
 `progression.ts` adapts the positive-digit continuation rule from research phase13's `bridges.mjs`, using this site's existing `advanceRun` accounting. The two presets retain the ordinary base-1000 prefix before the first carried group. Public proof scope is recorded under `retained_progression_handoffs` in the [proof-status atlas](../../../docs/PROOF_STATUS_ATLAS.md), with the unchanged phase13 Lean source imported as [HandoffSearch.lean](../../../lean/RadixRuns/HandoffSearch.lean). Browser code is independently tested, not formally verified.
+
+
+`field.ts` implements the bounded base-1000 neighbourhood around 997 from the reviewed Remainder Machine field inequality `(1000 − n)² < n`. The public scope and elementary root-width derivation are recorded in [Field around 1000: worked example](../../../docs/PROOF_STATUS_ATLAS.md#field-around-1000-worked-example). Exact division and membership use bounded integers; square roots are drawing coordinates. Tests independently group a decimal long-division walk for all 66 displayed denominators. This UI is not Lean-verified, and the lesson does not introduce the general slide-rule regimes.

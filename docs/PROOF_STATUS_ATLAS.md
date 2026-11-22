@@ -120,3 +120,16 @@ The six-step essay adds curated **empirical** (exactly computed, not newly Lean-
 The reflection persists by the ordinary division equation from the registered `digit_periodicity` claim: if entering remainders are r and 997-r, their two inputs sum to 1000×997. Neither next remainder is zero here. Those next remainders sum to 997, and the quotients therefore sum to 999. This is the concrete mirror instance commonly explained by Midy's theorem; the panel does not claim a new general classification or a new formal proof. Its scope note includes the computed counterexample 1/21 = 0.(047619), whose halves sum to 666. A matching printed decimal digit alone is not treated as a midpoint certificate.
 
 The one-digit example uses `(base, denominator, starting remainder) = (1000000, 7, 1)`: six ordinary decimal steps pack to the digit 142857 and return remainder 1. Exact checks verify 1000000 = 7×142857 + 1 and 142857/999999 = 1/7. Its positional interpretation uses the existing `mixed_radix_run_value_preservation` claim. No Lean source or existing registered claim changed.
+
+
+## Field around 1000: worked example
+
+Status: `implemented-here` worked example, with an explicit elementary algebraic derivation. Browser verification is `empirical` implementation evidence; this section is not a new Lean-formalized claim or an addition to the general theorem registry. The lesson cites this record before its optional derivation.
+
+Scope: base 10, block width 3, block radix 1000, numerator 1, and integer denominator n from 968 through 1033. The signed series ratio is r = 1000 − n, with coefficient 1 in 1/n = Σ r^j / 1000^(j+1). This signed ratio is not the ordinary nonnegative remainder above 1000. The geometric series converges since |r| < 1000.
+
+For n < 1000, let k = 1000 − n. The first group is 001; the second is k + floor(k²/n), because 1000k = nk + k². For n > 1000, let d = n − 1000. The first group is 000; the second is 1000 − d + floor(d²/n), because 1000² = n(1000 − d) + d². Thus the opening two groups agree with the signed progression, including its borrow adjustment, exactly when (1000 − n)² < n. At n = 1000 the expansion is 001 followed by zeros. Terminating fractions are included; field membership is not a period classification.
+
+At the continuous boundary put x = √n. The lower root a solves a²+a = 1000. Then (a+1)²−(a+1) = a²+a = 1000, so the upper root is a+1. Explicitly, a = (√4001−1)/2, and the square-root width is exactly one. The ordinary boundaries are 968.873270798… and 1032.126729201…, with integer members 969 through 1032. Neither integer member is the exact continuous edge. The root strip is not asserted to be centred on √1000.
+
+[The bounded model](../essay/src/math/field.ts) uses integer arithmetic for division and membership, and floating-point roots only for drawing. [Independent checks](../essay/test/field.test.ts) regroup ordinary decimal long division for every displayed denominator, verify both boundary failures, and distinguish signed terms from printed groups. The main lesson introduces only this concrete field; no general regime classification, reciprocal symmetry, or universal 1/m-width claim is inferred from its tests.

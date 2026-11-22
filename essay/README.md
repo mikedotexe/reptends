@@ -1,6 +1,6 @@
 # Where Did the Pattern Go?
 
-The canonical project for [reptends.mikedotexe.com](https://reptends.mikedotexe.com). Six steps follow 1/997 from its visible powers through carrying, remainder memory, halfway and full-return boundaries, a whole block read as one digit, and a mixed-radix run notation. The notation follows three coefficient progressions: powers for 1/997, Fibonacci numbers for 1/9899, and counting for 1/998001. Digit lookup remains an optional supporting tool.
+The canonical project for [reptends.mikedotexe.com](https://reptends.mikedotexe.com). The first six steps follow 1/997 from its visible powers through carrying, remainder memory, halfway and full-return boundaries, a whole block read as one digit, and a mixed-radix run notation. The notation follows three coefficient progressions: powers for 1/997, Fibonacci numbers for 1/9899, and counting for 1/998001. Digit lookup remains an optional supporting tool.
 
 The [notation specification](NOTATION.md) is the compact mathematical and machine-readable reference. The [proof-status atlas](../docs/PROOF_STATUS_ATLAS.md) separates Lean results, implemented conventions, computed examples, and open questions. The [verification record](VERIFICATION.md) identifies the published artifact and its checks.
 
@@ -13,7 +13,9 @@ The [notation specification](NOTATION.md) is the compact mathematical and machin
 5. **Could the block be one digit?** Read 142857 as one repeating digit in base one million, using the complete 1/7 example.
 6. **Can we keep the pattern visible?** Try the current radix, check the remainder, and choose the smallest positive-remainder replacement if needed.
 
-Every step asks what remembering the remainder lets the reader do next. Odd-period theory, square-root seeds, class numbers, and cryptography are outside the introductory path. Optional tools and the existing Fibonacci/counting examples remain available.
+7. **Does 997 have company?** Find 997, reveal the field’s 64 integer members from 969 through 1032, and read the same interval on a square-root ruler whose continuous boundaries differ by exactly one. Try a neighbour or an outside denominator; signed terms above 1000 include borrowing.
+
+The first six steps ask what remembering the remainder lets the reader do next. The final chapter changes the denominator while keeping three-digit groups. Odd-period theory, square-root seeds, class numbers, and cryptography are outside the introductory path. Optional tools and the existing Fibonacci/counting examples remain available.
 
 `⟨d1,...,dL⟩_B` means L successive digits in radix B. Commas separate positions, the subscript names the radix, and `|` marks a radix change. The first run preserves the ordinary prefix. Each digit's weight uses every radix through that position, including each repeated use inside a run. Leading zeros are positions; they are never dropped.
 
@@ -38,6 +40,7 @@ python3 -m unittest discover -s deploy -p 'test_*.py'
 
 ## Source map
 
+- `scripts/render-field.ts`, `src/field-explorer.ts`, `src/math/field.ts`: the guided 997 neighbourhood, independently checked opening groups, and the one-unit square-root strip.
 - `scripts/render-boundaries.ts`, `src/remainder-mirror.ts`: computed midpoint and return examples, all 83 complementary pairs, and the decimal/group distinction.
 - `scripts/render-one-digit.ts`: the six-step to one-step 1/7 grouping example.
 - `scripts/render-radices.ts`: notation guide, three-example explorer, completion, and proof map.
@@ -64,9 +67,13 @@ Lean's existing run-accounting theorems map digit lists to Horner-packed values 
 - `?run=1` through `169` retains the optional from-start power construction and its original shared links. This construction has different place weights from the main progression-preserving examples.
 - `di_a`, `di_d`, `di_b`, `di_from`, and `di_to` retain the digit-lookup tool's fraction, radix, and range. Positions start at one. Each request emits at most 1,000 digits; independent walking stops at 100,000.
 
+- `?field_step=1`, `2`, or `3` selects the neighbourhood lesson view. `field_n=968` through `1033` selects its denominator; omitted `field_step` defaults to the neighbour view when `field_n` is supplied. Example: [997 on the square-root strip](https://reptends.mikedotexe.com/?field_step=3&field_n=997#nearby-fractions).
+
 Explorer parameters coexist. Back/Forward restores them, and copy-link buttons have a selectable fallback. Long inscriptions identify omitted intermediate runs explicitly; omitted radices still count in the weights. The structured data never abbreviates its digit arrays.
 
 ## Editorial scope and preservation
+
+Version 1.8.0 adds the guided neighbourhood chapter and a scoped algebraic derivation linked from the proof-status atlas. All prior controls and shared-link parameters remain available; no Lean source changed.
 
 Version 1.7.0 follows the six-step reading path above. The 1/997 opening, carry stack, existing shared links, and three progression explorers are retained. New worked examples are checked independently by decimal long division and browser interaction tests; no Lean source changed.
 
